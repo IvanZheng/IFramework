@@ -1,0 +1,109 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    @Scripts.Render("~/Scripts/jquery-1.8.2.min.js")
+    @Scripts.Render("~/Scripts/jquery.json-2.2.min.js")
+    @Scripts.Render("~/Scripts/jquery.cookie.min.js")
+    <script>
+
+        var doCommand = function (commandName, command) {
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: '@Url.Content("~/api/Command/Action/")' + commandName,
+                data: command,
+                success: function (data) {
+                    if (data.ErrorCode == 0) {
+                        alert($.toJSON(data.Result));
+                    }
+                    else {
+                        alert(data.ErrorCode + " " + data.Message);
+                    }
+                }
+            });
+        };
+
+        var batchCommandTest = function (commandName, command, batchCount) {
+            $.cookie("batchCount", batchCount, {path:"/"});
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: '@Url.Content("~/api/Command/TestDistributor/")' + commandName,
+                data: command,
+                success: function (data) {
+                    if (data.ErrorCode == 0) {
+                        alert(data);
+                    }
+                    else {
+                        alert(data.Message);
+                    }
+                }
+            });
+        };
+
+        $(function () {
+            $("#batchRegisterCommand").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
+                batchCommandTest("RegisterCommand", registerCommand, $("#batchCount").val());
+            });
+
+            $("#batchLoginCommand").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var loginCommand = { UserName: username, Password: password };
+                batchCommandTest("LoginCommand", loginCommand, $("#batchCount").val());
+            });
+
+            $("#registerCommand").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
+                doCommand("RegisterCommand", registerCommand);
+            });
+
+            $("#loginCommand").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var loginCommand = { UserName: username, Password: password };
+                doCommand("LoginCommand", loginCommand);
+            });
+
+            $("#btnRefreshCommandDistributorStatus").click(function () {
+                refreshCommandDistributorStatus();
+            })
+            .click();
+        });
+        var refreshCommandDistributorStatus = function () {
+            $.get("@Url.Content("~/Api/Command/CommandDistributorStatus")", null, function (result) {
+                $("#commandDistributorStatus").html(result);
+            });
+        };
+       
+    </script>
+</head>
+<body>
+    <input type="button" value="RefreshCommandDistributorStatus" id="btnRefreshCommandDistributorStatus" />
+
+    <div id="commandDistributorStatus">
+
+    </div>
+    <br />
+    <input type="text" value="1000" id="batchCount"/>
+    <input type="text" value="ivan" id="username" />
+    <input type="password" value="123456" id="password" />
+
+    <input id="registerCommand" type="button" value="RegisterCommand" />
+    <input id="loginCommand" type="button" value="LoginCommand" />
+    <input id="batchRegisterCommand" type="button" value="BatchRegisterCommand" />
+    <input id="batchLoginCommand" type="button" value="BatchLoginCommand" />
+</body>
+</html>
