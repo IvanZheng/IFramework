@@ -36,14 +36,17 @@ namespace IFramework.Infrastructure.Mvc
         {
             var commandType = Type.GetType(string.Format(Configuration.GetAppConfig("CommandTypeTemplate"), HttpContext.Current.Request.Url.Segments.Last()));
             var part = content.ReadAsStringAsync();
+            var mediaType = content.Headers.ContentType.MediaType;
             return Task.Factory.StartNew<object>(() =>
             {
-                var command = part.Result.ToJsonObject(commandType);
-                if (command == null)
+                object command = null;
+                if (mediaType == "application/x-www-form-urlencoded")
                 {
-                    var dict = QueryStringHelper.QueryStringToDict(part.Result);
-                    var json = dict.ToJson();
-                    command = json.ToJsonObject(commandType);
+                    command = new FormDataCollection(part.Result).ConvertToObject(commandType);
+                }
+                else
+                {
+                    command = part.Result.ToJsonObject(commandType);
                 }
                 return command;
             });

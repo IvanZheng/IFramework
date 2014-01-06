@@ -70,10 +70,19 @@
                 doCommand("RegisterCommand", registerCommand);
             });
 
+            
             $("#loginCommand").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
-                var loginCommand = { UserName: username, Password: password };
+                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn", 
+                    Tags: [1, 2, 3]// test for commandMediaTypeFormatter
+                };
+
+                var loginCommand = {
+                    UserName: username,
+                    Password: password,
+                    Tags: [registerCommand, registerCommand]
+                };
                 doCommand("LoginCommand", loginCommand);
             });
 
