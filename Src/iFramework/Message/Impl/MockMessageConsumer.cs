@@ -26,7 +26,7 @@ namespace IFramework.Message.Impl
 
         public decimal MessageCount
         {
-            get { throw new NotImplementedException(); }
+            get { return 0; }
         }
     }
 }

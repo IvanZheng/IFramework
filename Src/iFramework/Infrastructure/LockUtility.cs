@@ -71,10 +71,6 @@ namespace IFramework.Infrastructure
                     action();
                 }
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
             finally
             {
                 ReleaseLock(key, lockObj);

@@ -117,7 +117,7 @@ namespace IFramework.Infrastructure
              System.IO.BinaryWriter bw = new System.IO.BinaryWriter(fs);
              bw.Write(Convert.FromBase64String(base64String));
              bw.Close();
-             fs.Close();
+             //fs.Close();
              return true;
          }
 
