@@ -1,6 +1,5 @@
 using System.Web.Http;
 using Microsoft.Practices.Unity;
-using Unity.WebApi;
 
 namespace IFramework.Infrastructure.Mvc
 {

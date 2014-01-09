@@ -7,7 +7,6 @@ using Sample.DTO;
 
 namespace Sample.Command
 {
-    [Serializable]
     public class LoginCommand : ICommand<Account>, ILinearCommand
     {
         public string UserName { get; set; }

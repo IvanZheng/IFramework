@@ -8,7 +8,6 @@ using System.Text;
 
 namespace Sample.Command
 {
-    [Serializable]
     public class RegisterCommand : ICommand<Guid>, ILinearCommand
     {
         public string Email { get; set; }

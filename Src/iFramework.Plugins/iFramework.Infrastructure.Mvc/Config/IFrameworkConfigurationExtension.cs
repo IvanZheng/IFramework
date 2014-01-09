@@ -10,6 +10,7 @@ using System.Reflection;
 using IFramework.Infrastructure.Mvc.Config;
 using System.Web.Routing;
 using System.Web.Http.Controllers;
+using IFramework.Infrastructure.Mvc;
 
 namespace IFramework.Config
 {
@@ -57,7 +58,7 @@ namespace IFramework.Config
             //Set new controller factory in ASP.MVC Controller builder
             ControllerBuilder.Current.SetControllerFactory(factory);  
             
-            System.Web.Http.GlobalConfiguration.Configuration.DependencyResolver = new Unity.WebApi.UnityDependencyResolver(_CurrentContainer);
+            System.Web.Http.GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(_CurrentContainer);
         }
 
         static void RegisterModelBinders()
