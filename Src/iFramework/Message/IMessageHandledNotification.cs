@@ -5,10 +5,8 @@ using System.Text;
 
 namespace IFramework.Message
 {
-    public interface IMessageConsumer
+    public interface IMessageHandledNotification
     {
-        void Start();
-        string GetStatus();
-        decimal MessageCount { get; }
+       string MessageID { get; set; }
     }
 }

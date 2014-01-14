@@ -1,6 +1,6 @@
 ﻿using IFramework.Message;
+using IFramework.Message.Impl;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,125 +8,115 @@ using System.Text;
 using System.Threading.Tasks;
 using ZeroMQ;
 using IFramework.Infrastructure;
-using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
-    public abstract class MessageConsumer : IMessageConsumer
+    public abstract class MessageConsumer<TMessage> : IMessageConsumer
     {
-        protected BlockingCollection<IMessageContext> MessageContextQueue { get; set; }
-        protected string[] PullEndPoints { get; set; }
-        protected ZmqSocket Replier { get; set; }
-        protected string ReplyToEndPoint { get; set; }
+        protected BlockingCollection<TMessage> MessageQueue { get; set; }
+
+        protected string ReceiveEndPoint { get; set; }
+        public decimal MessageCount { get; protected set; }
         protected decimal HandledMessageCount { get; set; }
-        public event MessageHandledHandler MessageHandled;
+        protected Dictionary<string, ZmqSocket> ReplySenders { get; set; }
 
-        public decimal MessageCount
+        public MessageConsumer()
         {
-            get
-            {
-                return MessageContextQueue.Count;
-            }
+            MessageQueue = new BlockingCollection<TMessage>();
         }
 
-        public void PushMessageContext(IMessageContext commandContext)
+        public MessageConsumer(string receiveEndPoint)
+            : this()
         {
-            MessageContextQueue.Add(commandContext);
+            ReplySenders = new Dictionary<string, ZmqSocket>();
+            ReceiveEndPoint = receiveEndPoint;
         }
 
-        public MessageConsumer(string replyToEndPoint, params string[] pullEndPoints)
+        protected ZmqSocket GetReplySender(string replyToEndPoint)
         {
-            ReplyToEndPoint = replyToEndPoint;
-            PullEndPoints = pullEndPoints;
-            MessageContextQueue = new BlockingCollection<IMessageContext>();
-        }
-
-        protected virtual void OnMessageHandled(MessageReply reply)
-        {
-            if (this.MessageHandled != null)
+            ZmqSocket replySender = null;
+            if (!string.IsNullOrWhiteSpace(replyToEndPoint))
             {
-                this.MessageHandled(reply);
-            }
-        }
-
-        void ReceiveMessages(object messageReceiver)
-        {
-            var receiver = messageReceiver as ZmqSocket;
-            if (receiver == null)
-            {
-                return;
-            }
-            while (true)
-            {
-                try
+                replyToEndPoint = replyToEndPoint.Trim();
+                if (!ReplySenders.TryGetValue(replyToEndPoint, out replySender))
                 {
-                    var rcvdMsg = receiver.Receive(Encoding.UTF8);
-                    var messageContext = rcvdMsg.ToJsonObject<MessageContext>();
-                    if (messageContext == null)
+                    try
                     {
-                        continue;
+                        replySender = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PUSH);
+                        replySender.Connect(replyToEndPoint);
+                        ReplySenders[replyToEndPoint] = replySender;
                     }
-                    PushMessageContext(messageContext);
-                }
-                catch (Exception e)
-                {
-                    Console.Write(e.GetBaseException().Message);
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.GetBaseException().Message);
+                    }
                 }
             }
+            return replySender;
         }
 
-        void ConsumeMessages()
+        protected virtual ZmqSocket CreateSocket(string endPoint)
+        {
+            ZmqSocket receiver = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PULL);
+            receiver.Bind(endPoint);
+            return receiver;
+        }
+
+        public virtual void Start()
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(ReceiveEndPoint))
+                {
+                    // Receive messages
+                    var messageReceiver = CreateSocket(ReceiveEndPoint);
+                    Task.Factory.StartNew(ReceiveMessages, messageReceiver);
+
+                    // Consume messages
+                    Task.Factory.StartNew(ConsumeMessages);
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e.GetBaseException().Message);
+            }
+
+        }
+
+        protected virtual void ConsumeMessages()
         {
             while (true)
             {
-                Consume(MessageContextQueue.Take());
+                ConsumeMessage(MessageQueue.Take());
                 HandledMessageCount++;
             }
         }
 
-        public virtual void StartConsuming()
+        protected abstract void ConsumeMessage(TMessage message);
+
+        protected virtual void ReceiveMessages(object arg)
         {
-            // Pull message
-            if (PullEndPoints != null && PullEndPoints.Length > 0)
+            var messageReceiver = arg as ZmqSocket;
+            while (true)
             {
-                PullEndPoints.ForEach(pullEndPoint =>
+                try
                 {
-                    if (!string.IsNullOrWhiteSpace(pullEndPoint))
-                    {
-                        try
-                        {
-                            var messageReceiver = CreateConsumerSocket(pullEndPoint);
-                            Task.Factory.StartNew(ReceiveMessages, messageReceiver);
-                        }
-                        catch(Exception e)
-                        {
-                            Console.Write(e.GetBaseException().Message);
-                        }
-                    }
-                });
-            }
-            // Consume message
-            Task.Factory.StartNew(ConsumeMessages);
-
-            if (!string.IsNullOrWhiteSpace(ReplyToEndPoint))
-            {
-                Replier = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PUSH);
-                Replier.Connect(ReplyToEndPoint);
+                    var frame = messageReceiver.ReceiveFrame();
+                    ReceiveMessage(frame);
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.GetBaseException().Message);
+                }
             }
         }
 
-        protected virtual ZmqSocket CreateConsumerSocket(string pullEndPoint)
-        {
-            ZmqSocket receiver = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PULL);
-            receiver.Connect(pullEndPoint);
-            return receiver;
-        }
+        protected abstract void ReceiveMessage(Frame frame);
 
         public virtual string GetStatus()
         {
             return string.Format("consumer queue length: {0}/{1}<br>", MessageCount, HandledMessageCount);
         }
 
-        protected abstract void Consume(IMessageContext messageContext);
     }
 }

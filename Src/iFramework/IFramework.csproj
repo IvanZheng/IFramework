@@ -61,7 +61,6 @@
   <ItemGroup>
     <Compile Include="Bus\IBus.cs" />
     <Compile Include="Command\ILinearCommandManager.cs" />
-    <Compile Include="Command\Impl\CommandBus.cs" />
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
     <Compile Include="Event\IEventPublisher.cs" />
     <Compile Include="Event\Impl\DomainEventContext.cs" />
@@ -74,12 +73,15 @@
     <Compile Include="Message\IMessageConsumer.cs" />
     <Compile Include="Message\IMessageContext.cs" />
     <Compile Include="Message\IMessageDistributor.cs" />
+    <Compile Include="Message\IMessageHandledNotification.cs" />
     <Compile Include="Message\IMessageHandler.cs" />
+    <Compile Include="Message\IMessageReply.cs" />
     <Compile Include="Message\IMessageStore.cs" />
+    <Compile Include="Message\Impl\MessageHandledNotification.cs" />
     <Compile Include="Message\Impl\MessageHandler.cs" />
     <Compile Include="Message\Impl\MessageContext.cs" />
     <Compile Include="Message\Impl\MockMessageConsumer.cs" />
-    <Compile Include="Message\MessageReply.cs" />
+    <Compile Include="Message\Impl\MessageReply.cs" />
     <Compile Include="Command\ICommand.cs" />
     <Compile Include="Command\ICommandHandlerProvider.cs" />
     <Compile Include="Command\ICommandHandler.cs" />
@@ -108,7 +110,6 @@
     <Compile Include="Event\IEventSubscriberProvider.cs" />
     <Compile Include="Event\Impl\DomainEventBus.cs" />
     <Compile Include="Event\Impl\EventSubscriberProvider.cs" />
-    <Compile Include="Message\MessageState.cs" />
     <Compile Include="SysException\NoCommandHandlerExists.cs" />
     <Compile Include="Infrastructure\CookieHelper.cs" />
     <Compile Include="Infrastructure\DisposeObjectHttpModule.cs" />

@@ -1,39 +1,57 @@
-﻿using IFramework.Message;
+﻿using IFramework.Infrastructure;
+using IFramework.Infrastructure.Unity.LifetimeManagers;
+using IFramework.Message;
+using IFramework.Message.Impl;
 using IFramework.SysException;
+using IFramework.UnitOfWork;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using IFramework.Infrastructure;
-using IFramework.Infrastructure.Unity.LifetimeManagers;
 using ZeroMQ;
-using IFramework.Message.Impl;
-using IFramework.UnitOfWork;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
-    public class CommandConsumer : MessageConsumer
+    public class CommandConsumer : MessageConsumer<IMessageContext>
     {
-        IHandlerProvider HandlerProvider { get; set; }
+        protected IHandlerProvider HandlerProvider { get; set; }
 
-        public CommandConsumer(IHandlerProvider handlerProvider, string replyToEndPoint, params string[] pullEndPoints)
-            : base(replyToEndPoint, pullEndPoints)
+        public CommandConsumer(IHandlerProvider handlerProvider, string receiveEndPoint)
+            : base(receiveEndPoint)
         {
             HandlerProvider = handlerProvider;
         }
 
-        protected override void OnMessageHandled(MessageReply reply)
+        void OnMessageHandled(IMessageContext messageContext, IMessageReply reply)
         {
-            if (Replier != null)
+            if (!string.IsNullOrWhiteSpace(messageContext.ReplyToEndPoint))
             {
-                Replier.Send(reply.ToJson(), Encoding.UTF8);
+                var replySender = GetReplySender(messageContext.ReplyToEndPoint);
+                if (replySender != null)
+                {
+                    replySender.SendFrame(reply.GetFrame());
+                }
             }
-            base.OnMessageHandled(reply);
+
+            if (!string.IsNullOrWhiteSpace(messageContext.FromEndPoint))
+            {
+                var notificationSender = GetReplySender(messageContext.FromEndPoint);
+                if (notificationSender != null)
+                {
+                    notificationSender.SendFrame(new MessageHandledNotification(messageContext.MessageID)
+                                                        .GetFrame());
+                }
+            }
         }
 
-        protected override void Consume(IMessageContext messageContext)
+        protected override void ConsumeMessage(IMessageContext messageContext)
         {
-            MessageReply messageReply = null;
+            IMessageReply messageReply = null;
+            if (messageContext == null || messageContext.Message == null)
+            {
+                return;
+            }
             var message = messageContext.Message;
             var messageHandlers = HandlerProvider.GetHandlers(message.GetType());
             try
@@ -60,7 +78,16 @@ namespace IFramework.MessageQueue.ZeroMQ
             finally
             {
                 messageContext.ClearItems();
-                OnMessageHandled(messageReply);
+                OnMessageHandled(messageContext, messageReply);
+            }
+        }
+
+        protected override void ReceiveMessage(Frame frame)
+        {
+            var messageContext = frame.GetMessage<MessageContext>();
+            if (messageContext != null)
+            {
+                MessageQueue.Add(messageContext);
             }
         }
     }

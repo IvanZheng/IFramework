@@ -6,9 +6,9 @@ using IFramework.Infrastructure;
 using IFramework.Message.Impl;
 using Newtonsoft.Json;
 
-namespace IFramework.Message
+namespace IFramework.Message.Impl
 {
-    public class MessageReply
+    public class MessageReply : IMessageReply
     {
         Dictionary<string, string> _Headers;
         public Dictionary<string, string> Headers
@@ -24,12 +24,14 @@ namespace IFramework.Message
             Headers = new Dictionary<string, string>();
         }
 
-        public MessageReply(string messaegID, Exception e) : this()
+        public MessageReply(string messaegID, Exception e)
+            : this()
         {
             MessageID = messaegID;
             Exception = e;
         }
-        public MessageReply(string messageID, object result) : this()
+        public MessageReply(string messageID, object result)
+            : this()
         {
             MessageID = messageID;
             Result = result;
@@ -78,7 +80,7 @@ namespace IFramework.Message
                 if (Headers.TryGetValue("Exception", out exceptionBody) && !string.IsNullOrWhiteSpace(exceptionBody))
                 {
                     return _Exception ?? (_Exception = exceptionBody
-                                                      .ToJsonObject(Type.GetType(Headers["ExceptionType"])) 
+                                                      .ToJsonObject(Type.GetType(Headers["ExceptionType"]))
                                                       as Exception) ??
                                          (_Exception = exceptionBody.ToJsonObject<Exception>());
                 }

@@ -14,7 +14,7 @@ namespace IFramework.MessageQueue.ZeroMQ
     class EventPublisher : IEventPublisher
     {
         protected ZmqSocket ZmqEventPublisher { get; set; }
-        protected BlockingCollection<object> MessageQueue { get; set; } 
+        protected BlockingCollection<object> MessageQueue { get; set; }
 
         public EventPublisher(string pubEndPoint)
         {
@@ -28,7 +28,7 @@ namespace IFramework.MessageQueue.ZeroMQ
         }
 
         public void Publish(IEnumerable<object> events)
-        { 
+        {
             events.ForEach(@event =>
             {
                 Publish(@event);

@@ -4,6 +4,7 @@ using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.MessageQueue.ZeroMQ;
+using Microsoft.Practices.Unity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,39 +27,39 @@ namespace Sample.CommandService
             {
                 var linearCommandManager = IoCFactory.Resolve<ILinearCommandManager>();
 
-                var commandDistributor = new CommandDistributer(string.Empty,
-                                                "inproc://ReplyReceiver",
-                                                new string[] { "inproc://CommandConsumer1",
-                                                    "inproc://CommandConsumer2",
-                                                    "inproc://CommandConsumer3"},
-                                                linearCommandManager);
-               
+                var commandDistributer = new CommandDistributer(linearCommandManager,
+                                                "inproc://distributer",
+                                                new string[] { "inproc://CommandConsumer1"
+                                                    , "inproc://CommandConsumer2"
+                                                    , "inproc://CommandConsumer3"
+                                                }
+                                                );
+
                 Configuration.Instance
-                             .RegisterCommandConsumer(commandDistributor, "CommandConsumer")
+                             .RegisterCommandConsumer(commandDistributer, "CommandConsumer")
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
-                             .RegisterMvc()
-                             .MvcIgnoreResouceRoute(RouteTable.Routes);
+                             .RegisterMvc();
 
                 IoCFactory.Resolve<IEventPublisher>();
-                IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer").StartConsuming();
+                IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer").Start();
 
 
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
                 var commandConsumer1 = new CommandConsumer(commandHandlerProvider,
-                                                           "inproc://ReplyReceiver",
                                                            "inproc://CommandConsumer1");
                 var commandConsumer2 = new CommandConsumer(commandHandlerProvider,
-                                                           "inproc://ReplyReceiver",
                                                            "inproc://CommandConsumer2");
                 var commandConsumer3 = new CommandConsumer(commandHandlerProvider,
-                                                           "inproc://ReplyReceiver",
                                                            "inproc://CommandConsumer3");
-                commandDistributor.StartConsuming();
 
-                commandConsumer1.StartConsuming();
-                commandConsumer2.StartConsuming();
-                commandConsumer3.StartConsuming();
 
+                commandConsumer1.Start();
+                commandConsumer2.Start();
+                commandConsumer3.Start();
+                commandDistributer.Start();
+
+                ICommandBus commandBus = IoCFactory.Resolve<ICommandBus>();
+                (commandBus as IMessageConsumer).Start();
                 /*
                  * One Consumer Case
                 Configuration.Instance
@@ -98,9 +99,9 @@ namespace Sample.CommandService
 
         protected void Application_Error(object sender, EventArgs e)
         {
-           
-                Exception objErr = Server.GetLastError().GetBaseException(); //获取错误
-                Response.Write(objErr.Message + objErr.StackTrace);
+
+            Exception objErr = Server.GetLastError().GetBaseException(); //获取错误
+            Response.Write(objErr.Message + objErr.StackTrace);
         }
     }
 }

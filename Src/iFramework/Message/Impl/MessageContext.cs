@@ -10,6 +10,10 @@ namespace IFramework.Message.Impl
 {
     public class MessageContext : IMessageContext
     {
+        public string MessageID { get; protected set; }
+        public string ReplyToEndPoint { get; protected set; }
+        public string FromEndPoint { get; set; }
+
         Dictionary<string, string> _Headers;
         public Dictionary<string, string> Headers
         {
@@ -17,28 +21,35 @@ namespace IFramework.Message.Impl
             set { _Headers = value; }
         }
 
-        public MessageContext() 
+        public MessageContext()
         {
             Headers = new Dictionary<string, string>();
             SentTime = DateTime.Now;
         }
-        public MessageContext(object message) : this()
+
+        public MessageContext(object message)
+            : this()
         {
             MessageID = ObjectId.GenerateNewId().ToString();
             Message = message;
         }
-        public MessageContext(object message, string replyToEndPoint):this(message)
+
+        public MessageContext(object message, string replyToEndPoint)
+            : this(message)
         {
             ReplyToEndPoint = replyToEndPoint;
         }
 
-        public string MessageID { get; set; }
-        public string ReplyToEndPoint { get; set; }
+        public MessageContext(object message, string replyToEndPoint, string fromEndPoint)
+            : this(message, replyToEndPoint)
+        {
+            FromEndPoint = fromEndPoint;
+        }
 
         object _Message;
         [JsonIgnore]
-        public object Message 
-        { 
+        public object Message
+        {
             get
             {
                 return _Message ?? (_Message = Headers["Message"]
