@@ -5,8 +5,9 @@ using System.Text;
 using IFramework.Infrastructure;
 using System.Collections;
 using Newtonsoft.Json;
+using IFramework.Message;
 
-namespace IFramework.Message.Impl
+namespace IFramework.MessageQueue.MessageFormat
 {
     public class MessageContext : IMessageContext
     {

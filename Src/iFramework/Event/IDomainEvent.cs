@@ -8,5 +8,6 @@ namespace IFramework.Event
     public interface IDomainEvent
     {
         object AggregateRootID { get;}
+        string AggregateRootName { get; set; }
     }
 }

@@ -42,7 +42,7 @@ namespace IFramework.UnitOfWork
                 {
                     // TODO: persistance command and domain events
                     var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-                    var domainEventContexts = _DomainEventBus.GetMessages();
+                    var domainEventContexts = _DomainEventBus.GetMessageContexts();
                     MessageStore.Save(currentCommandContext, domainEventContexts);
                 }
             }

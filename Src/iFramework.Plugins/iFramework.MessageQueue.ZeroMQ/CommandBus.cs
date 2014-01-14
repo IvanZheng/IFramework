@@ -15,6 +15,7 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.UnitOfWork;
 using IFramework.Config;
 using System.Collections.Concurrent;
+using IFramework.MessageQueue.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {

@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DTO", "Src\Sample\Sa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Persistence", "Src\Sample\Sample.Persistence\Sample.Persistence.csproj", "{07B18368-3D3F-4C12-B2F1-E38FC709226A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.MessageFormat", "Src\iFramework.Plugins\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj", "{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{07B18368-3D3F-4C12-B2F1-E38FC709226A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07B18368-3D3F-4C12-B2F1-E38FC709226A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07B18368-3D3F-4C12-B2F1-E38FC709226A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -111,5 +117,6 @@ Global
 		{9636759C-63BC-470E-B95C-E120FBCB830B} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 		{352E05CF-E412-47B4-8852-CDFCCD928B71} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 		{C00B8AD6-47C2-4642-877E-2C759D05DCFE} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
+		{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 	EndGlobalSection
 EndGlobal

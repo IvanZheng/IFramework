@@ -6,8 +6,10 @@ using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using System.Collections;
+using IFramework.Event;
+using IFramework.MessageQueue.MessageFormat;
 
-namespace IFramework.Event.Impl
+namespace IFramework.MessageQueue.ZeroMQ
 {
     public class DomainEventBus : IDomainEventBus
     {
@@ -27,19 +29,18 @@ namespace IFramework.Event.Impl
             EventPublisher.Publish(DomainEventContextQueue.ToArray());
         }
 
-        public void Publish<TEvent>(TEvent eventContext) where TEvent : IMessageContext
+        public void Publish<TEvent>(TEvent @event) where TEvent : IDomainEvent
         {
-            var @event = eventContext.Message;
             var eventSubscribers = EventSubscriberProvider.GetHandlers(@event.GetType());
             eventSubscribers.ForEach(eventSubscriber => {
                 eventSubscriber.Handle(@event);
             });
-            DomainEventContextQueue.Enqueue(eventContext);
+            DomainEventContextQueue.Enqueue(new MessageContext(@event));
         }
 
-        public void Publish<TEvent>(IEnumerable<TEvent> eventContexts) where TEvent : IMessageContext
+        public void Publish<TEvent>(IEnumerable<TEvent> eventContexts) where TEvent : IDomainEvent
         {
-            eventContexts.ForEach(@eventContext => Publish(@eventContext));
+            eventContexts.ForEach(@event => Publish(@event));
         }
 
         public virtual void Dispose()
@@ -47,8 +48,7 @@ namespace IFramework.Event.Impl
             
         }
 
-
-        public IEnumerable<IMessageContext> GetMessages()
+        public IEnumerable<IMessageContext> GetMessageContexts()
         {
             return DomainEventContextQueue.Cast<IMessageContext>();
         }

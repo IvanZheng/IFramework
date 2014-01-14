@@ -8,6 +8,7 @@ using ZeroMQ;
 using IFramework.Infrastructure;
 using IFramework.Message.Impl;
 using System.Collections.Concurrent;
+using IFramework.MessageQueue.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -141,7 +142,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
         }
 
-        protected void ConsumeHandledNotification(MessageHandledNotification notification)
+        protected void ConsumeHandledNotification(IMessageHandledNotification notification)
         {
             CommandState commandState;
             if (CommandStateQueue.TryGetValue(notification.MessageID, out commandState))

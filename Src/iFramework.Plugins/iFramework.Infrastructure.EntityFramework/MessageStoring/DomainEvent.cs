@@ -16,12 +16,9 @@ namespace IFramework.EntityFramework
         public DomainEvent(IMessageContext messageContext, string sourceMessageID) :
             base(messageContext, sourceMessageID)
         {
-            AggregateRootID = (messageContext.Message as IDomainEvent).AggregateRootID.ToString();
-            string aggregateRootType = null;
-            if (messageContext.Headers.TryGetValue("ARType", out aggregateRootType))
-            {
-                AggregateRootType = aggregateRootType;
-            }
+            var domainEvent = messageContext.Message as IDomainEvent;
+            AggregateRootID = domainEvent.AggregateRootID.ToString();
+            AggregateRootType = domainEvent.AggregateRootName;
         }
 
         public Command Parent

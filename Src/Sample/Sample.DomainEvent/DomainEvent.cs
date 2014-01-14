@@ -14,9 +14,18 @@ namespace Sample.DomainEvent
             private set;
         }
 
+        public string AggregateRootName
+        {
+            get;
+            set;
+        }
+
         public DomainEvent(object aggregateRootID)
         {
             AggregateRootID = aggregateRootID;
         }
+
+
+        
     }
 }

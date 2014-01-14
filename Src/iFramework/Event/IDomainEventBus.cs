@@ -7,8 +7,8 @@ using System.Text;
 
 namespace IFramework.Event
 {
-    public interface IDomainEventBus : IBus<IMessageContext>
+    public interface IDomainEventBus : IBus<IDomainEvent>
     {
-        IEnumerable<IMessageContext> GetMessages();
+        IEnumerable<IMessageContext> GetMessageContexts();
     }
 }

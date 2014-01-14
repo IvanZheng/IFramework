@@ -4,14 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9636759C-63BC-470E-B95C-E120FBCB830B}</ProjectGuid>
+    <ProjectGuid>{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>IFramework.MessageQueue.ZeroMQ</RootNamespace>
-    <AssemblyName>IFramework.MessageQueue.ZeroMQ</AssemblyName>
+    <RootNamespace>IFramework.MessageQueue.MessageFormat</RootNamespace>
+    <AssemblyName>IFramework.MessageQueue.MessageFormat</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -32,13 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="clrzmq">
-      <HintPath>..\..\..\packages\clrzmq.3.0.0-rc1\lib\net40\clrzmq.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Practices.Unity, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Newtonsoft.Json.5.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -51,19 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandBus.cs" />
-    <Compile Include="CommandConsumer.cs" />
-    <Compile Include="CommandDistributer.cs" />
-    <Compile Include="DistributableCommandBus.cs" />
-    <Compile Include="DomainEventBus.cs" />
-    <Compile Include="EventPublisher.cs" />
-    <Compile Include="MessageConsumer.cs" />
-    <Compile Include="DomainEventSubscriber.cs" />
-    <Compile Include="MessageFrame.cs" />
-    <Compile Include="MessageQueueImpl.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="MessageState.cs" />
+    <Compile Include="MessageContext.cs" />
+    <Compile Include="MessageHandledNotification.cs" />
+    <Compile Include="MessageReply.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -71,15 +54,8 @@
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj">
-      <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
-      <Name>IFramework.MessageQueue.MessageFormat</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="libzmq.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

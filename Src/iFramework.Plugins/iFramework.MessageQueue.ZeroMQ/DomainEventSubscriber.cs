@@ -11,6 +11,7 @@ using IFramework.SysException;
 using IFramework.UnitOfWork;
 using IFramework.Message.Impl;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
+using IFramework.MessageQueue.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {

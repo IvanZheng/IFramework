@@ -1,6 +1,7 @@
 ﻿using IFramework.Command;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue.MessageFormat;
 using System;
 using System.Collections.Generic;
 using System.Linq;

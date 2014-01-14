@@ -2,6 +2,7 @@
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue.MessageFormat;
 using IFramework.SysException;
 using IFramework.UnitOfWork;
 using System;

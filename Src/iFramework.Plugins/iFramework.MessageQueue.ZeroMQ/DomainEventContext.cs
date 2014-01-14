@@ -8,18 +8,13 @@ namespace IFramework.Event.Impl
 {
     public class DomainEventContext : MessageContext
     {
-
         public DomainEventContext() : base()
         {
             
         }
-        public DomainEventContext(object message, Type aggreagetRootType) : base(message)
+        public DomainEventContext(object message) : base(message)
         {
-            if ("EntityProxyModule" == aggreagetRootType.Module.ToString())
-            {
-                aggreagetRootType = aggreagetRootType.BaseType;
-            }
-            Headers["ARType"] = aggreagetRootType.Name;
+          
         }
     }
 }

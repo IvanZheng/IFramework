@@ -21,10 +21,29 @@ namespace IFramework.Domain
             }
         }
 
+        string _aggreagetRootType;
+        protected string AggregateRootName
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_aggreagetRootType))
+                {
+                    var aggreagetRootType = this.GetType();
+                    if ("EntityProxyModule" == this.GetType().Module.ToString())
+                    {
+                        aggreagetRootType = aggreagetRootType.BaseType;
+                    }
+                    _aggreagetRootType = aggreagetRootType.FullName;
+                }
+                return _aggreagetRootType;
+            }
+        }
+
         protected void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
         {
             HandleEvent<TDomainEvent>(@event);
-            EventBus.Publish(new DomainEventContext(@event, this.GetType()));
+            @event.AggregateRootName = AggregateRootName;
+            EventBus.Publish(@event);
         }
 
         private void HandleEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
