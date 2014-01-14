@@ -79,7 +79,7 @@ namespace Sample.CommandService.Controllers
         {
             return Task.Factory.StartNew(() =>
             {
-                var commandDistributor = IoCFactory.Resolve<IMessageConsumer>("CommandDistributer");
+                var commandDistributor = IoCFactory.Resolve<IMessageConsumer>("CommandDistributor");
                 var domainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
                 var distributorStatus = commandDistributor.GetStatus() +
                     "event consumer:" + domainEventConsumer.GetStatus();

@@ -26,7 +26,7 @@ namespace Sample.CommandService
             try
             {
 
-                var commandDistributer = new CommandDistributer("inproc://distributer",
+                var commandDistributor = new CommandDistributor("inproc://distributor",
                                                                 new string[] { 
                                                                     "inproc://CommandConsumer1"
                                                                     , "inproc://CommandConsumer2"
@@ -35,7 +35,7 @@ namespace Sample.CommandService
                                                                );
 
                 Configuration.Instance
-                             .RegisterCommandConsumer(commandDistributer, "CommandDistributer")
+                             .RegisterCommandConsumer(commandDistributor, "CommandDistributor")
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
                              .RegisterMvc();
 
@@ -55,7 +55,7 @@ namespace Sample.CommandService
                 commandConsumer1.Start();
                 commandConsumer2.Start();
                 commandConsumer3.Start();
-                commandDistributer.Start();
+                commandDistributor.Start();
 
                 ICommandBus commandBus = IoCFactory.Resolve<ICommandBus>();
                 commandBus.Start();

@@ -76,7 +76,7 @@ namespace IFramework.MessageQueue.ZeroMQ
     }
 
 
-    public class CommandDistributer : MessageConsumer<Frame>, IMessageDistributor
+    public class CommandDistributor : MessageConsumer<Frame>, IMessageDistributor
     {
         protected Dictionary<object, LinearCommandConsumer> LinearCommandStates { get; set; }
         protected Dictionary<string, CommandState> CommandStateQueue = new Dictionary<string, CommandState>();
@@ -84,13 +84,13 @@ namespace IFramework.MessageQueue.ZeroMQ
         
         protected string[] TargetEndPoints { get; set; }
 
-        public CommandDistributer(string[] targetEndPoints)
+        public CommandDistributor(string[] targetEndPoints)
             : this(null, targetEndPoints)
         {
 
         }
 
-        public CommandDistributer(string receiveEndPoint,
+        public CommandDistributor(string receiveEndPoint,
                                   params string[] targetEndPoints)
             : base(receiveEndPoint)
         {

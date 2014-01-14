@@ -53,7 +53,7 @@
   <ItemGroup>
     <Compile Include="CommandBus.cs" />
     <Compile Include="CommandConsumer.cs" />
-    <Compile Include="CommandDistributer.cs" />
+    <Compile Include="CommandDistributor.cs" />
     <Compile Include="DistributableCommandBus.cs" />
     <Compile Include="DomainEventBus.cs" />
     <Compile Include="EventPublisher.cs" />

@@ -14,6 +14,8 @@ namespace IFramework.MessageQueue.ZeroMQ
     public class DistributableCommandBus : CommandBus, ICommandBus
     {
         IMessageConsumer _CommandConsumer;
+        bool _IsDistributor;
+        IMessageDistributor _CommandDistributor;
 
         public DistributableCommandBus(ICommandHandlerProvider handlerProvider,
                           ILinearCommandManager linearCommandManager,
@@ -23,16 +25,17 @@ namespace IFramework.MessageQueue.ZeroMQ
             : base(handlerProvider, linearCommandManager, receiveEndPoint, inProc)
         {
             _CommandConsumer = commandConsumer;
+            _CommandDistributor = _CommandConsumer as IMessageDistributor;
+            _IsDistributor = _CommandDistributor != null;
         }
 
 
         protected override void ConsumeMessage(IMessageReply reply)
         {
             base.ConsumeMessage(reply);
-            var commandDistributer = _CommandConsumer as CommandDistributer;
-            if (commandDistributer != null)
+            if (_IsDistributor)
             {
-                commandDistributer.EnqueueMessage(new MessageHandledNotification(reply.MessageID).GetFrame());
+                _CommandDistributor.EnqueueMessage(new MessageHandledNotification(reply.MessageID).GetFrame());
             }
         }
 
