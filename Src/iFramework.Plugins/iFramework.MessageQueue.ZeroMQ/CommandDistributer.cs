@@ -80,16 +80,15 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected Dictionary<object, LinearCommandConsumer> LinearCommandStates { get; set; }
         protected Dictionary<string, CommandState> CommandStateQueue = new Dictionary<string, CommandState>();
         protected List<CommandQueueConsumer> CommandConsumers { get; set; }
-        protected ILinearCommandManager LinearCommandManager { get; set; }
+        
         protected string[] TargetEndPoints { get; set; }
 
-        public CommandDistributer(ILinearCommandManager linearCommandManager, string receiveEndPoint,
+        public CommandDistributer(string receiveEndPoint,
                                   params string[] targetEndPoints)
             : base(receiveEndPoint)
         {
             LinearCommandStates = new Dictionary<object, LinearCommandConsumer>();
             CommandConsumers = new List<CommandQueueConsumer>();
-            LinearCommandManager = linearCommandManager;
             TargetEndPoints = targetEndPoints;
         }
 
@@ -175,10 +174,10 @@ namespace IFramework.MessageQueue.ZeroMQ
 
             commandContext.FromEndPoint = this.ReceiveEndPoint;
 
-            if (commandContext.Message is ILinearCommand)
+            if (!string.IsNullOrWhiteSpace(commandContext.Key))
             {
                 // 取出command的linear key, 作为consumer的选择索引
-                var linearKey = LinearCommandManager.GetLinearKey(commandContext.Message as ILinearCommand);
+                var linearKey = commandContext.Key;
                 LinearCommandConsumer linearCommandConsumer;
                 // 尝试从字典中取出linearkey族command的当前consumer
                 if (!LinearCommandStates.TryGetValue(linearKey, out linearCommandConsumer))

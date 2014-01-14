@@ -8,6 +8,7 @@ namespace IFramework.Message
     public interface IMessageContext
     {
         Dictionary<string, string> Headers { get; }
+        string Key { get; }
         string MessageID { get; }
         string ReplyToEndPoint { get; }
         string FromEndPoint { get; set; }

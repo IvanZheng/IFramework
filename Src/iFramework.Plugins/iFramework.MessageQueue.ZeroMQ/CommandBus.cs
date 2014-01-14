@@ -93,15 +93,15 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
                 else if (CommandSenders.Count > 1)
                 {
-                    var command = commandState.MessageContext.Message;
+                    var commandKey = commandState.MessageContext.Key;
                     var keyHashCode = 0;
-                    if (command is ILinearCommand)
+                    if (!string.IsNullOrWhiteSpace(commandKey))
                     {
-                        keyHashCode = LinearCommandManager.GetLinearKey(command as ILinearCommand).GetHashCode();
+                        keyHashCode = commandKey.GetHashCode();
                     }
                     else
                     {
-                        keyHashCode = command.GetType().Name.GetHashCode();
+                        keyHashCode = commandState.MessageID.GetHashCode();
                     }
                     commandSender = CommandSenders[keyHashCode % CommandSenders.Count];
                 }
@@ -179,9 +179,12 @@ namespace IFramework.MessageQueue.ZeroMQ
                 throw new NotSupportedException("Command is not allowd to be sent in another command context!");
             }
 
-            var commandContext = new MessageContext(command, this.ReceiveEndPoint);
-            System.Diagnostics.Debug.WriteLine(
-                string.Format("CommandBus:CommandID :{0}", commandContext.MessageID));
+            string commandKey = null;
+            if (command is ILinearCommand)
+            {
+                commandKey = LinearCommandManager.GetLinearKey(command as ILinearCommand).ToString();
+            }
+            IMessageContext commandContext = new MessageContext(command, this.ReceiveEndPoint, commandKey);
 
             Task task = null;
             if (InProc && currentMessageContext == null)
@@ -197,7 +200,6 @@ namespace IFramework.MessageQueue.ZeroMQ
                     MessageStore.Save(commandContext, currentMessageContext.MessageID);
                 }
             }
-
             return task;
         }
 
@@ -246,9 +248,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             var command = commandContext.Message as ICommand;
             MessageState messageState = BuildMessageState(commandContext, cancellationToken);
             messageState.CancellationToken.Register(onCancel, messageState);
-
             CommandQueue.Add(messageState);
-
             return messageState.TaskCompletionSource.Task;
         }
 

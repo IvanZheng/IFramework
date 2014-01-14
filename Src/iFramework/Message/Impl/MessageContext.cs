@@ -13,7 +13,7 @@ namespace IFramework.Message.Impl
         public string MessageID { get; protected set; }
         public string ReplyToEndPoint { get; protected set; }
         public string FromEndPoint { get; set; }
-
+        public string Key { get; protected set; }
         Dictionary<string, string> _Headers;
         public Dictionary<string, string> Headers
         {
@@ -34,14 +34,20 @@ namespace IFramework.Message.Impl
             Message = message;
         }
 
-        public MessageContext(object message, string replyToEndPoint)
+        public MessageContext(object message, string key)
             : this(message)
+        {
+            Key = key;
+        }
+
+        public MessageContext(object message, string replyToEndPoint, string key)
+            : this(message, key)
         {
             ReplyToEndPoint = replyToEndPoint;
         }
 
-        public MessageContext(object message, string replyToEndPoint, string fromEndPoint)
-            : this(message, replyToEndPoint)
+        public MessageContext(object message, string replyToEndPoint, string fromEndPoint, string key)
+            : this(message, replyToEndPoint, key)
         {
             FromEndPoint = fromEndPoint;
         }

@@ -25,15 +25,15 @@ namespace Sample.CommandService
         {
             try
             {
-                var linearCommandManager = IoCFactory.Resolve<ILinearCommandManager>();
+                //var linearCommandManager = IoCFactory.Resolve<ILinearCommandManager>();
 
-                var commandDistributer = new CommandDistributer(linearCommandManager,
-                                                "inproc://distributer",
-                                                new string[] { "inproc://CommandConsumer1"
-                                                    , "inproc://CommandConsumer2"
-                                                    , "inproc://CommandConsumer3"
-                                                }
-                                                );
+                var commandDistributer = new CommandDistributer("inproc://distributer",
+                                                                new string[] { 
+                                                                    "inproc://CommandConsumer1"
+                                                                    , "inproc://CommandConsumer2"
+                                                                    , "inproc://CommandConsumer3"
+                                                                }
+                                                               );
 
                 Configuration.Instance
                              .RegisterCommandConsumer(commandDistributer, "CommandConsumer")
