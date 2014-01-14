@@ -25,8 +25,6 @@ namespace Sample.CommandService
         {
             try
             {
-                //var linearCommandManager = IoCFactory.Resolve<ILinearCommandManager>();
-
                 var commandDistributer = new CommandDistributer("inproc://distributer",
                                                                 new string[] { 
                                                                     "inproc://CommandConsumer1"
@@ -36,7 +34,7 @@ namespace Sample.CommandService
                                                                );
 
                 Configuration.Instance
-                             .RegisterCommandConsumer(commandDistributer, "CommandConsumer")
+                             .RegisterCommandConsumer(commandDistributer, "CommandDistributer")
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
                              .RegisterMvc();
 
