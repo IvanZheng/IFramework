@@ -12,6 +12,7 @@ using IFramework.Infrastructure;
 namespace IFramework.MessageQueue.ZeroMQ
 {
     public abstract class MessageConsumer<TMessage> : IMessageConsumer
+        where TMessage : class
     {
         protected BlockingCollection<TMessage> MessageQueue { get; set; }
 
@@ -30,6 +31,11 @@ namespace IFramework.MessageQueue.ZeroMQ
         {
             ReplySenders = new Dictionary<string, ZmqSocket>();
             ReceiveEndPoint = receiveEndPoint;
+        }
+
+        public void EnqueueMessage(object message)
+        {
+            MessageQueue.Add(message as TMessage);
         }
 
         protected ZmqSocket GetReplySender(string replyToEndPoint)
@@ -71,10 +77,9 @@ namespace IFramework.MessageQueue.ZeroMQ
                     // Receive messages
                     var messageReceiver = CreateSocket(ReceiveEndPoint);
                     Task.Factory.StartNew(ReceiveMessages, messageReceiver);
-
-                    // Consume messages
-                    Task.Factory.StartNew(ConsumeMessages);
                 }
+                // Consume messages
+                Task.Factory.StartNew(ConsumeMessages);
             }
             catch (Exception e)
             {

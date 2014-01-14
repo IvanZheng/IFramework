@@ -51,6 +51,7 @@
     <Compile Include="CommandBus.cs" />
     <Compile Include="CommandConsumer.cs" />
     <Compile Include="CommandDistributer.cs" />
+    <Compile Include="DistributableCommandBus.cs" />
     <Compile Include="EventPublisher.cs" />
     <Compile Include="MessageConsumer.cs" />
     <Compile Include="DomainEventSubscriber.cs" />

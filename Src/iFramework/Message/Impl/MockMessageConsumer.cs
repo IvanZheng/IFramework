@@ -12,16 +12,19 @@ namespace IFramework.Message.Impl
             throw new NotImplementedException();
         }
 
-
         public string GetStatus()
         {
             throw new NotImplementedException();
         }
 
-
         public decimal MessageCount
         {
             get { return 0; }
+        }
+
+        public void EnqueueMessage(object message)
+        {
+            throw new NotImplementedException();
         }
     }
 }

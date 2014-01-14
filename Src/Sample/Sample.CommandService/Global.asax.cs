@@ -25,6 +25,7 @@ namespace Sample.CommandService
         {
             try
             {
+
                 var commandDistributer = new CommandDistributer("inproc://distributer",
                                                                 new string[] { 
                                                                     "inproc://CommandConsumer1"
@@ -57,7 +58,7 @@ namespace Sample.CommandService
                 commandDistributer.Start();
 
                 ICommandBus commandBus = IoCFactory.Resolve<ICommandBus>();
-                (commandBus as IMessageConsumer).Start();
+                commandBus.Start();
                 /*
                  * One Consumer Case
                 Configuration.Instance

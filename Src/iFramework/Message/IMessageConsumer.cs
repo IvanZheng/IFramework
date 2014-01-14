@@ -9,6 +9,7 @@ namespace IFramework.Message
     {
         void Start();
         string GetStatus();
+        void EnqueueMessage(object message);
         decimal MessageCount { get; }
     }
 }

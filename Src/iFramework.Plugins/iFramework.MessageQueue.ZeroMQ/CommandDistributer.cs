@@ -83,6 +83,12 @@ namespace IFramework.MessageQueue.ZeroMQ
         
         protected string[] TargetEndPoints { get; set; }
 
+        public CommandDistributer(string[] targetEndPoints)
+            : this(null, targetEndPoints)
+        {
+
+        }
+
         public CommandDistributer(string receiveEndPoint,
                                   params string[] targetEndPoints)
             : base(receiveEndPoint)
@@ -119,11 +125,11 @@ namespace IFramework.MessageQueue.ZeroMQ
                 {
                     ConsumeMessageContext(messageContext);
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine(string.Format("unknown frame! buflength: {1} message:{0}",
-                                                           frame.GetMessage(), frame.BufferSize));
-                }
+                //else
+                //{   should never go here
+                //    System.Diagnostics.Debug.WriteLine(string.Format("unknown frame! buflength: {1} message:{0}",
+                //                                           frame.GetMessage(), frame.BufferSize));
+                //}
             }
             else if (messageCode == (short)MessageCode.MessageHandledNotification)
             {
@@ -135,7 +141,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
         }
 
-        private void ConsumeHandledNotification(MessageHandledNotification notification)
+        protected void ConsumeHandledNotification(MessageHandledNotification notification)
         {
             CommandState commandState;
             if (CommandStateQueue.TryGetValue(notification.MessageID, out commandState))
@@ -163,7 +169,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
         }
 
-        private void ConsumeMessageContext(IMessageContext commandContext)
+        protected void ConsumeMessageContext(IMessageContext commandContext)
         {
             CommandQueueConsumer consumer;
             var commandState = new CommandState
@@ -171,8 +177,10 @@ namespace IFramework.MessageQueue.ZeroMQ
                 CommandID = commandContext.MessageID,
                 FromEndPoint = commandContext.FromEndPoint
             };
-
-            commandContext.FromEndPoint = this.ReceiveEndPoint;
+            if (!string.IsNullOrWhiteSpace(ReceiveEndPoint))
+            {
+                commandContext.FromEndPoint = this.ReceiveEndPoint;
+            }
 
             if (!string.IsNullOrWhiteSpace(commandContext.Key))
             {

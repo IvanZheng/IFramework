@@ -20,10 +20,10 @@ namespace IFramework.MessageQueue.ZeroMQ
 {
     public class CommandBus : MessageConsumer<IMessageReply>, ICommandBus
     {
-        ICommandHandlerProvider HandlerProvider { get; set; }
-        ILinearCommandManager LinearCommandManager { get; set; }
-        BlockingCollection<MessageState> CommandQueue { get; set; }
-        Hashtable MessageStateQueue { get; set; }
+        protected ICommandHandlerProvider HandlerProvider { get; set; }
+        protected ILinearCommandManager LinearCommandManager { get; set; }
+        protected BlockingCollection<MessageState> CommandQueue { get; set; }
+        protected Hashtable MessageStateQueue { get; set; }
         protected IMessageStore MessageStore
         {
             get
@@ -31,23 +31,29 @@ namespace IFramework.MessageQueue.ZeroMQ
                 return IoCFactory.Resolve<IMessageStore>();
             }
         }
-        bool InProc { get; set; }
-        List<ZmqSocket> CommandSenders { get; set; }
+        protected bool InProc { get; set; }
+        protected List<ZmqSocket> CommandSenders { get; set; }
 
         public CommandBus(ICommandHandlerProvider handlerProvider,
-                          ILinearCommandManager linerCommandManager,
+                          ILinearCommandManager linearCommandManager, 
+                          string receiveEndPoint,
+                          bool inProc) 
+            : base(receiveEndPoint)
+        {
+            MessageStateQueue = Hashtable.Synchronized(new Hashtable());
+            HandlerProvider = handlerProvider;
+            LinearCommandManager = linearCommandManager;
+            InProc = inProc;
+        }
+
+        public CommandBus(ICommandHandlerProvider handlerProvider,
+                          ILinearCommandManager linearCommandManager,
                           string receiveEndPoint,
                           bool inProc,
                           string[] targetEndPoints)
-            : base(receiveEndPoint)
+            : this(handlerProvider, linearCommandManager, receiveEndPoint, inProc)
         {
-            HandlerProvider = handlerProvider;
-
-            MessageStateQueue = Hashtable.Synchronized(new Hashtable());
             CommandQueue = new BlockingCollection<MessageState>();
-
-            LinearCommandManager = linerCommandManager;
-            InProc = inProc;
             CommandSenders = new List<ZmqSocket>();
 
             targetEndPoints.ForEach(targetEndPoint =>
@@ -65,7 +71,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             });
         }
 
-        public override void Start()
+        public new void Start()
         {
             base.Start();
 
@@ -79,11 +85,10 @@ namespace IFramework.MessageQueue.ZeroMQ
             });
         }
 
-        private void SendCommand(MessageState commandState)
+        protected virtual void SendCommand(MessageState commandState)
         {
             try
             {
-                MessageStateQueue.Add(commandState.MessageID, commandState);
                 var frame = commandState.MessageContext.GetFrame();
                 ZmqSocket commandSender = null;
 
@@ -108,8 +113,8 @@ namespace IFramework.MessageQueue.ZeroMQ
                 if (commandSender != null)
                 {
                     var status = commandSender.SendFrame(frame);
-                    System.Diagnostics.Debug.WriteLine(string.Format("commandID:{0} length:{1} send status:{2}",
-                           commandState.MessageID, frame.BufferSize, status.ToString()));
+                    //System.Diagnostics.Debug.WriteLine(string.Format("commandID:{0} length:{1} send status:{2}",
+                    //       commandState.MessageID, frame.BufferSize, status.ToString()));
                 }
             }
             catch (Exception ex)
@@ -149,7 +154,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
         }
 
-        MessageState BuildMessageState(IMessageContext messageContext, CancellationToken cancellationToken)
+        protected MessageState BuildMessageState(IMessageContext messageContext, CancellationToken cancellationToken)
         {
             var pendingRequestsCts = new CancellationTokenSource();
             CancellationTokenSource linkedCts = CancellationTokenSource
@@ -203,7 +208,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             return task;
         }
 
-        Task SendInProc(IMessageContext commandContext, CancellationToken cancellationToken)
+        protected virtual Task SendInProc(IMessageContext commandContext, CancellationToken cancellationToken)
         {
             Task task = null;
             var command = commandContext.Message as ICommand;
@@ -243,16 +248,17 @@ namespace IFramework.MessageQueue.ZeroMQ
             return task;
         }
 
-        Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
+        protected virtual Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
         {
             var command = commandContext.Message as ICommand;
-            MessageState messageState = BuildMessageState(commandContext, cancellationToken);
-            messageState.CancellationToken.Register(onCancel, messageState);
-            CommandQueue.Add(messageState);
-            return messageState.TaskCompletionSource.Task;
+            MessageState commandState = BuildMessageState(commandContext, cancellationToken);
+            commandState.CancellationToken.Register(onCancel, commandState);
+            MessageStateQueue.Add(commandState.MessageID, commandState);
+            CommandQueue.Add(commandState);
+            return commandState.TaskCompletionSource.Task;
         }
 
-        private void onCancel(object state)
+        protected void onCancel(object state)
         {
             var messageState = state as MessageState;
             MessageStateQueue.TryRemove(messageState.MessageID);
