@@ -14,10 +14,6 @@ using System.Configuration;
 using IFramework.Command;
 using IFramework.Event;
 using IFramework.Message;
-//using Framework.Domain;
-//using Framework.Command;
-//using Framework.Event;
-//using Framework.Bus;
 
 namespace IFramework.Config
 {
@@ -36,7 +32,6 @@ namespace IFramework.Config
 
         Configuration()
         {
-
         }
 
         public static T GetAppConfig<T>(string key)
@@ -53,14 +48,14 @@ namespace IFramework.Config
                 {
                     val = (T)Convert.ChangeType(value, typeof(T));
                 }
-
             }
             catch (Exception)
             {
-
+               
             }
             return val;
         }
+
         public static string GetAppConfig(string keyname, string configPath = "Config")
         {
             var config = System.Configuration.ConfigurationManager.AppSettings[keyname];

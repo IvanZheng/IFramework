@@ -44,7 +44,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
                 catch (Exception e)
                 {
-                    System.Diagnostics.Debug.WriteLine(e.GetBaseException().Message);
+                    _Logger.Error(e.GetBaseException().Message, e);
                 }
             });
         }

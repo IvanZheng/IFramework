@@ -2,6 +2,7 @@
 using IFramework.Config;
 using IFramework.Event;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.Logging;
 using IFramework.Message;
 using IFramework.MessageQueue.ZeroMQ;
 using Microsoft.Practices.Unity;
@@ -21,10 +22,19 @@ namespace Sample.CommandService
 
     public class WebApiApplication : System.Web.HttpApplication
     {
+        ILogger _Logger;
+        ILogger Logger
+        {
+            get
+            {
+                return _Logger ?? (_Logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()));
+            }
+        }
         protected void Application_Start()
         {
             try
             {
+                Configuration.Instance.UseLog4Net();
 
                 var commandDistributor = new CommandDistributor("inproc://distributor",
                                                                 new string[] { 
@@ -34,14 +44,12 @@ namespace Sample.CommandService
                                                                 }
                                                                );
 
-                Configuration.Instance
-                             .RegisterCommandConsumer(commandDistributor, "CommandDistributor")
+                Configuration.Instance.RegisterCommandConsumer(commandDistributor, "CommandDistributor")
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
                              .RegisterMvc();
 
                 IoCFactory.Resolve<IEventPublisher>();
                 IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer").Start();
-
 
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
                 var commandConsumer1 = new CommandConsumer(commandHandlerProvider,
@@ -59,48 +67,24 @@ namespace Sample.CommandService
 
                 ICommandBus commandBus = IoCFactory.Resolve<ICommandBus>();
                 commandBus.Start();
-                /*
-                 * One Consumer Case
-                Configuration.Instance
-                             .CommandHandlerProviderBuild(null, "CommandHandlers")
-                             .RegisterMvc()
-                             .MvcIgnoreResouceRoute(RouteTable.Routes);
-                 
-                var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
-                var commandConsumer = new CommandConsumer(commandHandlerProvider, "", "");
-                commandConsumer.StartConsuming();
-                Configuration.Instance
-                             .RegisterCommandConsumer(commandConsumer, "CommandConsumer");
 
-                IoCFactory.Resolve<IEventPublisher>();
-                IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer").StartConsuming();
-                 */
-
+                AreaRegistration.RegisterAllAreas();
+                WebApiConfig.Register(GlobalConfiguration.Configuration);
+                FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+                RouteConfig.RegisterRoutes(RouteTable.Routes);
+                BundleConfig.RegisterBundles(BundleTable.Bundles);
             }
             catch (Exception ex)
             {
-                if (ex.InnerException is System.IO.FileLoadException)
-                {
-                    var typeLoadException = ex.InnerException as System.IO.FileLoadException;
-                    var loaderExceptions = typeLoadException.FusionLog;
-                    // var str = string.Empty;
-                    //loaderExceptions.ForEach(le => str += le.Message + " " + le.Data.ToJson());
-                    Console.WriteLine(loaderExceptions);
-                }
+                Logger.Error(ex.GetBaseException().Message, ex);
             }
-            AreaRegistration.RegisterAllAreas();
-
-            WebApiConfig.Register(GlobalConfiguration.Configuration);
-            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
-            RouteConfig.RegisterRoutes(RouteTable.Routes);
-            BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
 
         protected void Application_Error(object sender, EventArgs e)
         {
 
-            Exception objErr = Server.GetLastError().GetBaseException(); //获取错误
-            Response.Write(objErr.Message + objErr.StackTrace);
+            Exception ex = Server.GetLastError().GetBaseException(); //获取错误
+            Logger.Debug(ex.Message, ex);
         }
     }
 }

@@ -218,6 +218,9 @@
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\HelpPageApiModel.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\Api.cshtml" />
+    <Content Include="log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-1.8.2.min.js" />
@@ -270,6 +273,10 @@
     <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.Mvc\IFramework.Infrastructure.Mvc.csproj">
       <Project>{352e05cf-e412-47b4-8852-cdfccd928b71}</Project>
       <Name>IFramework.Infrastructure.Mvc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj">
+      <Project>{fa2a9b98-456f-487b-b911-6c730abb6bb6}</Project>
+      <Name>IFramework.Log4Net</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\iFramework.MessageQueue.ZeroMQ\IFramework.MessageQueue.ZeroMQ.csproj">
       <Project>{9636759c-63bc-470e-b95c-e120fbcb830b}</Project>

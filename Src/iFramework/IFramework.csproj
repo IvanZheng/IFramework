@@ -70,6 +70,8 @@
     <Compile Include="Infrastructure\JsonHelper.cs" />
     <Compile Include="Infrastructure\ObjectId.cs" />
     <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageContextLifetimeManager.cs" />
+    <Compile Include="Infrastructure\Logging\ILogger.cs" />
+    <Compile Include="Infrastructure\Logging\ILoggerFactory.cs" />
     <Compile Include="Message\IMessageConsumer.cs" />
     <Compile Include="Message\IMessageContext.cs" />
     <Compile Include="Message\IMessageDistributor.cs" />

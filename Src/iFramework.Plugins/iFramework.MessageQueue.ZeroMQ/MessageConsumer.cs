@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ZeroMQ;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.Logging;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -15,15 +16,16 @@ namespace IFramework.MessageQueue.ZeroMQ
         where TMessage : class
     {
         protected BlockingCollection<TMessage> MessageQueue { get; set; }
-
         protected string ReceiveEndPoint { get; set; }
         public decimal MessageCount { get; protected set; }
         protected decimal HandledMessageCount { get; set; }
         protected Dictionary<string, ZmqSocket> ReplySenders { get; set; }
+        protected readonly ILogger _Logger;
 
         public MessageConsumer()
         {
             MessageQueue = new BlockingCollection<TMessage>();
+            _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
         public MessageConsumer(string receiveEndPoint)
@@ -54,7 +56,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex.GetBaseException().Message);
+                        _Logger.Error(ex.GetBaseException().Message, ex);
                     }
                 }
             }
@@ -83,7 +85,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
             catch (Exception e)
             {
-                System.Diagnostics.Debug.WriteLine(e.GetBaseException().Message);
+                _Logger.Error(e.GetBaseException().Message, e);
             }
 
         }
@@ -111,7 +113,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
                 catch (Exception e)
                 {
-                    System.Diagnostics.Debug.WriteLine(e.GetBaseException().Message);
+                    _Logger.Error(e.GetBaseException().Message, e);
                 }
             }
         }

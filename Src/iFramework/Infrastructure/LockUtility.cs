@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
+using IFramework.Infrastructure.Logging;
+using System.Threading;
 
 namespace IFramework.Infrastructure
 {
-    public static class LockUtility
+    public class LockUtility
     {
+        protected static readonly ILogger _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(LockUtility));
+
         class LockObject
         {
             public int Counter { get; set; }
@@ -28,7 +32,7 @@ namespace IFramework.Infrastructure
             lockObj.Counter--;
             lock (_lockPool)
             {
-                //Console.WriteLine(string.Format("I am thread {0}:lock counter is {1}", Thread.CurrentThread.Name, lockObj.Counter));
+                //_Logger.DebugFormat("I am thread {0}:lock counter is {1}", Thread.CurrentThread.ManagedThreadId, lockObj.Counter);
                 if (lockObj.Counter == 0)
                 {
                     _lockPool.Remove(key);

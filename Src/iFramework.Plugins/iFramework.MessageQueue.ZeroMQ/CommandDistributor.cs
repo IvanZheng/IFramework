@@ -81,9 +81,8 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected Dictionary<object, LinearCommandConsumer> LinearCommandStates { get; set; }
         protected Dictionary<string, CommandState> CommandStateQueue = new Dictionary<string, CommandState>();
         protected List<CommandQueueConsumer> CommandConsumers { get; set; }
-        
         protected string[] TargetEndPoints { get; set; }
-
+       
         public CommandDistributor(string[] targetEndPoints)
             : this(null, targetEndPoints)
         {
@@ -126,11 +125,12 @@ namespace IFramework.MessageQueue.ZeroMQ
                 {
                     ConsumeMessageContext(messageContext);
                 }
-                //else
-                //{   should never go here
-                //    System.Diagnostics.Debug.WriteLine(string.Format("unknown frame! buflength: {1} message:{0}",
-                //                                           frame.GetMessage(), frame.BufferSize));
-                //}
+                else
+                {   
+                    //should never go here
+                    _Logger.ErrorFormat("unknown frame! buflength: {1} message:{0}",
+                                                           frame.GetMessage(), frame.BufferSize);
+                }
             }
             else if (messageCode == (short)MessageCode.MessageHandledNotification)
             {

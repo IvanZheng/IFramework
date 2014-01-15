@@ -25,13 +25,16 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected ILinearCommandManager LinearCommandManager { get; set; }
         protected BlockingCollection<MessageState> CommandQueue { get; set; }
         protected Hashtable MessageStateQueue { get; set; }
+        
+        IMessageStore _MessageStore;
         protected IMessageStore MessageStore
         {
             get
             {
-                return IoCFactory.Resolve<IMessageStore>();
+                return _MessageStore ??  (_MessageStore  = IoCFactory.Resolve<IMessageStore>());
             }
         }
+
         protected bool InProc { get; set; }
         protected List<ZmqSocket> CommandSenders { get; set; }
 
@@ -67,7 +70,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine(ex.GetBaseException().Message);
+                    _Logger.Error(ex.GetBaseException().Message, ex);
                 }
             });
         }
@@ -114,13 +117,13 @@ namespace IFramework.MessageQueue.ZeroMQ
                 if (commandSender != null)
                 {
                     var status = commandSender.SendFrame(frame);
-                    //System.Diagnostics.Debug.WriteLine(string.Format("commandID:{0} length:{1} send status:{2}",
-                    //       commandState.MessageID, frame.BufferSize, status.ToString()));
+                    _Logger.DebugFormat("commandID:{0} length:{1} send status:{2}",
+                                          commandState.MessageID, frame.BufferSize, status.ToString());
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.GetBaseException().Message);
+                _Logger.Error(ex.GetBaseException().Message, ex);
             }
         }
 
