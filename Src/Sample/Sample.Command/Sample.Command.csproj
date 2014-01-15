@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandBase.cs" />
     <Compile Include="Community\LoginCommand.cs" />
     <Compile Include="Community\RegisterCommand.cs" />
     <Compile Include="LinearCommandManager.cs" />

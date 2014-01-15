@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Sample.Command
 {
-    public class RegisterCommand : ICommand<Guid>, ILinearCommand
+    public class RegisterCommand : CommandBase, ICommand<Guid>, ILinearCommand
     {
         public string Email { get; set; }
         public string UserName { get; set; }

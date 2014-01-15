@@ -9,33 +9,33 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{254092
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iPlugins", "iPlugins", "{C50A9449-A6FB-4758-8584-6E03345F91CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework", "Src\iFramework\IFramework.csproj", "{F3932367-D3EA-4E8A-AB12-5FB785B93A39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework", "iFramework\IFramework.csproj", "{F3932367-D3EA-4E8A-AB12-5FB785B93A39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.ZeroMQ", "Src\iFramework.Plugins\iFramework.MessageQueue.ZeroMQ\IFramework.MessageQueue.ZeroMQ.csproj", "{9636759C-63BC-470E-B95C-E120FBCB830B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.ZeroMQ", "iFramework.Plugins\iFramework.MessageQueue.ZeroMQ\IFramework.MessageQueue.ZeroMQ.csproj", "{9636759C-63BC-470E-B95C-E120FBCB830B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Infrastructure.Mvc", "Src\iFramework.Plugins\iFramework.Infrastructure.Mvc\IFramework.Infrastructure.Mvc.csproj", "{352E05CF-E412-47B4-8852-CDFCCD928B71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Infrastructure.Mvc", "iFramework.Plugins\iFramework.Infrastructure.Mvc\IFramework.Infrastructure.Mvc.csproj", "{352E05CF-E412-47B4-8852-CDFCCD928B71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EntityFramework", "Src\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj", "{C00B8AD6-47C2-4642-877E-2C759D05DCFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EntityFramework", "iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj", "{C00B8AD6-47C2-4642-877E-2C759D05DCFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Command", "Src\Sample\Sample.Command\Sample.Command.csproj", "{1E6D9A9A-AB62-4450-B589-2F434462DFE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Command", "Sample\Sample.Command\Sample.Command.csproj", "{1E6D9A9A-AB62-4450-B589-2F434462DFE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.AsyncDomainEventSubscriber", "Src\Sample\AsyncDomainEventSubscriber\Sample.AsyncDomainEventSubscriber.csproj", "{EF03000D-E2D6-4C8D-B848-5B9635246C27}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.AsyncDomainEventSubscriber", "Sample\AsyncDomainEventSubscriber\Sample.AsyncDomainEventSubscriber.csproj", "{EF03000D-E2D6-4C8D-B848-5B9635246C27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandHandler", "Src\Sample\Sample.CommandHandler\Sample.CommandHandler.csproj", "{6760EA99-C3B6-4CB2-92EB-945AB3C3B04A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandHandler", "Sample\Sample.CommandHandler\Sample.CommandHandler.csproj", "{6760EA99-C3B6-4CB2-92EB-945AB3C3B04A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandService", "Src\Sample\Sample.CommandService\Sample.CommandService.csproj", "{B7F4EECD-970B-4D00-B11C-65F36B3EC590}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandService", "Sample\Sample.CommandService\Sample.CommandService.csproj", "{B7F4EECD-970B-4D00-B11C-65F36B3EC590}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Domain", "Src\Sample\Sample.Domain\Sample.Domain.csproj", "{F1F1B380-F3A0-463E-8686-3AF27962C100}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Domain", "Sample\Sample.Domain\Sample.Domain.csproj", "{F1F1B380-F3A0-463E-8686-3AF27962C100}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DomainEvent", "Src\Sample\Sample.DomainEvent\Sample.DomainEvent.csproj", "{AF5512AA-CAF1-4066-90BD-EFB9B951FE18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DomainEvent", "Sample\Sample.DomainEvent\Sample.DomainEvent.csproj", "{AF5512AA-CAF1-4066-90BD-EFB9B951FE18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DomainEventSubscriber", "Src\Sample\Sample.DomainEventHandler\Sample.DomainEventSubscriber.csproj", "{428E547A-E371-4059-843A-33166D0FD80B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DomainEventSubscriber", "Sample\Sample.DomainEventHandler\Sample.DomainEventSubscriber.csproj", "{428E547A-E371-4059-843A-33166D0FD80B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DTO", "Src\Sample\Sample.DTO\Sample.DTO.csproj", "{279B5EE0-22CA-4672-BE92-9B6658DCDAE3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DTO", "Sample\Sample.DTO\Sample.DTO.csproj", "{279B5EE0-22CA-4672-BE92-9B6658DCDAE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Persistence", "Src\Sample\Sample.Persistence\Sample.Persistence.csproj", "{07B18368-3D3F-4C12-B2F1-E38FC709226A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Persistence", "Sample\Sample.Persistence\Sample.Persistence.csproj", "{07B18368-3D3F-4C12-B2F1-E38FC709226A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.MessageFormat", "Src\iFramework.Plugins\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj", "{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.MessageFormat", "iFramework.Plugins\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj", "{D33B2D5C-A9CD-43ED-BF45-A0E54FCC9789}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

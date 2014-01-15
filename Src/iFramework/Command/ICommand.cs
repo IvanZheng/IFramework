@@ -7,6 +7,7 @@ namespace IFramework.Command
 {
     public interface ICommand
     {
+        bool NeedRetry { get; set; }
     }
 
     public interface ICommand<TResult> : ICommand
