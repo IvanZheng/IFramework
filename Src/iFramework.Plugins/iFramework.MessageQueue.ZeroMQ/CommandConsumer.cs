@@ -32,6 +32,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                 if (replySender != null)
                 {
                     replySender.SendFrame(reply.GetFrame());
+                    _Logger.DebugFormat("send reply, commandID:{0}", reply.MessageID);
                 }
             }
 
@@ -42,6 +43,8 @@ namespace IFramework.MessageQueue.ZeroMQ
                 {
                     notificationSender.SendFrame(new MessageHandledNotification(messageContext.MessageID)
                                                         .GetFrame());
+                    _Logger.DebugFormat("send notification, commandID:{0}", messageContext.MessageID);
+
                 }
             }
         }
@@ -57,6 +60,8 @@ namespace IFramework.MessageQueue.ZeroMQ
             var messageHandlers = HandlerProvider.GetHandlers(message.GetType());
             try
             {
+                _Logger.DebugFormat("Handle command, commandID:{0}", messageContext.MessageID);
+
                 if (messageHandlers.Count == 0)
                 {
                     messageReply = new MessageReply(messageContext.MessageID, new NoHandlerExists());

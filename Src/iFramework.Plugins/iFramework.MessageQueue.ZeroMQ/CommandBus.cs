@@ -117,7 +117,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                 if (commandSender != null)
                 {
                     var status = commandSender.SendFrame(frame);
-                    _Logger.DebugFormat("commandID:{0} length:{1} send status:{2}",
+                    _Logger.DebugFormat("send commandID:{0} length:{1} send status:{2}",
                                           commandState.MessageID, frame.BufferSize, status.ToString());
                 }
             }
@@ -129,6 +129,7 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         protected override void ConsumeMessage(IMessageReply reply)
         {
+            _Logger.DebugFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
             var messageState = MessageStateQueue[reply.MessageID] as MessageState;
             if (messageState != null)
             {

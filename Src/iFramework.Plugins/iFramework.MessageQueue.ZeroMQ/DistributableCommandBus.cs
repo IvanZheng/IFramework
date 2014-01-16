@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using IFramework.Infrastructure;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -47,6 +48,8 @@ namespace IFramework.MessageQueue.ZeroMQ
             MessageStateQueue.Add(commandState.MessageID, commandState);
             Task.Factory.StartNew(() => {
                 _CommandConsumer.EnqueueMessage(commandContext.GetFrame());
+                _Logger.DebugFormat("send to distributor/consumer commandID:{0} payload:{1}",
+                                         commandContext.MessageID, commandContext.ToJson());
             });
             return commandState.TaskCompletionSource.Task;
         }
