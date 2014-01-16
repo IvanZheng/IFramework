@@ -1,10 +1,11 @@
-﻿using IFramework.Command;
+﻿using EQueue.Clients.Consumers;
+using IFramework.Command;
 using IFramework.Config;
 using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Message;
-using IFramework.MessageQueue.ZeroMQ;
+using IFramework.MessageQueue.EQueue;
 using Microsoft.Practices.Unity;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,10 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using EQueue.Autofac;
+using EQueue.Log4Net;
+using EQueue.JsonNet;
+using EQueue.Broker;
 
 namespace Sample.CommandService
 {
@@ -30,7 +35,9 @@ namespace Sample.CommandService
                 return _Logger ?? (_Logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()));
             }
         }
-        protected void Application_Start()
+
+        // ZeroMQ Application_Start
+        /*protected void Application_Start()
         {
             try
             {
@@ -66,6 +73,90 @@ namespace Sample.CommandService
                 commandDistributor.Start();
 
                 ICommandBus commandBus = IoCFactory.Resolve<ICommandBus>();
+                commandBus.Start();
+
+                AreaRegistration.RegisterAllAreas();
+                WebApiConfig.Register(GlobalConfiguration.Configuration);
+                FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+                RouteConfig.RegisterRoutes(RouteTable.Routes);
+                BundleConfig.RegisterBundles(BundleTable.Bundles);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.GetBaseException().Message, ex);
+            }
+        }
+        */
+
+        // EQueue Application_Start
+        
+        
+        
+        protected void Application_Start()
+        {
+            try
+            {
+                Configuration.Instance.UseLog4Net();
+
+                Configuration.Instance
+                             .CommandHandlerProviderBuild(null, "CommandHandlers")
+                             .RegisterMvc();
+
+                //IoCFactory.Resolve<IEventPublisher>();
+                //IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer").Start();
+
+                var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
+
+
+                global::EQueue.Configuration
+                .Create()
+                .UseAutofac()
+                .UseLog4Net()
+                .UseJsonNet()
+                .RegisterFrameworkComponents();
+
+                new BrokerController().Initialize().Start();
+
+                var consumerSettings = ConsumerSettings.Default;
+
+                var commandConsumer1 = new CommandConsumer("consumer1", consumerSettings, 
+                                                           "CommandConsumerGroup",
+                                                           "Command",
+                                                           consumerSettings.BrokerAddress,
+                                                           5000,
+                                                           commandHandlerProvider);
+
+                var commandConsumer2 = new CommandConsumer("consumer2", consumerSettings,
+                                                           "CommandConsumerGroup",
+                                                           "Command",
+                                                           consumerSettings.BrokerAddress,
+                                                           5000,
+                                                           commandHandlerProvider);
+
+                var commandConsumer3 = new CommandConsumer("consumer3", consumerSettings,
+                                                           "CommandConsumerGroup",
+                                                           "Command",
+                                                           consumerSettings.BrokerAddress,
+                                                           5000,
+                                                           commandHandlerProvider);
+
+                //commandConsumer1.Start();
+                //commandConsumer2.Start();
+                //commandConsumer3.Start();
+
+                ICommandBus commandBus = new CommandBus("CommandBus",
+                                                        commandHandlerProvider,
+                                                        IoCFactory.Resolve<ILinearCommandManager>(),
+                                                        consumerSettings.BrokerAddress,
+                                                        5000,
+                                                        consumerSettings,
+                                                        "CommandBus",
+                                                        "Reply", 
+                                                        "Command",
+                                                        true);
+                IoCFactory.Instance.CurrentContainer.RegisterInstance(typeof(ICommandBus),
+                                                                      commandBus, 
+                                                                      new ContainerControlledLifetimeManager());
                 commandBus.Start();
 
                 AreaRegistration.RegisterAllAreas();

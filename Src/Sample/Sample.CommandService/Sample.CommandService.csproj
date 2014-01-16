@@ -41,6 +41,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=3.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Autofac.3.3.0\lib\net40\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="clrzmq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=ef95cdc29d237b0d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\clrzmq.3.0.0-rc1\lib\net40\clrzmq.dll</HintPath>
@@ -51,6 +55,18 @@
     </Reference>
     <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\..\..\packages\EntityFramework.6.0.2\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="EQueue">
+      <HintPath>..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\EQueueRefs\EQueue.dll</HintPath>
+    </Reference>
+    <Reference Include="EQueue.Autofac">
+      <HintPath>..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\EQueueRefs\EQueue.Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="EQueue.JsonNet">
+      <HintPath>..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\EQueueRefs\EQueue.JsonNet.dll</HintPath>
+    </Reference>
+    <Reference Include="EQueue.Log4Net">
+      <HintPath>..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\EQueueRefs\EQueue.Log4Net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Data.Edm, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -277,6 +293,14 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj">
       <Project>{fa2a9b98-456f-487b-b911-6c730abb6bb6}</Project>
       <Name>IFramework.Log4Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj">
+      <Project>{02129813-b7eb-4c7e-aeba-f7c5d40071f9}</Project>
+      <Name>IFramework.MessageQueue.EQueue</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj">
+      <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
+      <Name>IFramework.MessageQueue.MessageFormat</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\iFramework.MessageQueue.ZeroMQ\IFramework.MessageQueue.ZeroMQ.csproj">
       <Project>{9636759c-63bc-470e-b95c-e120fbcb830b}</Project>
