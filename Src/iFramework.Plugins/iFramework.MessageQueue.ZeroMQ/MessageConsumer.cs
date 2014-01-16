@@ -12,7 +12,7 @@ using IFramework.Infrastructure.Logging;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
-    public abstract class MessageConsumer<TMessage> : IMessageConsumer
+    public abstract class MessageConsumer<TMessage> : IInProcMessageConsumer
         where TMessage : class
     {
         protected BlockingCollection<TMessage> MessageQueue { get; set; }

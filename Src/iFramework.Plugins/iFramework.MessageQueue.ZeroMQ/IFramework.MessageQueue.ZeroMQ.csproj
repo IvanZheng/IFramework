@@ -57,13 +57,13 @@
     <Compile Include="DistributableCommandBus.cs" />
     <Compile Include="DomainEventBus.cs" />
     <Compile Include="EventPublisher.cs" />
+    <Compile Include="IInProcMessageConsumer.cs" />
     <Compile Include="MessageConsumer.cs" />
     <Compile Include="DomainEventSubscriber.cs" />
     <Compile Include="MessageFrame.cs" />
     <Compile Include="MessageQueueImpl.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MessageState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

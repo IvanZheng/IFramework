@@ -14,9 +14,10 @@ namespace IFramework.MessageQueue.ZeroMQ
 {
     public class DistributableCommandBus : CommandBus, ICommandBus
     {
-        IMessageConsumer _CommandConsumer;
+        IInProcMessageConsumer _CommandConsumer;
+        IInProcMessageConsumer _CommandDistributor;
+
         bool _IsDistributor;
-        IMessageDistributor _CommandDistributor;
 
         public DistributableCommandBus(ICommandHandlerProvider handlerProvider,
                           ILinearCommandManager linearCommandManager,
@@ -25,9 +26,9 @@ namespace IFramework.MessageQueue.ZeroMQ
                           bool inProc)
             : base(handlerProvider, linearCommandManager, receiveEndPoint, inProc)
         {
-            _CommandConsumer = commandConsumer;
-            _CommandDistributor = _CommandConsumer as IMessageDistributor;
-            _IsDistributor = _CommandDistributor != null;
+            _CommandConsumer = commandConsumer as IInProcMessageConsumer;
+            _CommandDistributor = _CommandConsumer as IInProcMessageConsumer;
+            _IsDistributor = _CommandDistributor is IMessageDistributor;
         }
 
 
