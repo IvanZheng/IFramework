@@ -1,11 +1,10 @@
-﻿using EQueue.Clients.Consumers;
+﻿
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Message;
-using IFramework.MessageQueue.EQueue;
 using Microsoft.Practices.Unity;
 using System;
 using System.Collections.Generic;
@@ -15,10 +14,7 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using EQueue.Autofac;
-using EQueue.Log4Net;
-using EQueue.JsonNet;
-using EQueue.Broker;
+using IFramework.MessageQueue.ZeroMQ;
 
 namespace Sample.CommandService
 {
@@ -37,7 +33,7 @@ namespace Sample.CommandService
         }
 
         // ZeroMQ Application_Start
-        /*protected void Application_Start()
+        protected void Application_Start()
         {
             try
             {
@@ -86,12 +82,12 @@ namespace Sample.CommandService
                 Logger.Error(ex.GetBaseException().Message, ex);
             }
         }
-        */
+        
 
         // EQueue Application_Start
-
+        /*
         public static List<CommandConsumer> CommandConsumers = new List<CommandConsumer>();
-        
+         
         protected void Application_Start()
         {
             try
@@ -185,7 +181,7 @@ namespace Sample.CommandService
                 Logger.Error(ex.GetBaseException().Message, ex);
             }
         }
-
+        */
         protected void Application_Error(object sender, EventArgs e)
         {
 
