@@ -79,11 +79,14 @@ namespace Sample.CommandService.Controllers
         {
             return Task.Factory.StartNew(() =>
             {
-                var commandDistributor = IoCFactory.Resolve<IMessageConsumer>("CommandDistributor");
+                var commandConsumersStatus = string.Empty;
+                WebApiApplication.CommandConsumers.ForEach(commandConsuemr => {
+                    commandConsumersStatus += commandConsuemr.GetStatus() + "<br>";
+                });
+
                 var domainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
-                var distributorStatus = commandDistributor.GetStatus() +
-                    "event consumer:" + domainEventConsumer.GetStatus();
-                return distributorStatus;
+                commandConsumersStatus += domainEventConsumer.GetStatus() + "<br>";
+                return commandConsumersStatus;
             });
 
         }

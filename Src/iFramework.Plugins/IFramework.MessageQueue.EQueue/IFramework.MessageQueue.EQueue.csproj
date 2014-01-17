@@ -72,6 +72,8 @@
   <ItemGroup>
     <Compile Include="CommandBus.cs" />
     <Compile Include="CommandConsumer.cs" />
+    <Compile Include="DomainEventSubscriber.cs" />
+    <Compile Include="EventPublisher.cs" />
     <Compile Include="MessageConsumer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

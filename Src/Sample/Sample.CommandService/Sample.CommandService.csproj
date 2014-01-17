@@ -302,10 +302,6 @@
       <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
       <Name>IFramework.MessageQueue.MessageFormat</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.MessageQueue.ZeroMQ\IFramework.MessageQueue.ZeroMQ.csproj">
-      <Project>{9636759c-63bc-470e-b95c-e120fbcb830b}</Project>
-      <Name>IFramework.MessageQueue.ZeroMQ</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>

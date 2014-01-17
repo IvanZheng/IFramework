@@ -60,6 +60,19 @@ namespace IFramework.MessageQueue.EQueue
             Producer = new Producer(brokerAddress, producerBrokerPort);
         }
 
+        public override void Start()
+        {
+            base.Start();
+            try
+            {
+                Producer.Start();
+            }
+            catch(Exception ex)
+            {
+                _Logger.Error(ex.GetBaseException().Message, ex);
+            }
+        }
+
         protected override void ConsumeMessage(MessageReply reply)
         {
             _Logger.DebugFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
@@ -192,8 +205,20 @@ namespace IFramework.MessageQueue.EQueue
             {
                 commandKey = commandState.MessageID;
             }
-            var messageBody = System.Text.Encoding.UTF8.GetBytes(commandContext.ToJson());
-            Producer.SendAsync(new global::EQueue.Protocols.Message(CommandTopic, messageBody), commandKey).Wait();
+
+            var messageBody = Encoding.UTF8.GetBytes(commandContext.ToJson());
+            Producer.SendAsync(new global::EQueue.Protocols.Message(CommandTopic, messageBody), commandKey)
+                    .ContinueWith(task => {
+                        if (task.Result.SendStatus == SendStatus.Success)
+                        {
+                            _Logger.DebugFormat("sent commandID {0}, body: {1}", commandContext.MessageID,
+                                                                            commandContext.Message.ToJson());
+                        }
+                        else
+                        {
+                            _Logger.ErrorFormat("Send Command {0}", task.Result.SendStatus.ToString());
+                        }
+                    });
             return commandState.TaskCompletionSource.Task;
         }
 

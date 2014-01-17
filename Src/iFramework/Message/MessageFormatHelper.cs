@@ -20,6 +20,11 @@ namespace IFramework.Message
         }
 
 
+        public static byte[] GetMessageBytes(this object message)
+        {
+            return Encoding.UTF8.GetBytes(message.ToJson());
+        }
+
         public static byte[] GetMessageBytes(this object message, short code)
         {
             var buffer = System.Text.Encoding.UTF8.GetBytes(message.ToJson());
@@ -39,6 +44,16 @@ namespace IFramework.Message
 
         public static string GetMessage(this byte[] messageBody)
         {
+            return Encoding.UTF8.GetString(messageBody);
+        }
+
+        public static T GetMessage<T>(this byte[] messageBody)
+        {
+            return Encoding.UTF8.GetString(messageBody).ToJsonObject<T>();
+        }
+
+        public static string GetFormattedMessage(this byte[] messageBody)
+        {
             var message = string.Empty;
             if (messageBody.Length > 2)
             {
@@ -49,10 +64,10 @@ namespace IFramework.Message
             return message;
         }
 
-        public static T GetMessage<T>(this byte[] messageBody)
+        public static T GetFormattedMessage<T>(this byte[] messageBody)
         {
             T message = default(T);
-            message = messageBody.GetMessage().ToJsonObject<T>();
+            message = messageBody.GetFormattedMessage().ToJsonObject<T>();
             return message;
         }
     }

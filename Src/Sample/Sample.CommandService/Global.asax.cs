@@ -89,8 +89,8 @@ namespace Sample.CommandService
         */
 
         // EQueue Application_Start
-        
-        
+
+        public static List<CommandConsumer> CommandConsumers = new List<CommandConsumer>();
         
         protected void Application_Start()
         {
@@ -102,12 +102,6 @@ namespace Sample.CommandService
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
                              .RegisterMvc();
 
-                //IoCFactory.Resolve<IEventPublisher>();
-                //IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer").Start();
-
-                var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
-
-
                 global::EQueue.Configuration
                 .Create()
                 .UseAutofac()
@@ -116,46 +110,67 @@ namespace Sample.CommandService
                 .RegisterFrameworkComponents();
 
                 new BrokerController().Initialize().Start();
-
                 var consumerSettings = ConsumerSettings.Default;
+                consumerSettings.MessageHandleMode = MessageHandleMode.Sequential;
+                var producerPort = 5000;
+                IEventPublisher eventPublisher = new EventPublisher("domainevent", 
+                                                                    consumerSettings.BrokerAddress,
+                                                                    producerPort);
+                IoCFactory.Instance.CurrentContainer.RegisterInstance(typeof(IEventPublisher), eventPublisher);
 
+                var eventHandlerProvider = IoCFactory.Resolve<IHandlerProvider>("AsyncDomainEventSubscriber");
+                IMessageConsumer domainEventSubscriber = new DomainEventSubscriber("domainEventSubscriber1",
+                                                                                   consumerSettings,
+                                                                                   "DomainEventSubscriber",
+                                                                                   "domainevent",
+                                                                                   eventHandlerProvider);
+                domainEventSubscriber.Start();
+                IoCFactory.Instance.CurrentContainer.RegisterInstance("DomainEventConsumer", domainEventSubscriber);
+
+
+
+                var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
                 var commandConsumer1 = new CommandConsumer("consumer1", consumerSettings, 
                                                            "CommandConsumerGroup",
                                                            "Command",
                                                            consumerSettings.BrokerAddress,
-                                                           5000,
+                                                           producerPort,
                                                            commandHandlerProvider);
 
                 var commandConsumer2 = new CommandConsumer("consumer2", consumerSettings,
                                                            "CommandConsumerGroup",
                                                            "Command",
                                                            consumerSettings.BrokerAddress,
-                                                           5000,
+                                                           producerPort,
                                                            commandHandlerProvider);
 
                 var commandConsumer3 = new CommandConsumer("consumer3", consumerSettings,
                                                            "CommandConsumerGroup",
                                                            "Command",
                                                            consumerSettings.BrokerAddress,
-                                                           5000,
+                                                           producerPort,
                                                            commandHandlerProvider);
 
-                //commandConsumer1.Start();
-                //commandConsumer2.Start();
-                //commandConsumer3.Start();
+                commandConsumer1.Start();
+                commandConsumer2.Start();
+                commandConsumer3.Start();
+
+                CommandConsumers.Add(commandConsumer1);
+                CommandConsumers.Add(commandConsumer2);
+                CommandConsumers.Add(commandConsumer3);
 
                 ICommandBus commandBus = new CommandBus("CommandBus",
                                                         commandHandlerProvider,
                                                         IoCFactory.Resolve<ILinearCommandManager>(),
                                                         consumerSettings.BrokerAddress,
-                                                        5000,
+                                                        producerPort,
                                                         consumerSettings,
                                                         "CommandBus",
                                                         "Reply", 
                                                         "Command",
                                                         true);
                 IoCFactory.Instance.CurrentContainer.RegisterInstance(typeof(ICommandBus),
-                                                                      commandBus, 
+                                                                      commandBus,
                                                                       new ContainerControlledLifetimeManager());
                 commandBus.Start();
 

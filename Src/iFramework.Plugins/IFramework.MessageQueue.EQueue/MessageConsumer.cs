@@ -21,6 +21,7 @@ namespace IFramework.MessageQueue.EQueue
         EQueueClients.Consumers.IMessageHandler
     {
         public decimal MessageCount { get; protected set; }
+        protected string Name { get; set; }
         protected decimal HandledMessageCount { get; set; }
         protected Consumer Consumer { get; set; }
         protected readonly ILogger _Logger;
@@ -33,6 +34,7 @@ namespace IFramework.MessageQueue.EQueue
         public MessageConsumer(string id, ConsumerSettings consumerSettings, string groupName, MessageModel messageModel, string subscribeTopic)
             : this()
         {
+            Name = id;
             Consumer = new Consumer(id, consumerSettings, groupName, MessageModel.Clustering, this)
                 .Subscribe(subscribeTopic);
         }
@@ -41,18 +43,17 @@ namespace IFramework.MessageQueue.EQueue
         {
             try
             {
-                //Consumer.Start();
+                Consumer.Start();
             }
             catch (Exception e)
             {
                 _Logger.Error(e.GetBaseException().Message, e);
             }
-
         }
 
         public virtual string GetStatus()
         {
-            return string.Format("consumer handled message count: {0}<br>", HandledMessageCount);
+            return string.Format("commandConsumer {0} handled command {1}", Name, HandledMessageCount);
         }
 
         public virtual void Handle(global::EQueue.Protocols.Message message)

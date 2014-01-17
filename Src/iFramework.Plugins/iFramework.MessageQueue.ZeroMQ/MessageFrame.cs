@@ -37,12 +37,12 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         public static string GetMessage(this Frame frame)
         {
-            return frame.Buffer.GetMessage();
+            return frame.Buffer.GetFormattedMessage();
         }
 
         public static T GetMessage<T>(this Frame frame)
         {
-            return frame.Buffer.GetMessage<T>();
+            return frame.Buffer.GetFormattedMessage<T>();
         }
     }
 }

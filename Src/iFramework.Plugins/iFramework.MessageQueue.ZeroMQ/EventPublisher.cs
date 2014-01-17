@@ -8,17 +8,19 @@ using ZeroMQ;
 using IFramework.Message.Impl;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using IFramework.Message;
+using IFramework.MessageQueue.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
     class EventPublisher : IEventPublisher
     {
         protected ZmqSocket ZmqEventPublisher { get; set; }
-        protected BlockingCollection<object> MessageQueue { get; set; }
+        protected BlockingCollection<IMessageContext> MessageQueue { get; set; }
 
         public EventPublisher(string pubEndPoint)
         {
-            MessageQueue = new BlockingCollection<object>();
+            MessageQueue = new BlockingCollection<IMessageContext>();
             if (!string.IsNullOrWhiteSpace(pubEndPoint))
             {
                 ZmqEventPublisher = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PUB);
@@ -27,20 +29,25 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
         }
 
-        public void Publish(IEnumerable<object> events)
+        public IEnumerable<IMessageContext> Publish(IEnumerable<IDomainEvent> events)
         {
+            List<IMessageContext> messageContexts = new List<IMessageContext>();
             events.ForEach(@event =>
             {
-                Publish(@event);
+                messageContexts.Add(Publish(@event));
             });
+            return messageContexts;
         }
 
-        public void Publish(object @event)
+        public IMessageContext Publish(IDomainEvent @event)
         {
+            IMessageContext messageContext = null;
             if (ZmqEventPublisher != null)
             {
-                MessageQueue.Add(@event);
+                messageContext = new MessageContext(@event);
+                MessageQueue.Add(messageContext);
             }
+            return messageContext;
         }
 
         void PublishEvent()

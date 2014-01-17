@@ -58,6 +58,7 @@ namespace IFramework.EntityFramework
                 {
                     command = new Command(commandContext);
                     Commands.Add(command);
+                    SaveChanges();
                 }
             }
             catch(Exception)

@@ -64,6 +64,7 @@
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
     <Compile Include="Event\IEventPublisher.cs" />
+    <Compile Include="Event\Impl\DomainEventBus.cs" />
     <Compile Include="Event\Impl\MockDomainEventBus.cs" />
     <Compile Include="Event\Impl\MockEventPublisher.cs" />
     <Compile Include="Infrastructure\FastInvoke.cs" />

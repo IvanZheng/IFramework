@@ -28,14 +28,36 @@ namespace IFramework.MessageQueue.EQueue
             Producer = new Producer(brokerAddress, producerBrokerPort);
         }
 
+        public override void Start()
+        {
+            base.Start();
+            try
+            {
+                Producer.Start();
+            }
+            catch (Exception ex)
+            {
+                _Logger.Error(ex.GetBaseException().Message, ex);
+            }
+        }
 
         void OnMessageHandled(IMessageContext messageContext, IMessageReply reply)
         {
             if (!string.IsNullOrWhiteSpace(messageContext.ReplyToEndPoint))
             {
-                var messageBody = System.Text.Encoding.UTF8.GetBytes(reply.ToJson());
-                Producer.Send(new global::EQueue.Protocols.Message(messageContext.ReplyToEndPoint, messageBody), string.Empty);
-                _Logger.DebugFormat("send reply, commandID:{0}", reply.MessageID);
+                var messageBody = reply.GetMessageBytes();
+                Producer.SendAsync(new global::EQueue.Protocols.Message(messageContext.ReplyToEndPoint, messageBody), string.Empty)
+                        .ContinueWith(task => {
+                            if (task.Result.SendStatus ==  SendStatus.Success)
+                            {
+                                _Logger.DebugFormat("send reply, commandID:{0}", reply.MessageID);
+                            }
+                            else
+                            {
+                                _Logger.ErrorFormat("Send Reply {0}", task.Result.SendStatus.ToString());
+                            }
+                        });
+                
             }
         }
 

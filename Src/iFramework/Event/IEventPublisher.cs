@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IFramework.Message;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ namespace IFramework.Event
 {
     public interface IEventPublisher
     {
-        void Publish(IEnumerable<object> events);
-        void Publish(object @event);
+        IEnumerable<IMessageContext> Publish(IEnumerable<IDomainEvent> events);
+        IMessageContext Publish(IDomainEvent @event);
     }
 }
