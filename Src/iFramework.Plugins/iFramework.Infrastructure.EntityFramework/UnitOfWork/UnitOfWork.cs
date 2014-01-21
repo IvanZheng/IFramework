@@ -12,6 +12,7 @@ using IFramework.Config;
 using IFramework.Repositories;
 using IFramework.Domain;
 using IFramework.Event;
+using IFramework.Infrastructure.Unity.LifetimeManagers;
 
 namespace IFramework.EntityFramework
 {
@@ -30,20 +31,27 @@ namespace IFramework.EntityFramework
 
         public override void Commit()
         {
-
-            // using (var scope = new TransactionScope())
-            // {
+            // TODO: should make domain events never losed, nedd transaction between
+            //       model context and message queue
+            //using (var scope = new TransactionScope())
+            //{
             if (DomainModelContext != null)
             {
                 DomainModelContext.SaveChanges();
             }
-            if (_ModelContextCommitActions.Count > 0)
+            //    scope.Complete();
+            //}
+            if (_DomainEventBus != null)
             {
-                _ModelContextCommitActions.ForEach(a => a.Invoke());
+                _DomainEventBus.Commit();
             }
-            base.Commit();
-            //      scope.Complete();
-            //  }
+            if (Configuration.GetAppConfig<bool>("PersistanceMessage"))
+            {
+                // TODO: persistance command and domain events
+                var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
+                var domainEventContexts = _DomainEventBus.GetMessageContexts();
+                MessageStore.Save(currentCommandContext, domainEventContexts);
+            }
         }
 
         #endregion

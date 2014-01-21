@@ -63,10 +63,8 @@ namespace IFramework.MessageQueue.ZeroMQ
                                             .GetEncoding("utf-8")
                                             .GetString(frame.Buffer)
                                             .ToJsonObject<MessageContext>();
-            if (messageContext != null)
-            {
-                MessageQueue.Add(messageContext);
-            }
+
+            MessageQueue.Add(messageContext);
         }
 
         protected override void ConsumeMessage(IMessageContext messageContext)
