@@ -39,11 +39,11 @@ namespace Sample.CommandService
             {
                 Configuration.Instance.UseLog4Net();
 
-                var commandDistributor = new CommandDistributor("inproc://distributor",
+                var commandDistributor = new CommandDistributor("tcp://127.0.0.1:5000",
                                                                 new string[] { 
-                                                                    "inproc://CommandConsumer1"
-                                                                    , "inproc://CommandConsumer2"
-                                                                    , "inproc://CommandConsumer3"
+                                                                    "tcp://127.0.0.1:5001"
+                                                                    , "tcp://127.0.0.1:5002"
+                                                                    , "tcp://127.0.0.1:5003"
                                                                 }
                                                                );
 
@@ -56,11 +56,11 @@ namespace Sample.CommandService
 
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
                 var commandConsumer1 = new CommandConsumer(commandHandlerProvider,
-                                                           "inproc://CommandConsumer1");
+                                                           "tcp://127.0.0.1:5001");
                 var commandConsumer2 = new CommandConsumer(commandHandlerProvider,
-                                                           "inproc://CommandConsumer2");
+                                                           "tcp://127.0.0.1:5002");
                 var commandConsumer3 = new CommandConsumer(commandHandlerProvider,
-                                                           "inproc://CommandConsumer3");
+                                                           "tcp://127.0.0.1:5003");
 
 
                 commandConsumer1.Start();
