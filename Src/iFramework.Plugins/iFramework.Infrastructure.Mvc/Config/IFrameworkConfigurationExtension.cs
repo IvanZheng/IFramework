@@ -11,6 +11,7 @@ using IFramework.Infrastructure.Mvc.Config;
 using System.Web.Routing;
 using System.Web.Http.Controllers;
 using IFramework.Infrastructure.Mvc;
+using System.Web.Http;
 
 namespace IFramework.Config
 {
@@ -53,12 +54,13 @@ namespace IFramework.Config
         {
             //Create a custom controller factory to resolve controllers with IoC container
 
-            IControllerFactory factory = new IoCControllerFactory(_CurrentContainer);
+            //IControllerFactory factory = new IoCControllerFactory(_CurrentContainer);
        
             //Set new controller factory in ASP.MVC Controller builder
-            ControllerBuilder.Current.SetControllerFactory(factory);  
-            
-            System.Web.Http.GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(_CurrentContainer);
+           // ControllerBuilder.Current.SetControllerFactory(factory);
+
+            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(_CurrentContainer);
+         //   System.Web.Http.GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(_CurrentContainer);
         }
 
         static void RegisterModelBinders()
