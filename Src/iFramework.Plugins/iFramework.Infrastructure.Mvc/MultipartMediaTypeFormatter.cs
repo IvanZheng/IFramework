@@ -36,7 +36,7 @@ namespace IFramework.Infrastructure.Mvc
             return Task.Factory.StartNew<object>(() =>
             {
                 object data = null;
-                Dictionary<string, object> valueCollection = new Dictionary<string, object>();
+                List<KeyValuePair<string, string>> valueCollection = new List<KeyValuePair<string, string>>();
                 foreach (var partContent in parts.Result.Contents)
                 {
                     if (partContent.Headers.ContentType == null)
@@ -44,7 +44,7 @@ namespace IFramework.Infrastructure.Mvc
                         var value = partContent.ReadAsStringAsync().Result;
                         var name = partContent.Headers.ContentDisposition.Name;
                         name = name.Substring(1, name.Length - 2);
-                        valueCollection.Add(name, value);
+                        valueCollection.Add(new KeyValuePair<string, string>(name, value));
                     }
                     else if (partContent.Headers.ContentType != null
                         && partContent.Headers.ContentType.MediaType == "application/json")
@@ -58,8 +58,9 @@ namespace IFramework.Infrastructure.Mvc
                 {
                     if (valueCollection.Count > 0)
                     {
-                        var valueCollectionJson = valueCollection.ToJson();
-                        data = JsonConvert.DeserializeObject(valueCollectionJson, type);
+                        data = new FormDataCollection(valueCollection).ConvertToObject(type);
+                        //var valueCollectionJson = valueCollection.ToJson();
+                        //data = JsonConvert.DeserializeObject(valueCollectionJson, type);
                     }
                 }
                 return data;
