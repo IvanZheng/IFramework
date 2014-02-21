@@ -9,11 +9,17 @@ using System.Threading.Tasks;
 using System.Threading;
 using IFramework.Message;
 using Sample.Command;
+using Sample.Persistence;
+using IFramework.Event;
+using Sample.ApplicationEvent;
 
 namespace Sample.CommandService.Controllers
 {
     public class CommandController : ApiController
     {
+        SampleModelContext _QueryContext = IoCFactory.Resolve<SampleModelContext>("DomainModelContext");
+        IEventPublisher _EventPublisher = IoCFactory.Resolve<IEventPublisher>();
+         
         ICommandBus CommandBus { get; set; }
         public CommandController(ICommandBus commandBus)
         {
@@ -72,6 +78,32 @@ namespace Sample.CommandService.Controllers
                 BatchCommands.Clear();
             }
             return new ApiResult();
+        }
+
+        public ApiResult Login(Login loginCommand)
+        {
+            ApiResult result = null;
+            var account = _QueryContext.Accounts.FirstOrDefault(a => a.UserName.Equals(loginCommand.UserName)
+                                                                  && a.Password.Equals(loginCommand.Password));
+            if (account != null)
+            {
+                // 1.
+                // Regard command controller as the application service
+                // where is the best place to publish application events.
+                // AccountLogined is a application event not a domain event, 
+                // so we won't use command bus to envoke domain layer.
+                // 2.
+                // if regard CommandHandler as a kind of application service,
+                // we can use command bus to envoke domain layer and 
+                // no need to define the "Login" action of controller
+                _EventPublisher.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });
+                result = new ApiResult<Guid> { Result = account.ID };
+            }
+            else
+            {
+                result = new ApiResult { ErrorCode = ErrorCode.WrongUsernameOrPassword };
+            }
+            return result;
         }
 
         [HttpGet]

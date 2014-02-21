@@ -290,6 +290,14 @@
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj">
+      <Project>{7c17f97f-3515-4a1b-aead-01689d087de0}</Project>
+      <Name>Sample.ApplicationEvent</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ApplicationEventSubscriber\Sample.ApplicationEventSubscriber.csproj">
+      <Project>{46731c1c-71c7-474a-9be7-45f3caa755f9}</Project>
+      <Name>Sample.ApplicationEventSubscriber</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AsyncDomainEventSubscriber\Sample.AsyncDomainEventSubscriber.csproj">
       <Project>{ef03000d-e2d6-4c8d-b848-5b9635246c27}</Project>
       <Name>Sample.AsyncDomainEventSubscriber</Name>

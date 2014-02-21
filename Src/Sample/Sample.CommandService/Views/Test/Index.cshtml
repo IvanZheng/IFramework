@@ -13,11 +13,12 @@
     @Scripts.Render("~/Scripts/jquery.cookie.min.js")
     <script>
 
+
         var doCommand = function (commandName, command) {
             $.ajax({
                 cache: false,
                 type: "POST",
-                url: '@Url.Content("~/api/Command/Action/")' + commandName,
+                url: '@Url.Content("~/api/Command/")' + commandName,
                 data: command,
                 success: function (data) {
                     if (data.ErrorCode == 0) {
@@ -53,37 +54,33 @@
                 var username = $("#username").val();
                 var password = $("#password").val();
                 var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
-                batchCommandTest("RegisterCommand", registerCommand, $("#batchCount").val());
+                batchCommandTest("Action/Register", registerCommand, $("#batchCount").val());
             });
 
             $("#batchLoginCommand").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
                 var loginCommand = { UserName: username, Password: password };
-                batchCommandTest("LoginCommand", loginCommand, $("#batchCount").val());
+                batchCommandTest("Login", loginCommand, $("#batchCount").val());
             });
 
             $("#registerCommand").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
                 var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
-                doCommand("RegisterCommand", registerCommand);
+                doCommand("Action/Register", registerCommand);
             });
 
             
             $("#loginCommand").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
-                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn", 
-                    Tags: [1, 2, 3]// test for commandMediaTypeFormatter
-                };
 
                 var loginCommand = {
                     UserName: username,
-                    Password: password,
-                    Tags: [registerCommand, registerCommand]
+                    Password: password
                 };
-                doCommand("LoginCommand", loginCommand);
+                doCommand("Login", loginCommand);
             });
 
             $("#btnRefreshCommandDistributorStatus").click(function () {

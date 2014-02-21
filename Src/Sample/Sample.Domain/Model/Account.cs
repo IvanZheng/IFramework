@@ -33,11 +33,5 @@ namespace Sample.Domain.Model
                 RegisterTime = @event.RegisterTime;
             }
         }
-
-
-        public void Login()
-        {
-            OnEvent(new AccountLogin(this.ID, DateTime.Now));
-        }
     }
 }

@@ -32,7 +32,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
         }
 
-        public IEnumerable<IMessageContext> Publish(params IDomainEvent[] events)
+        public IEnumerable<IMessageContext> Publish(params IEvent[] events)
         {
             List<IMessageContext> messageContexts = new List<IMessageContext>();
             events.ForEach(@event =>

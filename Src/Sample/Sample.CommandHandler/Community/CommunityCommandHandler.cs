@@ -2,6 +2,7 @@
 using IFramework.Infrastructure;
 using IFramework.Repositories;
 using IFramework.UnitOfWork;
+using Sample.ApplicationEvent;
 using Sample.Command;
 using Sample.Domain.Model;
 using System;
@@ -12,38 +13,31 @@ using System.Text;
 
 namespace Sample.CommandHandler.Community
 {
-    public class CommunityCommandHandler : ICommandHandler<LoginCommand>,
-                                           ICommandHandler<RegisterCommand>
+    public class CommunityCommandHandler : CommandHandlerBase,
+                                           ICommandHandler<Login>,
+                                           ICommandHandler<Register>
     {
-        protected IDomainRepository DomainRepository
-        {
-            get
-            {
-                return IoCFactory.Resolve<IDomainRepository>();
-            }
-        }
-
-        public void Handle(LoginCommand command)
+        /// <summary>
+        /// Regard CommandHandler as a kind of application service,
+        /// we do some query in it and also can publish some application event
+        /// and no need to enter the domain layer!
+        /// </summary>
+        /// <param name="command"></param>
+        public void Handle(Login command)
         {
             var account = DomainRepository.Find<Account>(a => a.UserName.Equals(command.UserName)
                                                                       && a.Password.Equals(command.Password));
-
-            //(DomainRepository as Framework.EntityFramework.Repositories.IMergeOptionChangable)
-            //    .ChangeMergeOption<Account>(MergeOption.OverwriteChanges);
 
             if (account == null)
             {
                 throw new SysException(ErrorCode.WrongUsernameOrPassword);
             }
-            account.Login();
-            command.Result = new DTO.Account
-            {
-                ID = account.ID,
-                UserName = account.UserName
-            };
+
+            EventPublisher.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });
+            command.Result = account.ID;
         }
 
-        public void Handle(RegisterCommand command)
+        public void Handle(Register command)
         {
             if (DomainRepository.Find<Account>(a => a.UserName == command.UserName) != null)
             {

@@ -39,7 +39,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Community\AccountLogin.cs" />
     <Compile Include="Community\AccountRegistered.cs" />
     <Compile Include="DomainEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

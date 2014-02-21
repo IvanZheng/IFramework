@@ -8,17 +8,11 @@ using System.Threading;
 
 namespace Sample.AsyncDomainEventSubscriber.Community
 {
-    public class AccountEventSubscriber : IEventSubscriber<AccountRegistered>,
-                                          IEventSubscriber<AccountLogin>
+    public class AccountEventSubscriber : IEventSubscriber<AccountRegistered>
     {
         public void Handle(AccountRegistered @event)
         {
             //Console.Write("{0} has registered.", @event.UserName);
-        }
-
-        public void Handle(AccountLogin @event)
-        {
-            //Console.Write("{0} has login.", @event.AccountID);
         }
     }
 }

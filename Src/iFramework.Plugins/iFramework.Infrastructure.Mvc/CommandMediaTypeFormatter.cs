@@ -34,7 +34,12 @@ namespace IFramework.Infrastructure.Mvc
 
         public override Task<object> ReadFromStreamAsync(Type type, System.IO.Stream readStream, HttpContent content, System.Net.Http.Formatting.IFormatterLogger formatterLogger)
         {
-            var commandType = Type.GetType(string.Format(Configuration.GetAppConfig("CommandTypeTemplate"), HttpContext.Current.Request.Url.Segments.Last()));
+            var commandType = type;
+            if (type.IsAbstract || type.IsInterface)
+            {
+                commandType = Type.GetType(string.Format(Configuration.GetAppConfig("CommandTypeTemplate"), 
+                                                         HttpContext.Current.Request.Url.Segments.Last()));
+            }
             var part = content.ReadAsStringAsync();
             var mediaType = content.Headers.ContentType.MediaType;
             return Task.Factory.StartNew<object>(() =>

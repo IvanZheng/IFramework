@@ -8,6 +8,6 @@ namespace IFramework.Event
 {
     public interface IEventPublisher
     {
-        IEnumerable<IMessageContext> Publish(params IDomainEvent[] events);
+        IEnumerable<IMessageContext> Publish(params IEvent[] events);
     }
 }

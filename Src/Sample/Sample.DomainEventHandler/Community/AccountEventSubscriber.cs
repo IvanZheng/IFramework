@@ -7,17 +7,11 @@ using System.Text;
 
 namespace Sample.DomainEventHandler.Community
 {
-    public class AccountEventSubscriber : IEventSubscriber<AccountRegistered>,
-                                       IEventSubscriber<AccountLogin>
+    public class AccountEventSubscriber : IEventSubscriber<AccountRegistered>
     {
         public void Handle(AccountRegistered @event)
         {
             Console.Write("send email to user.");
-        }
-
-        public void Handle(AccountLogin @event)
-        {
-            Console.Write("user login.");
         }
     }
 }

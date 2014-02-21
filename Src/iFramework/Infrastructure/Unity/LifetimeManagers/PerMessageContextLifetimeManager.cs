@@ -94,9 +94,6 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         public override object GetValue()
         {
             object result = null;
-
-            //Get object depending on  execution environment ( WCF without HttpContext,HttpContext or CallContext)
-
             if (CurrentMessageContext != null)
             {
                 //HttpContext avaiable ( ASP.NET ..)

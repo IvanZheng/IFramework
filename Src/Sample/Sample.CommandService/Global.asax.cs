@@ -53,6 +53,7 @@ namespace Sample.CommandService
 
                 IoCFactory.Resolve<IEventPublisher>();
                 IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer").Start();
+                IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer").Start();
 
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
                 var commandConsumer1 = new CommandConsumer(commandHandlerProvider,

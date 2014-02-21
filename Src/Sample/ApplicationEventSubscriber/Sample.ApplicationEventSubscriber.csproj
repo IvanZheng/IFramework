@@ -4,15 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6760EA99-C3B6-4CB2-92EB-945AB3C3B04A}</ProjectGuid>
+    <ProjectGuid>{46731C1C-71C7-474A-9BE7-45F3CAA755F9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Sample.CommandHandler</RootNamespace>
-    <AssemblyName>Sample.CommandHandler</AssemblyName>
+    <RootNamespace>Sample.ApplicationEventSubscriber</RootNamespace>
+    <AssemblyName>Sample.ApplicationEventSubscriber</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,18 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EntityFramework">
-      <HintPath>..\..\packages\EntityFramework.6.0.2\lib\net40\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\..\packages\EntityFramework.6.0.2\lib\net40\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Practices.Unity">
-      <HintPath>..\..\packages\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Practices.Unity.Configuration">
-      <HintPath>..\..\packages\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Configuration.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,8 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandHandlerBase.cs" />
-    <Compile Include="Community\CommunityCommandHandler.cs" />
+    <Compile Include="Community\AccountEventSubscriber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -66,21 +51,6 @@
       <Project>{7c17f97f-3515-4a1b-aead-01689d087de0}</Project>
       <Name>Sample.ApplicationEvent</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Sample.Command\Sample.Command.csproj">
-      <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
-      <Name>Sample.Command</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj">
-      <Project>{f1f1b380-f3a0-463e-8686-3af27962c100}</Project>
-      <Name>Sample.Domain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Sample.DTO\Sample.DTO.csproj">
-      <Project>{279b5ee0-22ca-4672-be92-9b6658dcdae3}</Project>
-      <Name>Sample.DTO</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

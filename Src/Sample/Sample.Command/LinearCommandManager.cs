@@ -10,7 +10,7 @@ namespace Sample.Command
     {
         public LinearCommandManager() : base()
         {
-            this.RegisterLinearCommand<LoginCommand>(cmd => cmd.UserName);
+            this.RegisterLinearCommand<Login>(cmd => cmd.UserName);
         }
     }
 }

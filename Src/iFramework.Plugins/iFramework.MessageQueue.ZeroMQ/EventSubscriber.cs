@@ -15,12 +15,12 @@ using IFramework.MessageQueue.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
-    public class DomainEventSubscriber : MessageConsumer<IMessageContext>
+    public class EventSubscriber : MessageConsumer<IMessageContext>
     {
         IHandlerProvider HandlerProvider { get; set; }
         string[] SubEndPoints { get; set; }
 
-        public DomainEventSubscriber(IHandlerProvider handlerProvider, string[] subEndPoints)
+        public EventSubscriber(IHandlerProvider handlerProvider, string[] subEndPoints)
         {
             HandlerProvider = handlerProvider;
             SubEndPoints = subEndPoints;
