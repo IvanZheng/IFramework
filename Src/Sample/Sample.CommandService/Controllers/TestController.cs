@@ -10,15 +10,23 @@ using System.Web.Mvc;
 
 namespace Sample.ApiService.Controllers
 {
-    public class TestController : AsyncController
+    public class TestController : Controller
     {
-        //
+        ICommandBus _CommandBus;
+        public TestController(ICommandBus commandBus)
+        {
+            _CommandBus = commandBus;
+        }
+        
         // GET: /Test/
         public ActionResult Index()
         {
             return View();
         }
 
-
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+        }
     }
 }
