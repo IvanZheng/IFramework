@@ -175,14 +175,17 @@ namespace IFramework.Infrastructure
             return null;
         }
 
+
+        public static IEnumerable<T> OrEmptyIfNull<T>(this IEnumerable<T> source)
+        {
+            return source ?? Enumerable.Empty<T>();
+        }
+
         public static IEnumerable<T> ForEach<T>(
                 this IEnumerable<T> source,
                 Action<T> act)
         {
-            if (source != null)
-            {
-                foreach (T element in source) act(element);
-            }
+            foreach (T element in source.OrEmptyIfNull()) act(element);
             return source;
         }
 
