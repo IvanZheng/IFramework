@@ -34,7 +34,7 @@ namespace Sample.CommandHandler.Community
             }
 
             EventPublisher.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });
-            command.Result = account.ID;
+            CommandContext.Reply = account.ID;
         }
 
         public void Handle(Register command)
@@ -46,7 +46,7 @@ namespace Sample.CommandHandler.Community
 
             Account account = new Account(command.UserName, command.Password, command.Email);
             DomainRepository.Add(account);
-            command.Result = account.ID;
+            CommandContext.Reply = account.ID;
         }
     }
 }

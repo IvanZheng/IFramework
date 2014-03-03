@@ -13,6 +13,8 @@ namespace IFramework.MessageQueue.MessageFormat
     {
         public string MessageID { get; protected set; }
         public string ReplyToEndPoint { get; protected set; }
+        [JsonIgnore]
+        public object Reply { get; set; }
         public string FromEndPoint { get; set; }
         public string Key { get; protected set; }
         Dictionary<string, string> _Headers;

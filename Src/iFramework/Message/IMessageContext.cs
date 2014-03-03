@@ -11,6 +11,7 @@ namespace IFramework.Message
         string Key { get; }
         string MessageID { get; }
         string ReplyToEndPoint { get; }
+        object Reply { get; set; }
         string FromEndPoint { get; set; }
         [Newtonsoft.Json.JsonIgnore]
         object Message { get; }

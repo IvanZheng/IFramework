@@ -80,7 +80,8 @@ namespace Sample.CommandService.Controllers
             }
             else
             {
-                result = new ApiResult { ErrorCode = ErrorCode.WrongUsernameOrPassword };
+                result = new ApiResult { ErrorCode = ErrorCode.WrongUsernameOrPassword, 
+                                         Message = ErrorCode.WrongUsernameOrPassword.ToString() };
             }
             return result;
         }

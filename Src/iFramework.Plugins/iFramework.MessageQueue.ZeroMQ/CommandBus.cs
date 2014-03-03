@@ -140,11 +140,6 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
                 else
                 {
-                    if (reply.Result != null)
-                    {
-                        var command = messageState.MessageContext.Message;
-                        command.SetValueByKey("Result", reply.Result);
-                    }
                     messageState.TaskCompletionSource.TrySetResult(reply.Result);
                 }
             }

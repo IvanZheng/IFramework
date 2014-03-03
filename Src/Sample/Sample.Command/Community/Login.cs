@@ -7,7 +7,7 @@ using Sample.DTO;
 
 namespace Sample.Command
 {
-    public class Login : CommandBase<Guid>, ILinearCommand
+    public class Login : LinearCommandBase
     {
         public string UserName { get; set; }
         public string Password { get; set; }

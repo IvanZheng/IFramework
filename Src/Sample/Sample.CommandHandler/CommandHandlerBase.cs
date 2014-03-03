@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
+using IFramework.Message;
+using IFramework.Infrastructure.Unity.LifetimeManagers;
 
 namespace Sample.CommandHandler
 {
@@ -23,6 +25,14 @@ namespace Sample.CommandHandler
             get
             {
                 return IoCFactory.Resolve<IDomainRepository>();
+            }
+        }
+
+        public IMessageContext CommandContext
+        {
+            get
+            {
+                return PerMessageContextLifetimeManager.CurrentMessageContext;
             }
         }
     }

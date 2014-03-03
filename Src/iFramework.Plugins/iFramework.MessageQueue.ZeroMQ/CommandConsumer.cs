@@ -72,7 +72,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                     var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
                     messageHandlers[0].Handle(message);
                     unitOfWork.Commit();
-                    messageReply = new MessageReply(messageContext.MessageID, message.GetValueByKey("Result"));
+                    messageReply = new MessageReply(messageContext.MessageID, messageContext.Reply);
                 }
 
             }

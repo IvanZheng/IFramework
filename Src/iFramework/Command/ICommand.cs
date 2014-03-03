@@ -10,11 +10,6 @@ namespace IFramework.Command
         bool NeedRetry { get; set; }
     }
 
-    public interface ICommand<TResult> : ICommand
-    {
-        TResult Result { get; set; }
-    }
-
     public interface ILinearCommand : ICommand
     {
         
