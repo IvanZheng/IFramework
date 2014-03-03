@@ -145,7 +145,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                         var command = messageState.MessageContext.Message;
                         command.SetValueByKey("Result", reply.Result);
                     }
-                    messageState.TaskCompletionSource.TrySetResult(null);
+                    messageState.TaskCompletionSource.TrySetResult(reply.Result);
                 }
             }
         }
@@ -245,10 +245,10 @@ namespace IFramework.MessageQueue.ZeroMQ
                     }
                 });
                 task.RunSynchronously();
-                if (task.Exception != null)
-                {
-                    throw task.Exception.GetBaseException();
-                }
+                //if (task.Exception != null)
+                //{
+                //    throw task.Exception.GetBaseException();
+                //}
             }
             return task;
         }

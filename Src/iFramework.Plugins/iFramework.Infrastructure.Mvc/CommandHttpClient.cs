@@ -11,17 +11,17 @@ namespace IFramework.Infrastructure.Mvc
 {
     public static class CommandHttpClient
     {
-        public static TResult DoCommand<TResult>(this HttpClient apiClient, ICommand command)
+        public static TResult DoCommand<TResult>(this HttpClient apiClient, ICommand command, string commandUrl = null)
         {
-            return apiClient.PostAsJsonAsync(command)
+            return apiClient.PostAsJsonAsync(command, commandUrl)
                             .Result.Content
                             .ReadAsAsync<TResult>()
                             .Result;
         }
 
-        public static Task<HttpResponseMessage> DoCommand(this HttpClient apiClient, ICommand command)
+        public static Task<HttpResponseMessage> DoCommand(this HttpClient apiClient, ICommand command, string commandUrl = null)
         {
-            return apiClient.PostAsJsonAsync(command);
+            return apiClient.PostAsJsonAsync(command, commandUrl);
         }
 
         static string GetCommandUrl(ICommand command)
@@ -29,9 +29,13 @@ namespace IFramework.Infrastructure.Mvc
             return string.Format(Configuration.GetAppConfig("CommandActionUrlTemplate"), command.GetType().Name);
         }
 
-        public static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command)
+        public static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command, string commandUrl = null)
         {
-            return client.PostAsJsonAsync(GetCommandUrl(command), command);
+            if (string.IsNullOrWhiteSpace(commandUrl))
+            {
+                commandUrl = GetCommandUrl(command);
+            }
+            return client.PostAsJsonAsync(commandUrl, command);
         }
     }
 }

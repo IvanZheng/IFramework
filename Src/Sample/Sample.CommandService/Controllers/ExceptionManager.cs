@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace Sample.CommandService.Controllers
@@ -15,53 +16,57 @@ namespace Sample.CommandService.Controllers
     public class ApiResult<TResult> : ApiResult
     {
         public TResult Result { get; set; }
+
+        public ApiResult() { }
+        public ApiResult(TResult result)
+        {
+            Result = result;
+        }
     }
 
     public static class ExceptionManager
     {
-        public static ApiResult Process(Action action)
+        public static Task<ApiResult> Process(Task task)
         {
-            try
+            return task.ContinueWith<ApiResult>(t =>
             {
-                action.Invoke();
-                return new ApiResult();
-            }
-            catch (Exception ex)
-            {
-                var baseException = ex.GetBaseException();
-                if (baseException is SysException)
+                ApiResult apiResult = null;
+                if (!t.IsFaulted)
                 {
-                    var sysException = baseException as SysException;
-                    return new ApiResult { ErrorCode = sysException.ErrorCode, Message = sysException.Message };
+                    if (t.GetType().IsGenericType)
+                    {
+                        var result = (t as Task<object>).Result;
+                        if (result != null)
+                        {
+                            var resultType = result.GetType();
+                            var apiResultType = typeof(ApiResult<>).MakeGenericType(resultType);
+                            apiResult = Activator.CreateInstance(apiResultType, result) as ApiResult;
+                        }
+                        else
+                        {
+                            apiResult = new ApiResult();
+                        }
+                    }
+                    else
+                    {
+                        apiResult = new ApiResult();
+                    }
                 }
                 else
                 {
-                    return new ApiResult { ErrorCode = ErrorCode.UnknownError, Message = baseException.Message };
+                    var baseException = t.Exception.GetBaseException();
+                    if (baseException is SysException)
+                    {
+                        var sysException = baseException as SysException;
+                        apiResult = new ApiResult { ErrorCode = sysException.ErrorCode, Message = sysException.Message };
+                    }
+                    else
+                    {
+                        apiResult = new ApiResult { ErrorCode = ErrorCode.UnknownError, Message = baseException.Message };
+                    }
                 }
-            }
+                return apiResult;
+            });
         }
-
-        public static ApiResult<TResult> Process<TResult>(Func<TResult> action)
-        {
-            try
-            {
-                var result = action.Invoke();
-                return new ApiResult<TResult> { Result = result };
-            }
-            catch (Exception ex)
-            {
-                var baseException = ex.GetBaseException();
-                if (baseException is SysException)
-                {
-                    var sysException = baseException as SysException;
-                    return new ApiResult<TResult> { ErrorCode = sysException.ErrorCode, Message = sysException.Message };
-                }
-                else
-                {
-                    return new ApiResult<TResult> { ErrorCode = ErrorCode.UnknownError, Message = baseException.Message };
-                }
-            }
-        }
-
     }
 }

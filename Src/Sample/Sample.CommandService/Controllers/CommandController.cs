@@ -26,32 +26,11 @@ namespace Sample.CommandService.Controllers
             CommandBus = commandBus;
         }
 
-        public ApiResult<TResult> ActionWithResult<TResult>(ICommand<TResult> command)
-        {
-            return ExceptionManager.Process<TResult>(() =>
-            {
-                CommandBus.Send(command).Wait();
-                return command.Result;
-            });
-        }
+        
 
-        public ApiResult Action(ICommand command)
+        public Task<ApiResult> Action(ICommand command)
         {
-            var commandGenericInterfaceType = command.GetType().GetInterfaces().FirstOrDefault(i => i.IsGenericType);
-            if (commandGenericInterfaceType != null)
-            {
-                var resultType = commandGenericInterfaceType.GetGenericArguments().First();
-                var result = this.InvokeGenericMethod(resultType, "ActionWithResult", new object[] { command })
-                            as ApiResult;
-                return result;
-            }
-            else
-            {
-                return ExceptionManager.Process(() =>
-                {
-                    CommandBus.Send(command).Wait();
-                });
-            }
+            return ExceptionManager.Process(CommandBus.Send(command));
         }
 
         static List<ICommand> BatchCommands = new List<ICommand>();
