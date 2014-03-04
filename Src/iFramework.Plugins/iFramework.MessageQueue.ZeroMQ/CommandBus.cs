@@ -218,8 +218,9 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
             else //if not a linear command, we run synchronously.
             {
-                task = new Task(() =>
+                task = new Task<object>(() =>
                 {
+                    object result = null;
                     PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
                     var commandHandler = HandlerProvider.GetHandler(command.GetType());
                     if (commandHandler == null)
@@ -236,10 +237,14 @@ namespace IFramework.MessageQueue.ZeroMQ
                     }
                     finally
                     {
+                        result = commandContext.Reply;
                         commandContext.ClearItems();
                     }
+                    return result;
                 });
                 task.RunSynchronously();
+
+
                 //if (task.Exception != null)
                 //{
                 //    throw task.Exception.GetBaseException();
