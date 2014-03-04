@@ -19,8 +19,8 @@ namespace IFramework.Config
 {
     public class Configuration
     {
-        static Configuration _Instance = new Configuration();
-        public static Configuration Instance { get { return _Instance; } }
+        public static readonly Configuration Instance = new Configuration();
+        public static readonly bool IsPersistanceMessage = GetAppConfig<bool>("PersistanceMessage");
 
         public UnityConfigurationSection UnityConfigurationSection
         {

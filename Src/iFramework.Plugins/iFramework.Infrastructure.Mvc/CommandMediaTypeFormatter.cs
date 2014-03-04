@@ -13,6 +13,7 @@ namespace IFramework.Infrastructure.Mvc
 {
     public class CommandMediaTypeFormatter : JsonMediaTypeFormatter
     {
+        static readonly string CommandTypeTemplate = Configuration.GetAppConfig("CommandTypeTemplate");
         public CommandMediaTypeFormatter()
         {
             this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/command"));
@@ -37,7 +38,7 @@ namespace IFramework.Infrastructure.Mvc
             var commandType = type;
             if (type.IsAbstract || type.IsInterface)
             {
-                commandType = Type.GetType(string.Format(Configuration.GetAppConfig("CommandTypeTemplate"), 
+                commandType = Type.GetType(string.Format(CommandTypeTemplate, 
                                                          HttpContext.Current.Request.Url.Segments.Last()));
             }
             var part = content.ReadAsStringAsync();

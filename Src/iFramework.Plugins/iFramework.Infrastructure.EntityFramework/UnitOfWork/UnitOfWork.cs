@@ -41,7 +41,7 @@ namespace IFramework.EntityFramework
             {
                 _DomainEventBus.Commit();
             }
-            if (Configuration.GetAppConfig<bool>("PersistanceMessage"))
+            if (Configuration.IsPersistanceMessage)
             {
                 // TODO: persistance command and domain events
                 var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;

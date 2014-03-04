@@ -11,6 +11,8 @@ namespace IFramework.Infrastructure.Mvc
 {
     public static class CommandHttpClient
     {
+        static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");
+
         public static TResult DoCommand<TResult>(this HttpClient apiClient, ICommand command, string commandUrl = null)
         {
             return apiClient.PostAsJsonAsync(command, commandUrl)
@@ -26,7 +28,7 @@ namespace IFramework.Infrastructure.Mvc
 
         static string GetCommandUrl(ICommand command)
         {
-            return string.Format(Configuration.GetAppConfig("CommandActionUrlTemplate"), command.GetType().Name);
+            return string.Format(CommandActionUrlTemplate, command.GetType().Name);
         }
 
         public static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command, string commandUrl = null)

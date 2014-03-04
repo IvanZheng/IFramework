@@ -199,7 +199,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             else
             {
                 task = SendAsync(commandContext, cancellationToken);
-                if (currentMessageContext != null && Configuration.GetAppConfig<bool>("PersistanceMessage"))
+                if (currentMessageContext != null && Configuration.IsPersistanceMessage)
                 {
                     //TODO: persistance command with domain event ID
                     MessageStore.Save(commandContext, currentMessageContext.MessageID);
