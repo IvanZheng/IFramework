@@ -16,24 +16,24 @@ using IFramework.Repositories;
 namespace IFramework.EntityFramework.Repositories
 {
     public class Repository<TEntity> : BaseRepository<TEntity>, IMergeOptionChangable
-     where TEntity : class, IAggregateRoot
+     where TEntity : class
     {
         public Repository(DbContext dbContext)
         {
-            Container = dbContext;
+            if (dbContext == null)
+            {
+                throw new Exception("repository could not work without dbContext");
+            }
+            _Container = dbContext;
         }
 
-        protected DbContext Container
-        {
-            get;
-            set;
-        }
+        protected DbContext _Container;
 
         DbSet<TEntity> DbSet
         {
             get
             {
-                return _objectSet ?? (_objectSet = Container.Set<TEntity>());
+                return _objectSet ?? (_objectSet = _Container.Set<TEntity>());
             }
         }
         DbSet<TEntity> _objectSet;
@@ -130,7 +130,7 @@ namespace IFramework.EntityFramework.Repositories
         
         public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class, IAggregateRoot
         {
-            ObjectContext objectContext = ((IObjectContextAdapter)Container).ObjectContext;
+            ObjectContext objectContext = ((IObjectContextAdapter)_Container).ObjectContext;
             ObjectSet<TMergeOptionEntity> set = objectContext.CreateObjectSet<TMergeOptionEntity>();
             set.MergeOption = mergeOption;
         }

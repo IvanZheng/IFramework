@@ -12,25 +12,24 @@ using Sample.Command;
 using Sample.Persistence;
 using IFramework.Event;
 using Sample.ApplicationEvent;
+using Sample.Persistence.Repositories;
+using IFramework.UnitOfWork;
 
 namespace Sample.CommandService.Controllers
 {
     public class CommandController : ApiController
     {
-        SampleModelContext _QueryContext = IoCFactory.Resolve<SampleModelContext>("DomainModelContext");
+        SampleModelContext _QueryContext = IoCFactory.Resolve<SampleModelContext>();
         IEventPublisher _EventPublisher = IoCFactory.Resolve<IEventPublisher>();
-         
-        ICommandBus CommandBus { get; set; }
+        ICommandBus _CommandBus { get; set; }
         public CommandController(ICommandBus commandBus)
         {
-            CommandBus = commandBus;
+            _CommandBus = commandBus;
         }
-
-        
 
         public Task<ApiResult> Action(ICommand command)
         {
-            return ExceptionManager.Process(CommandBus.Send(command));
+            return ExceptionManager.Process(_CommandBus.Send(command));
         }
 
         static List<ICommand> BatchCommands = new List<ICommand>();

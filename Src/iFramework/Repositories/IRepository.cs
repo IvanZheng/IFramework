@@ -8,12 +8,16 @@ using IFramework.Domain;
 
 namespace IFramework.Repositories
 {
+    public interface IRepository
+    {
+
+    }
     /// <summary>
     /// Represents the repositories.
     /// </summary>
     /// <typeparam name="TAggregateRoot">The type of the aggregation root with which the repository is working.</typeparam>
-    public interface IRepository<TAggregateRoot>
-        where TAggregateRoot : class, IAggregateRoot
+    public interface IRepository<TAggregateRoot> : IRepository
+        where TAggregateRoot : class
     {
         /// <summary>
         /// Adds an entity to the repository.

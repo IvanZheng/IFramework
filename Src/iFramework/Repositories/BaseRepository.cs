@@ -13,20 +13,8 @@ namespace IFramework.Repositories
     /// </summary>
     /// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
     public abstract class BaseRepository<TAggregateRoot> : IRepository<TAggregateRoot>
-        where TAggregateRoot : class, IAggregateRoot
+        where TAggregateRoot : class
     {
-        //#region Private Fields
-        //IUnitOfWork _unitOfWork;
-        //#endregion
-
-        /// <summary>
-        /// Gets the instance of the Unit of work on which the repository was attached.
-        /// </summary>
-        //public IUnitOfWork UnitOfWork
-        //{
-        //    get { return this._unitOfWork; }
-        //}
-
         #region Protected Methods
         /// <summary>
         /// Adds an entity to the repository.

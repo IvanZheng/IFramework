@@ -18,7 +18,7 @@
             $.ajax({
                 cache: false,
                 type: "POST",
-                url: '@Url.Content("~/api/Command/")' + commandName,
+                url: '@Url.Content("~/api/Command/Action/")' + commandName,
                 data: command,
                 success: function (data) {
                     if (data.ErrorCode == 0) {
@@ -54,7 +54,7 @@
                 var username = $("#username").val();
                 var password = $("#password").val();
                 var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
-                batchCommandTest("Action/Register", registerCommand, $("#batchCount").val());
+                batchCommandTest("Register", registerCommand, $("#batchCount").val());
             });
 
             $("#batchLoginCommand").click(function () {
@@ -68,7 +68,7 @@
                 var username = $("#username").val();
                 var password = $("#password").val();
                 var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
-                doCommand("Action/Register", registerCommand);
+                doCommand("Register", registerCommand);
             });
 
             

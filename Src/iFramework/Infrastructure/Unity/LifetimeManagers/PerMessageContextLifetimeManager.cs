@@ -15,17 +15,19 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         public static void ClearItems(this IMessageContext context)
         {
             PerMessageContextLifetimeManager.Remove(context);
-            CallContext.FreeNamedDataSlot("MessageContext");
         }
     }
-
 
     public sealed class PerMessageContextLifetimeManager
         : LifetimeManager
     {
-
-        static Hashtable MessageContextItems = Hashtable.Synchronized(new Hashtable());
+        static Hashtable MessageContextItems;
         Guid _key;
+
+        static PerMessageContextLifetimeManager()
+        {
+            MessageContextItems = Hashtable.Synchronized(new Hashtable());
+        }
 
         public static IMessageContext CurrentMessageContext
         {
@@ -37,7 +39,7 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
             {
                 if (value == null)
                 {
-                    CallContext.FreeNamedDataSlot("MessageContext");
+                    CallContext.FreeNamedDataSlot("MessageContext"); 
                 }
                 else
                 {
@@ -96,7 +98,6 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
             object result = null;
             if (CurrentMessageContext != null)
             {
-                //HttpContext avaiable ( ASP.NET ..)
                 if (CurrentContextItems[_key] != null)
                     result = CurrentContextItems[_key];
             }
@@ -154,6 +155,7 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
                 items.Clear();
                 MessageContextItems.TryRemove(context.MessageID);
             }
+            CurrentMessageContext = null;
         }
     }
 }

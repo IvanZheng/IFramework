@@ -8,7 +8,7 @@ namespace IFramework.Message
 {
     public interface IHandlerProvider
     {
-        IMessageHandler GetHandler(Type messageType);
-        IList<IMessageHandler> GetHandlers(Type messageType);
+        object GetHandler(Type messageType);
+        IList<object> GetHandlers(Type messageType);
     }
 }

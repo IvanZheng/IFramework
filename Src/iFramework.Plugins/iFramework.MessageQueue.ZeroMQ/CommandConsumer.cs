@@ -57,20 +57,21 @@ namespace IFramework.MessageQueue.ZeroMQ
                 return;
             }
             var message = messageContext.Message;
-            var messageHandlers = HandlerProvider.GetHandlers(message.GetType());
+            
             try
             {
+                PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
+                var messageHandler = HandlerProvider.GetHandler(message.GetType());
                 _Logger.DebugFormat("Handle command, commandID:{0}", messageContext.MessageID);
 
-                if (messageHandlers.Count == 0)
+                if (messageHandler == null)
                 {
                     messageReply = new MessageReply(messageContext.MessageID, new NoHandlerExists());
                 }
                 else
                 {
-                    PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
                     var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                    messageHandlers[0].Handle(message);
+                    ((dynamic)messageHandler).Handle((dynamic)message);
                     unitOfWork.Commit();
                     messageReply = new MessageReply(messageContext.MessageID, messageContext.Reply);
                 }

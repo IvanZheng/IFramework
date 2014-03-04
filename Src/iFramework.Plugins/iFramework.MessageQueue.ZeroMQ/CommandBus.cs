@@ -231,7 +231,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                     try
                     {
                         var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                        commandHandler.Handle(command);
+                        ((dynamic)commandHandler).Handle((dynamic)command);
                         unitOfWork.Commit();
                     }
                     finally

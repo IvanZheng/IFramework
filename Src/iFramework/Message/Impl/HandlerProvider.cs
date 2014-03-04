@@ -6,6 +6,7 @@ using System.Collections;
 using System.Reflection;
 using IFramework.Infrastructure;
 using IFramework.Config;
+using IFramework.Infrastructure.Unity.LifetimeManagers;
 
 namespace IFramework.Message.Impl
 {
@@ -14,12 +15,15 @@ namespace IFramework.Message.Impl
         //protected abstract Type HandlerType { get; }
 
         private string[] Assemblies { get; set; }
-        private readonly Dictionary<Type, List<IMessageHandler>> _Handlers;
+        private readonly Dictionary<Type, List<Type>> _HandlerTypes;
         private readonly HashSet<Type> discardKeyTypes;
+        private readonly Dictionary<Type, ParameterInfo[]> _HandlerConstuctParametersInfo;
+
         public HandlerProvider(params string[] assemblies)
         {
             Assemblies = assemblies;
-            _Handlers = new Dictionary<Type, List<IMessageHandler>>();
+            _HandlerTypes = new Dictionary<Type, List<Type>>();
+            _HandlerConstuctParametersInfo = new Dictionary<Type, ParameterInfo[]>();
             discardKeyTypes = new HashSet<Type>();
 
             RegisterHandlers();
@@ -27,7 +31,7 @@ namespace IFramework.Message.Impl
 
         public void ClearRegistration()
         {
-            _Handlers.Clear();
+            _HandlerTypes.Clear();
         }
 
         void RegisterHandlers()
@@ -85,74 +89,72 @@ namespace IFramework.Message.Impl
             foreach (var ihandlerType in ihandlerTypes)
             {
                 var messageType = ihandlerType.GetGenericArguments().Single();
-                var messageHandlerWrapperType = typeof(MessageHandler<>).MakeGenericType(messageType);
-                var messageHandler = Activator.CreateInstance(handlerType);
-                var messageHandlerWrapper = Activator.CreateInstance(messageHandlerWrapperType, new object[] { messageHandler }) as IMessageHandler;
-                Register(messageType, messageHandlerWrapper);
+                //var messageHandlerWrapperType = typeof(MessageHandler<>).MakeGenericType(messageType);
+                //var messageHandler = Activator.CreateInstance(handlerType);
+                //var messageHandlerWrapper = Activator.CreateInstance(messageHandlerWrapperType, new object[] { messageHandler }) as IMessageHandler;
+                Register(messageType, handlerType);
             }
         }
         #endregion
 
-        public void Register(Type messageType, IMessageHandler handlerInstance)
+        public void Register(Type messageType, Type handlerType)
         {
-            if (_Handlers.ContainsKey(messageType))
+            if (_HandlerTypes.ContainsKey(messageType))
             {
-                List<IMessageHandler> registeredDispatcherHandlers = _Handlers[messageType];
-                if (registeredDispatcherHandlers != null)
+                var registeredDispatcherHandlerTypes = _HandlerTypes[messageType];
+                if (registeredDispatcherHandlerTypes != null)
                 {
-                    if (!registeredDispatcherHandlers.Contains(handlerInstance))
-                        registeredDispatcherHandlers.Add(handlerInstance);
+                    if (!registeredDispatcherHandlerTypes.Contains(handlerType))
+                        registeredDispatcherHandlerTypes.Add(handlerType);
                 }
                 else
                 {
-                    registeredDispatcherHandlers = new List<IMessageHandler>();
-                    _Handlers[messageType] = registeredDispatcherHandlers;
-                    registeredDispatcherHandlers.Add(handlerInstance);
+                    registeredDispatcherHandlerTypes = new List<Type>();
+                    _HandlerTypes[messageType] = registeredDispatcherHandlerTypes;
+                    registeredDispatcherHandlerTypes.Add(handlerType);
                 }
             }
             else
             {
-                var registeredDispatcherHandlers = new List<IMessageHandler>();
-                registeredDispatcherHandlers.Add(handlerInstance);
-                _Handlers.Add(messageType, registeredDispatcherHandlers);
+                var registeredDispatcherHandlerTypes = new List<Type>();
+                registeredDispatcherHandlerTypes.Add(handlerType);
+                _HandlerTypes.Add(messageType, registeredDispatcherHandlerTypes);
             }
+            var parameterInfoes = handlerType.GetConstructors()
+                                               .OrderByDescending(c => c.GetParameters().Length)
+                                               .FirstOrDefault().GetParameters();
+            _HandlerConstuctParametersInfo[handlerType] = parameterInfoes;
         }
 
-
-
-
-
-
-        public IMessageHandler GetHandler(Type messageType)
+        protected Type GetHandlerType(Type messageType)
         {
-            return GetHandlers(messageType).FirstOrDefault();
+            return GetHandlerTypes(messageType).FirstOrDefault();
         }
 
-        public IList<IMessageHandler> GetHandlers(Type messageType)
+        protected IList<Type> GetHandlerTypes(Type messageType)
         {
-            var handlers = new List<IMessageHandler>();
-            if (_Handlers.ContainsKey(messageType))
+            var avaliableHandlerTypes = new List<Type>();
+            if (_HandlerTypes.ContainsKey(messageType))
             {
-                var handlerWrappers = _Handlers[messageType];
-                if (handlerWrappers != null && handlerWrappers.Count > 0)
+                var handlerTypes = _HandlerTypes[messageType];
+                if (handlerTypes != null && handlerTypes.Count > 0)
                 {
-                    handlers.AddRange(handlerWrappers);
-
+                    avaliableHandlerTypes.AddRange(handlerTypes);
                 }
             }
             else if (!discardKeyTypes.Contains(messageType))
             {
                 bool isDiscardKeyTypes = true;
-                foreach (var handlerWrappers in _Handlers)
+                foreach (var handlerTypes in _HandlerTypes)
                 {
-                    if (messageType.IsSubclassOf(handlerWrappers.Key))
+                    if (messageType.IsSubclassOf(handlerTypes.Key))
                     {
-                        var messageDispatcherHandlers = _Handlers[handlerWrappers.Key];
-                        if (messageDispatcherHandlers != null && messageDispatcherHandlers.Count > 0)
+                        var messageDispatcherHandlerTypes = _HandlerTypes[handlerTypes.Key];
+                        if (messageDispatcherHandlerTypes != null && messageDispatcherHandlerTypes.Count > 0)
                         {
-                            handlers.AddRange(messageDispatcherHandlers);
+                            avaliableHandlerTypes.AddRange(messageDispatcherHandlerTypes);
                             isDiscardKeyTypes = false;
-                            _Handlers.Add(messageType, messageDispatcherHandlers);
+                            _HandlerTypes.Add(messageType, messageDispatcherHandlerTypes);
                             break;
                         }
                     }
@@ -162,6 +164,39 @@ namespace IFramework.Message.Impl
                     discardKeyTypes.Add(messageType);
                 }
             }
+            return avaliableHandlerTypes;
+        }
+
+        public object GetHandler(Type messageType)
+        {
+            object handler = null;
+            var handlerType = GetHandlerType(messageType);
+            if (handlerType != null)
+            {
+                var parameterInfoes = _HandlerConstuctParametersInfo[handlerType];
+                List<object> parameters = new List<object>();
+                parameterInfoes.ForEach(parameterInfo => {
+                    object parameter = null;
+                    if (parameterInfo.ParameterType == typeof(IMessageContext))
+                    {
+                        parameter = PerMessageContextLifetimeManager.CurrentMessageContext;
+                    }
+                    else
+                    {
+                        parameter = IoCFactory.Resolve(parameterInfo.ParameterType);
+                    }
+                    parameters.Add(parameter);
+                });
+                handler = Activator.CreateInstance(handlerType, parameters.ToArray());
+            }
+            return handler;
+        }
+
+        public IList<object> GetHandlers(Type messageType)
+        {
+            var handlerTypes = GetHandlerTypes(messageType);
+            var handlers = new List<object>();
+            handlerTypes.ForEach(handlerType => handlers.Add(IoCFactory.Resolve(handlerType)));
             return handlers;
         }
     }

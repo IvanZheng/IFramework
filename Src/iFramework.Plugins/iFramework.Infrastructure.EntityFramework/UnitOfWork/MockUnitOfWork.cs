@@ -15,10 +15,7 @@ namespace IFramework.EntityFramework
         {
             _DomainEventBus = eventBus;
         }
-        public override IRepository<TAggregateRoot> GetRepository<TAggregateRoot>()
-        {
-            return null;
-        }
+       
 
         public override void Commit()
         {

@@ -18,29 +18,25 @@ namespace IFramework.EntityFramework
 {
     public class UnitOfWork : BaseUnitOfWork
     {
-        [Dependency(Constants.Configuration.DomainModelContext)]
-        public DbContext DomainModelContext { get; set; }
-
+        protected List<DbContext> _DbContexts;
 
         public UnitOfWork(IDomainEventBus eventBus)
             : base(eventBus)
         {
             _DomainEventBus = eventBus;
+            _DbContexts = new List<DbContext>();
         }
         #region IUnitOfWork Members
 
         public override void Commit()
         {
-            // TODO: should make domain events never losed, nedd transaction between
-            //       model context and message queue
-            //using (var scope = new TransactionScope())
-            //{
-            if (DomainModelContext != null)
+            // TODO: should make domain events never losed, need transaction between
+            //       model context and message queue, but need transaction across different scopes.
+            using (var scope = new TransactionScope())
             {
-                DomainModelContext.SaveChanges();
+                _DbContexts.ForEach(dbContext => dbContext.SaveChanges());
+                scope.Complete();
             }
-            //    scope.Complete();
-            //}
             if (_DomainEventBus != null)
             {
                 _DomainEventBus.Commit();
@@ -54,20 +50,16 @@ namespace IFramework.EntityFramework
             }
         }
 
-        #endregion
-
-        public override IRepository<TAggregateRoot> GetRepository<TAggregateRoot>()
+        internal void RegisterDbContext(DbContext dbContext)
         {
-            try
+            if (!_DbContexts.Exists(dbCtx => dbCtx == dbContext))
             {
-
-                var repository = IoCFactory.Resolve<IRepository<TAggregateRoot>>(new ParameterOverride("dbContext", this.DomainModelContext));
-                return repository;
-            }
-            catch
-            {
-                throw;
+                _DbContexts.Add(dbContext);
             }
         }
+
+        #endregion
+
+
     }
 }

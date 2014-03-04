@@ -7,6 +7,8 @@ using System.Data.Entity.Infrastructure;
 using System.Reflection;
 using IFramework.Domain;
 using IFramework.Infrastructure;
+using IFramework.UnitOfWork;
+using IFramework.Infrastructure.Unity.LifetimeManagers;
 
 namespace IFramework.EntityFramework
 {
@@ -28,6 +30,11 @@ namespace IFramework.EntityFramework
             : base(nameOrConnectionString)
         {
             InitObjectContext();
+
+            if (PerMessageContextLifetimeManager.CurrentMessageContext != null)
+            {
+                (IoCFactory.Resolve<IUnitOfWork>() as UnitOfWork).RegisterDbContext(this);
+            }
         }
 
 

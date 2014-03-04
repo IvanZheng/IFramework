@@ -33,7 +33,7 @@ namespace IFramework.Event.Impl
         {
             var eventSubscribers = EventSubscriberProvider.GetHandlers(@event.GetType());
             eventSubscribers.ForEach(eventSubscriber => {
-                eventSubscriber.Handle(@event);
+                ((dynamic)eventSubscriber).Handle((dynamic)@event);
             });
             DomainEventQueue.Enqueue(@event);
         }
