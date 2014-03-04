@@ -87,7 +87,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                    
                 }
             });
-            messageContext.ClearItems();
+            PerMessageContextLifetimeManager.CurrentMessageContext = null;
         }
     }
 }

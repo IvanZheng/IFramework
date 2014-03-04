@@ -84,7 +84,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
             finally
             {
-                messageContext.ClearItems();
+                PerMessageContextLifetimeManager.CurrentMessageContext = null;
                 OnMessageHandled(messageContext, messageReply);
             }
         }

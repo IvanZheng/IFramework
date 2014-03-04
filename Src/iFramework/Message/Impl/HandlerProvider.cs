@@ -173,21 +173,7 @@ namespace IFramework.Message.Impl
             var handlerType = GetHandlerType(messageType);
             if (handlerType != null)
             {
-                var parameterInfoes = _HandlerConstuctParametersInfo[handlerType];
-                List<object> parameters = new List<object>();
-                parameterInfoes.ForEach(parameterInfo => {
-                    object parameter = null;
-                    if (parameterInfo.ParameterType == typeof(IMessageContext))
-                    {
-                        parameter = PerMessageContextLifetimeManager.CurrentMessageContext;
-                    }
-                    else
-                    {
-                        parameter = IoCFactory.Resolve(parameterInfo.ParameterType);
-                    }
-                    parameters.Add(parameter);
-                });
-                handler = Activator.CreateInstance(handlerType, parameters.ToArray());
+                handler = IoCFactory.Resolve(handlerType);
             }
             return handler;
         }

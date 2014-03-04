@@ -238,8 +238,8 @@ namespace IFramework.MessageQueue.ZeroMQ
                     finally
                     {
                         result = commandContext.Reply;
-                        commandContext.ClearItems();
                     }
+                    PerMessageContextLifetimeManager.CurrentMessageContext = null;
                     return result;
                 });
                 task.RunSynchronously();

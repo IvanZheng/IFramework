@@ -10,61 +10,86 @@ using System.Runtime.Remoting.Messaging;
 
 namespace IFramework.Infrastructure.Unity.LifetimeManagers
 {
-    public static class MessageContextExtension
+    class EmptyMessageContext : IMessageContext
     {
-        public static void ClearItems(this IMessageContext context)
+        public Dictionary<string, string> Headers
         {
-            PerMessageContextLifetimeManager.Remove(context);
+            get { return null; }
+        }
+
+        public string Key
+        {
+            get { return null; }
+        }
+
+        public string MessageID
+        {
+            get { return null; }
+        }
+
+        public string ReplyToEndPoint
+        {
+            get { return null; }
+        }
+
+        public object Reply
+        {
+            get
+            {
+                return null;
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string FromEndPoint
+        {
+            get
+            {
+                return null;
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public object Message
+        {
+            get { return null; }
+        }
+
+        public DateTime SentTime
+        {
+            get { return DateTime.Now; }
+        }
+    }
+
+    class MessageContextWrapper
+    {
+        internal Hashtable Items { get; set; }
+        internal IMessageContext MessageContext { get; set; }
+        internal MessageContextWrapper(IMessageContext messageContext)
+        {
+            Items = new Hashtable();
+            MessageContext = messageContext;
         }
     }
 
     public sealed class PerMessageContextLifetimeManager
         : LifetimeManager
     {
-        static Hashtable MessageContextItems;
+        static EmptyMessageContext EmptyMessageContext;
+        static PerMessageContextLifetimeManager PerMessageContextLifeTimeManager;
         Guid _key;
 
         static PerMessageContextLifetimeManager()
         {
-            MessageContextItems = Hashtable.Synchronized(new Hashtable());
-        }
-
-        public static IMessageContext CurrentMessageContext
-        {
-            get
-            {
-                return CallContext.GetData("MessageContext") as IMessageContext;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    CallContext.FreeNamedDataSlot("MessageContext"); 
-                }
-                else
-                {
-                    CallContext.SetData("MessageContext", value);
-                }
-            }
-        }
-
-        Hashtable CurrentContextItems
-        {
-            get
-            {
-                var currentMessageContext = CurrentMessageContext;
-                if (currentMessageContext == null)
-                {
-                    return null;
-                }
-                var items = MessageContextItems[currentMessageContext.MessageID] as Hashtable;
-                if (items == null)
-                {
-                    items = new Hashtable();
-                    MessageContextItems.Add(currentMessageContext.MessageID, items);
-                }
-                return items;
-            }
+            EmptyMessageContext = new EmptyMessageContext();
+            PerMessageContextLifeTimeManager = new PerMessageContextLifetimeManager();
+            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageContext>(PerMessageContextLifeTimeManager);
         }
 
         #region Constructor
@@ -87,6 +112,49 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         }
         #endregion
 
+        static Hashtable CurrentMessageContextItems
+        {
+            get
+            {
+                Hashtable items = null;
+                var messageContextWrapper = CallContext.GetData("MessageContext") as MessageContextWrapper;
+                if (messageContextWrapper != null)
+                {
+                    items = messageContextWrapper.Items;
+                }
+                return items;
+            }
+        }
+
+        public static IMessageContext CurrentMessageContext
+        {
+            get
+            {
+                IMessageContext messageContext = null;
+                var messageContextWrapper = CallContext.GetData("MessageContext") as MessageContextWrapper;
+                if (messageContextWrapper != null)
+                {
+                    messageContext = messageContextWrapper.MessageContext;
+                }
+                return messageContext;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    ClearCurrentMessageContextItems();
+                    CallContext.FreeNamedDataSlot("MessageContext");
+                }
+                else
+                {
+                    CallContext.SetData("MessageContext", new MessageContextWrapper(value));
+                }
+                PerMessageContextLifeTimeManager.SetValue(value);
+            }
+        }
+
+
+
         #region ILifetimeManager Members
 
         /// <summary>
@@ -96,12 +164,11 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         public override object GetValue()
         {
             object result = null;
-            if (CurrentMessageContext != null)
+            var items = CurrentMessageContextItems;
+            if (items != null)
             {
-                if (CurrentContextItems[_key] != null)
-                    result = CurrentContextItems[_key];
+                result = items[_key];
             }
-
             return result;
         }
         /// <summary>
@@ -110,19 +177,17 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         public override void RemoveValue()
         {
             object value = null;
-            if (CurrentMessageContext != null)
+            if (CurrentMessageContextItems != null)
             {
-                //WCF without HttpContext environment
-                value = CurrentContextItems[_key];
+                value = CurrentMessageContextItems[_key];
                 if (value != null)
                 {
-                    CurrentContextItems.Remove(_key);
+                    CurrentMessageContextItems.Remove(_key);
+                    if (value is IDisposable)
+                    {
+                        (value as IDisposable).Dispose();
+                    }
                 }
-            }
-            
-            if (value is IDisposable)
-            {
-                (value as IDisposable).Dispose();
             }
         }
         /// <summary>
@@ -131,18 +196,17 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         /// <param name="newValue"><see cref="M:Microsoft.Practices.Unity.LifetimeManager.SetValue"/></param>
         public override void SetValue(object newValue)
         {
-            if (CurrentMessageContext != null)
+            if (CurrentMessageContextItems != null)
             {
-                //WCF without HttpContext environment
-                CurrentContextItems.Add(_key, newValue);
+                CurrentMessageContextItems.Add(_key, newValue);
             }
         }
 
         #endregion
 
-        internal static void Remove(IMessageContext context)
+        static void ClearCurrentMessageContextItems()
         {
-            var items = MessageContextItems[context.MessageID] as Hashtable;
+            var items = CurrentMessageContextItems;
             if (items != null)
             {
                 foreach (var value in items.Values)
@@ -153,9 +217,7 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
                     }
                 }
                 items.Clear();
-                MessageContextItems.TryRemove(context.MessageID);
             }
-            CurrentMessageContext = null;
         }
     }
 }

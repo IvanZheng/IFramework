@@ -29,7 +29,7 @@ namespace IFramework.Infrastructure
 
         #region Members
 
-        IUnityContainer _CurrentContainer;
+        static IUnityContainer _CurrentContainer;
 
         /// <summary>
         /// Get current configured IContainer
@@ -52,13 +52,11 @@ namespace IFramework.Infrastructure
         /// <summary>
         /// Only for singleton pattern, remove before field init IL anotation
         /// </summary>
-        static IoCFactory() { }
-        IoCFactory()
+        static IoCFactory() 
         {
             _CurrentContainer = new UnityContainer();
             UnityConfigurationSection section = (UnityConfigurationSection)ConfigurationManager.GetSection(UnityConfigurationSection.SectionName);
             section.Configure(_CurrentContainer);
-
         }
 
         public static T Resolve<T>(string name, params ResolverOverride[] overrides)

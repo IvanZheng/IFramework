@@ -82,7 +82,6 @@
     <Compile Include="Message\IMessageHandler.cs" />
     <Compile Include="Message\IMessageReply.cs" />
     <Compile Include="Message\IMessageStore.cs" />
-    <Compile Include="Message\Impl\MessageHandler.cs" />
     <Compile Include="Message\Impl\MockMessageConsumer.cs" />
     <Compile Include="Command\ICommand.cs" />
     <Compile Include="Command\ICommandHandlerProvider.cs" />
