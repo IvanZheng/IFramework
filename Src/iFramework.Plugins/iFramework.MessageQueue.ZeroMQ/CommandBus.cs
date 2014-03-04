@@ -220,6 +220,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 task = new Task(() =>
                 {
+                    PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
                     var commandHandler = HandlerProvider.GetHandler(command.GetType());
                     if (commandHandler == null)
                     {
@@ -227,7 +228,6 @@ namespace IFramework.MessageQueue.ZeroMQ
                     }
 
                     //MessageState messageState = BuildMessageState(commandContext, cancellationToken);
-                    PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
                     try
                     {
                         var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
