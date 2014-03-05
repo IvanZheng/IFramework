@@ -9,6 +9,7 @@ using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.UnitOfWork;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
+using System.Web;
 
 namespace IFramework.EntityFramework
 {
@@ -30,8 +31,11 @@ namespace IFramework.EntityFramework
             : base(nameOrConnectionString)
         {
             InitObjectContext();
-
-            if (PerMessageContextLifetimeManager.CurrentMessageContext != null)
+           
+            if ((BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerMessageContextLifetimeManager) 
+                    && PerMessageContextLifetimeManager.CurrentMessageContext != null)
+                || (BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerExecutionContextLifetimeManager)
+                    && HttpContext.Current != null))
             {
                 (IoCFactory.Resolve<IUnitOfWork>() as UnitOfWork).RegisterDbContext(this);
             }

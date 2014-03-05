@@ -11,6 +11,8 @@ using System.Web.Routing;
 using System.Web.Http.Controllers;
 using IFramework.Infrastructure.Mvc;
 using System.Web.Http;
+using Microsoft.Web.Infrastructure.DynamicModuleHelper;
+//using Microsoft.Web.Administration;
 
 namespace IFramework.Config
 {
@@ -34,6 +36,41 @@ namespace IFramework.Config
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
             return configuration;
         }
+
+        public static Configuration RegisterDisposeModule(this Configuration configuration)
+        {
+            DynamicModuleUtility.RegisterModule(typeof(DisposeObjectHttpModule));
+            return configuration;
+        }
+
+        //public static Configuration RegisterIoCPageHandler(this Configuration configuration)
+        //{
+        //    using (ServerManager manager = new ServerManager())
+        //    {
+        //        var webConfig = manager.GetApplicationHostConfiguration();
+
+        //        ConfigurationSection handlersSection =
+        //            webConfig.GetSection("system.webServer/handlers");
+
+        //        ConfigurationElementCollection handlersCollection = handlersSection.GetCollection();
+
+        //        ConfigurationElement removeElement = handlersCollection.CreateElement("remove");
+        //        removeElement.SetAttributeValue("name", "IoCPageHandlerFactory");
+
+        //        ConfigurationElement handlerElement = handlersCollection.CreateElement("add");
+
+        //        handlerElement.SetAttributeValue("name", "IoCPageHandlerFactory");
+        //        handlerElement.SetAttributeValue("path", "*.aspx");
+        //        handlerElement.SetAttributeValue("verb", "*");
+        //        handlerElement.SetAttributeValue("type", "IFramework.Infrastructure.Mvc.IoCPageHandlerFactory");
+
+        //        handlersCollection.Add(removeElement);
+        //        handlersCollection.Add(handlerElement);
+
+        //        manager.CommitChanges();
+        //    }
+        //    return configuration;
+        //}
 
         public static Configuration RegisterMvc(this Configuration configuration)
         {

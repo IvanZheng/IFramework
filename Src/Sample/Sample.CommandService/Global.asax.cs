@@ -23,21 +23,14 @@ namespace Sample.CommandService
 
     public class WebApiApplication : System.Web.HttpApplication
     {
-        ILogger _Logger;
-        ILogger Logger
-        {
-            get
-            {
-                return _Logger ?? (_Logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()));
-            }
-        }
+        static ILogger _Logger;
 
-        // ZeroMQ Application_Start
-        protected void Application_Start()
+        static WebApiApplication()
         {
             try
             {
                 Configuration.Instance.UseLog4Net();
+                _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
                 var commandDistributor = new CommandDistributor("tcp://127.0.0.1:5000",
                                                                 new string[] { 
@@ -49,6 +42,7 @@ namespace Sample.CommandService
 
                 Configuration.Instance.RegisterCommandConsumer(commandDistributor, "CommandDistributor")
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
+                             .RegisterDisposeModule()
                              .RegisterMvc();
 
                 IoCFactory.Resolve<IEventPublisher>();
@@ -71,19 +65,24 @@ namespace Sample.CommandService
 
                 ICommandBus commandBus = IoCFactory.Resolve<ICommandBus>();
                 commandBus.Start();
-
-                AreaRegistration.RegisterAllAreas();
-                WebApiConfig.Register(GlobalConfiguration.Configuration);
-                FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
-                RouteConfig.RegisterRoutes(RouteTable.Routes);
-                BundleConfig.RegisterBundles(BundleTable.Bundles);
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.GetBaseException().Message, ex);
+                _Logger.Error(ex.GetBaseException().Message, ex);
             }
+
         }
-        
+
+        // ZeroMQ Application_Start
+        protected void Application_Start()
+        {
+            AreaRegistration.RegisterAllAreas();
+            WebApiConfig.Register(GlobalConfiguration.Configuration);
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            BundleConfig.RegisterBundles(BundleTable.Bundles);
+        }
+
 
         // EQueue Application_Start
         /*
@@ -187,7 +186,7 @@ namespace Sample.CommandService
         {
 
             Exception ex = Server.GetLastError().GetBaseException(); //获取错误
-            Logger.Debug(ex.Message, ex);
+            _Logger.Debug(ex.Message, ex);
         }
     }
 }

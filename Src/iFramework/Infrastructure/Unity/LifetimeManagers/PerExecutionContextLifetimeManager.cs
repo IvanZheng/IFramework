@@ -34,7 +34,7 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
     /// execution environment. For example, within a WCF request or ASP.NET request, all objects created using this
     /// LifeTimeManager will be shared.
     /// </summary>
-    sealed class PerExecutionContextLifetimeManager
+    public sealed class PerExecutionContextLifetimeManager
         : LifetimeManager
     {
         #region Nested

@@ -114,13 +114,11 @@
     <Compile Include="Message\MessageState.cs" />
     <Compile Include="SysException\NoCommandHandlerExists.cs" />
     <Compile Include="Infrastructure\CookieHelper.cs" />
-    <Compile Include="Infrastructure\DisposeObjectHttpModule.cs" />
     <Compile Include="Infrastructure\DynamicJson.cs" />
     <Compile Include="Infrastructure\GuidUtil.cs" />
     <Compile Include="Infrastructure\IContainer.cs" />
     <Compile Include="Infrastructure\IocFactory.cs" />
     <Compile Include="Infrastructure\IoCInstanceProvider.cs" />
-    <Compile Include="Infrastructure\IoCPageHandlerFactory.cs" />
     <Compile Include="Infrastructure\IoCServiceBehavior.cs" />
     <Compile Include="Infrastructure\LockUtility.cs" />
     <Compile Include="Infrastructure\SBase64Utility.cs" />

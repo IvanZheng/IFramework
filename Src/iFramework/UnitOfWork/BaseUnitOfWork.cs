@@ -16,6 +16,18 @@ namespace IFramework.UnitOfWork
 {
     public abstract class BaseUnitOfWork : IUnitOfWork
     {
+        public static readonly Type UnitOfWorkLifetimeManagerType = GetUnitOfWorkLifetimeManagerType();
+        static Type GetUnitOfWorkLifetimeManagerType()
+        {
+            Type type = null;
+            var unitOfWorkRegistration = IoCFactory.Instance.CurrentContainer.Registrations.FirstOrDefault(r => r.RegisteredType == typeof(IUnitOfWork));
+            if (unitOfWorkRegistration != null)
+            {
+                type = unitOfWorkRegistration.LifetimeManagerType;
+            }
+            return type;
+        }
+
         protected IMessageStore MessageStore
         {
             get
