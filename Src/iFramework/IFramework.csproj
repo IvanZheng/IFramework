@@ -74,6 +74,7 @@
     <Compile Include="Infrastructure\FastInvoke.cs" />
     <Compile Include="Infrastructure\JsonHelper.cs" />
     <Compile Include="Infrastructure\ObjectId.cs" />
+    <Compile Include="Infrastructure\TimerTaskFactory.cs" />
     <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageContextLifetimeManager.cs" />
     <Compile Include="Infrastructure\Logging\ILogger.cs" />
     <Compile Include="Infrastructure\Logging\ILoggerFactory.cs" />
@@ -158,7 +159,9 @@
     <Compile Include="UnitOfWork\IUnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\AutoMapper.3.1.1\lib\net40\AutoMapper.Net4.dll">
