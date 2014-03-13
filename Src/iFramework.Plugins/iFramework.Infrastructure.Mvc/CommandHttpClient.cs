@@ -11,14 +11,13 @@ namespace IFramework.Infrastructure.Mvc
 {
     public static class CommandHttpClient
     {
-        static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");
+        static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");    
 
-        public static TResult DoCommand<TResult>(this HttpClient apiClient, ICommand command, string commandUrl = null)
+        public static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, string commandUrl = null, int timeout = 0)
         {
             return apiClient.PostAsJsonAsync(command, commandUrl)
                             .Result.Content
-                            .ReadAsAsync<TResult>()
-                            .Result;
+                            .ReadAsAsync<TResult>();
         }
 
         public static Task<HttpResponseMessage> DoCommand(this HttpClient apiClient, ICommand command, string commandUrl = null)
