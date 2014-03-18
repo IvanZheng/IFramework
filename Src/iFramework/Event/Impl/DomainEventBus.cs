@@ -31,11 +31,12 @@ namespace IFramework.Event.Impl
 
         public void Publish<TEvent>(TEvent @event) where TEvent : IDomainEvent
         {
+            DomainEventQueue.Enqueue(@event);
             var eventSubscribers = EventSubscriberProvider.GetHandlers(@event.GetType());
             eventSubscribers.ForEach(eventSubscriber => {
                 ((dynamic)eventSubscriber).Handle((dynamic)@event);
             });
-            DomainEventQueue.Enqueue(@event);
+            
         }
 
         public void Publish<TEvent>(IEnumerable<TEvent> eventContexts) where TEvent : IDomainEvent
