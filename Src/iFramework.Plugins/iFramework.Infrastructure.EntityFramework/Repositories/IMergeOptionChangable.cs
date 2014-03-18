@@ -9,6 +9,6 @@ namespace IFramework.EntityFramework.Repositories
 {
     public interface IMergeOptionChangable
     {
-        void ChangeMergeOption<TEntity>(MergeOption mergeOption) where TEntity : class, IAggregateRoot;
+        void ChangeMergeOption<TEntity>(MergeOption mergeOption) where TEntity : class;
     }
 }

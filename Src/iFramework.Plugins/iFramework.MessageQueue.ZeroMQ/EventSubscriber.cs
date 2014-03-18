@@ -36,10 +36,10 @@ namespace IFramework.MessageQueue.ZeroMQ
                     {
                         // Receive messages
                         var messageReceiver = CreateSocket(subEndPoint);
-                        Task.Factory.StartNew(ReceiveMessages, messageReceiver);
+                        Task.Factory.StartNew(ReceiveMessages, messageReceiver, TaskCreationOptions.LongRunning);
 
                         // Consume messages
-                        Task.Factory.StartNew(ConsumeMessages);
+                        Task.Factory.StartNew(ConsumeMessages, TaskCreationOptions.LongRunning);
                     }
                 }
                 catch (Exception e)

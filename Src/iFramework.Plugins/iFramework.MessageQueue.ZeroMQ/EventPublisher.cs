@@ -28,7 +28,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 ZmqEventPublisher = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PUB);
                 ZmqEventPublisher.Bind(pubEndPoint);
-                Task.Factory.StartNew(PublishEvent);
+                Task.Factory.StartNew(PublishEvent, TaskCreationOptions.LongRunning);
             }
         }
 

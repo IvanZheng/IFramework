@@ -85,7 +85,7 @@ namespace IFramework.Infrastructure
 
         public static Task<T2> ContinueWith<T1, T2>(this Task<T1> antecedentTask,
                                                    Func<Task<T1>, T2> continuationFunc,
-                                                   Func<T2, bool> predicate,
+                                                   Func<Task<T1>, T2, bool> predicate,
                                                    TimeSpan pollInterval,
                                                    TimeSpan timeout)
         {
@@ -107,7 +107,7 @@ namespace IFramework.Infrastructure
 
                         var result = continuationFunc(antecedentTask);
 
-                        if (predicate(result))
+                        if (predicate(antecedentTask, result))
                         {
                             timer.Dispose();
                             taskCompletionSource.SetResult(result);

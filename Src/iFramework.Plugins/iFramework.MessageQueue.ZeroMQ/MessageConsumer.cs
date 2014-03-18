@@ -81,7 +81,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                     Task.Factory.StartNew(ReceiveMessages, messageReceiver);
                 }
                 // Consume messages
-                Task.Factory.StartNew(ConsumeMessages);
+                Task.Factory.StartNew(ConsumeMessages, TaskCreationOptions.LongRunning);
             }
             catch (Exception e)
             {

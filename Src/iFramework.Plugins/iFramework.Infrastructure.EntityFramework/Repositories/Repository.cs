@@ -128,7 +128,7 @@ namespace IFramework.EntityFramework.Repositories
             return DbSet.LongCount(specification);
         }
         
-        public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class, IAggregateRoot
+        public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class
         {
             ObjectContext objectContext = ((IObjectContextAdapter)_Container).ObjectContext;
             ObjectSet<TMergeOptionEntity> set = objectContext.CreateObjectSet<TMergeOptionEntity>();

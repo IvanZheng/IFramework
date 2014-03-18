@@ -147,7 +147,7 @@ namespace IFramework.EntityFramework.Repositories
 
         #endregion
 
-        public void ChangeMergeOption<TEntity>(MergeOption mergeOption) where TEntity : class, IAggregateRoot
+        public void ChangeMergeOption<TEntity>(MergeOption mergeOption) where TEntity : class
         {
             var repository = GetRepository<TEntity>() as IMergeOptionChangable;
             if (repository != null)

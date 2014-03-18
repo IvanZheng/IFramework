@@ -26,12 +26,12 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected BlockingCollection<MessageState> CommandQueue { get; set; }
         protected Hashtable MessageStateQueue { get; set; }
         
-        IMessageStore _MessageStore;
+        
         protected IMessageStore MessageStore
         {
             get
             {
-                return _MessageStore ??  (_MessageStore  = IoCFactory.Resolve<IMessageStore>());
+                return IoCFactory.Resolve<IMessageStore>();
             }
         }
 
@@ -86,7 +86,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                     var commandState = CommandQueue.Take();
                     SendCommand(commandState);
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
         }
 
         protected virtual void SendCommand(MessageState commandState)
@@ -198,12 +198,12 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
             else
             {
-                task = SendAsync(commandContext, cancellationToken);
                 if (currentMessageContext != null && Configuration.IsPersistanceMessage)
                 {
                     //TODO: persistance command with domain event ID
                     MessageStore.Save(commandContext, currentMessageContext.MessageID);
                 }
+                task = SendAsync(commandContext, cancellationToken);
             }
             return task;
         }
