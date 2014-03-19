@@ -29,7 +29,22 @@ namespace Sample.CommandService.Controllers
 
         public Task<ApiResult> Action(ICommand command)
         {
-            return ExceptionManager.Process(_CommandBus.Send(command));
+            if (ModelState.IsValid)
+            {
+                return ExceptionManager.Process(_CommandBus.Send(command));
+            }
+            else
+            {
+                return Task.Factory.StartNew<ApiResult>(() =>
+                    new ApiResult
+                    {
+                        ErrorCode = ErrorCode.CommandInvalid,
+                        Message = string.Join(",", ModelState.Values
+                                                       .SelectMany(v => v.Errors
+                                                                         .Select(e => e.ErrorMessage)))
+                    });
+            }
+            
         }
 
         static List<ICommand> BatchCommands = new List<ICommand>();

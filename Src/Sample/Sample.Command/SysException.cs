@@ -11,6 +11,7 @@ namespace Sample.Command
         NoError,
         UsernameAlreadyExists,
         WrongUsernameOrPassword,
+        CommandInvalid = 0x7ffffffe,
         UnknownError = 0x7fffffff
     }
 
