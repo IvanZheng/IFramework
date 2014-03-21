@@ -12,21 +12,24 @@ namespace Sample.ApiService.Controllers
 {
     public class TestController : Controller
     {
-        ICommandBus _CommandBus;
-        public TestController(ICommandBus commandBus)
-        {
-            _CommandBus = commandBus;
-        }
-        
         // GET: /Test/
         public ActionResult Index()
         {
             return View();
         }
 
-        protected override void Dispose(bool disposing)
+        [HttpGet]
+        public Task<string> CommandDistributorStatus()
         {
-            base.Dispose(disposing);
+            return Task.Factory.StartNew(() =>
+            {
+                var commandDistributor = IoCFactory.Resolve<IMessageConsumer>("CommandDistributor");
+                var domainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
+                var distributorStatus = commandDistributor.GetStatus() +
+                    "event consumer:" + domainEventConsumer.GetStatus();
+                return distributorStatus;
+            });
+
         }
     }
 }

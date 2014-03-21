@@ -18,7 +18,7 @@
             $.ajax({
                 cache: false,
                 type: "POST",
-                url: '@Url.Content("~/api/Command/Action/")' + commandName,
+                url: '@Url.Content("~/api/Command/")' + commandName,
                 data: command,
                 success: function (data) {
                     if (data.ErrorCode == 0) {
@@ -36,7 +36,7 @@
             $.ajax({
                 cache: false,
                 type: "POST",
-                url: '@Url.Content("~/api/Command/TestDistributor/")' + commandName,
+                url: '@Url.Content("~/api/BatchCommand/")' + commandName,
                 data: command,
                 success: function (data) {
                     if (data.ErrorCode == 0) {
@@ -89,7 +89,7 @@
             .click();
         });
         var refreshCommandDistributorStatus = function () {
-            $.get("@Url.Content("~/Api/Command/CommandDistributorStatus")", null, function (result) {
+            $.get("@Url.Content("~/Test/CommandDistributorStatus")", null, function (result) {
                 $("#commandDistributorStatus").html(result);
             });
         };
