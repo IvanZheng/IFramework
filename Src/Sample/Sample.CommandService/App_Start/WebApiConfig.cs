@@ -20,6 +20,7 @@ namespace Sample.CommandService
                 .Add(new QueryStringMapping("xml", "true", "application/xml"));
 
 
+            config.Formatters.Insert(0, new MultipartMediaTypeFormatter());
             config.Formatters.Insert(0, new CommandMediaTypeFormatter());
             config.Routes.MapHttpRoute(
                name: "DefaultApi",
