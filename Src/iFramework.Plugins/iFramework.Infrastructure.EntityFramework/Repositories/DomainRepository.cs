@@ -34,7 +34,7 @@ namespace IFramework.EntityFramework.Repositories
         #endregion
 
         
-        protected IRepository<TAggregateRoot> GetRepository<TAggregateRoot>()
+        internal IRepository<TAggregateRoot> GetRepository<TAggregateRoot>()
             where TAggregateRoot : class
         {
             IRepository repository;

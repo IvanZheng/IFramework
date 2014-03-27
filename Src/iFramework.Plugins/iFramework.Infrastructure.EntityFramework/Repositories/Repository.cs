@@ -27,7 +27,7 @@ namespace IFramework.EntityFramework.Repositories
             _Container = dbContext;
         }
 
-        protected DbContext _Container;
+        internal DbContext _Container;
 
         DbSet<TEntity> DbSet
         {

@@ -11,6 +11,7 @@ using IFramework.Event;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
 using IFramework.Config;
+using System.Transactions;
 
 namespace IFramework.UnitOfWork
 {
@@ -27,6 +28,7 @@ namespace IFramework.UnitOfWork
             }
             return type;
         }
+        protected TransactionScope _TransactionScope;
 
         protected IMessageStore MessageStore
         {
@@ -38,6 +40,7 @@ namespace IFramework.UnitOfWork
 
         public BaseUnitOfWork(IDomainEventBus domainEventBus)
         {
+            _TransactionScope = new TransactionScope();
             _DomainEventBus = domainEventBus;
         }
         #region IUnitOfWork Members
@@ -47,5 +50,10 @@ namespace IFramework.UnitOfWork
         public abstract void Commit();
 
         #endregion
+
+        public virtual void Dispose()
+        {
+            _TransactionScope.Dispose();
+        }
     }
 }
