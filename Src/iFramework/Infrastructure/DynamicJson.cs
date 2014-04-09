@@ -21,7 +21,18 @@ namespace IFramework.Infrastructure
             JToken value;
             if (_json.TryGetValue(binder.Name, out value))
             {
-                result = (value as JValue).Value;
+                if (value is JValue)
+                {
+                    result = (value as JValue).Value;
+                }
+                else if (value is JObject)
+                {
+                    result = new DynamicJson(value as JObject);
+                }
+                else
+                {
+                    result = value;
+                }
                 ret = true;
             }
             else
