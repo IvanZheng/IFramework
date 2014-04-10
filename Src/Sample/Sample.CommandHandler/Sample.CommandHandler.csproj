@@ -62,6 +62,10 @@
       <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
       <Name>IFramework.EntityFramework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj">
+      <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
+      <Name>IFramework.MessageQueue.MessageFormat</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>

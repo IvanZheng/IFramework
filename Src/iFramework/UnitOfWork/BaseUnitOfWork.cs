@@ -28,7 +28,6 @@ namespace IFramework.UnitOfWork
             }
             return type;
         }
-        protected TransactionScope _TransactionScope;
 
         protected IMessageStore MessageStore
         {
@@ -40,7 +39,6 @@ namespace IFramework.UnitOfWork
 
         public BaseUnitOfWork(IDomainEventBus domainEventBus)
         {
-            _TransactionScope = new TransactionScope();
             _DomainEventBus = domainEventBus;
         }
         #region IUnitOfWork Members
@@ -53,7 +51,6 @@ namespace IFramework.UnitOfWork
 
         public virtual void Dispose()
         {
-            _TransactionScope.Dispose();
         }
     }
 }

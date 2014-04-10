@@ -32,10 +32,11 @@ namespace IFramework.EntityFramework
         {
             // TODO: should make domain events never losed, need transaction between
             //       model context and message queue, but need transaction across different scopes.
+            TransactionScope scope = new TransactionScope();
             try
             {
                 _DbContexts.ForEach(dbContext => dbContext.SaveChanges());
-                _TransactionScope.Complete();
+                scope.Complete();
             }
             catch (Exception ex)
             {
@@ -43,7 +44,7 @@ namespace IFramework.EntityFramework
             }
             finally
             {
-                _TransactionScope.Dispose();
+                scope.Dispose();
             }
 
             if (_DomainEventBus != null)

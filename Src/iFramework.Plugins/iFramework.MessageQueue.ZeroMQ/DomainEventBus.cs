@@ -8,30 +8,30 @@ using IFramework.Message.Impl;
 using System.Collections;
 using IFramework.Event;
 using System.Collections.Concurrent;
+using IFramework.MessageQueue.MessageFormat;
 
-namespace IFramework.Event.Impl
+namespace IFramework.MessageQueue.ZeroMQ
 {
     public class DomainEventBus : IDomainEventBus
     {
-        protected ConcurrentQueue<IDomainEvent> DomainEventQueue;
+        protected ConcurrentQueue<IMessageContext> DomainEventContextQueue;
         protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
         protected IEventPublisher EventPublisher { get; set; }
-        protected IEnumerable<IMessageContext> SentMessageContexts { get; set; }
         public DomainEventBus(IEventSubscriberProvider provider, IEventPublisher eventPublisher)
         {
             EventPublisher = eventPublisher;
             EventSubscriberProvider = provider;
-            DomainEventQueue = new ConcurrentQueue<IDomainEvent>();
+            DomainEventContextQueue = new ConcurrentQueue<IMessageContext>();
         }
 
         public virtual void Commit()
         {
-            SentMessageContexts = EventPublisher.Publish(DomainEventQueue.ToArray());
+            EventPublisher.Publish(DomainEventContextQueue.ToArray());
         }
 
         public void Publish<TEvent>(TEvent @event) where TEvent : IDomainEvent
         {
-            DomainEventQueue.Enqueue(@event);
+            DomainEventContextQueue.Enqueue(new MessageContext(@event));
             var eventSubscribers = EventSubscriberProvider.GetHandlers(@event.GetType());
             eventSubscribers.ForEach(eventSubscriber => {
                 ((dynamic)eventSubscriber).Handle((dynamic)@event);
@@ -51,7 +51,7 @@ namespace IFramework.Event.Impl
 
         public IEnumerable<IMessageContext> GetMessageContexts()
         {
-            return SentMessageContexts;
+            return DomainEventContextQueue;
         }
     }
 }
