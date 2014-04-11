@@ -115,7 +115,8 @@
     <Compile Include="Message\MessageCode.cs" />
     <Compile Include="Message\MessageFormatHelper.cs" />
     <Compile Include="Message\MessageState.cs" />
-    <Compile Include="SysException\NoCommandHandlerExists.cs" />
+    <Compile Include="SysExceptions\DomainException.cs" />
+    <Compile Include="SysExceptions\NoCommandHandlerExists.cs" />
     <Compile Include="Infrastructure\CookieHelper.cs" />
     <Compile Include="Infrastructure\DynamicJson.cs" />
     <Compile Include="Infrastructure\GuidUtil.cs" />
@@ -154,7 +155,7 @@
     <Compile Include="Specifications\SemanticsAttribute.cs" />
     <Compile Include="Specifications\Specification.cs" />
     <Compile Include="Specifications\SpecificationUtility.cs" />
-    <Compile Include="SysException\NoHandlerExists.cs" />
+    <Compile Include="SysExceptions\NoHandlerExists.cs" />
     <Compile Include="UnitOfWork\BaseUnitOfWork.cs" />
     <Compile Include="UnitOfWork\IUnitOfWork.cs" />
   </ItemGroup>

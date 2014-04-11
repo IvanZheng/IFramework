@@ -3,7 +3,7 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue.MessageFormat;
-using IFramework.SysException;
+using IFramework.SysExceptions;
 using IFramework.UnitOfWork;
 using System;
 using System.Collections.Concurrent;
@@ -80,7 +80,14 @@ namespace IFramework.MessageQueue.ZeroMQ
             catch (Exception e)
             {
                 messageReply = new MessageReply(messageContext.MessageID, e.GetBaseException());
-                // need log
+                if (e is DomainException)
+                {
+                    _Logger.Debug(message.ToJson(), e);
+                }
+                else
+                {
+                    _Logger.Error(message.ToJson(), e);
+                }
             }
             finally
             {

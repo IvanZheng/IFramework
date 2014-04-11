@@ -10,12 +10,12 @@ using ZeroMQ;
 using IFramework.Infrastructure;
 using IFramework.Message.Impl;
 using System.Threading;
-using IFramework.SysException;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.UnitOfWork;
 using IFramework.Config;
 using System.Collections.Concurrent;
 using IFramework.MessageQueue.MessageFormat;
+using IFramework.SysExceptions;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {

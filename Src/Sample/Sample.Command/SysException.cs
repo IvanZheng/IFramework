@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IFramework.SysExceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -15,7 +16,7 @@ namespace Sample.Command
         UnknownError = 0x7fffffff
     }
 
-    public class SysException : Exception
+    public class SysException : DomainException
     {
         public ErrorCode ErrorCode { get; set; }
         public SysException() { }

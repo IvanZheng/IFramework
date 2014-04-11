@@ -7,11 +7,11 @@ using ZeroMQ;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using System.Threading.Tasks;
-using IFramework.SysException;
 using IFramework.UnitOfWork;
 using IFramework.Message.Impl;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.MessageQueue.MessageFormat;
+using IFramework.SysExceptions;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -80,7 +80,14 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
                 catch (Exception e)
                 {
-                    Console.Write(e.GetBaseException().Message);
+                    if (e is DomainException)
+                    {
+                        _Logger.Debug(message.ToJson(), e);
+                    }
+                    else
+                    {
+                        _Logger.Error(message.ToJson(), e);
+                    }
                 }
                 finally
                 {

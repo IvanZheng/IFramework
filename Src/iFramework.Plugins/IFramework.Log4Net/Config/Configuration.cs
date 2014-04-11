@@ -12,14 +12,7 @@ namespace IFramework.Config
         /// <summary>Use Log4Net as the logger for the enode framework.
         /// </summary>
         /// <returns></returns>
-        public static Configuration UseLog4Net(this Configuration configuration)
-        {
-            return UseLog4Net(configuration, "log4net.config");
-        }
-        /// <summary>Use Log4Net as the logger for the enode framework.
-        /// </summary>
-        /// <returns></returns>
-        public static Configuration UseLog4Net(this Configuration configuration, string configFile)
+        public static Configuration UseLog4Net(this Configuration configuration, string configFile = "log4net.config")
         {
              IoCFactory.Instance.CurrentContainer
                                 .RegisterInstance(typeof(ILoggerFactory)
