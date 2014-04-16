@@ -144,7 +144,7 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         protected void ConsumeHandledNotification(IMessageHandledNotification notification)
         {
-            _Logger.DebugFormat("Handle notification, commandID:{0}", notification.MessageID);
+            _Logger.InfoFormat("Handle notification, commandID:{0}", notification.MessageID);
             CommandState commandState;
             if (CommandStateQueue.TryGetValue(notification.MessageID, out commandState))
             {
@@ -168,13 +168,13 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 notificationSender.SendFrame(new MessageHandledNotification(notification.MessageID)
                                                     .GetFrame());
-                _Logger.DebugFormat("send notification, commandID:{0}", notification.MessageID);
+                _Logger.InfoFormat("send notification, commandID:{0}", notification.MessageID);
             }
         }
 
         protected void ConsumeMessageContext(IMessageContext commandContext)
         {
-            _Logger.DebugFormat("send to consumer, commandID:{0} payload:{1}",
+            _Logger.InfoFormat("send to consumer, commandID:{0} payload:{1}",
                                          commandContext.MessageID, commandContext.ToJson());
 
             CommandQueueConsumer consumer;

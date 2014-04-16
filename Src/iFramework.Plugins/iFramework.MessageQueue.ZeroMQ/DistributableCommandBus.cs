@@ -49,7 +49,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             MessageStateQueue.Add(commandState.MessageID, commandState);
             Task.Factory.StartNew(() => {
                 _CommandConsumer.EnqueueMessage(commandContext.GetFrame());
-                _Logger.DebugFormat("send to distributor/consumer commandID:{0} payload:{1}",
+                _Logger.InfoFormat("send to distributor/consumer commandID:{0} payload:{1}",
                                          commandContext.MessageID, commandContext.ToJson());
             });
             return commandState.TaskCompletionSource.Task;

@@ -186,7 +186,7 @@ namespace Sample.CommandService
         {
 
             Exception ex = Server.GetLastError().GetBaseException(); //获取错误
-            _Logger.Debug(ex.Message, ex);
+            _Logger.Error(ex.Message, ex);
         }
     }
 }
