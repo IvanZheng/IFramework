@@ -70,12 +70,13 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected override void ConsumeMessage(IMessageContext messageContext)
         {
             var message = messageContext.Message;
-            PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
+           
             var messageHandlers = HandlerProvider.GetHandlers(message.GetType());
             messageHandlers.ForEach(messageHandler =>
             {
                 try
                 {
+                    PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
                     ((dynamic)messageHandler).Handle((dynamic)message);
                 }
                 catch (Exception e)
@@ -91,10 +92,9 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
                 finally
                 {
-                   
+                    PerMessageContextLifetimeManager.CurrentMessageContext = null;
                 }
             });
-            PerMessageContextLifetimeManager.CurrentMessageContext = null;
         }
     }
 }
