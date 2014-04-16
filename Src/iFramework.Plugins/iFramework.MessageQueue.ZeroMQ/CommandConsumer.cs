@@ -82,7 +82,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                 messageReply = new MessageReply(messageContext.MessageID, e.GetBaseException());
                 if (e is DomainException)
                 {
-                    _Logger.Debug(message.ToJson(), e);
+                    _Logger.Warn(message.ToJson(), e);
                 }
                 else
                 {
