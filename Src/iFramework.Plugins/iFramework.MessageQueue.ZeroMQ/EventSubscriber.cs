@@ -83,11 +83,11 @@ namespace IFramework.MessageQueue.ZeroMQ
                 {
                     if (e is DomainException)
                     {
-                        _Logger.Warn(message.ToJson(), e);
+                        _Logger.Warn(message.ToJson(), e.GetBaseException());
                     }
                     else
                     {
-                        _Logger.Error(message.ToJson(), e);
+                        _Logger.Error(message.ToJson(), e.GetBaseException());
                     }
                 }
                 finally

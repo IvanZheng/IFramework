@@ -235,6 +235,18 @@ namespace IFramework.MessageQueue.ZeroMQ
                         ((dynamic)commandHandler).Handle((dynamic)command);
                         unitOfWork.Commit();
                     }
+                    catch (Exception e)
+                    {
+                        if (e is DomainException)
+                        {
+                            _Logger.Warn(command.ToJson(), e.GetBaseException());
+                        }
+                        else
+                        {
+                            _Logger.Error(command.ToJson(), e.GetBaseException());
+                        }
+                        throw e;
+                    }
                     finally
                     {
                         result = commandContext.Reply;
