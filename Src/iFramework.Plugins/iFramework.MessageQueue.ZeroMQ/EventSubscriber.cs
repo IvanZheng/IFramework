@@ -71,12 +71,13 @@ namespace IFramework.MessageQueue.ZeroMQ
         {
             var message = messageContext.Message;
            
-            var messageHandlers = HandlerProvider.GetHandlers(message.GetType());
-            messageHandlers.ForEach(messageHandler =>
+            var messageHandlerTypes = HandlerProvider.GetHandlerTypes(message.GetType());
+            messageHandlerTypes.ForEach(messageHandlerType =>
             {
                 try
                 {
                     PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
+                    var messageHandler = IoCFactory.Resolve(messageHandlerType);
                     ((dynamic)messageHandler).Handle((dynamic)message);
                 }
                 catch (Exception e)

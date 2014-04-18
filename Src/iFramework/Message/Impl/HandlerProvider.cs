@@ -131,7 +131,7 @@ namespace IFramework.Message.Impl
             return GetHandlerTypes(messageType).FirstOrDefault();
         }
 
-        protected IList<Type> GetHandlerTypes(Type messageType)
+        public IList<Type> GetHandlerTypes(Type messageType)
         {
             var avaliableHandlerTypes = new List<Type>();
             if (_HandlerTypes.ContainsKey(messageType))
@@ -176,14 +176,6 @@ namespace IFramework.Message.Impl
                 handler = IoCFactory.Resolve(handlerType);
             }
             return handler;
-        }
-
-        public IList<object> GetHandlers(Type messageType)
-        {
-            var handlerTypes = GetHandlerTypes(messageType);
-            var handlers = new List<object>();
-            handlerTypes.ForEach(handlerType => handlers.Add(IoCFactory.Resolve(handlerType)));
-            return handlers;
         }
     }
 }
