@@ -116,5 +116,12 @@ namespace IFramework.EntityFramework
                 entity.GetDbEntityEntry().Collection(navigationPropertyName).Load();
             }
         }
+
+        public static void RemoveEntity<T>(this ICollection<T> collection, T entity)
+            where T : Entity
+        {
+            collection.Remove(entity);
+            entity.MarkAsDeleted();
+        }
     }
 }
