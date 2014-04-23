@@ -17,12 +17,13 @@
         var doCommand = function (commandName, command) {
             $.ajax({
                 cache: false,
+                contentType: "application/command+form;command=" + commandName,
                 type: "POST",
-                url: '@Url.Content("~/api/Command/")' + commandName,
+                url: '@Url.Content("~/api/Command")',
                 data: command,
                 success: function (data) {
                     if (data.ErrorCode == 0) {
-                        alert($.toJSON(data.Result));
+                        alert($.toJSON(data));
                     }
                     else {
                         alert(data.ErrorCode + " " + data.Message);
@@ -46,6 +47,7 @@
                         alert(data.Message);
                     }
                 }
+
             });
         };
 

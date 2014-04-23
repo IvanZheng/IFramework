@@ -17,6 +17,7 @@ namespace IFramework.Infrastructure.Mvc
         public CommandMediaTypeFormatter()
         {
             this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/command"));
+            this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/command+form"));
             this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/x-www-form-urlencoded"));
         }
         public override bool CanReadType(Type type)
@@ -33,24 +34,42 @@ namespace IFramework.Infrastructure.Mvc
             return base.WriteToStreamAsync(value.GetType(), value, writeStream, content, transportContext);
         }
 
+        Type GetCommandType(string commandType)
+        {
+            var type = Type.GetType(commandType);
+            if (type == null)
+            {
+                type = Type.GetType(string.Format(CommandTypeTemplate,
+                                                         commandType));
+            }
+            return type;
+        }
+
         public override Task<object> ReadFromStreamAsync(Type type, System.IO.Stream readStream, HttpContent content, System.Net.Http.Formatting.IFormatterLogger formatterLogger)
         {
             var commandType = type;
             if (type.IsAbstract || type.IsInterface)
             {
-                commandType = Type.GetType(string.Format(CommandTypeTemplate, 
-                                                         HttpContext.Current.Request.Url.Segments.Last()));
+                var commandContentType = content.Headers.ContentType.Parameters.FirstOrDefault(p => p.Name == "command");
+                if (commandContentType != null)
+                {
+                    commandType = GetCommandType(HttpUtility.UrlDecode(commandContentType.Value));
+                }
+                else
+                {
+                    commandType = GetCommandType(HttpContext.Current.Request.Url.Segments.Last());
+                }
             }
             var part = content.ReadAsStringAsync();
             var mediaType = content.Headers.ContentType.MediaType;
             return Task.Factory.StartNew<object>(() =>
             {
                 object command = null;
-                if (mediaType == "application/x-www-form-urlencoded")
+                if (mediaType == "application/x-www-form-urlencoded" || mediaType == "application/command+form")
                 {
                     command = new FormDataCollection(part.Result).ConvertToObject(commandType);
                 }
-                else
+                if (command == null)
                 {
                     command = part.Result.ToJsonObject(commandType);
                 }

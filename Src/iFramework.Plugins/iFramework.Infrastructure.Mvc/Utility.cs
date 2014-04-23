@@ -102,13 +102,22 @@ namespace IFramework.Infrastructure.Mvc
     {
         public static object ConvertToObject(this FormDataCollection formDataCollection, Type type)
         {
-            DefaultModelBinder binder = new DefaultModelBinder();
-            ModelBindingContext modelBindingContext = new ModelBindingContext()
+            try
             {
-                ModelMetadata = ModelMetadataProviders.Current.GetMetadataForType(null, type),
-                ValueProvider = new FormValueProvider(formDataCollection.ReadAsNameValueCollection())
-            };
-            return binder.BindModel(new ControllerContext(), modelBindingContext);
+                DefaultModelBinder binder = new DefaultModelBinder();
+                ModelBindingContext modelBindingContext = new ModelBindingContext()
+                {
+                    ModelMetadata = ModelMetadataProviders.Current.GetMetadataForType(null, type),
+                    ValueProvider = new FormValueProvider(formDataCollection.ReadAsNameValueCollection())
+                };
+                return binder.BindModel(new ControllerContext(), modelBindingContext);
+            }
+            catch (Exception)
+            {
+
+                return null;
+            }
+           
         }
     }
 }

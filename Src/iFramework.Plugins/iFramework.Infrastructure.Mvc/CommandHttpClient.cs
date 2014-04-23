@@ -4,14 +4,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace IFramework.Infrastructure.Mvc
 {
     public static class CommandHttpClient
     {
-        static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");    
+        //static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");    
 
         public static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, string commandUrl = null)
         {
@@ -34,18 +37,23 @@ namespace IFramework.Infrastructure.Mvc
             return apiClient.PostAsJsonAsync(command, commandUrl);
         }
 
-        static string GetCommandUrl(ICommand command)
-        {
-            return string.Format(CommandActionUrlTemplate, command.GetType().Name);
-        }
+        //static string GetCommandUrl(ICommand command)
+        //{
+        //    return string.Format(CommandActionUrlTemplate, command.GetType().Name);
+        //}
 
         public static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command, string commandUrl = null)
         {
-            if (string.IsNullOrWhiteSpace(commandUrl))
-            {
-                commandUrl = GetCommandUrl(command);
-            }
-            return client.PostAsJsonAsync(commandUrl, command);
+            var mediaType = new MediaTypeWithQualityHeaderValue("application/command");
+            mediaType.Parameters.Add(new NameValueHeaderValue("command",
+                 HttpUtility.UrlEncode(string.Format("{0}, {1}",
+                                                command.GetType().FullName,
+                                                command.GetType().Assembly.GetName().Name))));
+            var requestMessage = new HttpRequestMessage();
+            requestMessage.Content = new ObjectContent(command.GetType(), command, new JsonMediaTypeFormatter(), mediaType);        
+            requestMessage.Method = HttpMethod.Post;
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            return client.SendAsync(requestMessage);
         }
     }
 }
