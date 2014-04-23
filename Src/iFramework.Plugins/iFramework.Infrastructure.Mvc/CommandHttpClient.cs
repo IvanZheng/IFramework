@@ -16,25 +16,25 @@ namespace IFramework.Infrastructure.Mvc
     {
         //static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");    
 
-        public static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, string commandUrl = null)
+        public static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
         {
-            return apiClient.PostAsJsonAsync(command, commandUrl)
+            return apiClient.PostAsJsonAsync(command, requestUrl)
                             .Result.Content
                             .ReadAsAsync<TResult>();
         }
 
 
-        public static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, TimeSpan timeout, string commandUrl = null)
+        public static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, TimeSpan timeout, string requestUrl = "api/command")
         {
-            return apiClient.PostAsJsonAsync(command, commandUrl)
+            return apiClient.PostAsJsonAsync(command, requestUrl)
                             .Result.Content
                             .ReadAsAsync<TResult>()
                             .Timeout(timeout);
         }
 
-        public static Task<HttpResponseMessage> DoCommand(this HttpClient apiClient, ICommand command, string commandUrl = null)
+        public static Task<HttpResponseMessage> DoCommand(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
         {
-            return apiClient.PostAsJsonAsync(command, commandUrl);
+            return apiClient.PostAsJsonAsync(command, requestUrl);
         }
 
         //static string GetCommandUrl(ICommand command)
@@ -42,16 +42,16 @@ namespace IFramework.Infrastructure.Mvc
         //    return string.Format(CommandActionUrlTemplate, command.GetType().Name);
         //}
 
-        public static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command, string commandUrl = null)
+        public static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
         {
             var mediaType = new MediaTypeWithQualityHeaderValue("application/command");
             mediaType.Parameters.Add(new NameValueHeaderValue("command",
                  HttpUtility.UrlEncode(string.Format("{0}, {1}",
                                                 command.GetType().FullName,
                                                 command.GetType().Assembly.GetName().Name))));
-            var requestMessage = new HttpRequestMessage();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUrl);
             requestMessage.Content = new ObjectContent(command.GetType(), command, new JsonMediaTypeFormatter(), mediaType);        
-            requestMessage.Method = HttpMethod.Post;
+            //requestMessage.Method = HttpMethod.Post;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             return client.SendAsync(requestMessage);
         }
