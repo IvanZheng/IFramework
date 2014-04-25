@@ -239,11 +239,11 @@ namespace IFramework.MessageQueue.ZeroMQ
                     {
                         if (e is DomainException)
                         {
-                            _Logger.Warn(command.ToJson(), e.GetBaseException());
+                            _Logger.Warn(command.ToJson(), e);
                         }
                         else
                         {
-                            _Logger.Error(command.ToJson(), e.GetBaseException());
+                            _Logger.Error(command.ToJson(), e);
                         }
                         throw e;
                     }
