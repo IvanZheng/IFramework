@@ -53,7 +53,19 @@ namespace IFramework.Domain
             {
                 subscriber.Handle(@event);
             }
-            
+            //else no need to call parent event handler, let client decide it!
+            //{
+            //    var eventSubscriberInterfaces = this.GetType().GetInterfaces()
+            //        .Where(i => i.IsGenericType)
+            //        .Where(i => i.GetGenericTypeDefinition() == typeof(IEventSubscriber<>).GetGenericTypeDefinition())
+            //        .ForEach(i => {
+            //            var eventType = i.GetGenericArguments().First();
+            //            if (eventType.IsAssignableFrom(typeof(TDomainEvent)))
+            //            {
+            //                i.GetMethod("Handle").Invoke(this, new object[] { @event });
+            //            }
+            //        });
+            //}
         }
     }
 }

@@ -10,15 +10,13 @@ using System.Text;
 
 namespace Sample.Domain.Model
 {
-    public class Account : AggregateRoot,
-                           IEventSubscriber<AccountRegistered>
+    public class Account : People,
+        IEventSubscriber<AccountRegistered>
     {
-        public Guid ID { get; private set; }
-        public string UserName { get; private set; }
-        public string Password { get; private set; }
-        public DateTime RegisterTime { get; private set; }
+        public string Email { get; private set; }
 
         public Account() { }
+
         public Account(string username, string password, string email)
         {
             OnEvent(new AccountRegistered(Guid.NewGuid(), username,
@@ -26,12 +24,9 @@ namespace Sample.Domain.Model
         }
         void IMessageHandler<AccountRegistered>.Handle(AccountRegistered @event)
         {
-            {
-                ID = (Guid)@event.AggregateRootID;
-                UserName = @event.UserName;
-                Password = @event.Password;
-                RegisterTime = @event.RegisterTime;
-            }
+            (this as IMessageHandler<ItemRegisted>).Handle(@event);
+            (this as IMessageHandler<PeopleRegisted>).Handle(@event);
+            RegisterTime = @event.RegisterTime;
         }
     }
 }
