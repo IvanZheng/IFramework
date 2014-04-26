@@ -67,6 +67,7 @@
     <Compile Include="Command\ILinearCommandManager.cs" />
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
+    <Compile Include="Domain\AggregateRootWithIdentity.cs" />
     <Compile Include="Event\IApplicationEvent.cs" />
     <Compile Include="Event\IEvent.cs" />
     <Compile Include="Event\IEventPublisher.cs" />
