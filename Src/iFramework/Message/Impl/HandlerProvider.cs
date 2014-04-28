@@ -66,6 +66,23 @@ namespace IFramework.Message.Impl
                     }
                 }
             }
+
+            RegisterInheritedMessageHandlers();
+        }
+
+        private void RegisterInheritedMessageHandlers()
+        {
+            _HandlerTypes.Keys.ForEach(messageType =>
+                _HandlerTypes.Keys.Where(type =>
+                                            type != messageType && messageType.IsAssignableFrom(type))
+                                  .ForEach(type =>
+                                  {
+                                      var list =
+                                      _HandlerTypes[type].Union(_HandlerTypes[messageType]).ToList();
+                                      _HandlerTypes[type].Clear();
+                                      _HandlerTypes[type].AddRange(list);
+                                  }
+                                  ));
         }
 
         #region Private Methods
@@ -74,7 +91,7 @@ namespace IFramework.Message.Impl
             var exportedTypes = assembly.GetExportedTypes()
                                         .Where(x => x.IsInterface == false && x.IsAbstract == false
                                                 && x.GetInterfaces()
-                                                    .Any(y => y.IsGenericType 
+                                                    .Any(y => y.IsGenericType
                                                         && y.GetGenericTypeDefinition() == typeof(IHandler).GetGenericTypeDefinition()));
             foreach (var type in exportedTypes)
             {
@@ -84,7 +101,7 @@ namespace IFramework.Message.Impl
 
         protected void RegisterHandlerFromType(Type handlerType)
         {
-            var ihandlerTypes = handlerType.GetInterfaces().Where(x => x.IsGenericType 
+            var ihandlerTypes = handlerType.GetInterfaces().Where(x => x.IsGenericType
                                                                     && x.GetGenericTypeDefinition() == typeof(IHandler).GetGenericTypeDefinition());
             foreach (var ihandlerType in ihandlerTypes)
             {
@@ -139,31 +156,31 @@ namespace IFramework.Message.Impl
                 var handlerTypes = _HandlerTypes[messageType];
                 if (handlerTypes != null && handlerTypes.Count > 0)
                 {
-                    avaliableHandlerTypes.AddRange(handlerTypes);
+                    avaliableHandlerTypes = handlerTypes;
                 }
             }
-            else if (!discardKeyTypes.Contains(messageType))
-            {
-                bool isDiscardKeyTypes = true;
-                foreach (var handlerTypes in _HandlerTypes)
-                {
-                    if (messageType.IsSubclassOf(handlerTypes.Key))
-                    {
-                        var messageDispatcherHandlerTypes = _HandlerTypes[handlerTypes.Key];
-                        if (messageDispatcherHandlerTypes != null && messageDispatcherHandlerTypes.Count > 0)
-                        {
-                            avaliableHandlerTypes.AddRange(messageDispatcherHandlerTypes);
-                            isDiscardKeyTypes = false;
-                            _HandlerTypes.Add(messageType, messageDispatcherHandlerTypes);
-                            break;
-                        }
-                    }
-                }
-                if (isDiscardKeyTypes)
-                {
-                    discardKeyTypes.Add(messageType);
-                }
-            }
+            //else if (!discardKeyTypes.Contains(messageType))
+            //{
+            //    bool isDiscardKeyTypes = true;
+            //    foreach (var handlerTypes in _HandlerTypes)
+            //    {
+            //        if (messageType.IsSubclassOf(handlerTypes.Key))
+            //        {
+            //            var messageDispatcherHandlerTypes = _HandlerTypes[handlerTypes.Key];
+            //            if (messageDispatcherHandlerTypes != null && messageDispatcherHandlerTypes.Count > 0)
+            //            {
+            //                avaliableHandlerTypes.AddRange(messageDispatcherHandlerTypes);
+            //                isDiscardKeyTypes = false;
+            //                _HandlerTypes.Add(messageType, messageDispatcherHandlerTypes);
+            //                break;
+            //            }
+            //        }
+            //    }
+            //    if (isDiscardKeyTypes)
+            //    {
+            //        discardKeyTypes.Add(messageType);
+            //    }
+            //}
             return avaliableHandlerTypes;
         }
 
