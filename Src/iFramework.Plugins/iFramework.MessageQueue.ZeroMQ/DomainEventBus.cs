@@ -32,13 +32,15 @@ namespace IFramework.MessageQueue.ZeroMQ
         public void Publish<TEvent>(TEvent @event) where TEvent : IDomainEvent
         {
             DomainEventContextQueue.Enqueue(new MessageContext(@event));
-            var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
-            eventSubscriberTypes.ForEach(eventSubscriberType =>
+            if (EventSubscriberProvider != null)
             {
-                var eventSubscriber = IoCFactory.Resolve(eventSubscriberType);
-                ((dynamic)eventSubscriber).Handle((dynamic)@event);
-            });
-            
+                var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
+                eventSubscriberTypes.ForEach(eventSubscriberType =>
+                {
+                    var eventSubscriber = IoCFactory.Resolve(eventSubscriberType);
+                    ((dynamic)eventSubscriber).Handle((dynamic)@event);
+                });
+            }
         }
 
         public void Publish<TEvent>(IEnumerable<TEvent> eventContexts) where TEvent : IDomainEvent
