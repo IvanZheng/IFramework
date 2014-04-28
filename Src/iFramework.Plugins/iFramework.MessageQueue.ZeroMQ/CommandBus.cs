@@ -187,11 +187,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             string commandKey = null;
             if (command is ILinearCommand)
             {
-                var linearKey = LinearCommandManager.GetLinearKey(command as ILinearCommand);
-                if (linearKey != null)
-                {
-                    commandKey = linearKey.ToString();
-                }
+                commandKey = LinearCommandManager.GetLinearKey(command as ILinearCommand).ToString();
             }
             IMessageContext commandContext = new MessageContext(command, this.ReceiveEndPoint, commandKey);
 
