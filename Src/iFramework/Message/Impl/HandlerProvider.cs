@@ -7,6 +7,7 @@ using System.Reflection;
 using IFramework.Infrastructure;
 using IFramework.Config;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
+using System.Collections.Concurrent;
 
 namespace IFramework.Message.Impl
 {
@@ -15,14 +16,14 @@ namespace IFramework.Message.Impl
         //protected abstract Type HandlerType { get; }
 
         private string[] Assemblies { get; set; }
-        private readonly Dictionary<Type, List<Type>> _HandlerTypes;
+        private readonly ConcurrentDictionary<Type, List<Type>> _HandlerTypes;
         private readonly HashSet<Type> discardKeyTypes;
         private readonly Dictionary<Type, ParameterInfo[]> _HandlerConstuctParametersInfo;
 
         public HandlerProvider(params string[] assemblies)
         {
             Assemblies = assemblies;
-            _HandlerTypes = new Dictionary<Type, List<Type>>();
+            _HandlerTypes = new ConcurrentDictionary<Type, List<Type>>();
             _HandlerConstuctParametersInfo = new Dictionary<Type, ParameterInfo[]>();
             discardKeyTypes = new HashSet<Type>();
 
@@ -73,8 +74,7 @@ namespace IFramework.Message.Impl
         private void RegisterInheritedMessageHandlers()
         {
             _HandlerTypes.Keys.ForEach(messageType =>
-                _HandlerTypes.Keys.Where(type =>
-                                            type != messageType && messageType.IsAssignableFrom(type))
+                _HandlerTypes.Keys.Where(type => type.IsSubclassOf(messageType))
                                   .ForEach(type =>
                                   {
                                       var list =
@@ -135,7 +135,7 @@ namespace IFramework.Message.Impl
             {
                 var registeredDispatcherHandlerTypes = new List<Type>();
                 registeredDispatcherHandlerTypes.Add(handlerType);
-                _HandlerTypes.Add(messageType, registeredDispatcherHandlerTypes);
+                _HandlerTypes.TryAdd(messageType, registeredDispatcherHandlerTypes);
             }
             var parameterInfoes = handlerType.GetConstructors()
                                                .OrderByDescending(c => c.GetParameters().Length)
@@ -159,28 +159,28 @@ namespace IFramework.Message.Impl
                     avaliableHandlerTypes = handlerTypes;
                 }
             }
-            //else if (!discardKeyTypes.Contains(messageType))
-            //{
-            //    bool isDiscardKeyTypes = true;
-            //    foreach (var handlerTypes in _HandlerTypes)
-            //    {
-            //        if (messageType.IsSubclassOf(handlerTypes.Key))
-            //        {
-            //            var messageDispatcherHandlerTypes = _HandlerTypes[handlerTypes.Key];
-            //            if (messageDispatcherHandlerTypes != null && messageDispatcherHandlerTypes.Count > 0)
-            //            {
-            //                avaliableHandlerTypes.AddRange(messageDispatcherHandlerTypes);
-            //                isDiscardKeyTypes = false;
-            //                _HandlerTypes.Add(messageType, messageDispatcherHandlerTypes);
-            //                break;
-            //            }
-            //        }
-            //    }
-            //    if (isDiscardKeyTypes)
-            //    {
-            //        discardKeyTypes.Add(messageType);
-            //    }
-            //}
+            else if (!discardKeyTypes.Contains(messageType))
+            {
+                foreach (var handlerTypes in _HandlerTypes)
+                {
+                    if (messageType.IsSubclassOf(handlerTypes.Key))
+                    {
+                        var messageDispatcherHandlerTypes = _HandlerTypes[handlerTypes.Key];
+                        if (messageDispatcherHandlerTypes != null && messageDispatcherHandlerTypes.Count > 0)
+                        {
+                            avaliableHandlerTypes = avaliableHandlerTypes.Union(messageDispatcherHandlerTypes).ToList();   
+                        }
+                    }
+                }
+                if (avaliableHandlerTypes.Count == 0)
+                {
+                    discardKeyTypes.Add(messageType);
+                }
+                else
+                {
+                    _HandlerTypes.TryAdd(messageType, avaliableHandlerTypes);
+                }
+            }
             return avaliableHandlerTypes;
         }
 
