@@ -25,8 +25,8 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected ILinearCommandManager LinearCommandManager { get; set; }
         protected BlockingCollection<MessageState> CommandQueue { get; set; }
         protected Hashtable MessageStateQueue { get; set; }
-        
-        
+        protected Task _SendCommandWorkTask;
+
         protected IMessageStore MessageStore
         {
             get
@@ -39,9 +39,9 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected List<ZmqSocket> CommandSenders { get; set; }
 
         public CommandBus(ICommandHandlerProvider handlerProvider,
-                          ILinearCommandManager linearCommandManager, 
+                          ILinearCommandManager linearCommandManager,
                           string receiveEndPoint,
-                          bool inProc) 
+                          bool inProc)
             : base(receiveEndPoint)
         {
             MessageStateQueue = Hashtable.Synchronized(new Hashtable());
@@ -75,20 +75,46 @@ namespace IFramework.MessageQueue.ZeroMQ
             });
         }
 
-        public new void Start()
+        public override void Start()
         {
             base.Start();
-
-            Task.Factory.StartNew(() =>
+            if (CommandQueue != null)
             {
-                while (true)
+                _SendCommandWorkTask = Task.Factory.StartNew(() =>
                 {
-                    var commandState = CommandQueue.Take();
-                    SendCommand(commandState);
-                }
-            }, TaskCreationOptions.LongRunning);
+                    try
+                    {
+                        while (true)
+                        {
+                            var commandState = CommandQueue.Take();
+                            SendCommand(commandState);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _Logger.Debug("end send command", ex);
+                    }
+
+                }, TaskCreationOptions.LongRunning);
+            }
         }
 
+        public override void Stop()
+        {
+            if (_SendCommandWorkTask != null)
+            {
+                CommandQueue.CompleteAdding();
+                if (_SendCommandWorkTask.Wait(2000))
+                {
+                    _SendCommandWorkTask.Dispose();
+                }
+                else
+                {
+                    _Logger.ErrorFormat(" consumer can't be stopped!");
+                }
+            }
+            base.Stop();
+        }
         protected virtual void SendCommand(MessageState commandState)
         {
             try

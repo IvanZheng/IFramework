@@ -11,6 +11,7 @@ namespace IFramework.Command
     public interface ICommandBus
     {
         void Start();
+        void Stop();
         Task Send(ICommand command, CancellationToken cancellationToken);
         Task Send(ICommand command);
     }

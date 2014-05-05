@@ -15,6 +15,7 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using IFramework.MessageQueue.ZeroMQ;
+using System.Threading.Tasks;
 
 namespace Sample.CommandService
 {
@@ -24,6 +25,14 @@ namespace Sample.CommandService
     public class WebApiApplication : System.Web.HttpApplication
     {
         static ILogger _Logger;
+        static IEventPublisher _EventPublisher;
+        static IMessageConsumer _CommandBus;
+        static IMessageConsumer _CommandConsumer1;
+        static IMessageConsumer _CommandConsumer2;
+        static IMessageConsumer _CommandConsumer3;
+        static IMessageConsumer _CommandDistributor;
+        static IMessageConsumer _DomainEventConsumer;
+        static IMessageConsumer _ApplicationEventConsumer;
 
         static WebApiApplication()
         {
@@ -32,7 +41,7 @@ namespace Sample.CommandService
                 Configuration.Instance.UseLog4Net();
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
-                var commandDistributor = new CommandDistributor("tcp://127.0.0.1:5000",
+                _CommandDistributor = new CommandDistributor("tcp://127.0.0.1:5000",
                                                                 new string[] { 
                                                                     "tcp://127.0.0.1:5001"
                                                                     , "tcp://127.0.0.1:5002"
@@ -40,31 +49,34 @@ namespace Sample.CommandService
                                                                 }
                                                                );
 
-                Configuration.Instance.RegisterCommandConsumer(commandDistributor, "CommandDistributor")
+                Configuration.Instance.RegisterCommandConsumer(_CommandDistributor, "CommandDistributor")
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
                              .RegisterDisposeModule()
                              .RegisterMvc();
 
-                IoCFactory.Resolve<IEventPublisher>();
-                IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer").Start();
-                IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer").Start();
+                _EventPublisher = IoCFactory.Resolve<IEventPublisher>();
+                _EventPublisher.Start();
+                _DomainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
+                _DomainEventConsumer.Start();
+                _ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
+                _ApplicationEventConsumer.Start();
 
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
-                var commandConsumer1 = new CommandConsumer(commandHandlerProvider,
+                _CommandConsumer1 = new CommandConsumer(commandHandlerProvider,
                                                            "tcp://127.0.0.1:5001");
-                var commandConsumer2 = new CommandConsumer(commandHandlerProvider,
+                _CommandConsumer2 = new CommandConsumer(commandHandlerProvider,
                                                            "tcp://127.0.0.1:5002");
-                var commandConsumer3 = new CommandConsumer(commandHandlerProvider,
+                _CommandConsumer3 = new CommandConsumer(commandHandlerProvider,
                                                            "tcp://127.0.0.1:5003");
 
 
-                commandConsumer1.Start();
-                commandConsumer2.Start();
-                commandConsumer3.Start();
-                commandDistributor.Start();
+                _CommandConsumer1.Start();
+                _CommandConsumer2.Start();
+                _CommandConsumer3.Start();
+                _CommandDistributor.Start();
 
-                ICommandBus commandBus = IoCFactory.Resolve<ICommandBus>();
-                commandBus.Start();
+                _CommandBus = IoCFactory.Resolve<ICommandBus>() as IMessageConsumer;
+                _CommandBus.Start();
             }
             catch (Exception ex)
             {
@@ -83,7 +95,27 @@ namespace Sample.CommandService
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
 
+        protected void Application_End()
+        {
+            try
+            {
+                Task.WaitAll(
+                    Task.Factory.StartNew(() => _CommandConsumer1.Stop()),
+                    Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
+                    Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
+                    Task.Factory.StartNew(() => _CommandBus.Stop()),
+                    Task.Factory.StartNew(() => _CommandDistributor.Stop()),
+                    Task.Factory.StartNew(() => _EventPublisher.Stop()),
+                    Task.Factory.StartNew(() => _DomainEventConsumer.Stop()),
+                    Task.Factory.StartNew(() => _ApplicationEventConsumer.Stop())
+                    );
+            }
+            catch (Exception ex)
+            {
+                _Logger.Error(ex.GetBaseException().Message, ex);
+            }
 
+        }
         // EQueue Application_Start
         /*
         public static List<CommandConsumer> CommandConsumers = new List<CommandConsumer>();

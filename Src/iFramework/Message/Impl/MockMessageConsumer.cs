@@ -9,7 +9,6 @@ namespace IFramework.Message.Impl
     {
         public void Start()
         {
-            throw new NotImplementedException();
         }
 
         public string GetStatus()
@@ -24,7 +23,11 @@ namespace IFramework.Message.Impl
 
         public void EnqueueMessage(object message)
         {
-            throw new NotImplementedException();
+        }
+
+
+        public void Stop()
+        {
         }
     }
 }

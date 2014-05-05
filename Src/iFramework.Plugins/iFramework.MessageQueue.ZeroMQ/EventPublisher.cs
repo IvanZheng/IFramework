@@ -19,16 +19,41 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected ZmqSocket ZmqEventPublisher { get; set; }
         protected BlockingCollection<IMessageContext> MessageQueue { get; set; }
         protected ILogger _Logger;
+        protected string _PubEndPoint;
+        protected Task _WorkTask;
 
         public EventPublisher(string pubEndPoint)
         {
             _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
             MessageQueue = new BlockingCollection<IMessageContext>();
-            if (!string.IsNullOrWhiteSpace(pubEndPoint))
+            _PubEndPoint = pubEndPoint;
+           
+        }
+
+        public void Start()
+        {
+            if (!string.IsNullOrWhiteSpace(_PubEndPoint))
             {
                 ZmqEventPublisher = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PUB);
-                ZmqEventPublisher.Bind(pubEndPoint);
-                Task.Factory.StartNew(PublishEvent, TaskCreationOptions.LongRunning);
+                ZmqEventPublisher.Bind(_PubEndPoint);
+                _WorkTask = Task.Factory.StartNew(PublishEvent, TaskCreationOptions.LongRunning);
+            }
+        }
+
+        public void Stop()
+        {
+            if (_WorkTask != null)
+            {
+                MessageQueue.CompleteAdding();
+                if (_WorkTask.Wait(2000))
+                {
+                    ZmqEventPublisher.Close();
+                    _WorkTask.Dispose();
+                }
+                else
+                {
+                    _Logger.ErrorFormat("consumer can't be stopped!");
+                }
             }
         }
 
@@ -40,12 +65,20 @@ namespace IFramework.MessageQueue.ZeroMQ
             });
         }
 
+
         void PublishEvent()
         {
-            while (true)
+            try
             {
-                var eventContext = MessageQueue.Take();
-                ZmqEventPublisher.Send(eventContext.ToJson(), Encoding.UTF8);
+                while (true)
+                {
+                    var eventContext = MessageQueue.Take();
+                    ZmqEventPublisher.Send(eventContext.ToJson(), Encoding.UTF8);
+                }
+            }
+            catch (Exception ex)
+            {
+                _Logger.Debug("end publish working", ex);
             }
         }
     }

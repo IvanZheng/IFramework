@@ -8,6 +8,7 @@ namespace IFramework.Message
     public interface IMessageConsumer
     {
         void Start();
+        void Stop();
         string GetStatus();
         decimal MessageCount { get; }
     }

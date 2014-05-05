@@ -19,11 +19,13 @@ namespace IFramework.MessageQueue.ZeroMQ
     {
         IHandlerProvider HandlerProvider { get; set; }
         string[] SubEndPoints { get; set; }
+        List<Task> _ReceiveWorkTasks;
 
         public EventSubscriber(IHandlerProvider handlerProvider, string[] subEndPoints)
         {
             HandlerProvider = handlerProvider;
             SubEndPoints = subEndPoints;
+            _ReceiveWorkTasks = new List<Task>();
         }
 
         public override void Start()
@@ -36,15 +38,31 @@ namespace IFramework.MessageQueue.ZeroMQ
                     {
                         // Receive messages
                         var messageReceiver = CreateSocket(subEndPoint);
-                        Task.Factory.StartNew(ReceiveMessages, messageReceiver, TaskCreationOptions.LongRunning);
-
-                        // Consume messages
-                        Task.Factory.StartNew(ConsumeMessages, TaskCreationOptions.LongRunning);
+                        _ReceiveWorkTasks.Add(Task.Factory.StartNew(ReceiveMessages, messageReceiver, TaskCreationOptions.LongRunning));
                     }
                 }
                 catch (Exception e)
                 {
                     _Logger.Error(e.GetBaseException().Message, e);
+                }
+            });
+            // Consume messages
+            _ConsumeWorkTask = Task.Factory.StartNew(ConsumeMessages, TaskCreationOptions.LongRunning);
+        }
+
+        public override void Stop()
+        {
+            base.Stop();
+            _ReceiveWorkTasks.ForEach(receiveWorkTask =>
+            {
+                if (receiveWorkTask.Wait(5000))
+                {
+                    (receiveWorkTask.AsyncState as ZmqSocket).Close();
+                    receiveWorkTask.Dispose();
+                }
+                else
+                {
+                    _Logger.ErrorFormat("receiver can't be stopped!");
                 }
             });
         }
@@ -70,7 +88,7 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected override void ConsumeMessage(IMessageContext messageContext)
         {
             var message = messageContext.Message;
-           
+
             var messageHandlerTypes = HandlerProvider.GetHandlerTypes(message.GetType());
             messageHandlerTypes.ForEach(messageHandlerType =>
             {

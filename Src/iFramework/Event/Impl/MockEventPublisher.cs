@@ -11,5 +11,14 @@ namespace IFramework.Event.Impl
         public void Publish(params IMessageContext[] messageContexts)
         {
         }
+
+        public void Start()
+        {
+            
+        }
+
+        public void Stop()
+        {
+        }
     }
 }
