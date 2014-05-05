@@ -30,9 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IFramework">
-      <HintPath>..\RefBins\IFramework.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
@@ -47,6 +44,12 @@
     <Compile Include="AuthenticationUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RsaPublicKey.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
+      <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
+      <Name>IFramework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
