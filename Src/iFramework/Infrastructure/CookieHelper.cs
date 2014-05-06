@@ -192,9 +192,14 @@ namespace IFramework.Infrastructure
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public static void AddCookie(string key, string value)
+        public static void AddCookie(string key, string value, string domain = null)
         {
-            AddCookie(new HttpCookie(key, value));
+            var cookie = new HttpCookie(key, value);
+            if (!string.IsNullOrWhiteSpace(domain))
+            {
+                cookie.Domain = domain;
+            }
+            AddCookie(cookie);
         }
 
         /// <summary>
@@ -203,10 +208,14 @@ namespace IFramework.Infrastructure
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="expires"></param>
-        public static void AddCookie(string key, string value, DateTime expires)
+        public static void AddCookie(string key, string value, DateTime expires, string domain = null)
         {
             HttpCookie cookie = new HttpCookie(key, value);
             cookie.Expires = expires;
+            if (!string.IsNullOrWhiteSpace(domain))
+            {
+                cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 
@@ -216,10 +225,14 @@ namespace IFramework.Infrastructure
         /// <param name="cookieName"></param>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public static void AddCookie(string cookieName, string key, string value)
+        public static void AddCookie(string cookieName, string key, string value, string domain = null)
         {
             HttpCookie cookie = new HttpCookie(cookieName);
             cookie.Values.Add(key, value);
+            if (!string.IsNullOrWhiteSpace(domain))
+            {
+                cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 
@@ -228,10 +241,14 @@ namespace IFramework.Infrastructure
         /// </summary>
         /// <param name="cookieName">Cookie名称</param>
         /// <param name="expires">过期时间</param>
-        public static void AddCookie(string cookieName, DateTime expires)
+        public static void AddCookie(string cookieName, DateTime expires, string domain = null)
         {
             HttpCookie cookie = new HttpCookie(cookieName);
             cookie.Expires = expires;
+            if (!string.IsNullOrWhiteSpace(domain))
+            {
+                cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 
@@ -242,11 +259,15 @@ namespace IFramework.Infrastructure
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="expires"></param>
-        public static void AddCookie(string cookieName, string key, string value, DateTime expires)
+        public static void AddCookie(string cookieName, string key, string value, DateTime expires, string domain = null)
         {
             HttpCookie cookie = new HttpCookie(cookieName);
             cookie.Expires = expires;
             cookie.Values.Add(key, value);
+            if (!string.IsNullOrWhiteSpace(domain))
+            {
+                cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 
