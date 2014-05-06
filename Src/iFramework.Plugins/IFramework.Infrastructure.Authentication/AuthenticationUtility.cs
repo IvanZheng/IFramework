@@ -73,7 +73,7 @@ namespace IFramework.Infrastructure.WebAuthentication
                                        encryptedToken); // 将存储在 Cookie 中的用户定义数据。  roles是一个角色字符串数组 
 
             string encryptedTicket = FormsAuthentication.Encrypt(ticket); //加密 
-            CookiesHelper.AddCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
+            CookiesHelper.AddCookie(FormsAuthentication.FormsCookieName, encryptedTicket, FormsAuthentication.CookieDomain);
         }
 
         public static void Logout()
