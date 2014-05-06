@@ -49,7 +49,7 @@ namespace IFramework.Infrastructure.Mvc
                  HttpUtility.UrlEncode(string.Format("{0}, {1}",
                                                 command.GetType().FullName,
                                                 command.GetType().Assembly.GetName().Name))));
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUrl);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(client.BaseAddress, requestUrl));
             requestMessage.Content = new ObjectContent(command.GetType(), command, new JsonMediaTypeFormatter(), mediaType);        
             //requestMessage.Method = HttpMethod.Post;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
