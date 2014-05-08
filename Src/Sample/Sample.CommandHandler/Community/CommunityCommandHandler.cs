@@ -18,7 +18,8 @@ using System.Text;
 namespace Sample.CommandHandler.Community
 {
     public class CommunityCommandHandler : ICommandHandler<Login>,
-                                           ICommandHandler<Register>
+                                           ICommandHandler<Register>,       
+                                           ICommandHandler<Modify>
     {
         IEventPublisher _EventPublisher;
         IMessageContext _CommandContext;
@@ -61,6 +62,17 @@ namespace Sample.CommandHandler.Community
             Account account = new Account(command.UserName, command.Password, command.Email);
             _DomainRepository.Add(account);
             _CommandContext.Reply = account.ID;
+        }
+
+        public void Handle(Modify command)
+        {
+            var account = _DomainRepository.Find<Account>(a => a.UserName == command.UserName);
+            if (account == null)
+            {
+                throw new SysException(ErrorCode.WrongUsernameOrPassword);
+            }
+            account.Modify(command.Email);
+            //_DomainRepository.Update(account);
         }
     }
 }

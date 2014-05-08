@@ -40,4 +40,14 @@ namespace Sample.DomainEvent.Community
             Email = email;
         }
     }
+
+    public class AccountModified : DomainEvent
+    {
+        public string Email { get; private set; }
+        public AccountModified(Guid id, string email)
+            :base(id)
+        {
+            Email = email;
+        }
+    }
 }

@@ -16,6 +16,7 @@ using IFramework.Config;
 using System.Collections.Concurrent;
 using IFramework.MessageQueue.MessageFormat;
 using IFramework.SysExceptions;
+using System.Data;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -250,38 +251,46 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 task = new Task<object>(() =>
                 {
+                    var needRetry = command.NeedRetry;
                     object result = null;
-                    PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-                    var commandHandler = HandlerProvider.GetHandler(command.GetType());
-                    if (commandHandler == null)
+                    do
                     {
-                        throw new NoHandlerExists();
-                    }
-
-                    //MessageState messageState = BuildMessageState(commandContext, cancellationToken);
-                    try
-                    {
-                        var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                        ((dynamic)commandHandler).Handle((dynamic)command);
-                        unitOfWork.Commit();
-                    }
-                    catch (Exception e)
-                    {
-                        if (e is DomainException)
+                        PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
+                        var commandHandler = HandlerProvider.GetHandler(command.GetType());
+                        if (commandHandler == null)
                         {
-                            _Logger.Warn(command.ToJson(), e);
+                            PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                            throw new NoHandlerExists();
                         }
-                        else
+                        
+                        try
                         {
-                            _Logger.Error(command.ToJson(), e);
+                            var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
+                            ((dynamic)commandHandler).Handle((dynamic)command);
+                            unitOfWork.Commit();
+                            result = commandContext.Reply;
+                            needRetry = false;
                         }
-                        throw e;
-                    }
-                    finally
-                    {
-                        result = commandContext.Reply;
-                    }
-                    PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                        catch (Exception e)
+                        {
+                            if (!(e is OptimisticConcurrencyException) || !needRetry)
+                            {
+                                if (e is DomainException)
+                                {
+                                    _Logger.Warn(command.ToJson(), e);
+                                }
+                                else
+                                {
+                                    _Logger.Error(command.ToJson(), e);
+                                }
+                                throw e;
+                            }
+                        }
+                        finally
+                        {
+                            PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                        }
+                    } while (needRetry);
                     return result;
                 });
                 task.RunSynchronously();

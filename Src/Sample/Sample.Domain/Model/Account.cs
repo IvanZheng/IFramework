@@ -11,9 +11,13 @@ using System.Text;
 namespace Sample.Domain.Model
 {
     public class Account : People,
-        IEventSubscriber<AccountRegistered>
+        IEventSubscriber<AccountRegistered>,
+        IEventSubscriber<AccountModified>
     {
         public string Email { get; private set; }
+
+        
+        public byte[] Version { get; protected set; }
 
         public Account() { }
 
@@ -27,6 +31,15 @@ namespace Sample.Domain.Model
             (this as IMessageHandler<ItemRegisted>).Handle(@event);
             (this as IMessageHandler<PeopleRegisted>).Handle(@event);
             RegisterTime = @event.RegisterTime;
+        }
+
+        public void Modify(string email)
+        {
+            OnEvent(new AccountModified(ID, email));
+        }
+        void IMessageHandler<AccountModified>.Handle(AccountModified @event)
+        {
+            Email = @event.Email;
         }
     }
 }

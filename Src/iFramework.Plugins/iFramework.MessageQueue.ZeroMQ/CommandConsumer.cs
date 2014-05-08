@@ -1,4 +1,5 @@
-﻿using IFramework.Infrastructure;
+﻿using IFramework.Command;
+using IFramework.Infrastructure;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -8,6 +9,7 @@ using IFramework.UnitOfWork;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using ZeroMQ;
@@ -56,44 +58,60 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 return;
             }
-            var message = messageContext.Message;
-            
-            try
-            {
-                PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
-                var messageHandler = HandlerProvider.GetHandler(message.GetType());
-                _Logger.InfoFormat("Handle command, commandID:{0}", messageContext.MessageID);
+            var message = messageContext.Message as ICommand;
+            var needRetry = message.NeedRetry;
 
-                if (messageHandler == null)
+            do
+            {
+                try
                 {
-                    messageReply = new MessageReply(messageContext.MessageID, new NoHandlerExists());
-                }
-                else
-                {
-                    var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                    ((dynamic)messageHandler).Handle((dynamic)message);
-                    unitOfWork.Commit();
-                    messageReply = new MessageReply(messageContext.MessageID, messageContext.Reply);
-                }
+                    PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
+                    var messageHandler = HandlerProvider.GetHandler(message.GetType());
+                    _Logger.InfoFormat("Handle command, commandID:{0}", messageContext.MessageID);
 
-            }
-            catch (Exception e)
-            {
-                messageReply = new MessageReply(messageContext.MessageID, e.GetBaseException());
-                if (e is DomainException)
-                {
-                    _Logger.Warn(message.ToJson(), e);
+                    if (messageHandler == null)
+                    {
+                        messageReply = new MessageReply(messageContext.MessageID, new NoHandlerExists());
+                    }
+                    else
+                    {
+                        var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
+                        ((dynamic)messageHandler).Handle((dynamic)message);
+                        unitOfWork.Commit();
+                        messageReply = new MessageReply(messageContext.MessageID, messageContext.Reply);
+                    }
+                    needRetry = false;
                 }
-                else
+                //catch (OptimisticConcurrencyException e)
+                //{
+                //    if (!needRetry)
+                //    {
+                //        messageReply = new MessageReply(messageContext.MessageID, e.GetBaseException());
+                //        _Logger.Debug(message.ToJson(), e);
+                //    }
+                //}
+                catch (Exception e)
                 {
-                    _Logger.Error(message.ToJson(), e);
+                    if (!(e is OptimisticConcurrencyException) || !needRetry)
+                    {
+                        messageReply = new MessageReply(messageContext.MessageID, e.GetBaseException());
+                        if (e is DomainException)
+                        {
+                            _Logger.Warn(message.ToJson(), e);
+                        }
+                        else
+                        {
+                            _Logger.Error(message.ToJson(), e);
+                        }
+                        needRetry = false;
+                    }
                 }
-            }
-            finally
-            {
-                PerMessageContextLifetimeManager.CurrentMessageContext = null;
-                OnMessageHandled(messageContext, messageReply);
-            }
+                finally
+                {
+                    PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                }
+            } while (needRetry);
+            OnMessageHandled(messageContext, messageReply);
         }
 
         protected override void ReceiveMessage(Frame frame)

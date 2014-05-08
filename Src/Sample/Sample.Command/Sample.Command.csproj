@@ -42,7 +42,9 @@
   <ItemGroup>
     <Compile Include="CommandBase.cs" />
     <Compile Include="Community\Login.cs" />
+    <Compile Include="Community\Modify.cs" />
     <Compile Include="Community\Register.cs" />
+    <Compile Include="ConcurrentCommand.cs" />
     <Compile Include="LinearCommandManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SysException.cs" />

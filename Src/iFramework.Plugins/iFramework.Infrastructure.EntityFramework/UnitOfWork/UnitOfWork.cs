@@ -13,6 +13,8 @@ using IFramework.Repositories;
 using IFramework.Domain;
 using IFramework.Event;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Core;
 
 namespace IFramework.EntityFramework
 {
@@ -40,7 +42,14 @@ namespace IFramework.EntityFramework
             }
             catch (Exception ex)
             {
-                throw ex;
+                if (ex is DbUpdateConcurrencyException)
+                {
+                    throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
+                }
+                else
+                {
+                    throw ex;
+                }
             }
             finally
             {

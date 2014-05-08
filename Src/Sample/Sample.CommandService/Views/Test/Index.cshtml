@@ -66,6 +66,18 @@
                 batchCommandTest("Login", loginCommand, $("#batchCount").val());
             });
 
+
+            $("#modifyCommand").click(function () {
+                var username = $("#username").val();
+                var email = $("#email").val();
+
+                var modifyCommand = {
+                    UserName: username,
+                    Email: email
+                };
+                doCommand("Modify", modifyCommand);
+            });
+
             $("#registerCommand").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
@@ -105,13 +117,24 @@
 
     </div>
     <br />
+
     <input type="text" value="1000" id="batchCount"/>
     <input type="text" value="ivan" id="username" />
     <input type="password" value="123456" id="password" />
 
     <input id="registerCommand" type="button" value="RegisterCommand" />
     <input id="loginCommand" type="button" value="LoginCommand" />
-    <input id="batchRegisterCommand" type="button" value="BatchRegisterCommand" />
-    <input id="batchLoginCommand" type="button" value="BatchLoginCommand" />
+
+   
+
+    <div>
+        <input id="batchRegisterCommand" type="button" value="BatchRegisterCommand" />
+        <input id="batchLoginCommand" type="button" value="BatchLoginCommand" />
+    </div>
+
+    <div>
+        <input type="text" value="email" id="email" />
+        <input id="modifyCommand" type="button" value="ModifyCommand" />
+    </div>
 </body>
 </html>

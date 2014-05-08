@@ -68,7 +68,7 @@ namespace IFramework.EntityFramework.Repositories
 
         protected override void DoUpdate(TEntity entity)
         {
-            throw new NotImplementedException();
+            _Container.Entry(entity).State = EntityState.Modified;
         }
 
         protected override IQueryable<TEntity> DoFindAll(ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
