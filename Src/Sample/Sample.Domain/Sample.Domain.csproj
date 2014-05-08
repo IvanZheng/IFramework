@@ -44,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj">
+      <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
+      <Name>IFramework.EntityFramework</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>
@@ -52,9 +56,9 @@
       <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
       <Name>Sample.Command</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvent.csproj">
+    <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj">
       <Project>{af5512aa-caf1-4066-90bd-efb9b951fe18}</Project>
-      <Name>Sample.DomainEvent</Name>
+      <Name>Sample.DomainEvents</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

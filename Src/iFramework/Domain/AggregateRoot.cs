@@ -39,7 +39,7 @@ namespace IFramework.Domain
             }
         }
 
-        protected void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
+        protected virtual void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
         {
             HandleEvent<TDomainEvent>(@event);
             @event.AggregateRootName = AggregateRootName;

@@ -11,6 +11,7 @@ namespace IFramework.EntityFramework
     {
         public string AggregateRootID { get; set; }
         public string AggregateRootType { get; set; }
+        public int Version { get; set; }
 
         public DomainEvent() { }
         public DomainEvent(IMessageContext messageContext, string sourceMessageID) :
@@ -19,6 +20,10 @@ namespace IFramework.EntityFramework
             var domainEvent = messageContext.Message as IDomainEvent;
             AggregateRootID = domainEvent.AggregateRootID.ToString();
             AggregateRootType = domainEvent.AggregateRootName;
+            if (domainEvent is IFramework.Event.DomainEvent)
+            {
+                Version = (domainEvent as IFramework.Event.DomainEvent).Version;
+            }
         }
 
         public Command Parent

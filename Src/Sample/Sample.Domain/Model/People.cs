@@ -1,6 +1,6 @@
 ﻿using IFramework.Domain;
 using IFramework.Event;
-using Sample.DomainEvent.Community;
+using Sample.DomainEvents.Community;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Sample.Domain.Model
 {
-    public abstract class People : AggregateRoot,
+    public abstract class People : VersionedAggregateRoot,
         IEventSubscriber<PeopleRegisted>,
         IEventSubscriber<ItemRegisted>
     {

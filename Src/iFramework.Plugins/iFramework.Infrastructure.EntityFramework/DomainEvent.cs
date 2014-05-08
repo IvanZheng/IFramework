@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sample.DomainEvent
+namespace IFramework.Event
 {
     public class DomainEvent : IDomainEvent
     {
+        public int Version { get; set; }
         public object AggregateRootID
         {
             get;
@@ -24,8 +25,5 @@ namespace Sample.DomainEvent
         {
             AggregateRootID = aggregateRootID;
         }
-
-
-        
     }
 }

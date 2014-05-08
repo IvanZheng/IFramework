@@ -17,9 +17,7 @@ namespace Sample.Persistence
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>()
-             .ToTable("Accounts")
-             .Property(a => a.Version)
-             .IsRowVersion();
+             .ToTable("Accounts");
 
             base.OnModelCreating(modelBuilder);
 

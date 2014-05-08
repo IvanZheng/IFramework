@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sample.DomainEvent.Community
+namespace Sample.DomainEvents.Community
 {
-    public class ItemRegisted: DomainEvent
+    public class ItemRegisted : DomainEvent
     {
         public ItemRegisted(Guid id)
             :base(id)

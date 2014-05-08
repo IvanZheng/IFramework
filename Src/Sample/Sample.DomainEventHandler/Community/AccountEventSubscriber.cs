@@ -1,5 +1,5 @@
 ﻿using IFramework.Event;
-using Sample.DomainEvent.Community;
+using Sample.DomainEvents.Community;
 using System;
 using System.Collections.Generic;
 using System.Linq;

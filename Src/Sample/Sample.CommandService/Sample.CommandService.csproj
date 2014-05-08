@@ -317,9 +317,9 @@
       <Project>{428e547a-e371-4059-843a-33166d0fd80b}</Project>
       <Name>Sample.DomainEventSubscriber</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvent.csproj">
+    <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj">
       <Project>{af5512aa-caf1-4066-90bd-efb9b951fe18}</Project>
-      <Name>Sample.DomainEvent</Name>
+      <Name>Sample.DomainEvents</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj">
       <Project>{f1f1b380-f3a0-463e-8686-3af27962c100}</Project>

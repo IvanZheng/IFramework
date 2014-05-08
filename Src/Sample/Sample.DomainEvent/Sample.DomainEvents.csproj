@@ -4,15 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EF03000D-E2D6-4C8D-B848-5B9635246C27}</ProjectGuid>
+    <ProjectGuid>{AF5512AA-CAF1-4066-90BD-EFB9B951FE18}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Sample.AsyncDomainEventSubscriber</RootNamespace>
-    <AssemblyName>Sample.AsyncDomainEventSubscriber</AssemblyName>
+    <RootNamespace>Sample.DomainEvents</RootNamespace>
+    <AssemblyName>Sample.DomainEvents</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,11 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Community\AccountEventSubscriber.cs" />
+    <Compile Include="Community\AccountRegistered.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj">
@@ -55,10 +50,6 @@
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj">
-      <Project>{af5512aa-caf1-4066-90bd-efb9b951fe18}</Project>
-      <Name>Sample.DomainEvents</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

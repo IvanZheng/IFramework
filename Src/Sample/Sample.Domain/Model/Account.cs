@@ -2,7 +2,7 @@
 using IFramework.Event;
 using IFramework.Message;
 using Sample.Command;
-using Sample.DomainEvent.Community;
+using Sample.DomainEvents.Community;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,7 @@ namespace Sample.Domain.Model
         public string Email { get; private set; }
 
         
-        public byte[] Version { get; protected set; }
+        //public byte[] Version { get; protected set; }
 
         public Account() { }
 

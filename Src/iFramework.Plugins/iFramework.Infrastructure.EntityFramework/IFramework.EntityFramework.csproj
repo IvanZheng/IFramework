@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DomainEvent.cs" />
     <Compile Include="EntityExtension.cs" />
     <Compile Include="MessageStoring\Command.cs" />
     <Compile Include="MessageStoring\Message.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Repositories\RepositoryExtention.cs" />
     <Compile Include="UnitOfWork\MockUnitOfWork.cs" />
     <Compile Include="UnitOfWork\UnitOfWork.cs" />
+    <Compile Include="VersionedAggregateRoot.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

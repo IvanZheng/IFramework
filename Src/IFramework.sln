@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandService", "Sa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Domain", "Sample\Sample.Domain\Sample.Domain.csproj", "{F1F1B380-F3A0-463E-8686-3AF27962C100}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DomainEvent", "Sample\Sample.DomainEvent\Sample.DomainEvent.csproj", "{AF5512AA-CAF1-4066-90BD-EFB9B951FE18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DomainEvents", "Sample\Sample.DomainEvent\Sample.DomainEvents.csproj", "{AF5512AA-CAF1-4066-90BD-EFB9B951FE18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.DomainEventSubscriber", "Sample\Sample.DomainEventHandler\Sample.DomainEventSubscriber.csproj", "{428E547A-E371-4059-843A-33166D0FD80B}"
 EndProject
