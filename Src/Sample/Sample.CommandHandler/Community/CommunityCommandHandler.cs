@@ -69,7 +69,7 @@ namespace Sample.CommandHandler.Community
             var account = _DomainRepository.Find<Account>(a => a.UserName == command.UserName);
             if (account == null)
             {
-                throw new SysException(ErrorCode.WrongUsernameOrPassword);
+                throw new SysException(ErrorCode.UserNotExists);
             }
             account.Modify(command.Email);
             //_DomainRepository.Update(account);
