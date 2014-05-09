@@ -2,16 +2,11 @@
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
-using IFramework.Message.Impl;
 using IFramework.MessageQueue.MessageFormat;
 using IFramework.SysExceptions;
 using IFramework.UnitOfWork;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using ZeroMQ;
 
 namespace IFramework.MessageQueue.ZeroMQ
@@ -54,7 +49,7 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected override void ConsumeMessage(IMessageContext messageContext)
         {
             IMessageReply messageReply = null;
-            if (messageContext == null || messageContext.Message == null)
+            if (messageContext == null || messageContext.Message as ICommand == null)
             {
                 return;
             }
