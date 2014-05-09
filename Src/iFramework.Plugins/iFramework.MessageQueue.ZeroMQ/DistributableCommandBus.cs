@@ -1,11 +1,6 @@
 ﻿using IFramework.Command;
 using IFramework.Message;
-using IFramework.Message.Impl;
 using IFramework.MessageQueue.MessageFormat;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
@@ -14,10 +9,10 @@ namespace IFramework.MessageQueue.ZeroMQ
 {
     public class DistributableCommandBus : CommandBus, ICommandBus
     {
-        IInProcMessageConsumer _CommandConsumer;
-        IInProcMessageConsumer _CommandDistributor;
+        readonly IInProcMessageConsumer _commandConsumer;
+        readonly IInProcMessageConsumer _commandDistributor;
 
-        bool _IsDistributor;
+        readonly bool _isDistributor;
 
         public DistributableCommandBus(ICommandHandlerProvider handlerProvider,
                           ILinearCommandManager linearCommandManager,
@@ -26,29 +21,28 @@ namespace IFramework.MessageQueue.ZeroMQ
                           bool inProc)
             : base(handlerProvider, linearCommandManager, receiveEndPoint, inProc)
         {
-            _CommandConsumer = commandConsumer as IInProcMessageConsumer;
-            _CommandDistributor = _CommandConsumer as IInProcMessageConsumer;
-            _IsDistributor = _CommandDistributor is IMessageDistributor;
+            _commandConsumer = commandConsumer as IInProcMessageConsumer;
+            _commandDistributor = _commandConsumer;
+            _isDistributor = _commandDistributor is IMessageDistributor;
         }
 
 
         protected override void ConsumeMessage(IMessageReply reply)
         {
             base.ConsumeMessage(reply);
-            if (_IsDistributor)
+            if (_isDistributor)
             {
-                _CommandDistributor.EnqueueMessage(new MessageHandledNotification(reply.MessageID).GetFrame());
+                _commandDistributor.EnqueueMessage(new MessageHandledNotification(reply.MessageID).GetFrame());
             }
         }
 
         protected override Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
         {
-            var command = commandContext.Message as ICommand;
             MessageState commandState = BuildMessageState(commandContext, cancellationToken);
-            commandState.CancellationToken.Register(onCancel, commandState);
+            commandState.CancellationToken.Register(OnCancel, commandState);
             MessageStateQueue.Add(commandState.MessageID, commandState);
             Task.Factory.StartNew(() => {
-                _CommandConsumer.EnqueueMessage(commandContext.GetFrame());
+                _commandConsumer.EnqueueMessage(commandContext.GetFrame());
                 _Logger.InfoFormat("send to distributor/consumer commandID:{0} payload:{1}",
                                          commandContext.MessageID, commandContext.ToJson());
             });

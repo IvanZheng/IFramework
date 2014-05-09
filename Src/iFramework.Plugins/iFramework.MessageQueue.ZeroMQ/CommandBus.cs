@@ -3,12 +3,9 @@ using IFramework.Message;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using ZeroMQ;
 using IFramework.Infrastructure;
-using IFramework.Message.Impl;
 using System.Threading;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.UnitOfWork;
@@ -26,7 +23,7 @@ namespace IFramework.MessageQueue.ZeroMQ
         protected ILinearCommandManager LinearCommandManager { get; set; }
         protected BlockingCollection<MessageState> CommandQueue { get; set; }
         protected Hashtable MessageStateQueue { get; set; }
-        protected Task _SendCommandWorkTask;
+        private Task _sendCommandWorkTask;
 
         protected IMessageStore MessageStore
         {
@@ -81,7 +78,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             base.Start();
             if (CommandQueue != null)
             {
-                _SendCommandWorkTask = Task.Factory.StartNew(() =>
+                _sendCommandWorkTask = Task.Factory.StartNew(() =>
                 {
                     try
                     {
@@ -102,12 +99,12 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         public override void Stop()
         {
-            if (_SendCommandWorkTask != null)
+            if (_sendCommandWorkTask != null)
             {
                 CommandQueue.CompleteAdding();
-                if (_SendCommandWorkTask.Wait(2000))
+                if (_sendCommandWorkTask.Wait(2000))
                 {
-                    _SendCommandWorkTask.Dispose();
+                    _sendCommandWorkTask.Dispose();
                 }
                 else
                 {
@@ -130,23 +127,14 @@ namespace IFramework.MessageQueue.ZeroMQ
                 else if (CommandSenders.Count > 1)
                 {
                     var commandKey = commandState.MessageContext.Key;
-                    var keyHashCode = 0;
-                    if (!string.IsNullOrWhiteSpace(commandKey))
-                    {
-                        keyHashCode = commandKey.GetHashCode();
-                    }
-                    else
-                    {
-                        keyHashCode = commandState.MessageID.GetHashCode();
-                    }
+                    int keyHashCode = !string.IsNullOrWhiteSpace(commandKey) ? 
+                        commandKey.GetHashCode() : commandState.MessageID.GetHashCode();
                     commandSender = CommandSenders[keyHashCode % CommandSenders.Count];
                 }
-                if (commandSender != null)
-                {
-                    var status = commandSender.SendFrame(frame);
-                    _Logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
-                                          commandState.MessageID, frame.BufferSize, status.ToString());
-                }
+                if (commandSender == null) return;
+                var status = commandSender.SendFrame(frame);
+                _Logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
+                    commandState.MessageID, frame.BufferSize, status.ToString());
             }
             catch (Exception ex)
             {
@@ -187,7 +175,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             CancellationTokenSource linkedCts = CancellationTokenSource
                    .CreateLinkedTokenSource(cancellationToken, pendingRequestsCts.Token);
             cancellationToken = linkedCts.Token;
-            TaskCompletionSource<object> source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object>();
             var state = new MessageState
             {
                 MessageID = messageContext.MessageID,
@@ -220,9 +208,9 @@ namespace IFramework.MessageQueue.ZeroMQ
                     commandKey = linearKey.ToString();
                 }
             }
-            IMessageContext commandContext = new MessageContext(command, this.ReceiveEndPoint, commandKey);
+            IMessageContext commandContext = new MessageContext(command, ReceiveEndPoint, commandKey);
 
-            Task task = null;
+            Task task;
             if (InProc && currentMessageContext == null)
             {
                 task = SendInProc(commandContext, cancellationToken);
@@ -231,7 +219,6 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 if (currentMessageContext != null && Configuration.IsPersistanceMessage)
                 {
-                    //TODO: persistance command with domain event ID
                     MessageStore.Save(commandContext, currentMessageContext.MessageID);
                 }
                 task = SendAsync(commandContext, cancellationToken);
@@ -247,7 +234,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 task = SendAsync(commandContext, cancellationToken);
             }
-            else //if not a linear command, we run synchronously.
+            else if (command != null) //if not a linear command, we run synchronously.
             {
                 task = new Task<object>(() =>
                 {
@@ -283,7 +270,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                                 {
                                     _Logger.Error(command.ToJson(), e);
                                 }
-                                throw e;
+                                throw;
                             }
                         }
                         finally
@@ -306,18 +293,20 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         protected virtual Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
         {
-            var command = commandContext.Message as ICommand;
-            MessageState commandState = BuildMessageState(commandContext, cancellationToken);
-            commandState.CancellationToken.Register(onCancel, commandState);
+            var commandState = BuildMessageState(commandContext, cancellationToken);
+            commandState.CancellationToken.Register(OnCancel, commandState);
             MessageStateQueue.Add(commandState.MessageID, commandState);
-            CommandQueue.Add(commandState);
+            CommandQueue.Add(commandState, cancellationToken);
             return commandState.TaskCompletionSource.Task;
         }
 
-        protected void onCancel(object state)
+        protected void OnCancel(object state)
         {
             var messageState = state as MessageState;
-            MessageStateQueue.TryRemove(messageState.MessageID);
+            if (messageState != null)
+            {
+                MessageStateQueue.TryRemove(messageState.MessageID);
+            }
         }
     }
 }
