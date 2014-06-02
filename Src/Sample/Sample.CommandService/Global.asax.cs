@@ -14,8 +14,8 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using IFramework.MessageQueue.ZeroMQ;
 using System.Threading.Tasks;
+using IFramework.MessageQueue.ServiceBus;
 
 namespace Sample.CommandService
 {
@@ -26,7 +26,7 @@ namespace Sample.CommandService
     {
         static ILogger _Logger;
         static IEventPublisher _EventPublisher;
-        static IMessageConsumer _CommandBus;
+        static ICommandBus _CommandBus;
         static IMessageConsumer _CommandConsumer1;
         static IMessageConsumer _CommandConsumer2;
         static IMessageConsumer _CommandConsumer3;
@@ -41,42 +41,50 @@ namespace Sample.CommandService
                 Configuration.Instance.UseLog4Net();
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
-                _CommandDistributor = new CommandDistributor("tcp://127.0.0.1:5000",
-                                                                new string[] { 
-                                                                    "tcp://127.0.0.1:5001"
-                                                                    , "tcp://127.0.0.1:5002"
-                                                                    , "tcp://127.0.0.1:5003"
-                                                                }
-                                                               );
+                //_CommandDistributor = new CommandDistributor("tcp://127.0.0.1:5000",
+                //                                                new string[] { 
+                //                                                    "tcp://127.0.0.1:5001"
+                //                                                    , "tcp://127.0.0.1:5002"
+                //                                                    , "tcp://127.0.0.1:5003"
+                //                                                }
+                //                                               );
 
-                Configuration.Instance.RegisterCommandConsumer(_CommandDistributor, "CommandDistributor")
+                Configuration.Instance
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
                              .RegisterDisposeModule()
                              .RegisterMvc();
 
-                _EventPublisher = IoCFactory.Resolve<IEventPublisher>();
-                _EventPublisher.Start();
-                _DomainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
-                _DomainEventConsumer.Start();
-                _ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
-                _ApplicationEventConsumer.Start();
+                //_EventPublisher = IoCFactory.Resolve<IEventPublisher>();
+                //_EventPublisher.Start();
+                //_DomainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
+                //_DomainEventConsumer.Start();
+                //_ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
+                //_ApplicationEventConsumer.Start();
 
+
+                var serviceBusConnectionString = @"Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;StsEndpoint=https://iframework-sb.accesscontrol.chinacloudapi.cn/;SharedSecretIssuer=owner;SharedSecretValue=DfDIfwLDgVK4Ujx0iDmuUAFxYIkX+iFSnQFqw5BtpSw=";
+
+                //serviceBusConnectionString = "Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=jGR+cxcbZqQLQcmF+xRxnOMYXiVDVI5AXC3nY9B4lW8=";
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
-                _CommandConsumer1 = new CommandConsumer(commandHandlerProvider,
-                                                           "tcp://127.0.0.1:5001");
-                _CommandConsumer2 = new CommandConsumer(commandHandlerProvider,
-                                                           "tcp://127.0.0.1:5002");
-                _CommandConsumer3 = new CommandConsumer(commandHandlerProvider,
-                                                           "tcp://127.0.0.1:5003");
+                
+                var linearCommandManager = IoCFactory.Resolve<ILinearCommandManager>();
+                _CommandBus = new CommandBus(commandHandlerProvider, linearCommandManager, serviceBusConnectionString,
+                                             new string[] { "commandqueue1", "commandqueue2", "commandqueue3" }, "replyTopic", "replySubscritpion", false);
+                _CommandBus.Start();
 
+                IoCFactory.Instance.CurrentContainer
+                        .RegisterInstance(typeof(ICommandBus)
+                                          , _CommandBus
+                                          , new ContainerControlledLifetimeManager());
 
+                _CommandConsumer1 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue1");
+                _CommandConsumer2 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue2");
+                _CommandConsumer3 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue3");
                 _CommandConsumer1.Start();
                 _CommandConsumer2.Start();
                 _CommandConsumer3.Start();
-                _CommandDistributor.Start();
 
-                _CommandBus = IoCFactory.Resolve<ICommandBus>() as IMessageConsumer;
-                _CommandBus.Start();
+      
             }
             catch (Exception ex)
             {

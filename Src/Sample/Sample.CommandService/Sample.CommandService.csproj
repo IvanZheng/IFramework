@@ -41,10 +41,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="clrzmq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=ef95cdc29d237b0d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\clrzmq.3.0.0-rc1\lib\net40\clrzmq.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\EntityFramework.6.0.2\lib\net40\EntityFramework.dll</HintPath>
@@ -285,9 +281,9 @@
       <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
       <Name>IFramework.MessageQueue.MessageFormat</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.MessageQueue.ZeroMQ\IFramework.MessageQueue.ZeroMQ.csproj">
-      <Project>{9636759c-63bc-470e-b95c-e120fbcb830b}</Project>
-      <Name>IFramework.MessageQueue.ZeroMQ</Name>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.ServiceBus\IFramework.MessageQueue.ServiceBus.csproj">
+      <Project>{081bb2eb-cc5d-4512-b61e-917cd7aa795d}</Project>
+      <Name>IFramework.MessageQueue.ServiceBus</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
