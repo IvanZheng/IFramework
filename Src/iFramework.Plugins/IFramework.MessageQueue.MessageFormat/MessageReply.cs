@@ -6,95 +6,50 @@ using IFramework.Infrastructure;
 using IFramework.Message.Impl;
 using Newtonsoft.Json;
 using IFramework.Message;
+using Microsoft.ServiceBus.Messaging;
 
 namespace IFramework.MessageQueue.MessageFormat
 {
     public class MessageReply : IMessageReply
     {
-        Dictionary<string, string> _Headers;
-        public Dictionary<string, string> Headers
+        public BrokeredMessage BrokeredMessage { get; protected set; }
+
+        public MessageReply(BrokeredMessage brokeredMessage)
         {
-            get { return _Headers; }
-            set { _Headers = value; }
+            BrokeredMessage = brokeredMessage;
         }
 
-        public string MessageID { get; set; }
-
-        public MessageReply()
-        {
-            Headers = new Dictionary<string, string>();
-        }
-
-        public MessageReply(string messaegID, Exception e)
-            : this()
-        {
-            MessageID = messaegID;
-            Exception = e;
-        }
         public MessageReply(string messageID, object result)
-            : this()
         {
+            BrokeredMessage = new BrokeredMessage(result.ToJson());
             MessageID = messageID;
             Result = result;
         }
 
+        public IDictionary<string, object> Headers
+        {
+            get { return BrokeredMessage.Properties; }
+        }
+
+        public string MessageID
+        {
+            get { return BrokeredMessage.MessageId; }
+            set { BrokeredMessage.MessageId = value; }
+        }
+
         object _Result;
-        [JsonIgnore]
         public object Result
         {
             get
             {
-                if (_Result != null)
-                {
-                    return _Result;
-                }
-                string resultBody = string.Empty;
-                if (Headers.TryGetValue("Result", out resultBody) && !string.IsNullOrWhiteSpace(resultBody))
-                {
-                    return _Result ?? (_Result = resultBody
-                                                    .ToJsonObject(Type.GetType(Headers["ResultType"])));
-                }
-                return null;
+                return _Result ?? (_Result = BrokeredMessage.GetBody<string>()
+                                               .ToJsonObject(Type.GetType(Headers["MessageType"].ToString())));
+                
             }
             set
             {
                 _Result = value;
-                if (_Result != null)
-                {
-                    Headers["Result"] = _Result.ToJson();
-                    Headers["ResultType"] = _Result.GetType().AssemblyQualifiedName;
-                }
-            }
-        }
-
-        Exception _Exception;
-        [JsonIgnore]
-        public Exception Exception
-        {
-            get
-            {
-                if (_Exception != null)
-                {
-                    return _Exception;
-                }
-                string exceptionBody = string.Empty;
-                if (Headers.TryGetValue("Exception", out exceptionBody) && !string.IsNullOrWhiteSpace(exceptionBody))
-                {
-                    return _Exception ?? (_Exception = exceptionBody
-                                                      .ToJsonObject(Type.GetType(Headers["ExceptionType"]))
-                                                      as Exception) ??
-                                         (_Exception = exceptionBody.ToJsonObject<Exception>());
-                }
-                return null;
-            }
-            set
-            {
-                _Exception = value;
-                if (_Exception != null)
-                {
-                    Headers["Exception"] = _Exception.ToJson();
-                    Headers["ExceptionType"] = _Exception.GetType().AssemblyQualifiedName;
-                }
+                Headers["MessageType"] = _Result.GetType().AssemblyQualifiedName;
             }
         }
     }

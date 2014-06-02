@@ -7,9 +7,8 @@ namespace IFramework.Message
 {
     public interface IMessageReply
     {
-        Dictionary<string, string> Headers { get; }
+        IDictionary<string, object> Headers { get; }
         string MessageID { get; }
         object Result { get; }
-        Exception Exception { get; }
     }
 }

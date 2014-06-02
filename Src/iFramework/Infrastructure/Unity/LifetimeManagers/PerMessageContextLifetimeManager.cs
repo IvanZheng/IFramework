@@ -12,7 +12,7 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
 {
     class EmptyMessageContext : IMessageContext
     {
-        public Dictionary<string, string> Headers
+        public IDictionary<string, object> Headers
         {
             get { return null; }
         }

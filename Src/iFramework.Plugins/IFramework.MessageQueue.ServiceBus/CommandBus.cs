@@ -79,7 +79,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     try
                     {
                         brokeredMessage = _replySubscriptionClient.Receive();
-                        var reply = brokeredMessage.GetBody<string>().ToJsonObject<MessageReply>();
+                        var reply = new MessageReply(brokeredMessage);
                         ConsumeReply(reply);
                     }
                     catch (Exception ex)
@@ -127,7 +127,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     commandProducer = _commandQueueClients[keyHashCode % _commandQueueClients.Count];
                 }
                 if (commandProducer == null) return;
-                var brokeredMessage = new BrokeredMessage(commandState.MessageContext.ToJson());
+                var brokeredMessage = ((MessageContext)commandState.MessageContext).BrokeredMessage;
                 commandProducer.Send(brokeredMessage);
                 _logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
                     commandState.MessageID, brokeredMessage.Size, brokeredMessage.State);
@@ -145,9 +145,9 @@ namespace IFramework.MessageQueue.ServiceBus
             if (messageState != null)
             {
                 _commandStateQueues.TryRemove(reply.MessageID);
-                if (reply.Exception != null)
+                if (reply.Result is Exception)
                 {
-                    messageState.TaskCompletionSource.TrySetException(reply.Exception);
+                    messageState.TaskCompletionSource.TrySetException(reply.Result as Exception);
                 }
                 else
                 {

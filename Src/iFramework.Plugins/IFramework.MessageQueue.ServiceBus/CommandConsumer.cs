@@ -55,14 +55,14 @@ namespace IFramework.MessageQueue.ServiceBus
             return replyProducer;
         }
 
-        void OnMessageHandled(IMessageContext messageContext, IMessageReply reply)
+        void OnMessageHandled(IMessageContext messageContext, MessageReply reply)
         {
             if (!string.IsNullOrWhiteSpace(messageContext.ReplyToEndPoint))
             {
                 var replyProducer = GetReplyProducer(messageContext.ReplyToEndPoint);
                 if (replyProducer != null)
                 {
-                    replyProducer.Send(new BrokeredMessage(reply.ToJson()));
+                    replyProducer.Send(reply.BrokeredMessage);
                     _logger.InfoFormat("send reply, commandID:{0}", reply.MessageID);
                 }
             }
@@ -103,8 +103,8 @@ namespace IFramework.MessageQueue.ServiceBus
 
         protected void ConsumeMessage(BrokeredMessage brokeredMessage)
         {
-            var messageContext = brokeredMessage.GetBody<string>().ToJsonObject<MessageContext>();
-            IMessageReply messageReply = null;
+            var messageContext = new MessageContext(brokeredMessage);
+            MessageReply messageReply = null;
             if (messageContext == null || messageContext.Message as ICommand == null)
             {
                 return;

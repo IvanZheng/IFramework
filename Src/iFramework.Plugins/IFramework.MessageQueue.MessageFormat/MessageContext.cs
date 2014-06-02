@@ -6,35 +6,24 @@ using IFramework.Infrastructure;
 using System.Collections;
 using Newtonsoft.Json;
 using IFramework.Message;
+using Microsoft.ServiceBus.Messaging;
 
 namespace IFramework.MessageQueue.MessageFormat
 {
     public class MessageContext : IMessageContext
     {
-        public string MessageID { get; protected set; }
-        public string ReplyToEndPoint { get; protected set; }
-        [JsonIgnore]
-        public object Reply { get; set; }
-        public string FromEndPoint { get; set; }
-        public string Key { get; protected set; }
-        Dictionary<string, string> _Headers;
-        public Dictionary<string, string> Headers
-        {
-            get { return _Headers; }
-            set { _Headers = value; }
-        }
+        public BrokeredMessage BrokeredMessage { get; protected set; }
 
-        public MessageContext()
+        public MessageContext(BrokeredMessage brokeredMessage)
         {
-            Headers = new Dictionary<string, string>();
-            SentTime = DateTime.Now;
+            BrokeredMessage = brokeredMessage;
         }
 
         public MessageContext(object message)
-            : this()
         {
-            MessageID = ObjectId.GenerateNewId().ToString();
+            BrokeredMessage = new BrokeredMessage(message.ToJson());
             Message = message;
+            MessageID = ObjectId.GenerateNewId().ToString();
         }
 
         public MessageContext(object message, string key)
@@ -55,28 +44,59 @@ namespace IFramework.MessageQueue.MessageFormat
             FromEndPoint = fromEndPoint;
         }
 
+        public IDictionary<string, object> Headers
+        {
+            get { return BrokeredMessage.Properties; }
+        }
+
+        public string Key
+        {
+            get { return BrokeredMessage.CorrelationId; }
+            set { BrokeredMessage.CorrelationId = value; }
+        }
+
+        public string MessageID
+        {
+            get { return BrokeredMessage.MessageId; }
+            set { BrokeredMessage.MessageId = value; }
+        }
+
+        public string ReplyToEndPoint
+        {
+            get { return BrokeredMessage.ReplyTo; }
+            set { BrokeredMessage.ReplyTo = value; }
+        }
+
+        public object Reply
+        {
+            get;
+            set;
+        }
+
+        public string FromEndPoint
+        {
+            get { return (string)Headers["FromEndPoint"]; }
+            set { Headers["FromEndPoint"] = value; }
+        }
+
         object _Message;
-        [JsonIgnore]
         public object Message
         {
             get
             {
-                return _Message ?? (_Message = Headers["Message"]
-                                                .ToJsonObject(Type.GetType(Headers["MessageType"])));
+                return _Message ?? (_Message = BrokeredMessage.GetBody<string>()
+                                                .ToJsonObject(Type.GetType(Headers["MessageType"].ToString())));
             }
-            set
+            protected set
             {
                 _Message = value;
-                Headers["Message"] = _Message.ToJson();
-                Headers["MessageType"] = _Message.GetType().AssemblyQualifiedName;
+                Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
             }
         }
 
-
         public DateTime SentTime
         {
-            get;
-            set;
+            get { return BrokeredMessage.EnqueuedTimeUtc; }
         }
     }
 }
