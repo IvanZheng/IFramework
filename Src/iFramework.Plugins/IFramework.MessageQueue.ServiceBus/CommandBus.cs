@@ -124,7 +124,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     var commandKey = commandState.MessageContext.Key;
                     int keyHashCode = !string.IsNullOrWhiteSpace(commandKey) ?
                         commandKey.GetHashCode() : commandState.MessageID.GetHashCode();
-                    commandProducer = _commandQueueClients[keyHashCode % _commandQueueClients.Count];
+                    commandProducer = _commandQueueClients[Math.Abs(keyHashCode % _commandQueueClients.Count)];
                 }
                 if (commandProducer == null) return;
                 var brokeredMessage = ((MessageContext)commandState.MessageContext).BrokeredMessage;
