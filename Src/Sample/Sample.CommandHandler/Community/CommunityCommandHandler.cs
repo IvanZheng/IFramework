@@ -2,7 +2,6 @@
 using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Message;
-using IFramework.MessageQueue.MessageFormat;
 using IFramework.Repositories;
 using IFramework.UnitOfWork;
 using Sample.ApplicationEvent;
@@ -48,7 +47,7 @@ namespace Sample.CommandHandler.Community
                 throw new SysException(ErrorCode.WrongUsernameOrPassword);
             }
 
-            _EventPublisher.Publish(new MessageContext(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now }));
+            _EventPublisher.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });
             _CommandContext.Reply = account.ID;
         }
 

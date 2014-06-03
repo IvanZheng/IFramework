@@ -1,4 +1,5 @@
 ﻿using IFramework.Event;
+using IFramework.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +22,21 @@ namespace IFramework.Event
             set;
         }
 
+        public DomainEvent()
+        {
+            ID = ObjectId.GenerateNewId().ToString();
+        }
+
         public DomainEvent(object aggregateRootID)
+            : this()
         {
             AggregateRootID = aggregateRootID;
+        }
+
+        public string ID
+        {
+            get;
+            set;
         }
     }
 }

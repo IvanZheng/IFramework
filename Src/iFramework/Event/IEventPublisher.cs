@@ -10,6 +10,6 @@ namespace IFramework.Event
     {
         void Start();
         void Stop();
-        void Publish(params IMessageContext[] events);
+        void Publish(params IMessage[] events);
     }
 }

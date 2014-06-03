@@ -1,4 +1,5 @@
 ﻿using IFramework.Command;
+using IFramework.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,13 @@ namespace Sample.Command
         public CommandBase()
         {
             NeedRetry = false;
+            ID = ObjectId.GenerateNewId().ToString();
+        }
+
+        public string ID
+        {
+            get;
+            set;
         }
     }
 

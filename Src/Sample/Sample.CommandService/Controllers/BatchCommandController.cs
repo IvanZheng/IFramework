@@ -96,7 +96,7 @@ namespace Sample.CommandService.Controllers
                 // if regard CommandHandler as a kind of application service,
                 // we can use command bus to envoke domain layer and 
                 // no need to define the "Login" action of controller
-                _EventPublisher.Publish(new MessageContext(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now }));
+                _EventPublisher.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });
                 result = new ApiResult<Guid> { Result = account.ID };
             }
             else

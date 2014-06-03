@@ -19,26 +19,26 @@ namespace IFramework.MessageQueue.MessageFormat
             BrokeredMessage = brokeredMessage;
         }
 
-        public MessageContext(object message)
+        public MessageContext(IMessage message)
         {
             BrokeredMessage = new BrokeredMessage(message.ToJson());
             Message = message;
-            MessageID = ObjectId.GenerateNewId().ToString();
+            MessageID = message.ID;
         }
 
-        public MessageContext(object message, string key)
+        public MessageContext(IMessage message, string key)
             : this(message)
         {
             Key = key;
         }
 
-        public MessageContext(object message, string replyToEndPoint, string key)
+        public MessageContext(IMessage message, string replyToEndPoint, string key)
             : this(message, key)
         {
             ReplyToEndPoint = replyToEndPoint;
         }
 
-        public MessageContext(object message, string replyToEndPoint, string fromEndPoint, string key)
+        public MessageContext(IMessage message, string replyToEndPoint, string fromEndPoint, string key)
             : this(message, replyToEndPoint, key)
         {
             FromEndPoint = fromEndPoint;
