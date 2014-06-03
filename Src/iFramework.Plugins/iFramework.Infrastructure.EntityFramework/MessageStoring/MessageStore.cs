@@ -11,12 +11,12 @@ namespace IFramework.EntityFramework.MessageStoring
     public class MessageStore : DbContext, IMessageStore
     {
         public DbSet<Command> Commands { get; set; }
-        public DbSet<DomainEvent> DomainEvents { get; set; }
+        public DbSet<Event> Events { get; set; }
 
         public DbSet<HandledEvent> HandledEvents { get; set; }
 
         public DbSet<Command> UnSentCommands { get; set; }
-        public DbSet<DomainEvent> UnPublishedEvents { get; set; }
+        public DbSet<Event> UnPublishedEvents { get; set; }
 
         public MessageStore()
             : base("MessageStore")
@@ -33,43 +33,53 @@ namespace IFramework.EntityFramework.MessageStoring
                     map.ToTable("Commands");
                     map.MapInheritedProperties();
                 })
-                .Map<DomainEvent>(map =>
+                .Map<Event>(map =>
                 {
                     map.ToTable("DomainEvents");
                     map.MapInheritedProperties();
                 });
         }
 
-        public void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> domainEventContexts)
+        public void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts)
         {
             var command = new Command(commandContext);
             Commands.Add(command);
-            domainEventContexts.ForEach(domainEventContext =>
+            eventContexts.ForEach(domainEventContext =>
             {
                 domainEventContext.CorrelationID = commandContext.MessageID;
-                DomainEvents.Add(new DomainEvent(domainEventContext));
-                UnPublishedEvents.Add(new DomainEvent(domainEventContext));
+                Events.Add(new Event(domainEventContext));
+                UnPublishedEvents.Add(new Event(domainEventContext));
             });
             SaveChanges();
         }
 
-        public void SaveDomainEvent(IMessageContext domainEventContext, IEnumerable<IMessageContext> commandContexts)
+        public void SaveEvent(IMessageContext eventContext, IEnumerable<IMessageContext> commandContexts)
         {
-            var domainEvent = DomainEvents.Find(domainEventContext.MessageID);
-            if (domainEvent == null)
+            var @event = Events.Find(eventContext.MessageID);
+            if (@event == null)
             {
-                domainEvent = new DomainEvent(domainEventContext);
-                DomainEvents.Add(domainEvent);
+                @event = new Event(eventContext);
+                Events.Add(@event);
             }
-            HandledEvents.Add(new HandledEvent(domainEvent.ID));
+            HandledEvents.Add(new HandledEvent(@event.ID));
             commandContexts.ForEach(commandContext =>
             {
-                commandContext.CorrelationID = domainEventContext.MessageID;
+                commandContext.CorrelationID = eventContext.MessageID;
                 UnSentCommands.Add(new Command(commandContext));
             });
             SaveChanges();
         }
 
 
+
+        public bool HasCommandHandled(string commandID)
+        {
+            return Commands.Count(command => command.ID == commandID) > 0;
+        }
+
+        public bool HasEventHandled(string eventID)
+        {
+            return HandledEvents.Count(@event => @event.ID == eventID) > 0;
+        }
     }
 }

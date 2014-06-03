@@ -15,19 +15,19 @@ namespace IFramework.EntityFramework.MessageStoring
 
         }
 
-        public DomainEvent Parent
+        public Event Parent
         {
             get
             {
-                return ParentMessage as DomainEvent;
+                return ParentMessage as Event;
             }
         }
 
-        public IEnumerable<DomainEvent> Children
+        public IEnumerable<Event> Children
         {
             get
             {
-                return ChildrenMessage.Cast<DomainEvent>();
+                return ChildrenMessage.Cast<Event>();
             }
         }
     }

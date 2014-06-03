@@ -110,25 +110,30 @@ namespace IFramework.MessageQueue.ServiceBus
                 return;
             }
             var message = messageContext.Message as ICommand;
+
             var needRetry = message.NeedRetry;
             do
             {
                 try
                 {
                     PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
-                    var messageHandler = _handlerProvider.GetHandler(message.GetType());
-                    _logger.InfoFormat("Handle command, commandID:{0}", messageContext.MessageID);
+                    var messageStore = IoCFactory.Resolve<IMessageStore>();
+                    if (!messageStore.HasCommandHandled(messageContext.MessageID))
+                    {
+                        var messageHandler = _handlerProvider.GetHandler(message.GetType());
+                        _logger.InfoFormat("Handle command, commandID:{0}", messageContext.MessageID);
 
-                    if (messageHandler == null)
-                    {
-                        messageReply = new MessageReply(messageContext.MessageID, new NoHandlerExists());
-                    }
-                    else
-                    {
-                        var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                        ((dynamic)messageHandler).Handle((dynamic)message);
-                        unitOfWork.Commit();
-                        messageReply = new MessageReply(messageContext.MessageID, messageContext.Reply);
+                        if (messageHandler == null)
+                        {
+                            messageReply = new MessageReply(messageContext.MessageID, new NoHandlerExists());
+                        }
+                        else
+                        {
+                            var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
+                            ((dynamic)messageHandler).Handle((dynamic)message);
+                            unitOfWork.Commit();
+                            messageReply = new MessageReply(messageContext.MessageID, messageContext.Reply);
+                        }
                     }
                     needRetry = false;
                 }

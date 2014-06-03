@@ -7,22 +7,25 @@ using System.Text;
 
 namespace IFramework.EntityFramework.MessageStoring
 {
-    public class DomainEvent : Message
+    public class Event : Message
     {
         public string AggregateRootID { get; set; }
         public string AggregateRootType { get; set; }
         public int Version { get; set; }
 
-        public DomainEvent() { }
-        public DomainEvent(IMessageContext messageContext) :
+        public Event() { }
+        public Event(IMessageContext messageContext) :
             base(messageContext)
         {
             var domainEvent = messageContext.Message as IDomainEvent;
-            AggregateRootID = domainEvent.AggregateRootID.ToString();
-            AggregateRootType = domainEvent.AggregateRootName;
-            if (domainEvent is IFramework.Event.DomainEvent)
+            if (domainEvent != null)
             {
-                Version = (domainEvent as IFramework.Event.DomainEvent).Version;
+                AggregateRootID = domainEvent.AggregateRootID.ToString();
+                AggregateRootType = domainEvent.AggregateRootName;
+                if (domainEvent is IFramework.Event.DomainEvent)
+                {
+                    Version = (domainEvent as IFramework.Event.DomainEvent).Version;
+                }
             }
         }
 

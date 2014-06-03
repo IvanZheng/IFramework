@@ -7,7 +7,9 @@ namespace IFramework.Message
 {
     public interface IMessageStore : IDisposable
     {
-        void SaveDomainEvent(IMessageContext domainEventContext, IEnumerable<IMessageContext> commandContexts);
-        void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> domainEventContexts);
+        bool HasCommandHandled(string commandID);
+        bool HasEventHandled(string eventID);
+        void SaveEvent(IMessageContext eventContext, IEnumerable<IMessageContext> commandContexts);
+        void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts);
     }
 }
