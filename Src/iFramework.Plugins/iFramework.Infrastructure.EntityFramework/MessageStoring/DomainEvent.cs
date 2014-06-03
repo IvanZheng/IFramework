@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace IFramework.EntityFramework
+namespace IFramework.EntityFramework.MessageStoring
 {
     public class DomainEvent : Message
     {
@@ -14,8 +14,8 @@ namespace IFramework.EntityFramework
         public int Version { get; set; }
 
         public DomainEvent() { }
-        public DomainEvent(IMessageContext messageContext, string sourceMessageID) :
-            base(messageContext, sourceMessageID)
+        public DomainEvent(IMessageContext messageContext) :
+            base(messageContext)
         {
             var domainEvent = messageContext.Message as IDomainEvent;
             AggregateRootID = domainEvent.AggregateRootID.ToString();

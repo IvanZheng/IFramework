@@ -9,6 +9,6 @@ namespace IFramework.Event
 {
     public interface IDomainEventBus : IBus<IDomainEvent>
     {
-        IEnumerable<IMessageContext> GetMessageContexts();
+        IEnumerable<IDomainEvent> GetMessages();
     }
 }

@@ -65,6 +65,13 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         {
             get { return DateTime.Now; }
         }
+
+
+        public string CorrelationID
+        {
+            get;
+            set;
+        }
     }
 
     class MessageContextWrapper

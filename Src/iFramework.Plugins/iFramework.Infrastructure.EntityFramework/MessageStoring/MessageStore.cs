@@ -6,13 +6,17 @@ using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
 
-namespace IFramework.EntityFramework
+namespace IFramework.EntityFramework.MessageStoring
 {
     public class MessageStore : DbContext, IMessageStore
     {
-
         public DbSet<Command> Commands { get; set; }
         public DbSet<DomainEvent> DomainEvents { get; set; }
+
+        public DbSet<HandledEvent> HandledEvents { get; set; }
+
+        public DbSet<Command> UnSentCommands { get; set; }
+        public DbSet<DomainEvent> UnPublishedEvents { get; set; }
 
         public MessageStore()
             : base("MessageStore")
@@ -36,58 +40,36 @@ namespace IFramework.EntityFramework
                 });
         }
 
-        public virtual Command BuildCommand(IMessageContext commandContext, string domainEventID = null)
+        public void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> domainEventContexts)
         {
-            return new Command(commandContext, domainEventID);
-        }
-
-
-        public virtual DomainEvent BuildDomainEvent(IMessageContext domainEventContext, string commanadID)
-        {
-            return new DomainEvent(domainEventContext, commanadID);
-        }
-
-        public void Save(IMessageContext commandContext, string domainEventID)
-        {
-            try
-            {
-                var command = Commands.Find(commandContext.MessageID);
-                if (command == null)
-                {
-                    command = BuildCommand(commandContext, domainEventID);
-                    Commands.Add(command);
-                    SaveChanges();
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-        }
-
-        public void Save(IMessageContext commandContext, IEnumerable<IMessageContext> domainEventContexts)
-        {
-            try
-            {
-                var command = Commands.Find(commandContext.MessageID);
-                if (command == null)
-                {
-                    command = BuildCommand(commandContext);
-                    Commands.Add(command);
-                    SaveChanges();
-                }
-            }
-            catch (Exception)
-            {
-                // command may be readd!
-            }
-
+            var command = new Command(commandContext);
+            Commands.Add(command);
             domainEventContexts.ForEach(domainEventContext =>
             {
-                var domainEvent = BuildDomainEvent(domainEventContext, commandContext.MessageID);
-                DomainEvents.Add(domainEvent);
+                domainEventContext.CorrelationID = commandContext.MessageID;
+                DomainEvents.Add(new DomainEvent(domainEventContext));
+                UnPublishedEvents.Add(new DomainEvent(domainEventContext));
             });
             SaveChanges();
         }
+
+        public void SaveDomainEvent(IMessageContext domainEventContext, IEnumerable<IMessageContext> commandContexts)
+        {
+            var domainEvent = DomainEvents.Find(domainEventContext.MessageID);
+            if (domainEvent == null)
+            {
+                domainEvent = new DomainEvent(domainEventContext);
+                DomainEvents.Add(domainEvent);
+            }
+            HandledEvents.Add(new HandledEvent(domainEvent.ID));
+            commandContexts.ForEach(commandContext =>
+            {
+                commandContext.CorrelationID = domainEventContext.MessageID;
+                UnSentCommands.Add(new Command(commandContext));
+            });
+            SaveChanges();
+        }
+
+
     }
 }

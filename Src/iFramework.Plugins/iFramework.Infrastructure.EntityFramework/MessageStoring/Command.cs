@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace IFramework.EntityFramework
+namespace IFramework.EntityFramework.MessageStoring
 {
     public class Command : Message
     {
         public Command() { }
-        public Command(IMessageContext messageContext, string sourceMessageID = null) :
-            base(messageContext, sourceMessageID)
+        public Command(IMessageContext messageContext) :
+            base(messageContext)
         {
 
         }

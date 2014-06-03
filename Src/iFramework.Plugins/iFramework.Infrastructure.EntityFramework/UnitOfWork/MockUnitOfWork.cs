@@ -11,9 +11,9 @@ namespace IFramework.EntityFramework
     public class MockUnitOfWork : BaseUnitOfWork
     {
         public MockUnitOfWork(IDomainEventBus eventBus)
-            : base(eventBus)
+            : base(eventBus, null)
         {
-            _DomainEventBus = eventBus;
+            _domainEventBus = eventBus;
         }
        
 

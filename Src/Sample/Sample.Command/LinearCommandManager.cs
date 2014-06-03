@@ -11,6 +11,7 @@ namespace Sample.Command
         public LinearCommandManager() : base()
         {
             this.RegisterLinearCommand<Login>(cmd => cmd.UserName);
+            this.RegisterLinearCommand<Register>(cmd => "register:" + cmd.UserName);
         }
     }
 }

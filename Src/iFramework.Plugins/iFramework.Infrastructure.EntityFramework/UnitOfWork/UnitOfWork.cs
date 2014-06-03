@@ -15,18 +15,19 @@ using IFramework.Event;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Core;
+using IFramework.MessageQueue.MessageFormat;
+using IFramework.Message;
 
 namespace IFramework.EntityFramework
 {
     public class UnitOfWork : BaseUnitOfWork
     {
-        protected List<DbContext> _DbContexts;
+        protected List<DbContext> _dbContexts;
 
-        public UnitOfWork(IDomainEventBus eventBus)
-            : base(eventBus)
+        public UnitOfWork(IDomainEventBus eventBus, IMessageStore messageStore)
+            : base(eventBus, messageStore)
         {
-            _DomainEventBus = eventBus;
-            _DbContexts = new List<DbContext>();
+            _dbContexts = new List<DbContext>();
         }
         #region IUnitOfWork Members
 
@@ -37,7 +38,15 @@ namespace IFramework.EntityFramework
             TransactionScope scope = new TransactionScope();
             try
             {
-                _DbContexts.ForEach(dbContext => dbContext.SaveChanges());
+                _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
+
+                var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
+                var domainEventContexts = new List<IMessageContext>();
+                _domainEventBus.GetMessages().ForEach(domainEvent => {
+                    domainEventContexts.Add(new MessageContext(domainEvent));
+                });
+                _messageStore.SaveCommand(currentCommandContext, domainEventContexts);
+
                 scope.Complete();
             }
             catch (Exception ex)
@@ -56,24 +65,17 @@ namespace IFramework.EntityFramework
                 scope.Dispose();
             }
 
-            if (_DomainEventBus != null)
+            if (_domainEventBus != null)
             {
-                _DomainEventBus.Commit();
-            }
-            if (Configuration.IsPersistanceMessage)
-            {
-                // TODO: persistance command and domain events
-                var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-                var domainEventContexts = _DomainEventBus.GetMessageContexts();
-                MessageStore.Save(currentCommandContext, domainEventContexts);
+                _domainEventBus.Commit();
             }
         }
 
         internal void RegisterDbContext(DbContext dbContext)
         {
-            if (!_DbContexts.Exists(dbCtx => dbCtx == dbContext))
+            if (!_dbContexts.Exists(dbCtx => dbCtx == dbContext))
             {
-                _DbContexts.Add(dbContext);
+                _dbContexts.Add(dbContext);
             }
         }
 

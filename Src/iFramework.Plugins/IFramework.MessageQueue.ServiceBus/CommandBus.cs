@@ -94,7 +94,6 @@ namespace IFramework.MessageQueue.ServiceBus
                         }
                     }
                 }
-
             }, TaskCreationOptions.LongRunning);
         }
 
@@ -203,10 +202,6 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             else
             {
-                if (currentMessageContext != null && Configuration.IsPersistanceMessage)
-                {
-                    MessageStore.Save(commandContext, currentMessageContext.MessageID);
-                }
                 task = SendAsync(commandContext, cancellationToken);
             }
             return task;

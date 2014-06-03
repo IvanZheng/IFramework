@@ -18,13 +18,6 @@ namespace IFramework.Event.Impl
            
         }
 
-
-        public IEnumerable<IMessageContext> GetMessageContexts()
-        {
-            return null;
-        }
-
-
         public void Publish<TMessage>(TMessage @event) where TMessage : IDomainEvent
         {
             
@@ -32,6 +25,11 @@ namespace IFramework.Event.Impl
 
         public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IDomainEvent
         {
+        }
+
+        public IEnumerable<IDomainEvent> GetMessages()
+        {
+            return null;
         }
     }
 }

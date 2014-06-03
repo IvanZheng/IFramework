@@ -71,6 +71,7 @@
     <Compile Include="Event\IApplicationEvent.cs" />
     <Compile Include="Event\IEvent.cs" />
     <Compile Include="Event\IEventPublisher.cs" />
+    <Compile Include="Event\Impl\DomainEventBus.cs" />
     <Compile Include="Event\Impl\MockDomainEventBus.cs" />
     <Compile Include="Event\Impl\MockEventPublisher.cs" />
     <Compile Include="Infrastructure\FastInvoke.cs" />

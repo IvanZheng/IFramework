@@ -51,6 +51,12 @@ namespace IFramework.MessageQueue.MessageFormat
 
         public string Key
         {
+            get { return (string)Headers["Key"]; }
+            set { Headers["Key"] = value; }
+        }
+
+        public string CorrelationID
+        {
             get { return BrokeredMessage.CorrelationId; }
             set { BrokeredMessage.CorrelationId = value; }
         }

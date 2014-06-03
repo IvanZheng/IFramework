@@ -6,15 +6,15 @@ using System.Text;
 using IFramework.Infrastructure;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace IFramework.EntityFramework
+namespace IFramework.EntityFramework.MessageStoring
 {
     public abstract class Message
     {
         public Message() { }
-        public Message(IMessageContext messageContext, string sourceMessageID)
+        public Message(IMessageContext messageContext)
         {
             ID = messageContext.MessageID;
-            SourceMessageID = sourceMessageID;
+            CorrelationID = messageContext.CorrelationID;
             MessageBody = messageContext.Message.ToJson();
             CreateTime = messageContext.SentTime;
             Name = messageContext.Message.GetType().Name;
@@ -22,14 +22,14 @@ namespace IFramework.EntityFramework
         }
 
         public string ID { get; set; }
-        public string SourceMessageID { get; set; }
+        public string CorrelationID { get; set; }
         public string MessageBody { get; set; }
         public DateTime CreateTime { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
 
 
-        [ForeignKey("SourceMessageID")]
+        [ForeignKey("CorrelationID")]
         public virtual Message ParentMessage { get; set; }
         [InverseProperty("ParentMessage")]
         public virtual ICollection<Message> ChildrenMessage { get; set; }
