@@ -24,7 +24,7 @@ namespace IFramework.MessageQueue.ServiceBus
         protected QueueClient _commandQueueClient;
         protected Task _commandConsumerTask;
 
-        public CommandConsumer(IHandlerProvider handlerProvider, 
+        public CommandConsumer(IHandlerProvider handlerProvider,
                                string serviceBusConnectionString,
                                string commandQueueName)
             : base(serviceBusConnectionString)
@@ -63,7 +63,18 @@ namespace IFramework.MessageQueue.ServiceBus
                 var replyProducer = GetReplyProducer(messageContext.ReplyToEndPoint);
                 if (replyProducer != null)
                 {
-                    replyProducer.Send(reply.BrokeredMessage);
+                    while (true)
+                    {
+                        try
+                        {
+                            replyProducer.Send(reply.BrokeredMessage);
+                            break;
+                        }
+                        catch (Exception)
+                        {
+                            Thread.Sleep(1000);
+                        }
+                    }
                     _logger.InfoFormat("send reply, commandID:{0}", reply.MessageID);
                 }
             }
