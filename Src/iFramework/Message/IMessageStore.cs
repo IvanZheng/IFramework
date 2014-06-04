@@ -13,5 +13,10 @@ namespace IFramework.Message
         void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts);
         void SaveFailedCommand(IMessageContext commandContext);
        // void SaveUnSentCommands(IEnumerable<IMessageContext> commandContexts);
+        void RemoveSentCommand(string commandID);
+        void RemovePublishedEvent(string eventID);
+        IEnumerable<IMessageContext> GetAllUnSentCommands();
+        IEnumerable<IMessageContext> GetAllUnPublishedEvents();
+
     }
 }

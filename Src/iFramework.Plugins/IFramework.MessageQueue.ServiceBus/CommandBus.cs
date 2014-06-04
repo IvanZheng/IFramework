@@ -63,24 +63,41 @@ namespace IFramework.MessageQueue.ServiceBus
             InProc = inProc;
         }
 
-
-
         public void Start()
         {
             _sendCommandWorkTask = Task.Factory.StartNew(() =>
             {
+                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                {
+                    messageStore.GetAllUnSentCommands()
+                        .ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
+                }
                 while (!_exit)
                 {
                     try
                     {
                         var commandContext = _toBeSentCommandQueue.Take();
-                        SendCommand(commandContext);
-                        // delete sent command in database
-
+                        int tryCount = 0;
+                        while (true)
+                        {
+                            try
+                            {
+                                SendCommand(commandContext);
+                                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                                {
+                                    messageStore.RemoveSentCommand(commandContext.MessageID);
+                                }
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                Thread.Sleep(1000);
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        _logger.Debug("send command error", ex);
+                        _logger.Debug("send command quit", ex);
                     }
                 }
             }, TaskCreationOptions.LongRunning);
@@ -130,9 +147,21 @@ namespace IFramework.MessageQueue.ServiceBus
                     _logger.ErrorFormat("receiver can't be stopped!");
                 }
             }
+            if (_sendCommandWorkTask != null)
+            {
+                _toBeSentCommandQueue.CompleteAdding();
+                if (_sendCommandWorkTask.Wait(2000))
+                {
+                    _sendCommandWorkTask.Dispose();
+                }
+                else
+                {
+                    _logger.ErrorFormat(" consumer can't be stopped!");
+                }
+            }
         }
 
-        internal void SendCommand(IEnumerable<IMessageContext> commandContexts)
+        internal void SendCommands(IEnumerable<IMessageContext> commandContexts)
         {
             commandContexts.ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
         }
@@ -297,17 +326,12 @@ namespace IFramework.MessageQueue.ServiceBus
 
         protected virtual Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
         {
-
             var commandState = BuildMessageState(commandContext, cancellationToken);
             commandState.CancellationToken.Register(OnCancel, commandState);
             _commandStateQueues.Add(commandState.MessageID, commandState);
-            //SendCommand(commandContext);
             _toBeSentCommandQueue.Add(commandContext, cancellationToken);
             return commandState.TaskCompletionSource.Task;
         }
-
-
-
 
         protected void OnCancel(object state)
         {

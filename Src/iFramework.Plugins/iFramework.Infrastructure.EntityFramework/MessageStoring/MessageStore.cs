@@ -110,5 +110,43 @@ namespace IFramework.EntityFramework.MessageStoring
         //        UnSentCommands.Add(new UnSentCommand(commandContext)));
         //    SaveChanges();
         //}
+
+
+        public void RemoveSentCommand(string commandID)
+        {
+            var unSentCommand = UnSentCommands.Find(commandID);
+            if (unSentCommand != null)
+            {
+                UnSentCommands.Remove(unSentCommand);
+                SaveChanges();
+            }
+        }
+
+        public void RemovePublishedEvent(string eventID)
+        {
+            var unPublishedEvent = UnPublishedEvents.Find(eventID);
+            if (unPublishedEvent != null)
+            {
+                UnPublishedEvents.Remove(unPublishedEvent);
+                SaveChanges();
+            }
+        }
+
+
+        public IEnumerable<IMessageContext> GetAllUnSentCommands()
+        {
+            var commandContexts = new List<IMessageContext>();
+            UnSentCommands.ToList().ForEach(command =>
+                commandContexts.Add((IMessageContext)command.MessageBody.ToJsonObject(Type.GetType(command.Type))));
+            return commandContexts;
+        }
+
+        public IEnumerable<IMessageContext> GetAllUnPublishedEvents()
+        {
+             var eventContexts = new List<IMessageContext>();
+            UnPublishedEvents.ToList().ForEach(@event =>
+                eventContexts.Add((IMessageContext)@event.MessageBody.ToJsonObject(Type.GetType(@event.Type))));
+            return eventContexts;
+        }
     }
 }
