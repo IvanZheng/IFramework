@@ -106,11 +106,15 @@ namespace IFramework.MessageQueue.ServiceBus
                     try
                     {
                         brokeredMessage = _replySubscriptionClient.Receive();
-                        var reply = new MessageReply(brokeredMessage);
-                        ConsumeReply(reply);
+                        if (brokeredMessage != null)
+                        {
+                            var reply = new MessageReply(brokeredMessage);
+                            ConsumeReply(reply);
+                        }
                     }
                     catch (Exception ex)
                     {
+                        Thread.Sleep(1000);
                         _logger.Debug("consume reply error", ex);
                     }
                     finally

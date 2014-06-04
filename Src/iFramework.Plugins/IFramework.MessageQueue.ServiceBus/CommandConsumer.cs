@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IFramework.MessageQueue.ServiceBus
@@ -99,6 +100,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 }
                 catch (Exception ex)
                 {
+                    Thread.Sleep(1000);
                     _logger.Error(ex.GetBaseException().Message, ex);
                 }
             }

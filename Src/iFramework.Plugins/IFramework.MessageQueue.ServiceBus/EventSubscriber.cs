@@ -9,6 +9,7 @@ using IFramework.MessageQueue.MessageFormat;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.SysExceptions;
 using IFramework.Command;
+using System.Threading;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
@@ -88,6 +89,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 }
                 catch (Exception ex)
                 {
+                    Thread.Sleep(1000);
                     _logger.Error(ex.GetBaseException().Message, ex);
                 }
             }
