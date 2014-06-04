@@ -11,5 +11,6 @@ namespace IFramework.Event
         void Start();
         void Stop();
         void Publish(params IEvent[] events);
+        void Publish(params IMessageContext[] eventContexts);
     }
 }

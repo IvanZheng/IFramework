@@ -53,17 +53,28 @@ namespace Sample.CommandService
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
                              .RegisterDisposeModule()
                              .RegisterMvc();
+                const string serviceBusConnectionString = @"Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;StsEndpoint=https://iframework-sb.accesscontrol.chinacloudapi.cn/;SharedSecretIssuer=owner;SharedSecretValue=DfDIfwLDgVK4Ujx0iDmuUAFxYIkX+iFSnQFqw5BtpSw=";
 
-                //_EventPublisher = IoCFactory.Resolve<IEventPublisher>();
-                //_EventPublisher.Start();
-                //_DomainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
-                //_DomainEventConsumer.Start();
+                _EventPublisher = new EventPublisher(serviceBusConnectionString, "eventTopic");
+                _EventPublisher.Start();
+
+                IoCFactory.Instance.CurrentContainer
+                      .RegisterInstance(typeof(IEventPublisher)
+                                        , _EventPublisher
+                                        , new ContainerControlledLifetimeManager());
+
+                var eventHandlerProvider = IoCFactory.Resolve<IHandlerProvider>("AsyncDomainEventProvider");
+                _DomainEventConsumer = new EventSubscriber(serviceBusConnectionString, 
+                                                           eventHandlerProvider, 
+                                                           "eventSubscriber1", 
+                                                           "eventTopic");
+                _DomainEventConsumer.Start();
+
                 //_ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
                 //_ApplicationEventConsumer.Start();
 
 
-                const string serviceBusConnectionString = @"Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;StsEndpoint=https://iframework-sb.accesscontrol.chinacloudapi.cn/;SharedSecretIssuer=owner;SharedSecretValue=DfDIfwLDgVK4Ujx0iDmuUAFxYIkX+iFSnQFqw5BtpSw=";
-
+               
                 //serviceBusConnectionString = "Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=jGR+cxcbZqQLQcmF+xRxnOMYXiVDVI5AXC3nY9B4lW8=";
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
                 

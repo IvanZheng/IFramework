@@ -22,12 +22,14 @@ namespace IFramework.EntityFramework
 {
     public class UnitOfWork : BaseUnitOfWork
     {
-        protected List<DbContext> _dbContexts;
+        List<DbContext> _dbContexts;
+        IEventPublisher _eventPublisher;
 
-        public UnitOfWork(IDomainEventBus eventBus, IMessageStore messageStore)
+        public UnitOfWork(IDomainEventBus eventBus, IMessageStore messageStore, IEventPublisher eventPublisher)
             : base(eventBus, messageStore)
         {
             _dbContexts = new List<DbContext>();
+            _eventPublisher = eventPublisher;
         }
         #region IUnitOfWork Members
 
@@ -36,21 +38,21 @@ namespace IFramework.EntityFramework
             // TODO: should make domain events never losed, need transaction between
             //       model context and message queue, but need transaction across different scopes.
             TransactionScope scope = new TransactionScope();
+            bool success = false;
+            var domainEventContexts = new List<IMessageContext>();
             try
             {
                 _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
-
                 var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-                var domainEventContexts = new List<IMessageContext>();
                 _domainEventBus.GetMessages().ForEach(domainEvent => 
                     domainEventContexts.Add(new MessageContext(domainEvent))
                 );
                 _messageStore.SaveCommand(currentCommandContext, domainEventContexts);
-
                 scope.Complete();
             }
             catch (Exception ex)
             {
+                success = false;
                 if (ex is DbUpdateConcurrencyException)
                 {
                     throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
@@ -59,15 +61,18 @@ namespace IFramework.EntityFramework
                 {
                     throw;
                 }
+                
             }
             finally
             {
                 scope.Dispose();
-            }
-
-            if (_domainEventBus != null)
-            {
-                _domainEventBus.Commit();
+                if (success)
+                {
+                    if (_eventPublisher != null)
+                    {
+                        _eventPublisher.Publish(domainEventContexts.ToArray());
+                    }
+                }
             }
         }
 

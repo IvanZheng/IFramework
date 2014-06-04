@@ -20,5 +20,10 @@ namespace IFramework.Event.Impl
         public void Stop()
         {
         }
+
+
+        public void Publish(params IMessageContext[] eventContexts)
+        {
+        }
     }
 }

@@ -77,22 +77,10 @@ namespace IFramework.MessageQueue.ServiceBus
                     try
                     {
                         var commandContext = _toBeSentCommandQueue.Take();
-                        int tryCount = 0;
-                        while (true)
+                        SendCommand(commandContext);
+                        using (var messageStore = IoCFactory.Resolve<IMessageStore>())
                         {
-                            try
-                            {
-                                SendCommand(commandContext);
-                                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
-                                {
-                                    messageStore.RemoveSentCommand(commandContext.MessageID);
-                                }
-                                break;
-                            }
-                            catch (Exception e)
-                            {
-                                Thread.Sleep(1000);
-                            }
+                            messageStore.RemoveSentCommand(commandContext.MessageID);
                         }
                     }
                     catch (Exception ex)
@@ -182,7 +170,18 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             if (commandProducer == null) return;
             var brokeredMessage = ((MessageContext)commandContext).BrokeredMessage;
-            commandProducer.Send(brokeredMessage);
+            while (true)
+            {
+                try
+                {
+                    commandProducer.Send(brokeredMessage);
+                    break;
+                }
+                catch (Exception)
+                {
+                    Thread.Sleep(1000);
+                }
+            }
             _logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
                 commandContext.MessageID, brokeredMessage.Size, brokeredMessage.State);
         }

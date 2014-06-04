@@ -114,22 +114,26 @@ namespace IFramework.EntityFramework.MessageStoring
 
         public void RemoveSentCommand(string commandID)
         {
-            var unSentCommand = UnSentCommands.Find(commandID);
-            if (unSentCommand != null)
-            {
-                UnSentCommands.Remove(unSentCommand);
-                SaveChanges();
-            }
+            var deleteSql = string.Format("delete from UnSentCommands where ID = '{0}'", commandID);
+            this.Database.ExecuteSqlCommand(deleteSql);
+            //var unSentCommand = UnSentCommands.Find(commandID);
+            //if (unSentCommand != null)
+            //{
+            //    UnSentCommands.Remove(unSentCommand);
+            //    SaveChanges();
+            //}
         }
 
         public void RemovePublishedEvent(string eventID)
         {
-            var unPublishedEvent = UnPublishedEvents.Find(eventID);
-            if (unPublishedEvent != null)
-            {
-                UnPublishedEvents.Remove(unPublishedEvent);
-                SaveChanges();
-            }
+            var deleteSql = string.Format("delete from UnPublishedEvents where ID = '{0}'", eventID);
+            this.Database.ExecuteSqlCommand(deleteSql);
+            //var unPublishedEvent = UnPublishedEvents.Find(eventID);
+            //if (unPublishedEvent != null)
+            //{
+            //    UnPublishedEvents.Remove(unPublishedEvent);
+            //    SaveChanges();
+            //}
         }
 
 
@@ -143,7 +147,7 @@ namespace IFramework.EntityFramework.MessageStoring
 
         public IEnumerable<IMessageContext> GetAllUnPublishedEvents()
         {
-             var eventContexts = new List<IMessageContext>();
+            var eventContexts = new List<IMessageContext>();
             UnPublishedEvents.ToList().ForEach(@event =>
                 eventContexts.Add((IMessageContext)@event.MessageBody.ToJsonObject(Type.GetType(@event.Type))));
             return eventContexts;

@@ -21,7 +21,7 @@ namespace IFramework.MessageQueue.ServiceBus
         public EventSubscriber(string serviceBusConnectionString, 
                                IHandlerProvider handlerProvider,
                                string subscriptionName,
-                               string[] topics)
+                               params string[] topics)
             :base(serviceBusConnectionString)
         {
             _handlerProvider = handlerProvider;
@@ -96,18 +96,16 @@ namespace IFramework.MessageQueue.ServiceBus
 
         protected void ConsumeMessage(BrokeredMessage brokeredMessage)
         {
-            var messageContext = new MessageContext(brokeredMessage);
-            var message = messageContext.Message;
+            var eventContext = new MessageContext(brokeredMessage);
+            var message = eventContext.Message;
             var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
-            PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
+            PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
             messageHandlerTypes.ForEach(messageHandlerType =>
             {
                 try
                 {
                     var messageHandler = IoCFactory.Resolve(messageHandlerType);
                     ((dynamic)messageHandler).Handle((dynamic)message);
-                    // get all commands that need to send out
-
                 }
                 catch (Exception e)
                 {
@@ -121,8 +119,8 @@ namespace IFramework.MessageQueue.ServiceBus
                     }
                 }
             });
-            var commandContexts = messageContext.ToBeSentMessageContexts;
-            IoCFactory.Resolve<IMessageStore>().SaveEvent(messageContext, commandContexts);
+            var commandContexts = eventContext.ToBeSentMessageContexts;
+            IoCFactory.Resolve<IMessageStore>().SaveEvent(eventContext, commandContexts);
             ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
             PerMessageContextLifetimeManager.CurrentMessageContext = null;
         }
