@@ -17,11 +17,13 @@ namespace IFramework.MessageQueue.MessageFormat
         public MessageContext(BrokeredMessage brokeredMessage)
         {
             BrokeredMessage = brokeredMessage;
+            SentTime = DateTime.Now;
         }
 
         public MessageContext(IMessage message)
         {
             BrokeredMessage = new BrokeredMessage(message.ToJson());
+            SentTime = DateTime.Now;
             Message = message;
             MessageID = message.ID;
         }
@@ -102,7 +104,8 @@ namespace IFramework.MessageQueue.MessageFormat
 
         public DateTime SentTime
         {
-            get { return BrokeredMessage.EnqueuedTimeUtc; }
+            get { return (DateTime) Headers["SentTime"]; }
+            set { Headers["SentTime"] = value; }
         }
     }
 }

@@ -42,9 +42,9 @@ namespace IFramework.EntityFramework
 
                 var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
                 var domainEventContexts = new List<IMessageContext>();
-                _domainEventBus.GetMessages().ForEach(domainEvent => {
-                    domainEventContexts.Add(new MessageContext(domainEvent));
-                });
+                _domainEventBus.GetMessages().ForEach(domainEvent => 
+                    domainEventContexts.Add(new MessageContext(domainEvent))
+                );
                 _messageStore.SaveCommand(currentCommandContext, domainEventContexts);
 
                 scope.Complete();
@@ -57,7 +57,7 @@ namespace IFramework.EntityFramework
                 }
                 else
                 {
-                    throw ex;
+                    throw;
                 }
             }
             finally
@@ -73,7 +73,7 @@ namespace IFramework.EntityFramework
 
         internal void RegisterDbContext(DbContext dbContext)
         {
-            if (!_dbContexts.Exists(dbCtx => dbCtx == dbContext))
+            if (!_dbContexts.Exists(dbCtx => dbCtx.Equals(dbContext)))
             {
                 _dbContexts.Add(dbContext);
             }

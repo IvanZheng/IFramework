@@ -8,7 +8,7 @@ namespace IFramework.Event.Impl
 {
     class MockEventPublisher : IEventPublisher
     {
-        public void Publish(params IMessage[] messages)
+        public void Publish(params IEvent[] events)
         {
         }
 

@@ -8,10 +8,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IFramework.EntityFramework.MessageStoring
 {
-    public abstract class Message
+    public abstract class UnSentMessage
     {
-        public Message() { }
-        public Message(IMessageContext messageContext)
+        public UnSentMessage() { }
+        public UnSentMessage(IMessageContext messageContext)
         {
             ID = messageContext.MessageID;
             CorrelationID = messageContext.CorrelationID;
@@ -27,10 +27,5 @@ namespace IFramework.EntityFramework.MessageStoring
         public DateTime CreateTime { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
-
-        [ForeignKey("CorrelationID")]
-        public virtual Message ParentMessage { get; set; }
-        [InverseProperty("ParentMessage")]
-        public virtual ICollection<Message> ChildrenMessage { get; set; }
     }
 }

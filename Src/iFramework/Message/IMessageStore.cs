@@ -7,9 +7,11 @@ namespace IFramework.Message
 {
     public interface IMessageStore : IDisposable
     {
-        bool HasCommandHandled(string commandID);
-        bool HasEventHandled(string eventID);
+        bool HasCommandHandled(string commandId);
+        bool HasEventHandled(string eventId);
         void SaveEvent(IMessageContext eventContext, IEnumerable<IMessageContext> commandContexts);
         void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts);
+
+        void SaveFailedCommand(IMessageContext commandContext);
     }
 }

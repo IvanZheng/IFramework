@@ -15,8 +15,8 @@ namespace IFramework.EntityFramework.MessageStoring
 
         public DbSet<HandledEvent> HandledEvents { get; set; }
 
-        public DbSet<Command> UnSentCommands { get; set; }
-        public DbSet<Event> UnPublishedEvents { get; set; }
+        public DbSet<UnSentCommand> UnSentCommands { get; set; }
+        public DbSet<UnPublishedEvent> UnPublishedEvents { get; set; }
 
         public MessageStore()
             : base("MessageStore")
@@ -35,7 +35,19 @@ namespace IFramework.EntityFramework.MessageStoring
                 })
                 .Map<Event>(map =>
                 {
-                    map.ToTable("DomainEvents");
+                    map.ToTable("Events");
+                    map.MapInheritedProperties();
+                });
+
+            modelBuilder.Entity<UnSentMessage>()
+                .Map<UnSentCommand>(map =>
+                {
+                    map.ToTable("UnSentCommands");
+                    map.MapInheritedProperties();
+                })
+                .Map<UnPublishedEvent>(map =>
+                {
+                    map.ToTable("UnPublishedEvents");
                     map.MapInheritedProperties();
                 });
         }
@@ -44,12 +56,22 @@ namespace IFramework.EntityFramework.MessageStoring
         {
             var command = new Command(commandContext);
             Commands.Add(command);
-            eventContexts.ForEach(domainEventContext =>
+            eventContexts.ForEach(eventContext =>
             {
-                domainEventContext.CorrelationID = commandContext.MessageID;
-                Events.Add(new Event(domainEventContext));
-                UnPublishedEvents.Add(new Event(domainEventContext));
+                eventContext.CorrelationID = commandContext.MessageID;
+                Events.Add(new Event(eventContext));
+                UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
+            SaveChanges();
+        }
+
+        public void SaveFailedCommand(IMessageContext commandContext)
+        {
+            var command = new Command(commandContext)
+            {
+                Status = Status.Failed
+            };
+            Commands.Add(command);
             SaveChanges();
         }
 
@@ -65,21 +87,21 @@ namespace IFramework.EntityFramework.MessageStoring
             commandContexts.ForEach(commandContext =>
             {
                 commandContext.CorrelationID = eventContext.MessageID;
-                UnSentCommands.Add(new Command(commandContext));
+                UnSentCommands.Add(new UnSentCommand(commandContext));
             });
             SaveChanges();
         }
 
 
 
-        public bool HasCommandHandled(string commandID)
+        public bool HasCommandHandled(string commandId)
         {
-            return Commands.Count(command => command.ID == commandID) > 0;
+            return Commands.Count(command => command.ID == commandId) > 0;
         }
 
-        public bool HasEventHandled(string eventID)
+        public bool HasEventHandled(string eventId)
         {
-            return HandledEvents.Count(@event => @event.ID == eventID) > 0;
+            return HandledEvents.Count(@event => @event.ID == eventId) > 0;
         }
     }
 }

@@ -8,11 +8,12 @@ namespace IFramework.EntityFramework.MessageStoring
 {
     public class Command : Message
     {
+        public Status Status { get; set; }
+
         public Command() { }
         public Command(IMessageContext messageContext) :
             base(messageContext)
         {
-
         }
 
         public Event Parent

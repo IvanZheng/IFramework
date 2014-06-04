@@ -86,13 +86,16 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             while (!_exit)
             {
-                BrokeredMessage brokeredMessage = null;
                 try
                 {
+                    BrokeredMessage brokeredMessage = null;
                     brokeredMessage = _commandQueueClient.Receive();
-                    ConsumeMessage(brokeredMessage);
-                    brokeredMessage.Complete();
-                    MessageCount++;
+                    if (brokeredMessage != null)
+                    {
+                        ConsumeMessage(brokeredMessage);
+                        brokeredMessage.Complete();
+                        MessageCount++;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -101,38 +104,38 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-        protected void ConsumeMessage(BrokeredMessage brokeredMessage)
+        void ConsumeMessage(BrokeredMessage brokeredMessage)
         {
-            var messageContext = new MessageContext(brokeredMessage);
+            var commandContext = new MessageContext(brokeredMessage);
+            var message = commandContext.Message as ICommand;
             MessageReply messageReply = null;
-            if (messageContext == null || messageContext.Message as ICommand == null)
+            if (message == null)
             {
                 return;
             }
-            var message = messageContext.Message as ICommand;
-
             var needRetry = message.NeedRetry;
+            IMessageStore messageStore = null;
             do
             {
                 try
                 {
-                    PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
-                    var messageStore = IoCFactory.Resolve<IMessageStore>();
-                    if (!messageStore.HasCommandHandled(messageContext.MessageID))
+                    PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
+                    messageStore = IoCFactory.Resolve<IMessageStore>();
+                    if (!messageStore.HasCommandHandled(commandContext.MessageID))
                     {
                         var messageHandler = _handlerProvider.GetHandler(message.GetType());
-                        _logger.InfoFormat("Handle command, commandID:{0}", messageContext.MessageID);
+                        _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
 
                         if (messageHandler == null)
                         {
-                            messageReply = new MessageReply(messageContext.MessageID, new NoHandlerExists());
+                            messageReply = new MessageReply(commandContext.MessageID, new NoHandlerExists());
                         }
                         else
                         {
                             var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
                             ((dynamic)messageHandler).Handle((dynamic)message);
                             unitOfWork.Commit();
-                            messageReply = new MessageReply(messageContext.MessageID, messageContext.Reply);
+                            messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
                         }
                     }
                     needRetry = false;
@@ -141,7 +144,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 {
                     if (!(e is OptimisticConcurrencyException) || !needRetry)
                     {
-                        messageReply = new MessageReply(messageContext.MessageID, e.GetBaseException());
+                        messageReply = new MessageReply(commandContext.MessageID, e.GetBaseException());
                         if (e is DomainException)
                         {
                             _logger.Warn(message.ToJson(), e);
@@ -149,6 +152,10 @@ namespace IFramework.MessageQueue.ServiceBus
                         else
                         {
                             _logger.Error(message.ToJson(), e);
+                        }
+                        if (messageStore != null)
+                        {
+                            messageStore.SaveFailedCommand(commandContext);
                         }
                         needRetry = false;
                     }
@@ -158,7 +165,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     PerMessageContextLifetimeManager.CurrentMessageContext = null;
                 }
             } while (needRetry);
-            OnMessageHandled(messageContext, messageReply);
+            OnMessageHandled(commandContext, messageReply);
         }
 
 

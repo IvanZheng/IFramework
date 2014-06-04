@@ -62,7 +62,7 @@ namespace Sample.CommandService
                 //_ApplicationEventConsumer.Start();
 
 
-                var serviceBusConnectionString = @"Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;StsEndpoint=https://iframework-sb.accesscontrol.chinacloudapi.cn/;SharedSecretIssuer=owner;SharedSecretValue=DfDIfwLDgVK4Ujx0iDmuUAFxYIkX+iFSnQFqw5BtpSw=";
+                const string serviceBusConnectionString = @"Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;StsEndpoint=https://iframework-sb.accesscontrol.chinacloudapi.cn/;SharedSecretIssuer=owner;SharedSecretValue=DfDIfwLDgVK4Ujx0iDmuUAFxYIkX+iFSnQFqw5BtpSw=";
 
                 //serviceBusConnectionString = "Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=jGR+cxcbZqQLQcmF+xRxnOMYXiVDVI5AXC3nY9B4lW8=";
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
