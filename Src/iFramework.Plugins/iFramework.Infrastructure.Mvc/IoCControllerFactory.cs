@@ -22,7 +22,7 @@ namespace IFramework.Infrastructure.Mvc
             if (controllerType != null)
                 return _container.Resolve(controllerType) as IController;
             else
-                return base.GetControllerInstance(requestContext, controllerType);
+                return base.GetControllerInstance(requestContext, typeof(Controller));
         }
     }
 }

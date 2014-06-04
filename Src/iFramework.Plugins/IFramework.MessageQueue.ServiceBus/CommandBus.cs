@@ -25,11 +25,13 @@ namespace IFramework.MessageQueue.ServiceBus
         protected ILinearCommandManager _linearCommandManager;
         protected Hashtable _commandStateQueues;
         protected Task _subscriptionConsumeTask;
+        protected Task _sendCommandWorkTask;
         protected string _replyTopicName;
         protected string _replySubscriptionName;
         protected string[] _commandQueueNames;
         protected List<QueueClient> _commandQueueClients;
         protected SubscriptionClient _replySubscriptionClient;
+        private BlockingCollection<IMessageContext> _toBeSentCommandQueue;
         protected IMessageStore MessageStore
         {
             get
@@ -57,6 +59,7 @@ namespace IFramework.MessageQueue.ServiceBus
             _replySubscriptionName = replySubscriptionName;
             _commandQueueNames = commandQueueNames;
             _commandQueueClients = new List<QueueClient>();
+            _toBeSentCommandQueue = new BlockingCollection<IMessageContext>();
             InProc = inProc;
         }
 
@@ -64,9 +67,28 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public void Start()
         {
+            _sendCommandWorkTask = Task.Factory.StartNew(() =>
+            {
+                while (!_exit)
+                {
+                    try
+                    {
+                        var commandContext = _toBeSentCommandQueue.Take();
+                        SendCommand(commandContext);
+                        // delete sent command in database
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Debug("send command error", ex);
+                    }
+                }
+            }, TaskCreationOptions.LongRunning);
+
+
             if (_commandQueueNames != null && _commandQueueNames.Length > 0)
             {
-                _commandQueueNames.ForEach(commandQueueName => 
+                _commandQueueNames.ForEach(commandQueueName =>
                     _commandQueueClients.Add(CreateQueueClient(commandQueueName)));
             }
 
@@ -109,32 +131,31 @@ namespace IFramework.MessageQueue.ServiceBus
                 }
             }
         }
-        protected virtual void SendCommand(IFramework.Message.MessageState commandState)
+
+        internal void SendCommand(IEnumerable<IMessageContext> commandContexts)
         {
-            try
+            commandContexts.ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
+        }
+
+        protected virtual void SendCommand(IMessageContext commandContext)
+        {
+            QueueClient commandProducer = null;
+            if (_commandQueueClients.Count == 1)
             {
-                QueueClient commandProducer = null;
-                if (_commandQueueClients.Count == 1)
-                {
-                    commandProducer = _commandQueueClients[0];
-                }
-                else if (_commandQueueClients.Count > 1)
-                {
-                    var commandKey = commandState.MessageContext.Key;
-                    int keyHashCode = !string.IsNullOrWhiteSpace(commandKey) ?
-                        commandKey.GetHashCode() : commandState.MessageID.GetHashCode();
-                    commandProducer = _commandQueueClients[Math.Abs(keyHashCode % _commandQueueClients.Count)];
-                }
-                if (commandProducer == null) return;
-                var brokeredMessage = ((MessageContext)commandState.MessageContext).BrokeredMessage;
-                commandProducer.Send(brokeredMessage);
-                _logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
-                    commandState.MessageID, brokeredMessage.Size, brokeredMessage.State);
+                commandProducer = _commandQueueClients[0];
             }
-            catch (Exception ex)
+            else if (_commandQueueClients.Count > 1)
             {
-                _logger.Error(ex.GetBaseException().Message, ex);
+                var commandKey = commandContext.Key;
+                int keyHashCode = !string.IsNullOrWhiteSpace(commandKey) ?
+                    commandKey.GetHashCode() : commandContext.MessageID.GetHashCode();
+                commandProducer = _commandQueueClients[Math.Abs(keyHashCode % _commandQueueClients.Count)];
             }
+            if (commandProducer == null) return;
+            var brokeredMessage = ((MessageContext)commandContext).BrokeredMessage;
+            commandProducer.Send(brokeredMessage);
+            _logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
+                commandContext.MessageID, brokeredMessage.Size, brokeredMessage.State);
         }
 
         protected void ConsumeReply(IMessageReply reply)
@@ -194,15 +215,23 @@ namespace IFramework.MessageQueue.ServiceBus
                     commandKey = linearKey.ToString();
                 }
             }
-            var commandContext = new MessageContext(command, _replyTopicName, commandKey);
-            Task task;
+            IMessageContext commandContext = null;
+            commandContext = new MessageContext(command, _replyTopicName, commandKey);
+            Task task = null;
             if (InProc && currentMessageContext == null)
             {
                 task = SendInProc(commandContext, cancellationToken);
             }
             else
             {
-                task = SendAsync(commandContext, cancellationToken);
+                if (currentMessageContext != null)
+                {
+                    ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
+                }
+                else
+                {
+                    task = SendAsync(commandContext, cancellationToken);
+                }
             }
             return task;
         }
@@ -268,12 +297,17 @@ namespace IFramework.MessageQueue.ServiceBus
 
         protected virtual Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
         {
+
             var commandState = BuildMessageState(commandContext, cancellationToken);
             commandState.CancellationToken.Register(OnCancel, commandState);
             _commandStateQueues.Add(commandState.MessageID, commandState);
-            SendCommand(commandState);
+            //SendCommand(commandContext);
+            _toBeSentCommandQueue.Add(commandContext, cancellationToken);
             return commandState.TaskCompletionSource.Task;
         }
+
+
+
 
         protected void OnCancel(object state)
         {

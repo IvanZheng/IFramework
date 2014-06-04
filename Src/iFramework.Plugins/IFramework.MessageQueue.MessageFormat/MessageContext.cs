@@ -18,6 +18,7 @@ namespace IFramework.MessageQueue.MessageFormat
         {
             BrokeredMessage = brokeredMessage;
             SentTime = DateTime.Now;
+            ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
         public MessageContext(IMessage message)
@@ -26,6 +27,7 @@ namespace IFramework.MessageQueue.MessageFormat
             SentTime = DateTime.Now;
             Message = message;
             MessageID = message.ID;
+            ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
         public MessageContext(IMessage message, string key)
@@ -107,5 +109,7 @@ namespace IFramework.MessageQueue.MessageFormat
             get { return (DateTime) Headers["SentTime"]; }
             set { Headers["SentTime"] = value; }
         }
+
+        public List<IMessageContext> ToBeSentMessageContexts { get; set; } 
     }
 }

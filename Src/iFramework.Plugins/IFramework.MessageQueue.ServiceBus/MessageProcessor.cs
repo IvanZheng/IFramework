@@ -54,7 +54,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
             if (!_namespaceManager.SubscriptionExists(topicDescription.Path, subscriptionName))
             {
-                SubscriptionDescription subscriptionDescription = 
+                var subscriptionDescription = 
                     new SubscriptionDescription(topicDescription.Path, subscriptionName);
                 _namespaceManager.CreateSubscription(subscriptionDescription);
             }

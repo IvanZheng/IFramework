@@ -11,7 +11,7 @@ namespace IFramework.Message
         bool HasEventHandled(string eventId);
         void SaveEvent(IMessageContext eventContext, IEnumerable<IMessageContext> commandContexts);
         void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts);
-
         void SaveFailedCommand(IMessageContext commandContext);
+       // void SaveUnSentCommands(IEnumerable<IMessageContext> commandContexts);
     }
 }

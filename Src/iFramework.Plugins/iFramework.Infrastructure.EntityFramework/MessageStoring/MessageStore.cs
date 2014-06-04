@@ -103,5 +103,12 @@ namespace IFramework.EntityFramework.MessageStoring
         {
             return HandledEvents.Count(@event => @event.ID == eventId) > 0;
         }
+
+        //public void SaveUnSentCommands(IEnumerable<IMessageContext> commandContexts)
+        //{
+        //    commandContexts.ForEach(commandContext => 
+        //        UnSentCommands.Add(new UnSentCommand(commandContext)));
+        //    SaveChanges();
+        //}
     }
 }
