@@ -5,10 +5,11 @@ using System.Text;
 using System.Data.Entity;
 using Sample.Domain.Model;
 using IFramework.EntityFramework;
+using IFramework.EntityFramework.MessageStoring;
 
 namespace Sample.Persistence
 {
-    public class SampleModelContext : MSDbContext
+    public class SampleModelContext : MessageStore
     {
         public SampleModelContext() : base("SampleModelContext") 
         {

@@ -49,6 +49,7 @@ namespace IFramework.EntityFramework
                 );
                 _messageStore.SaveCommand(currentCommandContext, domainEventContexts);
                 scope.Complete();
+                success = true;
             }
             catch (Exception ex)
             {

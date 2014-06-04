@@ -18,8 +18,8 @@ namespace IFramework.EntityFramework.MessageStoring
         public DbSet<UnSentCommand> UnSentCommands { get; set; }
         public DbSet<UnPublishedEvent> UnPublishedEvents { get; set; }
 
-        public MessageStore()
-            : base("MessageStore")
+        public MessageStore(string connectionString = null)
+            : base(connectionString ?? "MessageStore")
         {
 
         }
@@ -139,18 +139,32 @@ namespace IFramework.EntityFramework.MessageStoring
 
         public IEnumerable<IMessageContext> GetAllUnSentCommands()
         {
-            var commandContexts = new List<IMessageContext>();
-            UnSentCommands.ToList().ForEach(command =>
-                commandContexts.Add((IMessageContext)command.MessageBody.ToJsonObject(Type.GetType(command.Type))));
-            return commandContexts;
+            return GetAllUnSentMessages<UnSentCommand>();
         }
 
         public IEnumerable<IMessageContext> GetAllUnPublishedEvents()
         {
-            var eventContexts = new List<IMessageContext>();
-            UnPublishedEvents.ToList().ForEach(@event =>
-                eventContexts.Add((IMessageContext)@event.MessageBody.ToJsonObject(Type.GetType(@event.Type))));
-            return eventContexts;
+            return GetAllUnSentMessages<UnPublishedEvent>();
+        }
+
+        IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>()
+            where TMessage : UnSentMessage
+        {
+            var messageContexts = new List<IMessageContext>();
+            this.Set<TMessage>().ToList().ForEach(message =>
+            {
+                IMessageContext messageContext = null;
+                try
+                {
+                    messageContext = (IMessageContext)message.MessageBody.ToJsonObject(Type.GetType(message.Type));
+                }
+                catch (Exception)
+                {
+                    this.Set<TMessage>().Remove(message);
+                }
+            });
+            SaveChanges();
+            return messageContexts;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace IFramework.EntityFramework.MessageStoring
             MessageBody = messageContext.Message.ToJson();
             CreateTime = messageContext.SentTime;
             Name = messageContext.Message.GetType().Name;
-            Type = messageContext.Message.GetType().FullName;
+            Type = messageContext.Message.GetType().AssemblyQualifiedName;
         }
 
         public string ID { get; set; }
