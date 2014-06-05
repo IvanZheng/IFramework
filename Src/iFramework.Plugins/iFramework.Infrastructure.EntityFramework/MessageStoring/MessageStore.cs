@@ -52,14 +52,24 @@ namespace IFramework.EntityFramework.MessageStoring
                 });
         }
 
+        protected virtual Command BuildCommand(IMessageContext commandContext)
+        {
+            return new Command(commandContext);
+        }
+
+        protected virtual Event BuildEvent(IMessageContext eventContext)
+        {
+            return new Event(eventContext);
+        }
+
         public void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts)
         {
-            var command = new Command(commandContext);
+            var command = BuildCommand(commandContext);
             Commands.Add(command);
             eventContexts.ForEach(eventContext =>
             {
                 eventContext.CorrelationID = commandContext.MessageID;
-                Events.Add(new Event(eventContext));
+                Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
             SaveChanges();
@@ -67,10 +77,8 @@ namespace IFramework.EntityFramework.MessageStoring
 
         public void SaveFailedCommand(IMessageContext commandContext)
         {
-            var command = new Command(commandContext)
-            {
-                Status = Status.Failed
-            };
+            var command = BuildCommand(commandContext);
+            command.Status = Status.Failed;
             Commands.Add(command);
             SaveChanges();
         }
@@ -80,7 +88,7 @@ namespace IFramework.EntityFramework.MessageStoring
             var @event = Events.Find(eventContext.MessageID);
             if (@event == null)
             {
-                @event = new Event(eventContext);
+                @event = BuildEvent(eventContext);
                 Events.Add(@event);
             }
             HandledEvents.Add(new HandledEvent(@event.ID));
@@ -104,36 +112,17 @@ namespace IFramework.EntityFramework.MessageStoring
             return HandledEvents.Count(@event => @event.ID == eventId) > 0;
         }
 
-        //public void SaveUnSentCommands(IEnumerable<IMessageContext> commandContexts)
-        //{
-        //    commandContexts.ForEach(commandContext => 
-        //        UnSentCommands.Add(new UnSentCommand(commandContext)));
-        //    SaveChanges();
-        //}
-
 
         public void RemoveSentCommand(string commandID)
         {
             var deleteSql = string.Format("delete from UnSentCommands where ID = '{0}'", commandID);
             this.Database.ExecuteSqlCommand(deleteSql);
-            //var unSentCommand = UnSentCommands.Find(commandID);
-            //if (unSentCommand != null)
-            //{
-            //    UnSentCommands.Remove(unSentCommand);
-            //    SaveChanges();
-            //}
         }
 
         public void RemovePublishedEvent(string eventID)
         {
             var deleteSql = string.Format("delete from UnPublishedEvents where ID = '{0}'", eventID);
             this.Database.ExecuteSqlCommand(deleteSql);
-            //var unPublishedEvent = UnPublishedEvents.Find(eventID);
-            //if (unPublishedEvent != null)
-            //{
-            //    UnPublishedEvents.Remove(unPublishedEvent);
-            //    SaveChanges();
-            //}
         }
 
 
