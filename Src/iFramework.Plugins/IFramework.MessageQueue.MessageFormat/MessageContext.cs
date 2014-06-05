@@ -100,7 +100,10 @@ namespace IFramework.MessageQueue.MessageFormat
             protected set
             {
                 _Message = value;
-                Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
+                if (value != null)
+                {
+                    Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
+                }
             }
         }
 

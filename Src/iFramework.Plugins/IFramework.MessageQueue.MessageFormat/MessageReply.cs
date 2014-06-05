@@ -21,7 +21,14 @@ namespace IFramework.MessageQueue.MessageFormat
 
         public MessageReply(string messageID, object result)
         {
-            BrokeredMessage = new BrokeredMessage(result.ToJson());
+            if (result != null)
+            {
+                BrokeredMessage = new BrokeredMessage(result.ToJson());
+            }
+            else
+            {
+                BrokeredMessage = new BrokeredMessage();
+            }
             MessageID = messageID;
             Result = result;
         }
@@ -42,14 +49,26 @@ namespace IFramework.MessageQueue.MessageFormat
         {
             get
             {
-                return _Result ?? (_Result = BrokeredMessage.GetBody<string>()
-                                               .ToJsonObject(Type.GetType(Headers["MessageType"].ToString())));
+                if (_Result != null)
+                {
+                    return _Result;
+                }
+                object messageType = null;
+                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
+                {
+                    _Result = BrokeredMessage.GetBody<string>()
+                                               .ToJsonObject(Type.GetType(messageType.ToString()));
                 
+                }
+                return _Result;
             }
             set
             {
                 _Result = value;
-                Headers["MessageType"] = _Result.GetType().AssemblyQualifiedName;
+                if (_Result != null)
+                {
+                    Headers["MessageType"] = _Result.GetType().AssemblyQualifiedName;
+                }
             }
         }
     }
