@@ -274,7 +274,7 @@ namespace IFramework.MessageQueue.ServiceBus
             IMessageContext commandContext = null;
             commandContext = new MessageContext(command, _replyTopicName, commandKey);
             Task task = null;
-            if (InProc && currentMessageContext == null)
+            if (InProc && currentMessageContext == null && !(command is ILinearCommand))
             {
                 task = SendInProc(commandContext, cancellationToken);
             }
