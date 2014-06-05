@@ -102,6 +102,10 @@ namespace IFramework.MessageQueue.ServiceBus
             var message = eventContext.Message;
             var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
             PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
+            if (messageHandlerTypes.Count == 0)
+            {
+                return;
+            }
             messageHandlerTypes.ForEach(messageHandlerType =>
             {
                 try
