@@ -78,10 +78,13 @@ namespace IFramework.MessageQueue.ServiceBus
                     {
                         var commandContext = _toBeSentCommandQueue.Take();
                         SendCommand(commandContext);
-                        using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                        Task.Factory.StartNew(() =>
                         {
-                            messageStore.RemoveSentCommand(commandContext.MessageID);
-                        }
+                            using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                            {
+                                messageStore.RemoveSentCommand(commandContext.MessageID);
+                            }
+                        });
                     }
                     catch (Exception ex)
                     {

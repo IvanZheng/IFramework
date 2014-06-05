@@ -82,10 +82,13 @@ namespace IFramework.MessageQueue.ServiceBus
                         try
                         {
                             _topicClient.Send(((MessageContext)eventContext).BrokeredMessage);
-                            using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                            Task.Factory.StartNew(() =>
                             {
-                                messageStore.RemovePublishedEvent(eventContext.MessageID);
-                            }
+                                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                                {
+                                    messageStore.RemovePublishedEvent(eventContext.MessageID);
+                                }
+                            });
                             break;
                         }
                         catch (Exception)
