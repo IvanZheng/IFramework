@@ -118,7 +118,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     catch (Exception ex)
                     {
                         Thread.Sleep(1000);
-                        _logger.Debug("consume reply error", ex);
+                        _logger.Error("consume reply error", ex);
                     }
                     finally
                     {
