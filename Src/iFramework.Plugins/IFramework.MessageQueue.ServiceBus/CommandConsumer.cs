@@ -70,9 +70,10 @@ namespace IFramework.MessageQueue.ServiceBus
                             replyProducer.Send(reply.BrokeredMessage);
                             break;
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
                             Thread.Sleep(1000);
+                            _logger.Error(ex.GetBaseException().Message, ex);
                         }
                     }
                     _logger.InfoFormat("send reply, commandID:{0}", reply.MessageID);
@@ -112,7 +113,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 catch (Exception ex)
                 {
                     Thread.Sleep(1000);
-                    _logger.Error(ex.GetBaseException().Message, ex);
+                    _logger.Debug(ex.GetBaseException().Message, ex);
                 }
             }
         }
