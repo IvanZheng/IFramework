@@ -102,10 +102,17 @@ namespace IFramework.MessageQueue.ServiceBus
             var message = eventContext.Message;
             var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
             PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
+            var messageStore = IoCFactory.Resolve<IMessageStore>();
+            if (messageStore.HasEventHandled(eventContext.MessageID, _subscriptionName))
+            {
+                return;
+            }
+
             if (messageHandlerTypes.Count == 0)
             {
                 return;
             }
+            
             messageHandlerTypes.ForEach(messageHandlerType =>
             {
                 try
@@ -126,7 +133,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 }
             });
             var commandContexts = eventContext.ToBeSentMessageContexts;
-            IoCFactory.Resolve<IMessageStore>().SaveEvent(eventContext, _subscriptionName, commandContexts);
+            messageStore.SaveEvent(eventContext, _subscriptionName, commandContexts);
             ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
             PerMessageContextLifetimeManager.CurrentMessageContext = null;
         }

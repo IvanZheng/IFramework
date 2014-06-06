@@ -5,11 +5,15 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
+using IFramework.MessageQueue.MessageFormat;
+using IFramework.Infrastructure.Logging;
 
 namespace IFramework.EntityFramework.MessageStoring
 {
     public class MessageStore : DbContext, IMessageStore
     {
+        protected readonly ILogger _logger;
+
         public DbSet<Command> Commands { get; set; }
         public DbSet<Event> Events { get; set; }
 
@@ -21,12 +25,14 @@ namespace IFramework.EntityFramework.MessageStoring
         public MessageStore(string connectionString = null)
             : base(connectionString ?? "MessageStore")
         {
-
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<HandledEvent>().HasKey(e => new {e.Id, e.SubscriptionName});
+
             modelBuilder.Entity<Message>()
                 .Map<Command>(map =>
                 {
@@ -145,12 +151,22 @@ namespace IFramework.EntityFramework.MessageStoring
             {
                 try
                 {
-                    var messageContext = (IMessageContext)message.MessageBody.ToJsonObject(Type.GetType(message.Type));
-                    messageContexts.Add(messageContext);
+                    var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type)) as IMessage;
+                    if (rawMessage != null)
+                    {
+                        var messageContext = new MessageContext(rawMessage);
+                        messageContexts.Add(messageContext);
+                    }
+                    else
+                    {
+                        this.Set<TMessage>().Remove(message);
+                        _logger.ErrorFormat("get unsent message error: {0}", message.ToJson());
+                    }
                 }
                 catch (Exception)
                 {
                     this.Set<TMessage>().Remove(message);
+                    _logger.ErrorFormat("get unsent message error: {0}", message.ToJson());
                 }
             });
             SaveChanges();
