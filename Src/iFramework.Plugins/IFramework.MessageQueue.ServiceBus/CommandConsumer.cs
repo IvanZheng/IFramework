@@ -58,7 +58,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
         void OnMessageHandled(IMessageContext messageContext, MessageReply reply)
         {
-            if (!string.IsNullOrWhiteSpace(messageContext.ReplyToEndPoint))
+            if (!string.IsNullOrWhiteSpace(messageContext.ReplyToEndPoint) && reply != null)
             {
                 var replyProducer = GetReplyProducer(messageContext.ReplyToEndPoint);
                 if (replyProducer != null)
@@ -127,6 +127,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 return;
             }
             var needRetry = message.NeedRetry;
+            bool commandHasHandled = false;
             IMessageStore messageStore = null;
             do
             {
@@ -134,7 +135,8 @@ namespace IFramework.MessageQueue.ServiceBus
                 {
                     PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
                     messageStore = IoCFactory.Resolve<IMessageStore>();
-                    if (!messageStore.HasCommandHandled(commandContext.MessageID))
+                    commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
+                    if (!commandHasHandled)
                     {
                         var messageHandler = _handlerProvider.GetHandler(message.GetType());
                         _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
@@ -178,7 +180,10 @@ namespace IFramework.MessageQueue.ServiceBus
                     PerMessageContextLifetimeManager.CurrentMessageContext = null;
                 }
             } while (needRetry);
-            OnMessageHandled(commandContext, messageReply);
+            if (!commandHasHandled)
+            {
+                OnMessageHandled(commandContext, messageReply);
+            }
         }
 
 
