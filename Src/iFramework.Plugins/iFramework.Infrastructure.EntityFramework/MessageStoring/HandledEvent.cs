@@ -8,12 +8,13 @@ namespace IFramework.EntityFramework.MessageStoring
 {
     public class HandledEvent
     {
-        public string ID { get; set; }
-
+        public string Id { get; set; }
+        public string SubscriptionName { get; set; }
         public HandledEvent() { }
-        public HandledEvent(string id)
+        public HandledEvent(string id, string subscriptionName)
         {
-            ID = id;
+            Id = id;
+            SubscriptionName = subscriptionName;
         }
     }
 }

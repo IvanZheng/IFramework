@@ -83,7 +83,7 @@ namespace IFramework.EntityFramework.MessageStoring
             SaveChanges();
         }
 
-        public void SaveEvent(IMessageContext eventContext, IEnumerable<IMessageContext> commandContexts)
+        public void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts)
         {
             var @event = Events.Find(eventContext.MessageID);
             if (@event == null)
@@ -91,7 +91,7 @@ namespace IFramework.EntityFramework.MessageStoring
                 @event = BuildEvent(eventContext);
                 Events.Add(@event);
             }
-            HandledEvents.Add(new HandledEvent(@event.ID));
+            HandledEvents.Add(new HandledEvent(@event.ID, subscriptionName));
             commandContexts.ForEach(commandContext =>
             {
                 commandContext.CorrelationID = eventContext.MessageID;
@@ -107,21 +107,22 @@ namespace IFramework.EntityFramework.MessageStoring
             return Commands.Count(command => command.ID == commandId) > 0;
         }
 
-        public bool HasEventHandled(string eventId)
+        public bool HasEventHandled(string eventId, string subscriptionName)
         {
-            return HandledEvents.Count(@event => @event.ID == eventId) > 0;
+            return HandledEvents.Count(@event => @event.Id == eventId 
+                                    && @event.SubscriptionName == subscriptionName) > 0;
         }
 
 
-        public void RemoveSentCommand(string commandID)
+        public void RemoveSentCommand(string commandId)
         {
-            var deleteSql = string.Format("delete from UnSentCommands where ID = '{0}'", commandID);
+            var deleteSql = string.Format("delete from UnSentCommands where ID = '{0}'", commandId);
             this.Database.ExecuteSqlCommand(deleteSql);
         }
 
-        public void RemovePublishedEvent(string eventID)
+        public void RemovePublishedEvent(string eventId)
         {
-            var deleteSql = string.Format("delete from UnPublishedEvents where ID = '{0}'", eventID);
+            var deleteSql = string.Format("delete from UnPublishedEvents where ID = '{0}'", eventId);
             this.Database.ExecuteSqlCommand(deleteSql);
         }
 
@@ -142,10 +143,10 @@ namespace IFramework.EntityFramework.MessageStoring
             var messageContexts = new List<IMessageContext>();
             this.Set<TMessage>().ToList().ForEach(message =>
             {
-                IMessageContext messageContext = null;
                 try
                 {
-                    messageContext = (IMessageContext)message.MessageBody.ToJsonObject(Type.GetType(message.Type));
+                    var messageContext = (IMessageContext)message.MessageBody.ToJsonObject(Type.GetType(message.Type));
+                    messageContexts.Add(messageContext);
                 }
                 catch (Exception)
                 {

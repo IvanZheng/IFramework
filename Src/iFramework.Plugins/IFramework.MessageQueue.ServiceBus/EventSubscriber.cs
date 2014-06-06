@@ -126,7 +126,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 }
             });
             var commandContexts = eventContext.ToBeSentMessageContexts;
-            IoCFactory.Resolve<IMessageStore>().SaveEvent(eventContext, commandContexts);
+            IoCFactory.Resolve<IMessageStore>().SaveEvent(eventContext, _subscriptionName, commandContexts);
             ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
             PerMessageContextLifetimeManager.CurrentMessageContext = null;
         }
