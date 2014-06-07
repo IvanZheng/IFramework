@@ -10,7 +10,7 @@ using IFramework.Infrastructure.Logging;
 
 namespace IFramework.EntityFramework.MessageStoring
 {
-    public class MessageStore : DbContext, IMessageStore
+    public class MessageStore : MSDbContext, IMessageStore
     {
         protected readonly ILogger _logger;
 

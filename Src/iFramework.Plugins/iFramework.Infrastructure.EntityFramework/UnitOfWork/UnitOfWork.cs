@@ -25,8 +25,8 @@ namespace IFramework.EntityFramework
         List<DbContext> _dbContexts;
         IEventPublisher _eventPublisher;
 
-        public UnitOfWork(IDomainEventBus eventBus, IMessageStore messageStore, IEventPublisher eventPublisher)
-            : base(eventBus, messageStore)
+        public UnitOfWork(IDomainEventBus eventBus,  IEventPublisher eventPublisher)
+            : base(eventBus)
         {
             _dbContexts = new List<DbContext>();
             _eventPublisher = eventPublisher;
@@ -42,12 +42,18 @@ namespace IFramework.EntityFramework
             var domainEventContexts = new List<IMessageContext>();
             try
             {
-                _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
                 var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-                _domainEventBus.GetMessages().ForEach(domainEvent => 
-                    domainEventContexts.Add(new MessageContext(domainEvent))
-                );
-                _messageStore.SaveCommand(currentCommandContext, domainEventContexts);
+                if (_domainEventBus != null)
+                {
+                    _domainEventBus.GetMessages().ForEach(domainEvent =>
+                                       domainEventContexts.Add(new MessageContext(domainEvent))
+                                   );
+                }
+                _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
+                if (MessageStore != null)
+                {
+                    MessageStore.SaveCommand(currentCommandContext, domainEventContexts);
+                }
                 scope.Complete();
                 success = true;
             }
@@ -56,13 +62,14 @@ namespace IFramework.EntityFramework
                 success = false;
                 if (ex is DbUpdateConcurrencyException)
                 {
+                    (ex as DbUpdateConcurrencyException).Entries.ForEach(e => e.Reload());
                     throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
                 }
                 else
                 {
                     throw;
                 }
-                
+
             }
             finally
             {

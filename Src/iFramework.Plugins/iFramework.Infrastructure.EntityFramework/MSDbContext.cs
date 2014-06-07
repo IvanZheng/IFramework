@@ -38,7 +38,8 @@ namespace IFramework.EntityFramework
                 || (BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerExecutionContextLifetimeManager)
                     && (HttpContext.Current != null || OperationContext.Current != null)))
             {
-                (IoCFactory.Resolve<IUnitOfWork>() as UnitOfWork).RegisterDbContext(this);
+                var unitOfWork = (IoCFactory.Resolve<IUnitOfWork>() as UnitOfWork);
+                unitOfWork.RegisterDbContext(this);
             }
         }
 

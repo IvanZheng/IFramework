@@ -29,12 +29,17 @@ namespace IFramework.UnitOfWork
             return type;
         }
 
-        protected IMessageStore _messageStore;
+        protected IMessageStore MessageStore
+        {
+            get
+            {
+                return IoCFactory.Resolve<IMessageStore>();
+            }
+        }
 
-        public BaseUnitOfWork(IDomainEventBus domainEventBus, IMessageStore messageStore)
+        public BaseUnitOfWork(IDomainEventBus domainEventBus)
         {
             _domainEventBus = domainEventBus;
-            _messageStore = messageStore;
         }
         #region IUnitOfWork Members
 

@@ -116,6 +116,7 @@
     <Compile Include="Event\IEventSubscriber.cs" />
     <Compile Include="Event\IEventSubscriberProvider.cs" />
     <Compile Include="Event\Impl\EventSubscriberProvider.cs" />
+    <Compile Include="Message\Impl\MockMessageStore.cs" />
     <Compile Include="Message\MessageCode.cs" />
     <Compile Include="Message\MessageFormatHelper.cs" />
     <Compile Include="Message\MessageState.cs" />

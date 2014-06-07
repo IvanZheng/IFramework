@@ -130,57 +130,63 @@ namespace IFramework.MessageQueue.ServiceBus
             var needRetry = message.NeedRetry;
             bool commandHasHandled = false;
             IMessageStore messageStore = null;
-            do
+            try
             {
-                try
+                PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
+                messageStore = IoCFactory.Resolve<IMessageStore>();
+                commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
+                if (!commandHasHandled)
                 {
-                    PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-                    messageStore = IoCFactory.Resolve<IMessageStore>();
-                    commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
-                    if (!commandHasHandled)
-                    {
-                        var messageHandler = _handlerProvider.GetHandler(message.GetType());
-                        _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
+                    var messageHandler = _handlerProvider.GetHandler(message.GetType());
+                    _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
 
-                        if (messageHandler == null)
-                        {
-                            messageReply = new MessageReply(commandContext.MessageID, new NoHandlerExists());
-                        }
-                        else
-                        {
-                            var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                            ((dynamic)messageHandler).Handle((dynamic)message);
-                            unitOfWork.Commit();
-                            messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
-                        }
-                    }
-                    needRetry = false;
-                }
-                catch (Exception e)
-                {
-                    if (!(e is OptimisticConcurrencyException) || !needRetry)
+                    if (messageHandler == null)
                     {
-                        messageReply = new MessageReply(commandContext.MessageID, e.GetBaseException());
-                        if (e is DomainException)
+                        messageReply = new MessageReply(commandContext.MessageID, new NoHandlerExists());
+                    }
+                    else
+                    {
+                        var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
+                        do
                         {
-                            _logger.Warn(message.ToJson(), e);
-                        }
-                        else
-                        {
-                            _logger.Error(message.ToJson(), e);
-                        }
-                        if (messageStore != null)
-                        {
-                            messageStore.SaveFailedCommand(commandContext);
-                        }
-                        needRetry = false;
+                            try
+                            {
+                                ((dynamic)messageHandler).Handle((dynamic)message);
+                                unitOfWork.Commit();
+                                messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
+                                needRetry = false;
+                            }
+                            catch (Exception ex)
+                            {
+                                if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                                {
+                                    throw;
+                                }
+                            }
+                        } while (needRetry);
                     }
                 }
-                finally
+            }
+            catch (Exception e)
+            {
+                messageReply = new MessageReply(commandContext.MessageID, e.GetBaseException());
+                if (e is DomainException)
                 {
-                    PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                    _logger.Warn(message.ToJson(), e);
                 }
-            } while (needRetry);
+                else
+                {
+                    _logger.Error(message.ToJson(), e);
+                }
+                if (messageStore != null)
+                {
+                    messageStore.SaveFailedCommand(commandContext);
+                }
+            }
+            finally
+            {
+                PerMessageContextLifetimeManager.CurrentMessageContext = null;
+            }
             if (!commandHasHandled)
             {
                 OnMessageHandled(commandContext, messageReply);

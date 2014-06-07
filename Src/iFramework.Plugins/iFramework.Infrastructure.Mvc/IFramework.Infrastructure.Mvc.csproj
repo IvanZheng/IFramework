@@ -71,6 +71,7 @@
     <Compile Include="Config\MvcControllerCollection.cs" />
     <Compile Include="Config\MvcControllerElement.cs" />
     <Compile Include="DisposeObjectHttpModule.cs" />
+    <Compile Include="InternalDefaultController.cs" />
     <Compile Include="IoCControllerFactory.cs" />
     <Compile Include="IoCPageHandlerFactory.cs" />
     <Compile Include="MultipartMediaTypeFormatter.cs" />
