@@ -134,10 +134,12 @@ namespace IFramework.MessageQueue.ServiceBus
             });
             var commandContexts = eventContext.ToBeSentMessageContexts;
             messageStore.SaveEvent(eventContext, _subscriptionName, commandContexts);
-            ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+            if (commandContexts.Count > 0)
+            {
+                ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+            }
             PerMessageContextLifetimeManager.CurrentMessageContext = null;
         }
-
 
         public string GetStatus()
         {

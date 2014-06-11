@@ -71,6 +71,14 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         }
         #endregion
 
+        HttpContext CurrentHttpContext
+        {
+            get
+            {
+                return HttpContext.Current ?? (CallContext.GetData("HttpContext") as HttpContext);
+            }
+        }
+
         #region ILifetimeManager Members
 
         /// <summary>
@@ -89,11 +97,11 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
                 result = WcfServiceInstanceExtension.Current.Items.Find(_key);
              
             }
-            else if (HttpContext.Current != null)
+            else if (CurrentHttpContext != null)
             {
                 //HttpContext avaiable ( ASP.NET ..)
-                if (HttpContext.Current.Items[_key.ToString()] != null)
-                    result = HttpContext.Current.Items[_key.ToString()];
+                if (CurrentHttpContext.Items[_key.ToString()] != null)
+                    result = CurrentHttpContext.Items[_key.ToString()];
             }
             else
             {
@@ -114,13 +122,13 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
                 //WCF without HttpContext environment
                 WcfServiceInstanceExtension.Current.Items.Remove(_key);
             }
-            else if (HttpContext.Current != null)
+            else if (CurrentHttpContext != null)
             {
                 //HttpContext avaiable ( ASP.NET ..)
-                if (HttpContext.Current.Items[_key.ToString()] != null)
+                if (CurrentHttpContext.Items[_key.ToString()] != null)
                 {
-                    value = HttpContext.Current.Items[_key.ToString()];
-                    HttpContext.Current.Items[_key.ToString()] = null;
+                    value = CurrentHttpContext.Items[_key.ToString()];
+                    CurrentHttpContext.Items[_key.ToString()] = null;
                 }
             }
             else
@@ -146,11 +154,11 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
                 //WCF without HttpContext environment
                 WcfServiceInstanceExtension.Current.Items.Set(_key, newValue);
             }
-            else if (HttpContext.Current != null)
+            else if (CurrentHttpContext != null)
             {
                 //HttpContext avaiable ( ASP.NET ..)
-                if (HttpContext.Current.Items[_key.ToString()] == null)
-                    HttpContext.Current.Items[_key.ToString()] = newValue;
+                if (CurrentHttpContext.Items[_key.ToString()] == null)
+                    CurrentHttpContext.Items[_key.ToString()] = newValue;
             }
             else
             {

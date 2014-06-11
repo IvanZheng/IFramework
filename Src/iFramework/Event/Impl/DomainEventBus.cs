@@ -11,17 +11,14 @@ namespace IFramework.Event.Impl
     {
         protected ConcurrentQueue<IDomainEvent> DomainEventQueue;
         protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
-        protected IEventPublisher EventPublisher { get; set; }
-        public DomainEventBus(IEventSubscriberProvider provider, IEventPublisher eventPublisher)
+        public DomainEventBus(IEventSubscriberProvider provider)
         {
-            EventPublisher = eventPublisher;
             EventSubscriberProvider = provider;
             DomainEventQueue = new ConcurrentQueue<IDomainEvent>();
         }
 
         public virtual void Commit()
         {
-            EventPublisher.Publish(DomainEventQueue.ToArray());
         }
 
         public void Publish<TEvent>(TEvent @event) where TEvent : IDomainEvent

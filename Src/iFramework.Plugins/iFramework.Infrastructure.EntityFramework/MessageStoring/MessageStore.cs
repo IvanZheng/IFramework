@@ -70,11 +70,17 @@ namespace IFramework.EntityFramework.MessageStoring
 
         public void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts)
         {
-            var command = BuildCommand(commandContext);
-            Commands.Add(command);
+            string commandContextId = null;
+            if (commandContext != null)
+            {
+                var command = BuildCommand(commandContext);
+                Commands.Add(command);
+                commandContextId = commandContext.MessageID;
+            }
+            
             eventContexts.ForEach(eventContext =>
             {
-                eventContext.CorrelationID = commandContext.MessageID;
+                eventContext.CorrelationID = commandContextId;
                 Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
@@ -83,10 +89,13 @@ namespace IFramework.EntityFramework.MessageStoring
 
         public void SaveFailedCommand(IMessageContext commandContext)
         {
-            var command = BuildCommand(commandContext);
-            command.Status = Status.Failed;
-            Commands.Add(command);
-            SaveChanges();
+            if (commandContext != null)
+            {
+                var command = BuildCommand(commandContext);
+                command.Status = Status.Failed;
+                Commands.Add(command);
+                SaveChanges();
+            }
         }
 
         public void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts)
