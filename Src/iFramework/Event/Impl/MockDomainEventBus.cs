@@ -31,5 +31,10 @@ namespace IFramework.Event.Impl
         {
             return null;
         }
+
+
+        public void ClearMessages()
+        {
+        }
     }
 }

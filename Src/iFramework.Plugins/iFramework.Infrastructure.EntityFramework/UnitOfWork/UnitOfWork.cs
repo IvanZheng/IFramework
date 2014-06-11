@@ -76,6 +76,7 @@ namespace IFramework.EntityFramework
                             }
                         });
                     });
+                    _domainEventBus.ClearMessages();
                     //(ex as DbUpdateConcurrencyException).Entries.ForEach(e => e.Reload());
                     throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
                 }

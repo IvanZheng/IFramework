@@ -10,5 +10,6 @@ namespace IFramework.Event
     public interface IDomainEventBus : IBus<IDomainEvent>
     {
         IEnumerable<IDomainEvent> GetMessages();
+        void ClearMessages();
     }
 }

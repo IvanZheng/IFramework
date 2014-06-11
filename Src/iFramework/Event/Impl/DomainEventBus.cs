@@ -9,12 +9,12 @@ namespace IFramework.Event.Impl
 {
     public class DomainEventBus : IDomainEventBus
     {
-        protected ConcurrentQueue<IDomainEvent> DomainEventQueue;
+        protected List<IDomainEvent> DomainEventQueue;
         protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
         public DomainEventBus(IEventSubscriberProvider provider)
         {
             EventSubscriberProvider = provider;
-            DomainEventQueue = new ConcurrentQueue<IDomainEvent>();
+            DomainEventQueue = new List<IDomainEvent>();
         }
 
         public virtual void Commit()
@@ -23,7 +23,7 @@ namespace IFramework.Event.Impl
 
         public void Publish<TEvent>(TEvent @event) where TEvent : IDomainEvent
         {
-            DomainEventQueue.Enqueue(@event);
+            DomainEventQueue.Add(@event);
             if (EventSubscriberProvider != null)
             {
                 var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
@@ -48,6 +48,11 @@ namespace IFramework.Event.Impl
         public IEnumerable<IDomainEvent> GetMessages()
         {
             return DomainEventQueue;
+        }
+        
+        public void ClearMessages()
+        {
+            DomainEventQueue.Clear();
         }
     }
 }
