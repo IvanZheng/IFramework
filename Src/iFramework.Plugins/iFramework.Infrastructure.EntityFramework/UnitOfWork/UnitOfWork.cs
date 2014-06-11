@@ -62,7 +62,21 @@ namespace IFramework.EntityFramework
                 success = false;
                 if (ex is DbUpdateConcurrencyException)
                 {
-                    (ex as DbUpdateConcurrencyException).Entries.ForEach(e => e.Reload());
+                    _dbContexts.ForEach(dbCtx => {
+                        dbCtx.ChangeTracker.Entries().ForEach(e => 
+                        {
+                            if (e.State == EntityState.Modified || e.State == EntityState.Deleted)
+                            {
+                                e.Reload();
+                                e.State = EntityState.Unchanged;
+                            }
+                            else if (e.State == EntityState.Added)
+                            {
+                                e.State = EntityState.Detached;
+                            }
+                        });
+                    });
+                    //(ex as DbUpdateConcurrencyException).Entries.ForEach(e => e.Reload());
                     throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
                 }
                 else
