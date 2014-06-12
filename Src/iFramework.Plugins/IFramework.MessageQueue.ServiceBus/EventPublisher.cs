@@ -21,8 +21,8 @@ namespace IFramework.MessageQueue.ServiceBus
         protected Task _WorkTask;
         protected TopicClient _topicClient;
 
-        public EventPublisher(string serviceBusConnectioniString, string topic)
-            : base(serviceBusConnectioniString)
+        public EventPublisher(string serviceBusConnectionString, string topic)
+            : base(serviceBusConnectionString)
         {
             MessageQueue = new BlockingCollection<IMessageContext>();
             _topic = topic;
