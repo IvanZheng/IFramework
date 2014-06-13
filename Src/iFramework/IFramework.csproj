@@ -81,6 +81,7 @@
     <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageContextLifetimeManager.cs" />
     <Compile Include="Infrastructure\Logging\ILogger.cs" />
     <Compile Include="Infrastructure\Logging\ILoggerFactory.cs" />
+    <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageOrExecutionContextLifetimeManager.cs" />
     <Compile Include="Message\IMessage.cs" />
     <Compile Include="Message\IMessageConsumer.cs" />
     <Compile Include="Message\IMessageContext.cs" />

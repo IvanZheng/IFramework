@@ -62,7 +62,7 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         ///  Constructor
         /// </summary>
         /// <param name="key">A key for this lifetimemanager resolver</param>
-        PerExecutionContextLifetimeManager(Guid key)
+        internal PerExecutionContextLifetimeManager(Guid key)
         {
             if (key == Guid.Empty)
                 throw new ArgumentException("PerExecutionContextLifetimeManagerKeyCannotBeNull");
