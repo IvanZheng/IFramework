@@ -36,7 +36,11 @@ namespace IFramework.EntityFramework
             if ((BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerMessageContextLifetimeManager) 
                     && PerMessageContextLifetimeManager.CurrentMessageContext != null)
                 || (BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerExecutionContextLifetimeManager)
-                    && (HttpContext.Current != null || OperationContext.Current != null)))
+                    && (HttpContext.Current != null || OperationContext.Current != null))
+                || (BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerMessageOrExecutionContextLifetimeManager)
+                    && (PerMessageContextLifetimeManager.CurrentMessageContext != null 
+                        || HttpContext.Current != null 
+                        || OperationContext.Current != null)))
             {
                 var unitOfWork = (IoCFactory.Resolve<IUnitOfWork>() as UnitOfWork);
                 unitOfWork.RegisterDbContext(this);
