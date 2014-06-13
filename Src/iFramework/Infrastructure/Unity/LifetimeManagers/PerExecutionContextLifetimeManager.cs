@@ -71,7 +71,7 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         }
         #endregion
 
-        HttpContext CurrentHttpContext
+        public static HttpContext CurrentHttpContext
         {
             get
             {
