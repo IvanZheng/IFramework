@@ -23,10 +23,13 @@ namespace Sample.CommandHandler.Community
         IEventPublisher _EventPublisher;
         IMessageContext _CommandContext;
         CommunityRepository _DomainRepository;
-        public CommunityCommandHandler(CommunityRepository domainRepository,
+        IUnitOfWork _UnitOfWork;
+        public CommunityCommandHandler(IUnitOfWork unitOfWork, 
+                                       CommunityRepository domainRepository,
                                        IEventPublisher eventPublisher,
                                        IMessageContext commandContext)
         {
+            _UnitOfWork = unitOfWork;
             _DomainRepository = domainRepository;
             _CommandContext = commandContext;
             _EventPublisher = eventPublisher;
@@ -46,8 +49,9 @@ namespace Sample.CommandHandler.Community
             {
                 throw new SysException(ErrorCode.WrongUsernameOrPassword);
             }
-
+            
             _EventPublisher.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });
+            
             _CommandContext.Reply = account.ID;
         }
 
@@ -60,6 +64,7 @@ namespace Sample.CommandHandler.Community
 
             Account account = new Account(command.UserName, command.Password, command.Email);
             _DomainRepository.Add(account);
+            _UnitOfWork.Commit();
             _CommandContext.Reply = account.ID;
         }
 

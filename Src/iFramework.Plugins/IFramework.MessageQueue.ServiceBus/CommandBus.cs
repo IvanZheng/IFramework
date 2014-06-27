@@ -311,13 +311,13 @@ namespace IFramework.MessageQueue.ServiceBus
                     }
                     try
                     {
-                        var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
+                        //var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
                         do
                         {
                             try
                             {
                                 ((dynamic)commandHandler).Handle((dynamic)command);
-                                unitOfWork.Commit();
+                                //unitOfWork.Commit();
                                 result = commandContext.Reply;
                                 needRetry = false;
                             }

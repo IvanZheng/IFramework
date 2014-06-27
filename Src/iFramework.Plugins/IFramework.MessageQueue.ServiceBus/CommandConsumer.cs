@@ -146,13 +146,13 @@ namespace IFramework.MessageQueue.ServiceBus
                     }
                     else
                     {
-                        var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
+                        //var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
                         do
                         {
                             try
                             {
                                 ((dynamic)messageHandler).Handle((dynamic)message);
-                                unitOfWork.Commit();
+                                //unitOfWork.Commit();
                                 messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
                                 needRetry = false;
                             }
