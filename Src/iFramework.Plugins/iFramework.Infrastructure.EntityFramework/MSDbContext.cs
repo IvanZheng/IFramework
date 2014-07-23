@@ -33,18 +33,18 @@ namespace IFramework.EntityFramework
         {
             InitObjectContext();
            
-            if ((BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerMessageContextLifetimeManager) 
-                    && PerMessageContextLifetimeManager.CurrentMessageContext != null)
-                || (BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerExecutionContextLifetimeManager)
-                    && (PerExecutionContextLifetimeManager.CurrentHttpContext != null || OperationContext.Current != null))
-                || (BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerMessageOrExecutionContextLifetimeManager)
-                    && (PerMessageContextLifetimeManager.CurrentMessageContext != null
-                        || PerExecutionContextLifetimeManager.CurrentHttpContext != null 
-                        || OperationContext.Current != null)))
-            {
-                var unitOfWork = (IoCFactory.Resolve<IUnitOfWork>() as UnitOfWork);
-                unitOfWork.RegisterDbContext(this);
-            }
+            //if ((BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerMessageContextLifetimeManager) 
+            //        && PerMessageContextLifetimeManager.CurrentMessageContext != null)
+            //    || (BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerExecutionContextLifetimeManager)
+            //        && (PerExecutionContextLifetimeManager.CurrentHttpContext != null || OperationContext.Current != null))
+            //    || (BaseUnitOfWork.UnitOfWorkLifetimeManagerType == typeof(PerMessageOrExecutionContextLifetimeManager)
+            //        && (PerMessageContextLifetimeManager.CurrentMessageContext != null
+            //            || PerExecutionContextLifetimeManager.CurrentHttpContext != null 
+            //            || OperationContext.Current != null)))
+            //{
+            //    var unitOfWork = (IoCFactory.Resolve<IUnitOfWork>() as UnitOfWork);
+            //    unitOfWork.RegisterDbContext(this);
+            //}
         }
 
 

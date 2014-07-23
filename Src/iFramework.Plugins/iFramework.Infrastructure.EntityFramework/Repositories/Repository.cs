@@ -18,11 +18,18 @@ namespace IFramework.EntityFramework.Repositories
     public class Repository<TEntity> : BaseRepository<TEntity>, IMergeOptionChangable
      where TEntity : class
     {
-        public Repository(DbContext dbContext)
+        UnitOfWork _UnitOfWork;
+
+        public Repository(DbContext dbContext, UnitOfWork unitOfWork)
         {
+            _UnitOfWork = unitOfWork;
             if (dbContext == null)
             {
                 throw new Exception("repository could not work without dbContext");
+            }
+            if (_UnitOfWork != null)
+            {
+                _UnitOfWork.RegisterDbContext(dbContext);
             }
             _Container = dbContext;
         }

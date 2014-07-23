@@ -76,6 +76,7 @@ namespace Sample.CommandHandler.Community
                 throw new SysException(ErrorCode.UserNotExists);
             }
             account.Modify(command.Email);
+            _UnitOfWork.Commit();
             //_DomainRepository.Update(account);
         }
     }
