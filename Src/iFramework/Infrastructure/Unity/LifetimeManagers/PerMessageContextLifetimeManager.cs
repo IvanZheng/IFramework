@@ -10,8 +10,18 @@ using System.Runtime.Remoting.Messaging;
 
 namespace IFramework.Infrastructure.Unity.LifetimeManagers
 {
-    class EmptyMessageContext : IMessageContext
+    public class EmptyMessageContext : IMessageContext
     {
+        public EmptyMessageContext()
+        {
+
+        }
+        public EmptyMessageContext(IFramework.Message.IMessage message)
+        {
+            SentTime = DateTime.Now;
+            Message = message;
+            MessageID = message.ID;
+        }
         public IDictionary<string, object> Headers
         {
             get { return null; }
@@ -24,7 +34,8 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
 
         public string MessageID
         {
-            get { return null; }
+            get;
+            set;
         }
 
         public string ReplyToEndPoint
@@ -34,36 +45,26 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
 
         public object Reply
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get;
+            set;
         }
 
         public string FromEndPoint
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get;
+            set;
         }
 
         public object Message
         {
-            get { return null; }
+            get;
+            set;
         }
 
         public DateTime SentTime
         {
-            get { return DateTime.Now; }
+            get;
+            set;
         }
 
 
@@ -88,13 +89,13 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
     public sealed class PerMessageContextLifetimeManager
         : LifetimeManager
     {
-        static EmptyMessageContext EmptyMessageContext;
+        //static EmptyMessageContext EmptyMessageContext;
         static PerMessageContextLifetimeManager PerMessageContextLifeTimeManager;
         Guid _key;
 
         static PerMessageContextLifetimeManager()
         {
-            EmptyMessageContext = new EmptyMessageContext();
+            //EmptyMessageContext = new EmptyMessageContext();
             PerMessageContextLifeTimeManager = new PerMessageContextLifetimeManager();
             IoCFactory.Instance.CurrentContainer.RegisterType<IMessageContext>(PerMessageContextLifeTimeManager);
         }

@@ -86,7 +86,6 @@
     <Compile Include="Repositories\Repository.cs" />
     <Compile Include="Repositories\RepositoryExtention.cs" />
     <Compile Include="TimestampedAggregateRoot.cs" />
-    <Compile Include="UnitOfWork\MockUnitOfWork.cs" />
     <Compile Include="UnitOfWork\UnitOfWork.cs" />
     <Compile Include="VersionedAggregateRoot.cs" />
   </ItemGroup>

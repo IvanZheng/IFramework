@@ -25,8 +25,8 @@ namespace IFramework.EntityFramework
         List<DbContext> _dbContexts;
         IEventPublisher _eventPublisher;
 
-        public UnitOfWork(IDomainEventBus eventBus,  IEventPublisher eventPublisher)
-            : base(eventBus)
+        public UnitOfWork(IDomainEventBus eventBus,  IEventPublisher eventPublisher, IMessageStore messageStore)
+            : base(eventBus, messageStore)
         {
             _dbContexts = new List<DbContext>();
             _eventPublisher = eventPublisher;
@@ -43,9 +43,9 @@ namespace IFramework.EntityFramework
             try
             {
                 var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-                if (_domainEventBus != null)
+                if (DomainEventBus != null)
                 {
-                    _domainEventBus.GetMessages().ForEach(domainEvent =>
+                    DomainEventBus.GetMessages().ForEach(domainEvent =>
                                        domainEventContexts.Add(new MessageContext(domainEvent))
                                    );
                 }
@@ -76,7 +76,7 @@ namespace IFramework.EntityFramework
                             }
                         });
                     });
-                    _domainEventBus.ClearMessages();
+                    DomainEventBus.ClearMessages();
                     //(ex as DbUpdateConcurrencyException).Entries.ForEach(e => e.Reload());
                     throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
                 }

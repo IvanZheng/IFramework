@@ -17,33 +17,36 @@ namespace IFramework.UnitOfWork
 {
     public abstract class BaseUnitOfWork : IUnitOfWork
     {
-        public static readonly Type UnitOfWorkLifetimeManagerType = GetUnitOfWorkLifetimeManagerType();
-        static Type GetUnitOfWorkLifetimeManagerType()
-        {
-            Type type = null;
-            var unitOfWorkRegistration = IoCFactory.Instance.CurrentContainer.Registrations.FirstOrDefault(r => r.RegisteredType == typeof(IUnitOfWork));
-            if (unitOfWorkRegistration != null)
-            {
-                type = unitOfWorkRegistration.LifetimeManagerType;
-            }
-            return type;
-        }
+        //public static readonly Type UnitOfWorkLifetimeManagerType = GetUnitOfWorkLifetimeManagerType();
+        //static Type GetUnitOfWorkLifetimeManagerType()
+        //{
+        //    Type type = null;
+        //    var unitOfWorkRegistration = IoCFactory.Instance.CurrentContainer.Registrations.FirstOrDefault(r => r.RegisteredType == typeof(IUnitOfWork));
+        //    if (unitOfWorkRegistration != null)
+        //    {
+        //        type = unitOfWorkRegistration.LifetimeManagerType;
+        //    }
+        //    return type;
+        //}
 
         protected IMessageStore MessageStore
         {
-            get
-            {
-                return IoCFactory.Resolve<IMessageStore>();
-            }
+            get;
+            private set;
         }
 
-        public BaseUnitOfWork(IDomainEventBus domainEventBus)
+        public BaseUnitOfWork(IDomainEventBus domainEventBus, IMessageStore messageStore)
         {
-            _domainEventBus = domainEventBus;
+            DomainEventBus = domainEventBus;
+            MessageStore = messageStore;
         }
         #region IUnitOfWork Members
 
-        protected IDomainEventBus _domainEventBus;
+        protected IDomainEventBus DomainEventBus
+        {
+            get;
+            private set;
+        }
 
         public abstract void Commit();
 

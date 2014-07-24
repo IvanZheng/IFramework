@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Sample.CommandHandler.Community;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using IFramework.MessageQueue.MessageFormat;
 using Sample.Command;
 using IFramework.Message;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
@@ -27,7 +26,7 @@ namespace Sample.CommandHandler.Community.Tests
 
         static object ExecuteCommandHandler(ICommand command)
         {
-            IMessageContext commandContext = new MessageContext(command);
+            IMessageContext commandContext = new EmptyMessageContext(command);
             PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
             var commandHandler = IoCFactory.Resolve<CommunityCommandHandler>();
             ((dynamic)commandHandler).Handle((dynamic)command);
@@ -38,7 +37,7 @@ namespace Sample.CommandHandler.Community.Tests
         public void RegisterHandleTest()
         {
             Register registerCommand = new Register { 
-                 UserName = "ivan" + DateTime.Now.ToShortTimeString(),
+                 UserName = "ivan" + DateTime.Now.ToString("HH:mm:ss"),
                  Password = "1234"
             };
             var result = ExecuteCommandHandler(registerCommand);

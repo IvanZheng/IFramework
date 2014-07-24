@@ -164,6 +164,7 @@
     <Compile Include="SysExceptions\NoHandlerExists.cs" />
     <Compile Include="UnitOfWork\BaseUnitOfWork.cs" />
     <Compile Include="UnitOfWork\IUnitOfWork.cs" />
+    <Compile Include="UnitOfWork\MockUnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
