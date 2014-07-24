@@ -34,6 +34,18 @@ namespace Sample.CommandHandler.Community.Tests
         }
 
         [TestMethod()]
+        public void LoginHandleTest()
+        {
+            Login registerCommand = new Login
+            {
+                UserName = "ivan",
+                Password = "123456"
+            };
+            var result = ExecuteCommandHandler(registerCommand);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod()]
         public void RegisterHandleTest()
         {
             Register registerCommand = new Register { 
