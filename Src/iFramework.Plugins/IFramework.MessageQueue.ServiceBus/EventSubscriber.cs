@@ -128,7 +128,9 @@ namespace IFramework.MessageQueue.ServiceBus
                     }
                     else
                     {
+                        //IO error or sytem Crash
                         _logger.Error(message.ToJson(), e);
+                        throw;
                     }
                 }
             });
