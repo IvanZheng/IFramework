@@ -296,7 +296,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             else if (command != null) //if not a linear command, we run synchronously.
             {
-                task = new Task<object>(() =>
+                task = Task.Factory.StartNew(() =>
                 {
                     var needRetry = command.NeedRetry;
                     object result = null;
@@ -351,8 +351,8 @@ namespace IFramework.MessageQueue.ServiceBus
                         PerMessageContextLifetimeManager.CurrentMessageContext = null;
                     }
                     return result;
-                });
-                task.RunSynchronously();
+                }, cancellationToken);
+                //task.RunSynchronously();
             }
             return task;
         }
