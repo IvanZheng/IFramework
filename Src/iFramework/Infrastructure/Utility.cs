@@ -22,6 +22,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
 using System.Globalization;
 using Newtonsoft.Json;
+using IFramework.Domain;
 
 namespace IFramework.Infrastructure
 {
@@ -776,6 +777,18 @@ namespace IFramework.Infrastructure
             MemoryStream rems = new MemoryStream(data);
             data = null;
             return formatter.Deserialize(rems);
+        }
+
+
+
+
+        public static TValueObject Clone<TValueObject>(this TValueObject valueObject,
+                                                       Action<TValueObject> initAction)
+            where  TValueObject : ValueObject, new()
+        {
+            var clonedObject = valueObject.Clone() as TValueObject;
+            initAction(clonedObject);
+            return clonedObject;
         }
     }
 }
