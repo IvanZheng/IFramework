@@ -5,7 +5,7 @@ using IFramework.Message;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using Microsoft.ServiceBus.Messaging;
-using IFramework.MessageQueue.MessageFormat;
+using IFramework.MessageQueue.ServiceBus.MessageFormat;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.SysExceptions;
 using IFramework.Command;

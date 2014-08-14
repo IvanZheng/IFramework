@@ -30,9 +30,9 @@ namespace Sample.CommandService
         static IMessageConsumer _CommandConsumer1;
         static IMessageConsumer _CommandConsumer2;
         static IMessageConsumer _CommandConsumer3;
-        static IMessageConsumer _CommandDistributor;
+        //static IMessageConsumer _CommandDistributor;
         static IMessageConsumer _DomainEventConsumer;
-        static IMessageConsumer _ApplicationEventConsumer;
+        //static IMessageConsumer _ApplicationEventConsumer;
 
         static WebApiApplication()
         {
@@ -123,11 +123,11 @@ namespace Sample.CommandService
                     Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
                     Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
                     Task.Factory.StartNew(() => _CommandBus.Stop()),
-                    Task.Factory.StartNew(() => _CommandDistributor.Stop()),
+                   // Task.Factory.StartNew(() => _CommandDistributor.Stop()),
                     Task.Factory.StartNew(() => _EventPublisher.Stop()),
-                    Task.Factory.StartNew(() => _DomainEventConsumer.Stop()),
-                    Task.Factory.StartNew(() => _ApplicationEventConsumer.Stop())
-                    );
+                    Task.Factory.StartNew(() => _DomainEventConsumer.Stop())
+                   // Task.Factory.StartNew(() => _ApplicationEventConsumer.Stop())
+                   );
             }
             catch (Exception ex)
             {

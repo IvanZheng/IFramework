@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IFramework.Event;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,13 @@ namespace IFramework.Message
         bool HasCommandHandled(string commandId);
         bool HasEventHandled(string eventId, string subscriptionName);
         void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts);
-        void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts);
+        /// <summary>
+        /// return event IMessageContext
+        /// </summary>
+        /// <param name="commandContext"></param>
+        /// <param name="eventContexts"></param>
+        /// <returns></returns>
+        IEnumerable<IMessageContext> SaveCommand(IMessageContext commandContext, IEnumerable<IEvent> eventContexts);
         void SaveFailedCommand(IMessageContext commandContext);
        // void SaveUnSentCommands(IEnumerable<IMessageContext> commandContexts);
         void RemoveSentCommand(string commandId);

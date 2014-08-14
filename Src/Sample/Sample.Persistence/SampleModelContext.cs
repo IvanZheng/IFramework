@@ -5,7 +5,7 @@ using System.Text;
 using System.Data.Entity;
 using Sample.Domain.Model;
 using IFramework.EntityFramework;
-using IFramework.EntityFramework.MessageStoring;
+using IFramework.MessageStoring;
 
 namespace Sample.Persistence
 {

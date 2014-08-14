@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using IFramework.Message;
 using Microsoft.ServiceBus.Messaging;
 
-namespace IFramework.MessageQueue.MessageFormat
+namespace IFramework.MessageQueue.ServiceBus.MessageFormat
 {
     public class MessageReply : IMessageReply
     {

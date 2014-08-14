@@ -286,13 +286,13 @@
       <Project>{fa2a9b98-456f-487b-b911-6c730abb6bb6}</Project>
       <Name>IFramework.Log4Net</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj">
-      <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
-      <Name>IFramework.MessageQueue.MessageFormat</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.ServiceBus\IFramework.MessageQueue.ServiceBus.csproj">
       <Project>{081bb2eb-cc5d-4512-b61e-917cd7aa795d}</Project>
       <Name>IFramework.MessageQueue.ServiceBus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework.csproj">
+      <Project>{797ff912-2e32-49ac-b521-f4884f59041c}</Project>
+      <Name>IFramework.MessageStoring.EntityFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>

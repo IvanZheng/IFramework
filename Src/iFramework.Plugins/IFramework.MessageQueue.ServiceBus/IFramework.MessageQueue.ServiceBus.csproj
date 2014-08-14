@@ -40,6 +40,10 @@
     <Reference Include="Microsoft.WindowsAzure.Configuration">
       <HintPath>..\..\packages\Microsoft.WindowsAzure.ConfigurationManager.2.0.0.0\lib\net40\Microsoft.WindowsAzure.Configuration.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity" />
@@ -56,7 +60,9 @@
     <Compile Include="CommandConsumer.cs" />
     <Compile Include="EventPublisher.cs" />
     <Compile Include="EventSubscriber.cs" />
+    <Compile Include="MessageFormat\MessageContext.cs" />
     <Compile Include="MessageProcessor.cs" />
+    <Compile Include="MessageFormat\MessageReply.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -67,10 +73,6 @@
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj">
-      <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
-      <Name>IFramework.MessageQueue.MessageFormat</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

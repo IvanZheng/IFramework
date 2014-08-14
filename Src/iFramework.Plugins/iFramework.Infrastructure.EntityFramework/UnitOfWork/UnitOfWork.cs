@@ -15,7 +15,6 @@ using IFramework.Event;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Core;
-using IFramework.MessageQueue.MessageFormat;
 using IFramework.Message;
 
 namespace IFramework.EntityFramework
@@ -39,20 +38,19 @@ namespace IFramework.EntityFramework
             //       model context and message queue, but need transaction across different scopes.
             TransactionScope scope = new TransactionScope();
             bool success = false;
-            var domainEventContexts = new List<IMessageContext>();
+            IEnumerable<IMessageContext> domainEventContexts = null;
             try
             {
                 var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
+                IEnumerable<IDomainEvent> domainEvents = null;
                 if (DomainEventBus != null)
                 {
-                    DomainEventBus.GetMessages().ForEach(domainEvent =>
-                                       domainEventContexts.Add(new MessageContext(domainEvent))
-                                   );
+                    domainEvents = DomainEventBus.GetMessages();
                 }
                 _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
                 if (MessageStore != null)
                 {
-                    MessageStore.SaveCommand(currentCommandContext, domainEventContexts);
+                    domainEventContexts = MessageStore.SaveCommand(currentCommandContext, domainEvents);
                 }
                 scope.Complete();
                 success = true;

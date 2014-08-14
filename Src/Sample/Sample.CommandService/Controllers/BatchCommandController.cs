@@ -15,7 +15,6 @@ using Sample.ApplicationEvent;
 using Sample.Persistence.Repositories;
 using IFramework.UnitOfWork;
 using System.Web.Mvc;
-using IFramework.MessageQueue.MessageFormat;
 
 namespace Sample.CommandService.Controllers
 {

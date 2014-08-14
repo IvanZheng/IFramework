@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IFramework.Event;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,9 +23,9 @@ namespace IFramework.Message.Impl
         {
         }
 
-        public void SaveCommand(IMessageContext commandContext, IEnumerable<IMessageContext> eventContexts)
+        public IEnumerable<IMessageContext> SaveCommand(IMessageContext commandContext, IEnumerable<IEvent> eventContexts)
         {
-           
+            return null;
         }
 
         public void SaveFailedCommand(IMessageContext commandContext)

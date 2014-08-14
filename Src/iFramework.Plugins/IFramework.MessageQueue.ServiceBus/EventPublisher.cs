@@ -2,7 +2,7 @@
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Message;
-using IFramework.MessageQueue.MessageFormat;
+using IFramework.MessageQueue.ServiceBus.MessageFormat;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Collections.Concurrent;
