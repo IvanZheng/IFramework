@@ -22,10 +22,7 @@ namespace IFramework.MessageStoring
             {
                 AggregateRootID = domainEvent.AggregateRootID.ToString();
                 AggregateRootType = domainEvent.AggregateRootName;
-                if (domainEvent is IFramework.Event.DomainEvent)
-                {
-                    Version = (domainEvent as IFramework.Event.DomainEvent).Version;
-                }
+                Version = domainEvent.Version;
             }
         }
 

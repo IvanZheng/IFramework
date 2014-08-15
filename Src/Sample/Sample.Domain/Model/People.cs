@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Sample.Domain.Model
 {
-    public abstract class People : TimestampedAggregateRoot,
+    public abstract class People : VersionedAggregateRoot,
         IEventSubscriber<PeopleRegisted>,
         IEventSubscriber<ItemRegisted>
     {

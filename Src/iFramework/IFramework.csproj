@@ -51,6 +51,8 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceModel" />
@@ -68,7 +70,9 @@
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
     <Compile Include="Domain\AggregateRootWithIdentity.cs" />
+    <Compile Include="Domain\TimestampedAggregateRoot.cs" />
     <Compile Include="Domain\ValueObject.cs" />
+    <Compile Include="Domain\VersionedAggregateRoot.cs" />
     <Compile Include="Event\IApplicationEvent.cs" />
     <Compile Include="Event\IEvent.cs" />
     <Compile Include="Event\IEventPublisher.cs" />

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace IFramework.Event
+namespace Sample.DomainEvents
 {
     public class DomainEvent : IDomainEvent
     {
@@ -22,6 +22,12 @@ namespace IFramework.Event
             set;
         }
 
+        public string ID
+        {
+            get;
+            set;
+        }
+
         public DomainEvent()
         {
             ID = ObjectId.GenerateNewId().ToString();
@@ -33,10 +39,6 @@ namespace IFramework.Event
             AggregateRootID = aggregateRootID;
         }
 
-        public string ID
-        {
-            get;
-            set;
-        }
+        
     }
 }
