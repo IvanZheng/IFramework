@@ -62,6 +62,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandHttpClient.cs" />
@@ -70,6 +71,8 @@
     <Compile Include="Config\MvcConfigurationSection.cs" />
     <Compile Include="Config\MvcControllerCollection.cs" />
     <Compile Include="Config\MvcControllerElement.cs" />
+    <Compile Include="CorsAttribute.cs" />
+    <Compile Include="CorsMessageHandler.cs" />
     <Compile Include="DisposeObjectHttpModule.cs" />
     <Compile Include="InternalDefaultController.cs" />
     <Compile Include="IoCControllerFactory.cs" />
