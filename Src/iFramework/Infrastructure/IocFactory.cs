@@ -56,7 +56,10 @@ namespace IFramework.Infrastructure
         {
             _CurrentContainer = new UnityContainer();
             UnityConfigurationSection section = (UnityConfigurationSection)ConfigurationManager.GetSection(UnityConfigurationSection.SectionName);
-            section.Configure(_CurrentContainer);
+            if (section != null)
+            {
+                section.Configure(_CurrentContainer);
+            }
         }
 
         public static T Resolve<T>(string name, params ResolverOverride[] overrides)

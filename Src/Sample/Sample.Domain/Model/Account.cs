@@ -15,7 +15,7 @@ namespace Sample.Domain.Model
         IEventSubscriber<AccountModified>
     {
         public string Email { get; private set; }
-
+        public string Hoppy { get; set; }
         
         //public byte[] Version { get; protected set; }
 
