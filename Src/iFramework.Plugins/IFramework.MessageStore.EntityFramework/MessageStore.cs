@@ -8,7 +8,7 @@ using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Event;
 using IFramework.EntityFramework;
-using IFramework.MessageQueue.ServiceBus.MessageFormat;
+using Microsoft.Practices.Unity;
 
 namespace IFramework.MessageStoring
 {
@@ -82,7 +82,7 @@ namespace IFramework.MessageStoring
             var eventContexts = new List<IMessageContext>();
             events.ForEach(@event =>
             {
-                var eventContext = new MessageContext(@event);
+                var eventContext = IoCFactory.Resolve<IMessageContext>("MessageStoreMapping", new ParameterOverride("message", @event));
                 eventContexts.Add(eventContext);
                 eventContext.CorrelationID = commandContextId;
                 Events.Add(BuildEvent(eventContext));
@@ -168,7 +168,7 @@ namespace IFramework.MessageStoring
                     var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type)) as IMessage;
                     if (rawMessage != null)
                     {
-                        var messageContext = new MessageContext(rawMessage);
+                        var messageContext = IoCFactory.Resolve<IMessageContext>("MessageStoreMapping", new ParameterOverride("message", rawMessage));
                         messageContexts.Add(messageContext);
                     }
                     else
