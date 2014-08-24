@@ -10,7 +10,6 @@ using Sample.Domain.Model;
 using Sample.Persistence.Repositories;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Core.Objects;
 using System.Linq;
 using System.Text;
 
