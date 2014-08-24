@@ -89,7 +89,7 @@ namespace IFramework.EntityFramework
                 scope.Dispose();
                 if (success)
                 {
-                    if (_eventPublisher != null)
+                    if (_eventPublisher != null && domainEventContexts != null)
                     {
                         _eventPublisher.Publish(domainEventContexts.ToArray());
                     }
