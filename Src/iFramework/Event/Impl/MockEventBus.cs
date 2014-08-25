@@ -6,7 +6,7 @@ using System.Text;
 
 namespace IFramework.Event.Impl
 {
-    public class MockDomainEventBus : IEventBus
+    public class MockEventBus : IEventBus
     {
         public void Commit()
         {
