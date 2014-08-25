@@ -16,6 +16,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using System.Threading.Tasks;
 using IFramework.MessageQueue.ServiceBus;
+using IFramework.MessageQueue.ServiceBus.MessageFormat;
 
 namespace Sample.CommandService
 {
@@ -38,7 +39,8 @@ namespace Sample.CommandService
         {
             try
             {
-                Configuration.Instance.UseLog4Net();
+                Configuration.Instance.UseLog4Net()
+                                      .RegisterMessageContextType(typeof(MessageContext));
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
                 //_CommandDistributor = new CommandDistributor("tcp://127.0.0.1:5000",
