@@ -61,6 +61,10 @@
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj">
+      <Project>{7c17f97f-3515-4a1b-aead-01689d087de0}</Project>
+      <Name>Sample.ApplicationEvent</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj">
       <Project>{af5512aa-caf1-4066-90bd-efb9b951fe18}</Project>
       <Name>Sample.DomainEvents</Name>

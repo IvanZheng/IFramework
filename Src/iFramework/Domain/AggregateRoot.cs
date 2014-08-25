@@ -13,11 +13,11 @@ namespace IFramework.Domain
     public abstract class AggregateRoot : Entity, IAggregateRoot
     {
         //// per request life time 
-        IDomainEventBus EventBus
+        IEventBus EventBus
         {
             get
             {
-                return IoCFactory.Resolve<IDomainEventBus>();
+                return IoCFactory.Resolve<IEventBus>();
             }
         }
 

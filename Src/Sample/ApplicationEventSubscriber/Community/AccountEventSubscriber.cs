@@ -7,11 +7,18 @@ using System.Text;
 
 namespace Sample.ApplicationEventSubscriber.Community
 {
-    public class AccountEventSubscriber : IEventSubscriber<AccountLogined>
+    public class AccountEventSubscriber : IEventSubscriber<AccountLogined>,
+        IEventSubscriber<AccountRegistered>
     {
         public void Handle(AccountLogined @event)
         {
             Console.Write("account({0}) logined at {1}", @event.AccountID, @event.LoginTime);
+        }
+
+        public void Handle(AccountRegistered @event)
+        {
+            Console.Write("account({0}) registered at {1}", @event.AccountID, @event.UserName);
+
         }
     }
 }

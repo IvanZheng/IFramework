@@ -76,7 +76,7 @@
     <Compile Include="Event\IApplicationEvent.cs" />
     <Compile Include="Event\IEvent.cs" />
     <Compile Include="Event\IEventPublisher.cs" />
-    <Compile Include="Event\Impl\DomainEventBus.cs" />
+    <Compile Include="Event\Impl\EventBus.cs" />
     <Compile Include="Event\Impl\MockDomainEventBus.cs" />
     <Compile Include="Event\Impl\MockEventPublisher.cs" />
     <Compile Include="Infrastructure\FastInvoke.cs" />
@@ -118,7 +118,7 @@
     <Compile Include="Domain\IAggregateRoot.cs" />
     <Compile Include="Domain\IEntity.cs" />
     <Compile Include="Event\IDomainEvent.cs" />
-    <Compile Include="Event\IDomainEventBus.cs" />
+    <Compile Include="Event\IEventBus.cs" />
     <Compile Include="Event\IEventSubscriber.cs" />
     <Compile Include="Event\IEventSubscriberProvider.cs" />
     <Compile Include="Event\Impl\EventSubscriberProvider.cs" />

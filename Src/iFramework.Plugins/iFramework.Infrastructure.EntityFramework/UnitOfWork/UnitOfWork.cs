@@ -24,7 +24,7 @@ namespace IFramework.EntityFramework
         List<DbContext> _dbContexts;
         IEventPublisher _eventPublisher;
 
-        public UnitOfWork(IDomainEventBus eventBus,  IEventPublisher eventPublisher, IMessageStore messageStore)
+        public UnitOfWork(IEventBus eventBus,  IEventPublisher eventPublisher, IMessageStore messageStore)
             : base(eventBus, messageStore)
         {
             _dbContexts = new List<DbContext>();
@@ -38,19 +38,19 @@ namespace IFramework.EntityFramework
             //       model context and message queue, but need transaction across different scopes.
             TransactionScope scope = new TransactionScope();
             bool success = false;
-            IEnumerable<IMessageContext> domainEventContexts = null;
+            IEnumerable<IMessageContext> eventContexts = null;
             try
             {
                 var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-                IEnumerable<IDomainEvent> domainEvents = null;
-                if (DomainEventBus != null)
+                IEnumerable<IEvent> events = null;
+                if (EventBus != null)
                 {
-                    domainEvents = DomainEventBus.GetMessages();
+                    events = EventBus.GetMessages();
                 }
                 _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
                 if (MessageStore != null)
                 {
-                    domainEventContexts = MessageStore.SaveCommand(currentCommandContext, domainEvents);
+                    eventContexts = MessageStore.SaveCommand(currentCommandContext, events);
                 }
                 scope.Complete();
                 success = true;
@@ -74,7 +74,7 @@ namespace IFramework.EntityFramework
                             }
                         });
                     });
-                    DomainEventBus.ClearMessages();
+                    EventBus.ClearMessages();
                     //(ex as DbUpdateConcurrencyException).Entries.ForEach(e => e.Reload());
                     throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
                 }
@@ -89,9 +89,9 @@ namespace IFramework.EntityFramework
                 scope.Dispose();
                 if (success)
                 {
-                    if (_eventPublisher != null && domainEventContexts != null)
+                    if (_eventPublisher != null && eventContexts != null)
                     {
-                        _eventPublisher.Publish(domainEventContexts.ToArray());
+                        _eventPublisher.Publish(eventContexts.ToArray());
                     }
                 }
             }

@@ -33,7 +33,7 @@ namespace Sample.CommandService
         static IMessageConsumer _CommandConsumer3;
         //static IMessageConsumer _CommandDistributor;
         static IMessageConsumer _DomainEventConsumer;
-        //static IMessageConsumer _ApplicationEventConsumer;
+        static IMessageConsumer _ApplicationEventConsumer;
 
         static WebApiApplication()
         {
@@ -59,8 +59,8 @@ namespace Sample.CommandService
                 #endregion
 
                 #region application event subscriber init
-                //_ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
-                //_ApplicationEventConsumer.Start();
+                _ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
+                _ApplicationEventConsumer.Start();
                 #endregion
                 
                 #region CommandBus init

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace IFramework.Event.Impl
 {
-    public class MockDomainEventBus : IDomainEventBus
+    public class MockDomainEventBus : IEventBus
     {
         public void Commit()
         {
@@ -18,16 +18,16 @@ namespace IFramework.Event.Impl
            
         }
 
-        public void Publish<TMessage>(TMessage @event) where TMessage : IDomainEvent
+        public void Publish<TMessage>(TMessage @event) where TMessage : IEvent
         {
             
         }
 
-        public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IDomainEvent
+        public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent
         {
         }
 
-        public IEnumerable<IDomainEvent> GetMessages()
+        public IEnumerable<IEvent> GetMessages()
         {
             return null;
         }

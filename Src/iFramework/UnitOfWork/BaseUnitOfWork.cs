@@ -35,14 +35,14 @@ namespace IFramework.UnitOfWork
             private set;
         }
 
-        public BaseUnitOfWork(IDomainEventBus domainEventBus, IMessageStore messageStore)
+        public BaseUnitOfWork(IEventBus domainEventBus, IMessageStore messageStore)
         {
-            DomainEventBus = domainEventBus;
+            EventBus = domainEventBus;
             MessageStore = messageStore;
         }
         #region IUnitOfWork Members
 
-        protected IDomainEventBus DomainEventBus
+        protected IEventBus EventBus
         {
             get;
             private set;

@@ -7,9 +7,9 @@ using System.Text;
 
 namespace IFramework.Event
 {
-    public interface IDomainEventBus : IBus<IDomainEvent>
+    public interface IEventBus : IBus<IEvent>
     {
-        IEnumerable<IDomainEvent> GetMessages();
+        IEnumerable<IEvent> GetMessages();
         void ClearMessages();
     }
 }

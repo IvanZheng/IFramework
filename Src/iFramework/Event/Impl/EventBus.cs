@@ -7,23 +7,23 @@ using IFramework.Infrastructure;
 
 namespace IFramework.Event.Impl
 {
-    public class DomainEventBus : IDomainEventBus
+    public class EventBus : IEventBus
     {
-        protected List<IDomainEvent> DomainEventQueue;
+        protected List<IEvent> EventQueue;
         protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
-        public DomainEventBus(IEventSubscriberProvider provider)
+        public EventBus(IEventSubscriberProvider provider)
         {
             EventSubscriberProvider = provider;
-            DomainEventQueue = new List<IDomainEvent>();
+            EventQueue = new List<IEvent>();
         }
 
         public virtual void Commit()
         {
         }
 
-        public void Publish<TEvent>(TEvent @event) where TEvent : IDomainEvent
+        public void Publish<TEvent>(TEvent @event) where TEvent : IEvent
         {
-            DomainEventQueue.Add(@event);
+            EventQueue.Add(@event);
             if (EventSubscriberProvider != null)
             {
                 var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
@@ -35,7 +35,7 @@ namespace IFramework.Event.Impl
             }
         }
 
-        public void Publish<TEvent>(IEnumerable<TEvent> events) where TEvent : IDomainEvent
+        public void Publish<TEvent>(IEnumerable<TEvent> events) where TEvent : IEvent
         {
             events.ForEach(@event => Publish(@event));
         }
@@ -45,14 +45,14 @@ namespace IFramework.Event.Impl
 
         }
 
-        public IEnumerable<IDomainEvent> GetMessages()
+        public IEnumerable<IEvent> GetMessages()
         {
-            return DomainEventQueue;
+            return EventQueue;
         }
         
         public void ClearMessages()
         {
-            DomainEventQueue.Clear();
+            EventQueue.Clear();
         }
     }
 }
