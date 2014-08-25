@@ -1,12 +1,21 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace IFramework.Infrastructure
 {
+    public class NonPublicContractResolver : DefaultContractResolver
+    {
+        public NonPublicContractResolver()
+        {
+            this.DefaultMembersSearchFlags |= BindingFlags.NonPublic;
+        }
+    }
     public static class JsonHelper
     {
         static JsonSerializerSettings _NonPublicSerializerSettings;
@@ -16,13 +25,9 @@ namespace IFramework.Infrastructure
             {
                 if (_NonPublicSerializerSettings == null)
                 {
-
-
-                    Newtonsoft.Json.Serialization.DefaultContractResolver dcr = new Newtonsoft.Json.Serialization.DefaultContractResolver();
-                    dcr.DefaultMembersSearchFlags |= System.Reflection.BindingFlags.NonPublic;
                     _NonPublicSerializerSettings = new JsonSerializerSettings
                     {
-                        ContractResolver = dcr
+                        ContractResolver = new NonPublicContractResolver()
                     };
                 }
                 return _NonPublicSerializerSettings;
@@ -42,11 +47,9 @@ namespace IFramework.Infrastructure
             {
                 if (_NonPublicLoopSerializeSerializerSettings == null)
                 {
-                    Newtonsoft.Json.Serialization.DefaultContractResolver dcr = new Newtonsoft.Json.Serialization.DefaultContractResolver();
-                    dcr.DefaultMembersSearchFlags |= System.Reflection.BindingFlags.NonPublic;
                     _NonPublicLoopSerializeSerializerSettings = new JsonSerializerSettings
                     {
-                        ContractResolver = dcr,
+                        ContractResolver = new NonPublicContractResolver(),
                         PreserveReferencesHandling = PreserveReferencesHandling.Objects,
                         ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize
                     };
@@ -166,6 +169,6 @@ namespace IFramework.Infrastructure
             return djs;
         }
 
-       
+
     }
 }
