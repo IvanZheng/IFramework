@@ -43,61 +43,44 @@ namespace Sample.CommandService
                                       .RegisterMessageContextType(typeof(MessageContext));
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
-                //_CommandDistributor = new CommandDistributor("tcp://127.0.0.1:5000",
-                //                                                new string[] { 
-                //                                                    "tcp://127.0.0.1:5001"
-                //                                                    , "tcp://127.0.0.1:5002"
-                //                                                    , "tcp://127.0.0.1:5003"
-                //                                                }
-                //                                               );
-
                 Configuration.Instance
                              .CommandHandlerProviderBuild(null, "CommandHandlers")
                              .RegisterDisposeModule()
                              .RegisterMvc();
-                const string serviceBusConnectionString = @"Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;StsEndpoint=https://iframework-sb.accesscontrol.chinacloudapi.cn/;SharedSecretIssuer=owner;SharedSecretValue=DfDIfwLDgVK4Ujx0iDmuUAFxYIkX+iFSnQFqw5BtpSw=";
 
-                _EventPublisher = new EventPublisher(serviceBusConnectionString, "eventTopic");
+                #region EventPublisher init
+                _EventPublisher = IoCFactory.Resolve<IEventPublisher>();
                 _EventPublisher.Start();
+                #endregion
 
-                IoCFactory.Instance.CurrentContainer
-                      .RegisterInstance(typeof(IEventPublisher)
-                                        , _EventPublisher
-                                        , new ContainerControlledLifetimeManager());
-
-                var eventHandlerProvider = IoCFactory.Resolve<IHandlerProvider>("AsyncDomainEventProvider");
-                _DomainEventConsumer = new EventSubscriber(serviceBusConnectionString, 
-                                                           eventHandlerProvider, 
-                                                           "eventSubscriber1", 
-                                                           "eventTopic");
+                #region event subscriber init
+                _DomainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventSubscriber");
                 _DomainEventConsumer.Start();
+                #endregion
 
+                #region application event subscriber init
                 //_ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
                 //_ApplicationEventConsumer.Start();
-
-
-               
-                //serviceBusConnectionString = "Endpoint=sb://iframework.servicebus.chinacloudapi.cn/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=jGR+cxcbZqQLQcmF+xRxnOMYXiVDVI5AXC3nY9B4lW8=";
-                var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
+                #endregion
                 
-                var linearCommandManager = IoCFactory.Resolve<ILinearCommandManager>();
-                _CommandBus = new CommandBus(commandHandlerProvider, linearCommandManager, serviceBusConnectionString,
-                                             new string[] { "commandqueue1", "commandqueue2", "commandqueue3" }, "replyTopic", "replySubscritpion", false);
+                #region CommandBus init
+                _CommandBus = IoCFactory.Resolve<ICommandBus>();
                 _CommandBus.Start();
+                #endregion
 
-                IoCFactory.Instance.CurrentContainer
-                        .RegisterInstance(typeof(ICommandBus)
-                                          , _CommandBus
-                                          , new ContainerControlledLifetimeManager());
+                #region Command Consuemrs init
+                var serviceBusConnectionString = IoCFactory.Resolve<string>("serviceBusConnectionString");
+                var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
 
                 _CommandConsumer1 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue1");
                 _CommandConsumer2 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue2");
                 _CommandConsumer3 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue3");
+               
                 _CommandConsumer1.Start();
                 _CommandConsumer2.Start();
                 _CommandConsumer3.Start();
+                #endregion
 
-      
             }
             catch (Exception ex)
             {
