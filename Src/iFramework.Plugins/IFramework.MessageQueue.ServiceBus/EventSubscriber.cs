@@ -19,11 +19,11 @@ namespace IFramework.MessageQueue.ServiceBus
         readonly string[] _topics;
         readonly List<Task> _consumeWorkTasks;
         readonly string _subscriptionName;
-        public EventSubscriber(string serviceBusConnectionString, 
+        public EventSubscriber(string serviceBusConnectionString,
                                IHandlerProvider handlerProvider,
                                string subscriptionName,
                                params string[] topics)
-            :base(serviceBusConnectionString)
+            : base(serviceBusConnectionString)
         {
             _handlerProvider = handlerProvider;
             _topics = topics;
@@ -101,46 +101,56 @@ namespace IFramework.MessageQueue.ServiceBus
             var eventContext = new MessageContext(brokeredMessage);
             var message = eventContext.Message;
             var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
-            PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
-            var messageStore = IoCFactory.Resolve<IMessageStore>();
-            if (messageStore.HasEventHandled(eventContext.MessageID, _subscriptionName))
-            {
-                return;
-            }
 
             if (messageHandlerTypes.Count == 0)
             {
                 return;
             }
-            
+
             messageHandlerTypes.ForEach(messageHandlerType =>
             {
-                try
+                PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
+                eventContext.ToBeSentMessageContexts.Clear();
+                var messageStore = IoCFactory.Resolve<IMessageStore>();
+                var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
+                if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                 {
-                    var messageHandler = IoCFactory.Resolve(messageHandlerType);
-                    ((dynamic)messageHandler).Handle((dynamic)message);
-                }
-                catch (Exception e)
-                {
-                    if (e is DomainException)
+                    bool handled = false;
+                    try
                     {
-                        _logger.Warn(message.ToJson(), e);
+                        var messageHandler = IoCFactory.Resolve(messageHandlerType);
+                        ((dynamic)messageHandler).Handle((dynamic)message);
+                        handled = true;
                     }
-                    else
+                    catch (Exception e)
                     {
-                        //IO error or sytem Crash
-                        _logger.Error(message.ToJson(), e);
-                        throw;
+                        if (e is DomainException)
+                        {
+                            handled = true;
+                            _logger.Warn(message.ToJson(), e);
+                        }
+                        else
+                        {
+                            //IO error or sytem Crash
+                            _logger.Error(message.ToJson(), e);
+                            throw;
+                        }
+                    }
+                    finally
+                    {
+                        if (handled)
+                        {
+                            var commandContexts = eventContext.ToBeSentMessageContexts;
+                            messageStore.SaveEvent(eventContext, subscriptionName, commandContexts);
+                            if (commandContexts.Count > 0)
+                            {
+                                ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+                            }
+                        }
+                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
                     }
                 }
             });
-            var commandContexts = eventContext.ToBeSentMessageContexts;
-            messageStore.SaveEvent(eventContext, _subscriptionName, commandContexts);
-            if (commandContexts.Count > 0)
-            {
-                ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
-            }
-            PerMessageContextLifetimeManager.CurrentMessageContext = null;
         }
 
         public string GetStatus()

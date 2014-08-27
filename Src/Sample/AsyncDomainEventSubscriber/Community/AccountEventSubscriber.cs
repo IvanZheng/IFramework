@@ -13,17 +13,24 @@ namespace Sample.AsyncDomainEventSubscriber.Community
     {
         public void Handle(AccountRegistered @event)
         {
-            //Console.Write("{0} has registered.", @event.UserName);
+            Console.Write("subscriber1: {0} has registered.", @event.UserName);
         }
 
        
     }
 
     public class AccountEventSubscriber2:
-        IEventSubscriber<PeopleRegisted>
+        IEventSubscriber<PeopleRegisted>,
+        IEventSubscriber<AccountRegistered>
     {
         public void Handle(PeopleRegisted message)
         {
+
+        }
+
+        public void Handle(AccountRegistered @event)
+        {
+            Console.Write("subscriber2: {0} has registered.", @event.UserName);
 
         }
     }
