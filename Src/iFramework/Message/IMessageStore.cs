@@ -11,6 +11,8 @@ namespace IFramework.Message
         bool HasCommandHandled(string commandId);
         bool HasEventHandled(string eventId, string subscriptionName);
         void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts);
+
+        void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e);
         /// <summary>
         /// return event IMessageContext
         /// </summary>
@@ -24,6 +26,5 @@ namespace IFramework.Message
         void RemovePublishedEvent(string eventId);
         IEnumerable<IMessageContext> GetAllUnSentCommands();
         IEnumerable<IMessageContext> GetAllUnPublishedEvents();
-
     }
 }

@@ -115,38 +115,32 @@ namespace IFramework.MessageQueue.ServiceBus
                 var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
                 if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                 {
-                    bool handled = false;
                     try
                     {
                         var messageHandler = IoCFactory.Resolve(messageHandlerType);
                         ((dynamic)messageHandler).Handle((dynamic)message);
-                        handled = true;
+                        var commandContexts = eventContext.ToBeSentMessageContexts;
+                        messageStore.SaveEvent(eventContext, subscriptionName, commandContexts);
+                        if (commandContexts.Count > 0)
+                        {
+                            ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+                        }
                     }
                     catch (Exception e)
                     {
                         if (e is DomainException)
-                        {
-                            handled = true;
+                        {  
                             _logger.Warn(message.ToJson(), e);
                         }
                         else
                         {
                             //IO error or sytem Crash
                             _logger.Error(message.ToJson(), e);
-                            throw;
                         }
+                        messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e);
                     }
                     finally
                     {
-                        if (handled)
-                        {
-                            var commandContexts = eventContext.ToBeSentMessageContexts;
-                            messageStore.SaveEvent(eventContext, subscriptionName, commandContexts);
-                            if (commandContexts.Count > 0)
-                            {
-                                ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
-                            }
-                        }
                         PerMessageContextLifetimeManager.CurrentMessageContext = null;
                     }
                 }

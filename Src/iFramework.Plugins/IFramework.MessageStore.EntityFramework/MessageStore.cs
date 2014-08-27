@@ -20,7 +20,7 @@ namespace IFramework.MessageStoring
         public DbSet<Event> Events { get; set; }
 
         public DbSet<HandledEvent> HandledEvents { get; set; }
-
+        public DbSet<FailHandledEvent> FailHandledEvents { get; set; }
         public DbSet<UnSentCommand> UnSentCommands { get; set; }
         public DbSet<UnPublishedEvent> UnPublishedEvents { get; set; }
 
@@ -103,24 +103,42 @@ namespace IFramework.MessageStoring
             }
         }
 
+
+        static object EventLock = new object();
         public void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts)
         {
-            var @event = Events.Find(eventContext.MessageID);
-            if (@event == null)
+            lock (EventLock)
             {
-                @event = BuildEvent(eventContext);
-                Events.Add(@event);
+                var @event = Events.Find(eventContext.MessageID);
+                if (@event == null)
+                {
+                    @event = BuildEvent(eventContext);
+                    Events.Add(@event);
+                }
+                HandledEvents.Add(new HandledEvent(@event.ID, subscriptionName, DateTime.Now));
+                commandContexts.ForEach(commandContext =>
+                {
+                    commandContext.CorrelationID = eventContext.MessageID;
+                    UnSentCommands.Add(new UnSentCommand(commandContext));
+                });
+                SaveChanges();
             }
-            HandledEvents.Add(new HandledEvent(@event.ID, subscriptionName));
-            commandContexts.ForEach(commandContext =>
-            {
-                commandContext.CorrelationID = eventContext.MessageID;
-                UnSentCommands.Add(new UnSentCommand(commandContext));
-            });
-            SaveChanges();
         }
 
-
+        public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e)
+        {
+            lock (EventLock)
+            {
+                var @event = Events.Find(eventContext.MessageID);
+                if (@event == null)
+                {
+                    @event = BuildEvent(eventContext);
+                    Events.Add(@event);
+                }
+                HandledEvents.Add(new FailHandledEvent(@event.ID, subscriptionName, DateTime.Now, e));
+                SaveChanges();
+            }
+        }
 
         public bool HasCommandHandled(string commandId)
         {

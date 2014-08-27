@@ -19,10 +19,6 @@ namespace IFramework.Message.Impl
             
         }
 
-        public void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts)
-        {
-        }
-
         public IEnumerable<IMessageContext> SaveCommand(IMessageContext commandContext, IEnumerable<IEvent> eventContexts)
         {
             return null;
@@ -56,6 +52,15 @@ namespace IFramework.Message.Impl
         public void Dispose()
         {
             
+        }
+
+
+        public void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts)
+        {
+        }
+
+        public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e)
+        {
         }
     }
 }

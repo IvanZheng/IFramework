@@ -31,6 +31,7 @@ namespace Sample.AsyncDomainEventSubscriber.Community
         public void Handle(AccountRegistered @event)
         {
             Console.Write("subscriber2: {0} has registered.", @event.UserName);
+            throw new Exception("test fail handled event!");
 
         }
     }
