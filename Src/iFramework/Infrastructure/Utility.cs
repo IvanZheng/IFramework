@@ -72,6 +72,22 @@ namespace IFramework.Infrastructure
 
     public static class Utility
     {
+        public static int GetUniqueCode(this string str)
+        {
+            int uniqueCode = 0;
+            if (!string.IsNullOrWhiteSpace(str))
+            {
+                foreach(var c in SBase64Utility.EncodingForString(str))
+                {
+                    if (c != 0)
+                    {
+                        uniqueCode += c << 10;
+                    }
+                }
+            }
+            return uniqueCode;
+        }
+
         public static bool TryDo(Action action)
         {
             try
