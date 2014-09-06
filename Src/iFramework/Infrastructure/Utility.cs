@@ -81,7 +81,7 @@ namespace IFramework.Infrastructure
                 {
                     if (c != 0)
                     {
-                        uniqueCode += c << 10;
+                        uniqueCode += (c << 10) + (c % 2);
                     }
                 }
             }

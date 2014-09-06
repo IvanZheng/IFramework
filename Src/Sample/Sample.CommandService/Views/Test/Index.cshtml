@@ -1,6 +1,7 @@
 ﻿@{
     Layout = null;
 }
+@using IFramework.Infrastructure;
 
 <!DOCTYPE html>
 
@@ -112,7 +113,7 @@
 </head>
 <body>
     <input type="button" value="RefreshCommandDistributorStatus" id="btnRefreshCommandDistributorStatus" />
-
+    @(Guid.NewGuid().ToString().GetUniqueCode())
     <div id="commandDistributorStatus">
 
     </div>
