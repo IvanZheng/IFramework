@@ -77,11 +77,11 @@ namespace IFramework.Infrastructure
             int uniqueCode = 0;
             if (!string.IsNullOrWhiteSpace(str))
             {
-                foreach(var c in SBase64Utility.EncodingForString(str))
+                foreach(var c in str)
                 {
                     if (c != 0)
                     {
-                        uniqueCode += (c << 10) + (c % 2);
+                        uniqueCode += (c << 5) - c;
                     }
                 }
             }
