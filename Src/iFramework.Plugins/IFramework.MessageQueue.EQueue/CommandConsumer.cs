@@ -40,6 +40,7 @@ namespace IFramework.MessageQueue.EQueue
             producerSetting.BrokerAddress = brokerAddress;
             producerSetting.BrokerPort = producerBrokerPort;
             Producer = new EQueueClientsProducers.Producer(string.Format("{0}-Reply-Producer", name), producerSetting);
+            CommandConsumers.Add(this);
         }
 
         public override void Start()

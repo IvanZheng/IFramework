@@ -83,11 +83,19 @@ namespace IFramework.MessageQueue.EQueue
 
             SendCommandWorkTask = Task.Factory.StartNew(() =>
             {
-                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                try
                 {
-                    messageStore.GetAllUnSentCommands()
-                        .ForEach(commandContext => ToBeSentCommandQueue.Add(commandContext as MessageContext));
+                    using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                    {
+                        messageStore.GetAllUnSentCommands()
+                            .ForEach(commandContext => ToBeSentCommandQueue.Add(commandContext as MessageContext));
+                    }
                 }
+                catch (Exception ex)
+                {
+                    _Logger.Error("Get all unsent commands failed", ex);
+                }
+               
                 while (!_exit)
                 {
                     try

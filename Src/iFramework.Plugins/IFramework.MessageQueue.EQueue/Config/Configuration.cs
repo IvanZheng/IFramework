@@ -13,7 +13,8 @@ namespace IFramework.Config
 {
     public static class ConfigurationEQueue
     {
-        public static Configuration InitliaizeEQueue(this Configuration configuration, int brokePort = 1500)
+        public static Configuration InitliaizeEQueue(this Configuration configuration,
+                    int brokePort = 5000, int consumerPort = 5001, int producerPort = 5000)
         {
             ECommon.Configurations.Configuration
                 .Create()
@@ -26,6 +27,9 @@ namespace IFramework.Config
             var setting = new BrokerSetting();
             setting.NotifyWhenMessageArrived = false;
             setting.RemoveConsumedMessageInterval = 1000;
+            setting.ProducerSocketSetting.Port = producerPort;
+            setting.ConsumerSocketSetting.Port = consumerPort;
+            setting.AdminSocketSetting.Backlog = setting.ProducerSocketSetting.Backlog = setting.ConsumerSocketSetting.Backlog = brokePort;
             new BrokerController(setting).Start();
 
             return configuration;
