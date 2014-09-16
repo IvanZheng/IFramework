@@ -59,6 +59,16 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public void Start()
         {
+            #region init sending commands Worker
+
+            #region Init  Command Queue client
+            if (_commandQueueNames != null && _commandQueueNames.Length > 0)
+            {
+                _commandQueueNames.ForEach(commandQueueName =>
+                    _commandQueueClients.Add(CreateQueueClient(commandQueueName)));
+            }
+            #endregion
+
             _sendCommandWorkTask = Task.Factory.StartNew(() =>
             {
                 using (var messageStore = IoCFactory.Resolve<IMessageStore>())
@@ -86,15 +96,12 @@ namespace IFramework.MessageQueue.ServiceBus
                     }
                 }
             }, TaskCreationOptions.LongRunning);
+            #endregion
 
-
-            if (_commandQueueNames != null && _commandQueueNames.Length > 0)
-            {
-                _commandQueueNames.ForEach(commandQueueName =>
-                    _commandQueueClients.Add(CreateQueueClient(commandQueueName)));
-            }
+            #region init process command reply worker
 
             _replySubscriptionClient = CreateSubscriptionClient(_replyTopicName, _replySubscriptionName);
+
             _subscriptionConsumeTask = Task.Factory.StartNew(() =>
             {
                 while (!_exit)
@@ -123,6 +130,8 @@ namespace IFramework.MessageQueue.ServiceBus
                     }
                 }
             }, TaskCreationOptions.LongRunning);
+
+            #endregion
         }
 
         public void Stop()

@@ -8,35 +8,42 @@ using System.Text;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
-using EQueueClients = EQueue.Clients;
-using EQueue.Clients.Producers;
+using IFramework.MessageQueue.EQueue.MessageFormat;
 using EQueue.Clients.Consumers;
-using EQueue.Protocols;
-using IFramework.MessageQueue.MessageFormat;
+using EQueueClientsConsumers = EQueue.Clients.Consumers;
+using EQueueProtocols = EQueue.Protocols;
 
 namespace IFramework.MessageQueue.EQueue
 {
     public abstract class MessageConsumer<TMessage> : 
-        IMessageConsumer, 
-        EQueueClients.Consumers.IMessageHandler
+        IMessageConsumer,
+        EQueueClientsConsumers.IMessageHandler
     {
+
         public decimal MessageCount { get; protected set; }
         protected string Name { get; set; }
         protected decimal HandledMessageCount { get; set; }
-        protected Consumer Consumer { get; set; }
+        protected string SubscribeTopic { get; set; }
+
+        protected bool _exit = false;
+        public Consumer Consumer { get; set; }
         protected readonly ILogger _Logger;
 
         public MessageConsumer()
         {
-            _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            
         }
 
-        public MessageConsumer(string id, ConsumerSettings consumerSettings, string groupName, MessageModel messageModel, string subscribeTopic)
+        public MessageConsumer(string id, ConsumerSetting consumerSetting, string groupName, string subscribeTopic)
             : this()
         {
+            SubscribeTopic = subscribeTopic;
             Name = id;
-            Consumer = new Consumer(id, consumerSettings, groupName, MessageModel.Clustering, this)
-                .Subscribe(subscribeTopic);
+            _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(Name);
+
+            Consumer = new Consumer(id, groupName, consumerSetting)
+                           .Subscribe(subscribeTopic)
+                           .SetMessageHandler(this);
         }
 
         public virtual void Start()
@@ -53,15 +60,22 @@ namespace IFramework.MessageQueue.EQueue
 
         public virtual string GetStatus()
         {
-            return string.Format("commandConsumer {0} handled command {1}", Name, HandledMessageCount);
+            var queueIDs = string.Join(",", Consumer.GetCurrentQueues().Select(x => x.QueueId));
+            return string.Format("{0} Handled command {1} queueID {2}\r\n", Name, HandledMessageCount, queueIDs);
         }
 
-        public virtual void Handle(global::EQueue.Protocols.Message message)
+        protected abstract void ConsumeMessage(TMessage messageContext, EQueueProtocols.QueueMessage message);
+
+        public virtual void Handle(EQueueProtocols.QueueMessage message, EQueueClientsConsumers.IMessageContext context)
         {
-            ConsumeMessage(message.Body.GetMessage<TMessage>());
+            ConsumeMessage(message.Body.GetMessage<TMessage>(), message);
             HandledMessageCount++;
         }
 
-        protected abstract void ConsumeMessage(TMessage messageContext);
+
+        public void Stop()
+        {
+            Consumer.Shutdown();
+        }
     }
 }

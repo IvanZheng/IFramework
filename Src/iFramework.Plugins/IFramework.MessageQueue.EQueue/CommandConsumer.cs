@@ -1,8 +1,5 @@
-﻿using EQueue.Clients.Consumers;
-using EQueue.Clients.Producers;
-using EQueue.Protocols;
-using IFramework.Message;
-using IFramework.MessageQueue.MessageFormat;
+﻿using IFramework.Message;
+using IFramework.MessageQueue.EQueue.MessageFormat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,22 +7,39 @@ using System.Text;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.UnitOfWork;
-using IFramework.SysException;
+using IFramework.SysExceptions;
+using System.Collections.Concurrent;
+using EQueueClientsProducers = EQueue.Clients.Producers;
+using EQueueClientsConsumers = EQueue.Clients.Consumers;
+using EQueueProtocols = EQueue.Protocols;
+using IFramework.Command;
+using System.Data;
 
 namespace IFramework.MessageQueue.EQueue
 {
-    public class CommandConsumer : MessageConsumer<MessageContext>
+    public class CommandConsumer : MessageConsumer<IFramework.MessageQueue.EQueue.MessageFormat.MessageContext>
     {
-        protected IHandlerProvider HandlerProvider { get; set; }
-        protected Producer Producer { get; set; }
+        public static List<CommandConsumer> CommandConsumers = new List<CommandConsumer>();
+        public static string GetConsumersStatus()
+        {
+            var status = string.Empty;
 
-        public CommandConsumer(string name, ConsumerSettings consumerSettings, string groupName,
+            CommandConsumers.ForEach(commandConsumer => status += commandConsumer.GetStatus());
+            return status;
+        }
+        protected IHandlerProvider HandlerProvider { get; set; }
+        protected EQueueClientsProducers.Producer Producer { get; set; }
+
+        public CommandConsumer(string name, EQueueClientsConsumers.ConsumerSetting consumerSetting, string groupName,
                                string subscribeTopic,  string brokerAddress, int producerBrokerPort,
                                IHandlerProvider handlerProvider)
-            : base(name, consumerSettings, groupName, MessageModel.Clustering, subscribeTopic)
+            : base(name, consumerSetting, groupName, subscribeTopic)
         {
             HandlerProvider = handlerProvider;
-            Producer = new Producer(brokerAddress, producerBrokerPort);
+            var producerSetting = new EQueueClientsProducers.ProducerSetting();
+            producerSetting.BrokerAddress = brokerAddress;
+            producerSetting.BrokerPort = producerBrokerPort;
+            Producer = new EQueueClientsProducers.Producer(string.Format("{0}-Reply-Producer", name), producerSetting);
         }
 
         public override void Start()
@@ -41,14 +55,14 @@ namespace IFramework.MessageQueue.EQueue
             }
         }
 
-        void OnMessageHandled(IMessageContext messageContext, IMessageReply reply)
+        void OnMessageHandled(IFramework.Message.IMessageContext messageContext, IMessageReply reply)
         {
             if (!string.IsNullOrWhiteSpace(messageContext.ReplyToEndPoint))
             {
                 var messageBody = reply.GetMessageBytes();
                 Producer.SendAsync(new global::EQueue.Protocols.Message(messageContext.ReplyToEndPoint, messageBody), string.Empty)
                         .ContinueWith(task => {
-                            if (task.Result.SendStatus ==  SendStatus.Success)
+                            if (task.Result.SendStatus == EQueueClientsProducers.SendStatus.Success)
                             {
                                 _Logger.DebugFormat("send reply, commandID:{0}", reply.MessageID);
                             }
@@ -57,45 +71,82 @@ namespace IFramework.MessageQueue.EQueue
                                 _Logger.ErrorFormat("Send Reply {0}", task.Result.SendStatus.ToString());
                             }
                         });
-                
             }
         }
 
-        protected override void ConsumeMessage(MessageContext messageContext)
+        protected override void ConsumeMessage(IFramework.MessageQueue.EQueue.MessageFormat.MessageContext messageContext, EQueueProtocols.QueueMessage queueMessage)
         {
-            IMessageReply messageReply = null;
+
             if (messageContext == null || messageContext.Message == null)
             {
                 return;
             }
-            var message = messageContext.Message;
-            var messageHandlers = HandlerProvider.GetHandlers(message.GetType());
+            var message = messageContext.Message as ICommand;
+            if (message == null)
+            {
+                return;
+            }
+            MessageReply messageReply = null;
+            var needRetry = message.NeedRetry;
+            bool commandHasHandled = false;
+            IMessageStore messageStore = null;
             try
             {
-                _Logger.DebugFormat("Handle command, commandID:{0}", messageContext.MessageID);
-
-                if (messageHandlers.Count == 0)
+                PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
+                messageStore = IoCFactory.Resolve<IMessageStore>();
+                commandHasHandled = messageStore.HasCommandHandled(messageContext.MessageID);
+                if (!commandHasHandled)
                 {
-                    messageReply = new MessageReply(messageContext.MessageID, new NoHandlerExists());
-                }
-                else
-                {
-                    PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
-                    var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                    messageHandlers[0].Handle(message);
-                    unitOfWork.Commit();
-                    messageReply = new MessageReply(messageContext.MessageID, message.GetValueByKey("Result"));
-                }
+                    var messageHandler = HandlerProvider.GetHandler(message.GetType());
+                    _Logger.InfoFormat("Handle command, commandID:{0}", messageContext.MessageID);
 
+                    if (messageHandler == null)
+                    {
+                        messageReply = new MessageReply(messageContext.ReplyToEndPoint, messageContext.MessageID, new NoHandlerExists());
+                    }
+                    else
+                    {
+                        do
+                        {
+                            try
+                            {
+                                ((dynamic)messageHandler).Handle((dynamic)message);
+                                messageReply = new MessageReply(messageContext.ReplyToEndPoint, messageContext.MessageID, messageContext.Reply);
+                                needRetry = false;
+                            }
+                            catch (Exception ex)
+                            {
+                                if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                                {
+                                    throw;
+                                }
+                            }
+                        } while (needRetry);
+                    }
+                }
             }
             catch (Exception e)
             {
-                messageReply = new MessageReply(messageContext.MessageID, e.GetBaseException());
-                // need log
+                messageReply = new MessageReply(messageContext.ReplyToEndPoint, messageContext.MessageID, e.GetBaseException());
+                if (e is DomainException)
+                {
+                    _Logger.Warn(message.ToJson(), e);
+                }
+                else
+                {
+                    _Logger.Error(message.ToJson(), e);
+                }
+                if (messageStore != null)
+                {
+                    messageStore.SaveFailedCommand(messageContext);
+                }
             }
             finally
             {
-                messageContext.ClearItems();
+                PerMessageContextLifetimeManager.CurrentMessageContext = null;
+            }
+            if (!commandHasHandled)
+            {
                 OnMessageHandled(messageContext, messageReply);
             }
         }

@@ -9,15 +9,16 @@ using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.Message.Impl;
 using System.Threading;
-using IFramework.SysException;
+using IFramework.SysExceptions;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.UnitOfWork;
 using IFramework.Config;
 using System.Collections.Concurrent;
-using IFramework.MessageQueue.MessageFormat;
-using EQueue.Protocols;
-using EQueue.Clients.Producers;
-using EQueue.Clients.Consumers;
+using IFramework.MessageQueue.EQueue.MessageFormat;
+using EQueueClientsProducers = EQueue.Clients.Producers;
+using EQueueClientsConsumers = EQueue.Clients.Consumers;
+using EQueueProtocols = EQueue.Protocols;
+using System.Data;
 
 namespace IFramework.MessageQueue.EQueue
 {
@@ -25,10 +26,16 @@ namespace IFramework.MessageQueue.EQueue
     {
         protected ICommandHandlerProvider HandlerProvider { get; set; }
         protected ILinearCommandManager LinearCommandManager { get; set; }
-        protected Hashtable MessageStateQueue { get; set; }
+        protected Hashtable CommandStateQueue { get; set; }
         protected string CommandTopic { get; set; }
         protected string ReplyTopic { get; set; }
-        protected Producer Producer { get; set; }
+        protected EQueueClientsProducers.ProducerSetting ProducerSetting { get; set; }
+        protected string ProducerName { get; set; }
+        protected EQueueClientsProducers.Producer Producer { get; set; }
+        protected Task SubscriptionConsumeTask;
+        protected Task SendCommandWorkTask;
+        private BlockingCollection<MessageContext> ToBeSentCommandQueue;
+
         IMessageStore _MessageStore;
         protected IMessageStore MessageStore
         {
@@ -44,68 +51,117 @@ namespace IFramework.MessageQueue.EQueue
                           ILinearCommandManager linearCommandManager,
                           string brokerAddress,
                           int producerBrokerPort,
-                          ConsumerSettings consumerSettings,
+                          EQueueClientsConsumers.ConsumerSetting consumerSetting,
                           string groupName,
                           string replyTopic,
                           string commandTopic,
                           bool inProc)
-            : base(name, consumerSettings, groupName, MessageModel.Clustering, replyTopic)
+            : base(name, consumerSetting, groupName, replyTopic)
         {
-            MessageStateQueue = Hashtable.Synchronized(new Hashtable());
+            CommandStateQueue = Hashtable.Synchronized(new Hashtable());
+            ToBeSentCommandQueue = new BlockingCollection<MessageContext>();
             HandlerProvider = handlerProvider;
             LinearCommandManager = linearCommandManager;
             CommandTopic = commandTopic;
             ReplyTopic = replyTopic;
             InProc = inProc;
-            Producer = new Producer(brokerAddress, producerBrokerPort);
-        }
+            ProducerSetting = new EQueueClientsProducers.ProducerSetting();
+            ProducerSetting.BrokerAddress = brokerAddress;
+            ProducerSetting.BrokerPort = producerBrokerPort;
+            ProducerName = name;
+       }
 
-        public override void Start()
+        public void Start()
         {
+            #region init sending commands Worker
+
+            #region Init  Command Queue client
+
+            Producer = new EQueueClientsProducers.Producer(string.Format("{0}-Reply-Producer", ProducerName), ProducerSetting);
+     
+            #endregion
+
+            SendCommandWorkTask = Task.Factory.StartNew(() =>
+            {
+                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                {
+                    messageStore.GetAllUnSentCommands()
+                        .ForEach(commandContext => ToBeSentCommandQueue.Add(commandContext as MessageContext));
+                }
+                while (!_exit)
+                {
+                    try
+                    {
+                        var commandContext = ToBeSentCommandQueue.Take();
+                        SendCommand(commandContext);
+                    }
+                    catch (Exception ex)
+                    {
+                        _Logger.Debug("send command quit", ex);
+                    }
+                }
+            }, TaskCreationOptions.LongRunning);
+            #endregion
+
+            #region init process command reply worker
+
             base.Start();
-            try
-            {
-                Producer.Start();
-            }
-            catch(Exception ex)
-            {
-                _Logger.Error(ex.GetBaseException().Message, ex);
-            }
+
+            #endregion
         }
 
-        protected override void ConsumeMessage(MessageReply reply)
+        internal void SendCommands(IEnumerable<IMessageContext> commandContexts)
+        {
+            commandContexts.ForEach(commandContext => ToBeSentCommandQueue.Add(commandContext as MessageContext));
+        }
+
+        private void SendCommand(MessageContext commandContext)
+        {
+            Producer.SendAsync(commandContext.EQueueMessage, commandContext.Key)
+                .ContinueWith(task =>
+                {
+                    if (task.Result.SendStatus == EQueueClientsProducers.SendStatus.Success)
+                    {
+                        using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                        {
+                            messageStore.RemoveSentCommand(commandContext.MessageID);
+                        }
+                        _Logger.DebugFormat("sent commandID {0}, body: {1}", commandContext.MessageID,
+                                                                        commandContext.Message.ToJson());
+                    }
+                    else
+                    {
+                        _Logger.ErrorFormat("Send Command {0}", task.Result.SendStatus.ToString());
+                    }
+                });
+        }
+
+        protected override void ConsumeMessage(MessageReply reply, EQueueProtocols.QueueMessage queueMessage)
         {
             _Logger.DebugFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
-            var messageState = MessageStateQueue[reply.MessageID] as MessageState;
+            var messageState = CommandStateQueue[reply.MessageID] as MessageState;
             if (messageState != null)
             {
-                MessageStateQueue.TryRemove(reply.MessageID);
-                if (reply.Exception != null)
+                CommandStateQueue.TryRemove(reply.MessageID);
+                if (reply.Result is Exception)
                 {
-                    messageState.TaskCompletionSource.TrySetException(reply.Exception);
+                    messageState.TaskCompletionSource.TrySetException(reply.Result as Exception);
                 }
                 else
                 {
-                    if (reply.Result != null)
-                    {
-                        var command = messageState.MessageContext.Message;
-                        command.SetValueByKey("Result", reply.Result);
-                    }
-                    messageState.TaskCompletionSource.TrySetResult(null);
+                    messageState.TaskCompletionSource.TrySetResult(reply.Result);
                 }
             }
         }
 
-
-
-        protected MessageState BuildMessageState(IMessageContext messageContext, CancellationToken cancellationToken)
+        protected IFramework.Message.MessageState BuildMessageState(IMessageContext messageContext, CancellationToken cancellationToken)
         {
             var pendingRequestsCts = new CancellationTokenSource();
             CancellationTokenSource linkedCts = CancellationTokenSource
                    .CreateLinkedTokenSource(cancellationToken, pendingRequestsCts.Token);
             cancellationToken = linkedCts.Token;
-            TaskCompletionSource<object> source = new TaskCompletionSource<object>();
-            var state = new MessageState
+            var source = new TaskCompletionSource<object>();
+            var state = new IFramework.Message.MessageState
             {
                 MessageID = messageContext.MessageID,
                 TaskCompletionSource = source,
@@ -114,10 +170,29 @@ namespace IFramework.MessageQueue.EQueue
             };
             return state;
         }
-
         public Task Send(ICommand command)
         {
             return Send(command, CancellationToken.None);
+        }
+
+        public Task<TResult> Send<TResult>(ICommand command)
+        {
+            return Send<TResult>(command, CancellationToken.None);
+        }
+
+        public Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken)
+        {
+            return Send(command).ContinueWith<TResult>(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    throw t.Exception;
+                }
+                else
+                {
+                    return (TResult)(t as Task<object>).Result;
+                }
+            });
         }
 
         public Task Send(ICommand command, CancellationToken cancellationToken)
@@ -132,22 +207,28 @@ namespace IFramework.MessageQueue.EQueue
             string commandKey = null;
             if (command is ILinearCommand)
             {
-                commandKey = LinearCommandManager.GetLinearKey(command as ILinearCommand).ToString();
+                var linearKey = LinearCommandManager.GetLinearKey(command as ILinearCommand);
+                if (linearKey != null)
+                {
+                    commandKey = linearKey.ToString();
+                }
             }
-            IMessageContext commandContext = new MessageContext(command, ReplyTopic, commandKey);
-
+            IMessageContext commandContext = null;
+            commandContext = new MessageContext(CommandTopic, command, ReplyTopic, commandKey);
             Task task = null;
-            if (InProc && currentMessageContext == null)
+            if (InProc && currentMessageContext == null && !(command is ILinearCommand))
             {
                 task = SendInProc(commandContext, cancellationToken);
             }
             else
             {
-                task = SendAsync(commandContext, cancellationToken);
-                if (currentMessageContext != null && Configuration.GetAppConfig<bool>("PersistanceMessage"))
+                if (currentMessageContext != null)
                 {
-                    //TODO: persistance command with domain event ID
-                    MessageStore.Save(commandContext, currentMessageContext.MessageID);
+                    ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
+                }
+                else
+                {
+                    task = SendAsync(commandContext, cancellationToken);
                 }
             }
             return task;
@@ -161,71 +242,84 @@ namespace IFramework.MessageQueue.EQueue
             {
                 task = SendAsync(commandContext, cancellationToken);
             }
-            else //if not a linear command, we run synchronously.
+            else if (command != null) //if not a linear command, we run synchronously.
             {
-                task = new Task(() =>
+                task = Task.Factory.StartNew(() =>
                 {
+                    var needRetry = command.NeedRetry;
+                    object result = null;
+                    PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
+                    IMessageStore messageStore = IoCFactory.Resolve<IMessageStore>();
+
                     var commandHandler = HandlerProvider.GetHandler(command.GetType());
                     if (commandHandler == null)
                     {
+                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
                         throw new NoHandlerExists();
                     }
-
-                    //MessageState messageState = BuildMessageState(commandContext, cancellationToken);
-                    PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
                     try
                     {
-                        var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                        commandHandler.Handle(command);
-                        unitOfWork.Commit();
+                        //var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
+                        do
+                        {
+                            try
+                            {
+                                ((dynamic)commandHandler).Handle((dynamic)command);
+                                //unitOfWork.Commit();
+                                result = commandContext.Reply;
+                                needRetry = false;
+                            }
+                            catch (Exception ex)
+                            {
+                                if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                                {
+                                    throw;
+                                }
+                            }
+                        } while (needRetry);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is DomainException)
+                        {
+                            _Logger.Warn(command.ToJson(), e);
+                        }
+                        else
+                        {
+                            _Logger.Error(command.ToJson(), e);
+                        }
+                        if (messageStore != null)
+                        {
+                            messageStore.SaveFailedCommand(commandContext);
+                        }
+                        throw;
                     }
                     finally
                     {
-                        commandContext.ClearItems();
+                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
                     }
-                });
-                task.RunSynchronously();
-                if (task.Exception != null)
-                {
-                    throw task.Exception.GetBaseException();
-                }
+                    return result;
+                }, cancellationToken);
             }
             return task;
         }
 
         protected virtual Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
         {
-            var command = commandContext.Message as ICommand;
-            MessageState commandState = BuildMessageState(commandContext, cancellationToken);
-            commandState.CancellationToken.Register(onCancel, commandState);
-            MessageStateQueue.Add(commandState.MessageID, commandState);
-            var commandKey = commandState.MessageContext.Key;
-            
-            if (string.IsNullOrWhiteSpace(commandKey))
-            {
-                commandKey = commandState.MessageID;
-            }
-
-            var messageBody = Encoding.UTF8.GetBytes(commandContext.ToJson());
-            Producer.SendAsync(new global::EQueue.Protocols.Message(CommandTopic, messageBody), commandKey)
-                    .ContinueWith(task => {
-                        if (task.Result.SendStatus == SendStatus.Success)
-                        {
-                            _Logger.DebugFormat("sent commandID {0}, body: {1}", commandContext.MessageID,
-                                                                            commandContext.Message.ToJson());
-                        }
-                        else
-                        {
-                            _Logger.ErrorFormat("Send Command {0}", task.Result.SendStatus.ToString());
-                        }
-                    });
+            var commandState = BuildMessageState(commandContext, cancellationToken);
+            commandState.CancellationToken.Register(OnCancel, commandState);
+            CommandStateQueue.Add(commandState.MessageID, commandState);
+            ToBeSentCommandQueue.Add(commandContext as MessageContext, cancellationToken);
             return commandState.TaskCompletionSource.Task;
         }
 
-        protected void onCancel(object state)
+        protected void OnCancel(object state)
         {
-            var messageState = state as MessageState;
-            MessageStateQueue.TryRemove(messageState.MessageID);
+            var messageState = state as IFramework.Message.MessageState;
+            if (messageState != null)
+            {
+                CommandStateQueue.TryRemove(messageState.MessageID);
+            }
         }
     }
 }

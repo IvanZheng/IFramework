@@ -52,6 +52,11 @@ namespace IFramework.Message
             return Encoding.UTF8.GetString(messageBody).ToJsonObject<T>();
         }
 
+        public static object GetMessage(this byte[] messageBody, Type type)
+        {
+            return Encoding.UTF8.GetString(messageBody).ToJsonObject(type);
+        }
+
         public static string GetFormattedMessage(this byte[] messageBody)
         {
             var message = string.Empty;

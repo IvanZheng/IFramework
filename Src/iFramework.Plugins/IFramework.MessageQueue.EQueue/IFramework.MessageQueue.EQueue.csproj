@@ -30,24 +30,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac">
-      <HintPath>..\..\packages\Autofac.3.3.0\lib\net40\Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="EQueue, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Autofac, Version=3.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>EQueueRefs\EQueue.dll</HintPath>
+      <HintPath>..\..\packages\Autofac.3.4.0\lib\net40\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="EQueue.Autofac, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ECommon, Version=1.3.5.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>EQueueRefs\EQueue.Autofac.dll</HintPath>
+      <HintPath>..\..\packages\ECommon.1.3.5\lib\net40\ECommon.dll</HintPath>
     </Reference>
-    <Reference Include="EQueue.JsonNet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ECommon.Autofac, Version=1.3.5.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>EQueueRefs\EQueue.JsonNet.dll</HintPath>
+      <HintPath>..\..\packages\ECommon.Autofac.1.3.5\lib\net40\ECommon.Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="EQueue.Log4Net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ECommon.JsonNet, Version=1.3.5.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>EQueueRefs\EQueue.Log4Net.dll</HintPath>
+      <HintPath>..\..\packages\ECommon.JsonNet.1.3.5\lib\net40\ECommon.JsonNet.dll</HintPath>
+    </Reference>
+    <Reference Include="ECommon.Log4Net, Version=1.3.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\ECommon.Log4Net.1.3.5\lib\net40\ECommon.Log4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="EQueue, Version=1.2.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\EQueue.1.2.8\lib\net40\EQueue.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
@@ -58,11 +63,13 @@
     <Reference Include="Microsoft.Practices.Unity.Configuration">
       <HintPath>..\..\packages\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Configuration.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -72,9 +79,12 @@
   <ItemGroup>
     <Compile Include="CommandBus.cs" />
     <Compile Include="CommandConsumer.cs" />
+    <Compile Include="Config\Configuration.cs" />
     <Compile Include="DomainEventSubscriber.cs" />
     <Compile Include="EventPublisher.cs" />
     <Compile Include="MessageConsumer.cs" />
+    <Compile Include="MessageFormat\MessageContext.cs" />
+    <Compile Include="MessageFormat\MessageReply.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -82,16 +92,8 @@
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj">
-      <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
-      <Name>IFramework.MessageQueue.MessageFormat</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="EQueueRefs\EQueue.Autofac.dll" />
-    <None Include="EQueueRefs\EQueue.dll" />
-    <None Include="EQueueRefs\EQueue.JsonNet.dll" />
-    <None Include="EQueueRefs\EQueue.Log4Net.dll" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

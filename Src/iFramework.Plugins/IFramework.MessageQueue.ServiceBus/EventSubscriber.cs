@@ -149,7 +149,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public string GetStatus()
         {
-            return "";
+            return string.Format("Handled message count {0}", MessageCount);
         }
 
         public decimal MessageCount { get; set; }
