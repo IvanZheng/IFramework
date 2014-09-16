@@ -14,16 +14,23 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
     {
         public EQueueProtocols.Message Message { get; protected set; }
 
+        public MessageReply()
+        {
+            Headers = new Dictionary<string, object>();
+        }
+
         public MessageReply(EQueueProtocols.Message message)
+            :this()
         {
             Message = message;
         }
 
         public MessageReply(string topic, string messageID, object result)
+            : this()
         {
             if (result != null)
             {
-                Message = new EQueueProtocols.Message(topic, Encoding.UTF8.GetBytes(result.ToJson()));
+                Message = new EQueueProtocols.Message(topic, Encoding.UTF8.GetBytes(this.ToJson()));
             }
             MessageID = messageID;
             Result = result;

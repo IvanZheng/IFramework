@@ -22,7 +22,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             {
                 if (_EQueueMessage == null)
                 {
-                    _EQueueMessage = new EQueueProtocols.Message(Topic, Encoding.UTF8.GetBytes(Message.ToJson()));
+                    _EQueueMessage = new EQueueProtocols.Message(Topic, Encoding.UTF8.GetBytes(this.ToJson()));
                 }
                 return _EQueueMessage;
             }
@@ -35,6 +35,13 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         public MessageContext()
         {
             Headers = new Dictionary<string, object>();
+            CorrelationID = null;
+            Key = null;
+            MessageID = null;
+            CorrelationID = null;
+            ReplyToEndPoint = null;
+            Reply = null;
+            FromEndPoint = null;
         }
 
         public MessageContext(EQueueProtocols.Message eQueueMessage)
@@ -132,11 +139,11 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
 
         public DateTime SentTime
         {
-            get { return (DateTime) Headers["SentTime"]; }
+            get { return (DateTime)Headers["SentTime"]; }
             set { Headers["SentTime"] = value; }
         }
 
         [JsonIgnore]
-        public List<IMessageContext> ToBeSentMessageContexts { get; set; } 
+        public List<IMessageContext> ToBeSentMessageContexts { get; set; }
     }
 }

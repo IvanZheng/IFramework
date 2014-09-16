@@ -71,14 +71,14 @@ namespace IFramework.MessageQueue.EQueue
             ProducerName = name;
        }
 
-        public void Start()
+        public override void Start()
         {
             #region init sending commands Worker
 
             #region Init  Command Queue client
 
             Producer = new EQueueClientsProducers.Producer(string.Format("{0}-Reply-Producer", ProducerName), ProducerSetting);
-     
+            Producer.Start();
             #endregion
 
             SendCommandWorkTask = Task.Factory.StartNew(() =>
