@@ -50,26 +50,32 @@ namespace EQueueTest
         {
             batchCommands.ForEach(cmd =>
             {
-                _CommandBus.Send(cmd);
-                //Task.Factory.StartNew(() =>
-                //{
-                //    Action(cmd);
-                //});
+                var task = _CommandBus.Send<string>(cmd);
+                task.ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        Console.WriteLine(t.Exception.GetBaseException().Message);
+                    }
+                    else
+                    {
+                        Console.WriteLine(t.Result);
+                    }
+                });
             });
         }
 
         internal void StartTest(int batchCount)
         {
             Task.Factory.StartNew(() => {
-                var commands = new List<ICommand>();
-                commands.Add(new Login { UserName = "Ivan0", Password = "123456" });
-                commands.Add(new Login { UserName = "Ivan1", Password = "123456" });
-                commands.Add(new Login { UserName = "Ivan2", Password = "123456" });
-                commands.Add(new Login { UserName = "Ivan3", Password = "123456" });
-
                 int i = 0;
                 while (i++ < batchCount)
                 {
+                    var commands = new List<ICommand>();
+                    commands.Add(new Login { UserName = "Ivan0", Password = "123456" });
+                    commands.Add(new Login { UserName = "Ivan1", Password = "123456" });
+                    commands.Add(new Login { UserName = "Ivan2", Password = "123456" });
+                    commands.Add(new Login { UserName = "Ivan3", Password = "123456" });
                     DoCommand(commands);
                 }
             });

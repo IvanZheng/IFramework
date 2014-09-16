@@ -19,12 +19,6 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             Headers = new Dictionary<string, object>();
         }
 
-        public MessageReply(EQueueProtocols.Message message)
-            :this()
-        {
-            Message = message;
-        }
-
         public MessageReply(string topic, string messageID, object result)
             : this()
         {
@@ -58,9 +52,11 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
                     return _Result;
                 }
                 object messageType = null;
-                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
+                object messageBody = null;
+                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null
+                   && Headers.TryGetValue("Message", out messageBody) && messageBody != null)
                 {
-                    _Result = Message.Body.GetMessage(Type.GetType(messageType.ToString()));
+                    _Result = messageBody.ToString().ToJsonObject(Type.GetType(messageType.ToString()));
                 
                 }
                 return _Result;
@@ -70,6 +66,8 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
                 _Result = value;
                 if (_Result != null)
                 {
+                    _Result = value;
+                    Headers["Message"] = _Result.ToJson();
                     Headers["MessageType"] = _Result.GetType().AssemblyQualifiedName;
                 }
             }

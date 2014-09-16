@@ -44,20 +44,19 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             FromEndPoint = null;
         }
 
-        public MessageContext(EQueueProtocols.Message eQueueMessage)
+        public MessageContext(IMessage message)
             : this()
         {
-            EQueueMessage = eQueueMessage;
-        }
-
-        public MessageContext(string topic, IMessage message)
-            : this()
-        {
-            Topic = topic;
             SentTime = DateTime.Now;
             Message = message;
             MessageID = message.ID;
             ToBeSentMessageContexts = new List<IMessageContext>();
+        }
+
+        public MessageContext(string topic, IMessage message)
+            : this(message)
+        {
+            Topic = topic;
         }
 
         public MessageContext(string topic, IMessage message, string key)
@@ -121,21 +120,33 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         }
 
         object _Message;
+        [JsonIgnore]
         public object Message
         {
             get
             {
-                return _Message ?? (_Message = EQueueMessage.Body.GetMessage(Type.GetType(Headers["MessageType"].ToString())));
+                if (_Message != null)
+                {
+                    return _Message;
+                }
+                object messageType = null;
+                object messageBody = null;
+                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null
+                   && Headers.TryGetValue("Message", out messageBody) && messageBody != null)
+                {
+                    _Message = messageBody.ToString().ToJsonObject(Type.GetType(messageType.ToString()));
+
+                }
+                return _Message;
             }
-            protected set
+            set
             {
                 _Message = value;
-                if (value != null)
-                {
-                    Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
-                }
+                Headers["Message"] = _Message.ToJson();
+                Headers["MessageType"] = _Message.GetType().AssemblyQualifiedName;
             }
         }
+
 
         public DateTime SentTime
         {

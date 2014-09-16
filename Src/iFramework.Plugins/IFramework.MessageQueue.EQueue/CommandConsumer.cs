@@ -31,7 +31,7 @@ namespace IFramework.MessageQueue.EQueue
         protected EQueueClientsProducers.Producer Producer { get; set; }
 
         public CommandConsumer(string name, EQueueClientsConsumers.ConsumerSetting consumerSetting, string groupName,
-                               string subscribeTopic,  string brokerAddress, int producerBrokerPort,
+                               string subscribeTopic, string brokerAddress, int producerBrokerPort,
                                IHandlerProvider handlerProvider)
             : base(name, consumerSetting, groupName, subscribeTopic)
         {
@@ -62,7 +62,8 @@ namespace IFramework.MessageQueue.EQueue
             {
                 var messageBody = reply.GetMessageBytes();
                 Producer.SendAsync(new global::EQueue.Protocols.Message(messageContext.ReplyToEndPoint, messageBody), string.Empty)
-                        .ContinueWith(task => {
+                        .ContinueWith(task =>
+                        {
                             if (task.Result.SendStatus == EQueueClientsProducers.SendStatus.Success)
                             {
                                 _Logger.DebugFormat("send reply, commandID:{0}", reply.MessageID);
@@ -149,6 +150,7 @@ namespace IFramework.MessageQueue.EQueue
             if (!commandHasHandled)
             {
                 OnMessageHandled(messageContext, messageReply);
+                HandledMessageCount++;
             }
         }
     }

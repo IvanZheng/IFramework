@@ -28,16 +28,6 @@ namespace IFramework.MessageQueue.EQueue
             HandlerProvider = handlerProvider;
         }
 
-        public override void Handle(EQueueProtocols.QueueMessage message, global::EQueue.Clients.Consumers.IMessageContext context)
-        {
-            var messageContexts = message.Body.GetMessage<List<IFramework.MessageQueue.EQueue.MessageFormat.MessageContext>>();
-            messageContexts.ForEach(messageContext =>
-            {
-                ConsumeMessage(messageContext, message);
-                HandledMessageCount++;
-            });
-        }
-
         protected override void ConsumeMessage(IFramework.MessageQueue.EQueue.MessageFormat.MessageContext eventContext, EQueueProtocols.QueueMessage queueMessage)
         {
 
@@ -86,6 +76,7 @@ namespace IFramework.MessageQueue.EQueue
                     finally
                     {
                         PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                        MessageCount++;
                     }
                 }
             });

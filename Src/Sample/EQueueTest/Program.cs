@@ -25,7 +25,6 @@ namespace EQueueTest
     public class Program
     {
         static ICommandBus commandBus;
-        static ILogger _logger;
          
         static void Main(string[] args)
         {
@@ -33,6 +32,7 @@ namespace EQueueTest
             {
 
                 Configuration.Instance.UseLog4Net()
+                                      .RegisterMessageContextType(typeof(IFramework.MessageQueue.EQueue.MessageFormat.MessageContext))
                                       .InitliaizeEQueue(5000, 5001, 5000)
                                       .CommandHandlerProviderBuild(null, "CommandHandlers");
 
@@ -145,7 +145,7 @@ namespace EQueueTest
                 scheduleService.ShutdownTask(taskId);
 
                 var worker = new Worker(commandBus);
-                worker.StartTest(100);
+                //worker.StartTest(100);
 
 
                 while (true)

@@ -69,7 +69,6 @@ namespace IFramework.MessageQueue.EQueue
         public virtual void Handle(EQueueProtocols.QueueMessage message, EQueueClientsConsumers.IMessageContext context)
         {
             ConsumeMessage(message.Body.GetMessage<TMessage>(), message);
-            HandledMessageCount++;
         }
 
 
