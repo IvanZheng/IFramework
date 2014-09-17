@@ -22,6 +22,7 @@ namespace IFramework.Domain
         }
 
         string _aggreagetRootType;
+        [Newtonsoft.Json.JsonIgnore]
         protected string AggregateRootName
         {
             get

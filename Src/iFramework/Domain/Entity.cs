@@ -7,6 +7,7 @@ namespace IFramework.Domain
 {
     public class Entity : IEntity
     {
+        [Newtonsoft.Json.JsonIgnore]
         public object DomainContext { get; set; }
     }
 }
