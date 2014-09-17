@@ -78,32 +78,41 @@ namespace IFramework.MessageQueue.ZeroMQ
         {
             _sendCommandWorkTask = Task.Factory.StartNew(() =>
             {
-                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                try
                 {
-                    messageStore.GetAllUnSentCommands()
-                        .ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
-                }
-                while (!_Exit)
-                {
-                    try
+                    using (var messageStore = IoCFactory.Resolve<IMessageStore>())
                     {
-                        var commandContext = _toBeSentCommandQueue.Take();
-                        SendCommand(commandContext);
-                        Task.Factory.StartNew(() =>
+                        messageStore.GetAllUnSentCommands()
+                            .ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
+                    }
+                    while (!_Exit)
+                    {
+                        try
                         {
-                            using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                            var commandContext = _toBeSentCommandQueue.Take();
+                            SendCommand(commandContext);
+                            Task.Factory.StartNew(() =>
                             {
-                                messageStore.RemoveSentCommand(commandContext.MessageID);
-                            }
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        _Logger.Debug("send command quit", ex);
+                                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                                {
+                                    messageStore.RemoveSentCommand(commandContext.MessageID);
+                                }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            _Logger.Debug("send command quit", ex);
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    _Logger.Error("start send command work failed", ex);
+                }
+                
 
             }, TaskCreationOptions.LongRunning);
+
 
             base.Start();
         }
