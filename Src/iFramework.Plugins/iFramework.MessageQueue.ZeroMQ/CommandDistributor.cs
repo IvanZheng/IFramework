@@ -8,7 +8,7 @@ using ZeroMQ;
 using IFramework.Infrastructure;
 using IFramework.Message.Impl;
 using System.Collections.Concurrent;
-using IFramework.MessageQueue.MessageFormat;
+using IFramework.MessageQueue.ZeroMQ.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {

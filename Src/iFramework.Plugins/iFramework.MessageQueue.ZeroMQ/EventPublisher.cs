@@ -9,8 +9,8 @@ using IFramework.Message.Impl;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using IFramework.Message;
-using IFramework.MessageQueue.MessageFormat;
 using IFramework.Infrastructure.Logging;
+using IFramework.MessageQueue.ZeroMQ.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -80,6 +80,12 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 _Logger.Debug("end publish working", ex);
             }
+        }
+
+
+        public void Publish(params IEvent[] events)
+        {
+            events.ForEach(@event => MessageQueue.Add(new MessageContext(@event)));
         }
     }
 }

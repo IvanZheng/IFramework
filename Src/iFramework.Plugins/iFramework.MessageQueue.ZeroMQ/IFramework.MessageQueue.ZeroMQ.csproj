@@ -58,11 +58,13 @@
     <Compile Include="CommandConsumer.cs" />
     <Compile Include="CommandDistributor.cs" />
     <Compile Include="DistributableCommandBus.cs" />
-    <Compile Include="DomainEventBus.cs" />
     <Compile Include="EventPublisher.cs" />
     <Compile Include="IInProcMessageConsumer.cs" />
     <Compile Include="MessageConsumer.cs" />
     <Compile Include="EventSubscriber.cs" />
+    <Compile Include="MessageFormat\MessageContext.cs" />
+    <Compile Include="MessageFormat\MessageHandledNotification.cs" />
+    <Compile Include="MessageFormat\MessageReply.cs" />
     <Compile Include="MessageFrame.cs" />
     <Compile Include="MessageQueueImpl.cs">
       <SubType>Code</SubType>
@@ -73,10 +75,6 @@
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
       <Name>IFramework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\IFramework.MessageQueue.MessageFormat\IFramework.MessageQueue.MessageFormat.csproj">
-      <Project>{d33b2d5c-a9cd-43ed-bf45-a0e54fcc9789}</Project>
-      <Name>IFramework.MessageQueue.MessageFormat</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

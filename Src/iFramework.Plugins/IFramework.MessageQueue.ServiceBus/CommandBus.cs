@@ -236,26 +236,6 @@ namespace IFramework.MessageQueue.ServiceBus
             return Send(command, CancellationToken.None);
         }
 
-        public Task<TResult> Send<TResult>(ICommand command)
-        {
-            return Send<TResult>(command, CancellationToken.None);
-        }
-
-        public Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken)
-        {
-            return Send(command).ContinueWith<TResult>(t =>
-                {
-                    if (t.IsFaulted)
-                    {
-                        throw t.Exception;
-                    }
-                    else
-                    {
-                        return (TResult)(t as Task<object>).Result;
-                    }
-                });
-        }
-
         public Task Send(ICommand command, CancellationToken cancellationToken)
         {
             var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;
@@ -293,6 +273,26 @@ namespace IFramework.MessageQueue.ServiceBus
                 }
             }
             return task;
+        }
+       
+        public Task<TResult> Send<TResult>(ICommand command)
+        {
+            return Send<TResult>(command, CancellationToken.None);
+        }
+
+        public Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken)
+        {
+            return Send(command).ContinueWith<TResult>(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        throw t.Exception;
+                    }
+                    else
+                    {
+                        return (TResult)(t as Task<object>).Result;
+                    }
+                });
         }
 
         protected virtual Task SendInProc(IMessageContext commandContext, CancellationToken cancellationToken)

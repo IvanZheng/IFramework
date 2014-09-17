@@ -1,9 +1,9 @@
 ﻿using IFramework.Command;
 using IFramework.Message;
-using IFramework.MessageQueue.MessageFormat;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
+using IFramework.MessageQueue.ZeroMQ.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -40,7 +40,7 @@ namespace IFramework.MessageQueue.ZeroMQ
         {
             MessageState commandState = BuildMessageState(commandContext, cancellationToken);
             commandState.CancellationToken.Register(OnCancel, commandState);
-            MessageStateQueue.Add(commandState.MessageID, commandState);
+            CommandStateQueue.Add(commandState.MessageID, commandState);
             Task.Factory.StartNew(() => {
                 _commandConsumer.EnqueueMessage(commandContext.GetFrame());
                 _Logger.InfoFormat("send to distributor/consumer commandID:{0} payload:{1}",

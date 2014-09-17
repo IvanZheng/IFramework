@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using IFramework.UnitOfWork;
 using IFramework.Message.Impl;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
-using IFramework.MessageQueue.MessageFormat;
 using IFramework.SysExceptions;
+using IFramework.MessageQueue.ZeroMQ.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {

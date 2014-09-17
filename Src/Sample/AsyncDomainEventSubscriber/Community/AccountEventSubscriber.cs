@@ -1,4 +1,5 @@
 ﻿using IFramework.Event;
+using IFramework.SysExceptions;
 using Sample.DomainEvents.Community;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace Sample.AsyncDomainEventSubscriber.Community
         public void Handle(AccountRegistered @event)
         {
             Console.Write("subscriber2: {0} has registered.", @event.UserName);
-            throw new Exception("test fail handled event!");
+            throw new DomainException("test fail handled event!");
 
         }
     }

@@ -1,0 +1,140 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    @Scripts.Render("~/Scripts/jquery-1.8.2.min.js")
+    @Scripts.Render("~/Scripts/jquery.json-2.2.min.js")
+    @Scripts.Render("~/Scripts/jquery.cookie.min.js")
+    <script>
+
+
+        var doCommand = function (commandName, command) {
+            $.ajax({
+                cache: false,
+                contentType: "application/command+form;command=" + commandName,
+                type: "POST",
+                url: '@Url.Content("~/api/Command")',
+                data: command,
+                success: function (data) {
+                    if (data.ErrorCode == 0) {
+                        alert($.toJSON(data));
+                    }
+                    else {
+                        alert(data.ErrorCode + " " + data.Message);
+                    }
+                }
+            });
+        };
+
+        var batchCommandTest = function (commandName, command, batchCount) {
+            $.cookie("batchCount", batchCount, {path:"/"});
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: '@Url.Content("~/api/BatchCommand/")' + commandName,
+                data: command,
+                success: function (data) {
+                    if (data.ErrorCode == 0) {
+                        alert(data);
+                    }
+                    else {
+                        alert(data.Message);
+                    }
+                }
+
+            });
+        };
+
+        $(function () {
+            $("#batchRegisterCommand").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
+                batchCommandTest("Register", registerCommand, $("#batchCount").val());
+            });
+
+            $("#batchLoginCommand").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var loginCommand = { UserName: username, Password: password };
+                batchCommandTest("Login", loginCommand, $("#batchCount").val());
+            });
+
+
+            $("#modifyCommand").click(function () {
+                var username = $("#username").val();
+                var email = $("#email").val();
+
+                var modifyCommand = {
+                    UserName: username,
+                    Email: email
+                };
+                doCommand("Modify", modifyCommand);
+            });
+
+            $("#registerCommand").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
+                doCommand("Register", registerCommand);
+            });
+
+            
+            $("#loginCommand").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+
+                var loginCommand = {
+                    UserName: username,
+                    Password: password
+                };
+                doCommand("Login", loginCommand);
+            });
+
+            $("#btnRefreshCommandDistributorStatus").click(function () {
+                refreshCommandDistributorStatus();
+            })
+            .click();
+        });
+        var refreshCommandDistributorStatus = function () {
+            $.get("@Url.Content("~/Test/CommandDistributorStatus")", null, function (result) {
+                $("#commandDistributorStatus").html(result);
+            });
+        };
+       
+    </script>
+</head>
+<body>
+    <input type="button" value="RefreshCommandDistributorStatus" id="btnRefreshCommandDistributorStatus" />
+
+    <div id="commandDistributorStatus">
+
+    </div>
+    <br />
+
+    <input type="text" value="1000" id="batchCount"/>
+    <input type="text" value="ivan" id="username" />
+    <input type="password" value="123456" id="password" />
+
+    <input id="registerCommand" type="button" value="RegisterCommand" />
+    <input id="loginCommand" type="button" value="LoginCommand" />
+
+   
+
+    <div>
+        <input id="batchRegisterCommand" type="button" value="BatchRegisterCommand" />
+        <input id="batchLoginCommand" type="button" value="BatchLoginCommand" />
+    </div>
+
+    <div>
+        <input type="text" value="email" id="email" />
+        <input id="modifyCommand" type="button" value="ModifyCommand" />
+    </div>
+</body>
+</html>

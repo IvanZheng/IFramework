@@ -11,9 +11,9 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.UnitOfWork;
 using IFramework.Config;
 using System.Collections.Concurrent;
-using IFramework.MessageQueue.MessageFormat;
 using IFramework.SysExceptions;
 using System.Data;
+using IFramework.MessageQueue.ZeroMQ.MessageFormat;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -21,8 +21,9 @@ namespace IFramework.MessageQueue.ZeroMQ
     {
         protected ICommandHandlerProvider HandlerProvider { get; set; }
         protected ILinearCommandManager LinearCommandManager { get; set; }
-        protected BlockingCollection<MessageState> CommandQueue { get; set; }
-        protected Hashtable MessageStateQueue { get; set; }
+
+        protected BlockingCollection<IMessageContext> _toBeSentCommandQueue;
+        protected Hashtable CommandStateQueue { get; set; }
         private Task _sendCommandWorkTask;
 
         protected IMessageStore MessageStore
@@ -42,7 +43,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                           bool inProc)
             : base(receiveEndPoint)
         {
-            MessageStateQueue = Hashtable.Synchronized(new Hashtable());
+            CommandStateQueue = Hashtable.Synchronized(new Hashtable());
             HandlerProvider = handlerProvider;
             LinearCommandManager = linearCommandManager;
             InProc = inProc;
@@ -55,7 +56,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                           string[] targetEndPoints)
             : this(handlerProvider, linearCommandManager, receiveEndPoint, inProc)
         {
-            CommandQueue = new BlockingCollection<MessageState>();
+            _toBeSentCommandQueue = new BlockingCollection<IMessageContext>();
             CommandSenders = new List<ZmqSocket>();
 
             targetEndPoints.ForEach(targetEndPoint =>
@@ -75,33 +76,43 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         public override void Start()
         {
-            base.Start();
-            if (CommandQueue != null)
+            _sendCommandWorkTask = Task.Factory.StartNew(() =>
             {
-                _sendCommandWorkTask = Task.Factory.StartNew(() =>
+                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                {
+                    messageStore.GetAllUnSentCommands()
+                        .ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
+                }
+                while (!_Exit)
                 {
                     try
                     {
-                        while (true)
+                        var commandContext = _toBeSentCommandQueue.Take();
+                        SendCommand(commandContext);
+                        Task.Factory.StartNew(() =>
                         {
-                            var commandState = CommandQueue.Take();
-                            SendCommand(commandState);
-                        }
+                            using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                            {
+                                messageStore.RemoveSentCommand(commandContext.MessageID);
+                            }
+                        });
                     }
                     catch (Exception ex)
                     {
-                        _Logger.Debug("end send command", ex);
+                        _Logger.Debug("send command quit", ex);
                     }
+                }
 
-                }, TaskCreationOptions.LongRunning);
-            }
+            }, TaskCreationOptions.LongRunning);
+
+            base.Start();
         }
 
         public override void Stop()
         {
             if (_sendCommandWorkTask != null)
             {
-                CommandQueue.CompleteAdding();
+                _toBeSentCommandQueue.CompleteAdding();
                 if (_sendCommandWorkTask.Wait(2000))
                 {
                     _sendCommandWorkTask.Dispose();
@@ -113,11 +124,11 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
             base.Stop();
         }
-        protected virtual void SendCommand(MessageState commandState)
+        protected virtual void SendCommand(IMessageContext messageContext)
         {
             try
             {
-                var frame = commandState.MessageContext.GetFrame();
+                var frame = messageContext.GetFrame();
                 ZmqSocket commandSender = null;
 
                 if (CommandSenders.Count == 1)
@@ -126,15 +137,15 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
                 else if (CommandSenders.Count > 1)
                 {
-                    var commandKey = commandState.MessageContext.Key;
-                    int keyHashCode = !string.IsNullOrWhiteSpace(commandKey) ? 
-                        commandKey.GetHashCode() : commandState.MessageID.GetHashCode();
+                    var commandKey = messageContext.Key;
+                    int keyHashCode = !string.IsNullOrWhiteSpace(commandKey) ?
+                        commandKey.GetUniqueCode() : messageContext.MessageID.GetUniqueCode();
                     commandSender = CommandSenders[keyHashCode % CommandSenders.Count];
                 }
                 if (commandSender == null) return;
                 var status = commandSender.SendFrame(frame);
                 _Logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
-                    commandState.MessageID, frame.BufferSize, status.ToString());
+                    messageContext.MessageID, frame.BufferSize, status.ToString());
             }
             catch (Exception ex)
             {
@@ -144,14 +155,14 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         protected override void ConsumeMessage(IMessageReply reply)
         {
-            _Logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
-            var messageState = MessageStateQueue[reply.MessageID] as MessageState;
+            _Logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson()); 
+            var messageState = CommandStateQueue[reply.MessageID] as IFramework.Message.MessageState;
             if (messageState != null)
             {
-                MessageStateQueue.TryRemove(reply.MessageID);
-                if (reply.Exception != null)
+                CommandStateQueue.TryRemove(reply.MessageID);
+                if (reply.Result is Exception)
                 {
-                    messageState.TaskCompletionSource.TrySetException(reply.Exception);
+                    messageState.TaskCompletionSource.TrySetException(reply.Result as Exception);
                 }
                 else
                 {
@@ -210,20 +221,43 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
             IMessageContext commandContext = new MessageContext(command, ReceiveEndPoint, commandKey);
 
-            Task task;
+            Task task = null;
             if (InProc && currentMessageContext == null)
             {
                 task = SendInProc(commandContext, cancellationToken);
             }
             else
             {
-                if (currentMessageContext != null && Configuration.IsPersistanceMessage)
+                if (currentMessageContext != null)
                 {
-                    MessageStore.Save(commandContext, currentMessageContext.MessageID);
+                    ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
                 }
-                task = SendAsync(commandContext, cancellationToken);
+                else
+                {
+                    task = SendAsync(commandContext, cancellationToken);
+                }
             }
             return task;
+        }
+
+        public Task<TResult> Send<TResult>(ICommand command)
+        {
+            return Send<TResult>(command, CancellationToken.None);
+        }
+
+        public Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken)
+        {
+            return Send(command).ContinueWith<TResult>(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    throw t.Exception;
+                }
+                else
+                {
+                    return (TResult)(t as Task<object>).Result;
+                }
+            });
         }
 
         protected virtual Task SendInProc(IMessageContext commandContext, CancellationToken cancellationToken)
@@ -236,57 +270,68 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
             else if (command != null) //if not a linear command, we run synchronously.
             {
-                task = new Task<object>(() =>
+                task = Task.Factory.StartNew(() =>
                 {
-                    var needRetry = command.NeedRetry;
-                    object result = null;
-                    do
+                    IMessageStore messageStore = null;
+                    try
                     {
+                        var needRetry = command.NeedRetry;
+                        object result = null;
                         PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-                        var commandHandler = HandlerProvider.GetHandler(command.GetType());
-                        if (commandHandler == null)
+                        messageStore = IoCFactory.Resolve<IMessageStore>();
+                        if (!messageStore.HasCommandHandled(commandContext.MessageID))
                         {
-                            PerMessageContextLifetimeManager.CurrentMessageContext = null;
-                            throw new NoHandlerExists();
-                        }
-                        
-                        try
-                        {
-                            var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                            ((dynamic)commandHandler).Handle((dynamic)command);
-                            unitOfWork.Commit();
-                            result = commandContext.Reply;
-                            needRetry = false;
-                        }
-                        catch (Exception e)
-                        {
-                            if (!(e is OptimisticConcurrencyException) || !needRetry)
+                            var commandHandler = HandlerProvider.GetHandler(command.GetType());
+                            if (commandHandler == null)
                             {
-                                if (e is DomainException)
-                                {
-                                    _Logger.Warn(command.ToJson(), e);
-                                }
-                                else
-                                {
-                                    _Logger.Error(command.ToJson(), e);
-                                }
-                                throw;
+                                PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                                throw new NoHandlerExists();
                             }
+
+                            do
+                            {
+                                try
+                                {
+                                    ((dynamic)commandHandler).Handle((dynamic)command);
+                                    result = commandContext.Reply;
+                                    needRetry = false;
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                                    {
+                                        throw;
+                                    }
+                                }
+                            } while (needRetry);
+                            return result;
                         }
-                        finally
+                        else
                         {
-                            PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                            throw new MessageDuplicatelyHandled();
                         }
-                    } while (needRetry);
-                    return result;
-                });
-                task.RunSynchronously();
-
-
-                //if (task.Exception != null)
-                //{
-                //    throw task.Exception.GetBaseException();
-                //}
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is DomainException)
+                        {
+                            _Logger.Warn(command.ToJson(), e);
+                        }
+                        else
+                        {
+                        _Logger.Error(command.ToJson(), e);
+                        }
+                        if (messageStore != null)
+                        {
+                            messageStore.SaveFailedCommand(commandContext);
+                        }
+                        throw;
+                    }
+                    finally
+                    {
+                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                    }
+                }, cancellationToken);
             }
             return task;
         }
@@ -295,8 +340,8 @@ namespace IFramework.MessageQueue.ZeroMQ
         {
             var commandState = BuildMessageState(commandContext, cancellationToken);
             commandState.CancellationToken.Register(OnCancel, commandState);
-            MessageStateQueue.Add(commandState.MessageID, commandState);
-            CommandQueue.Add(commandState, cancellationToken);
+            CommandStateQueue.Add(commandState.MessageID, commandState);
+            _toBeSentCommandQueue.Add(commandContext, cancellationToken);
             return commandState.TaskCompletionSource.Task;
         }
 
@@ -305,7 +350,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             var messageState = state as MessageState;
             if (messageState != null)
             {
-                MessageStateQueue.TryRemove(messageState.MessageID);
+                CommandStateQueue.TryRemove(messageState.MessageID);
             }
         }
     }

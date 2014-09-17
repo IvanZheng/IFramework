@@ -2,7 +2,7 @@
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
-using IFramework.MessageQueue.MessageFormat;
+using IFramework.MessageQueue.ZeroMQ.MessageFormat;
 using IFramework.SysExceptions;
 using IFramework.UnitOfWork;
 using System;
@@ -70,21 +70,11 @@ namespace IFramework.MessageQueue.ZeroMQ
                     }
                     else
                     {
-                        var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
                         ((dynamic)messageHandler).Handle((dynamic)message);
-                        unitOfWork.Commit();
                         messageReply = new MessageReply(messageContext.MessageID, messageContext.Reply);
                     }
                     needRetry = false;
                 }
-                //catch (OptimisticConcurrencyException e)
-                //{
-                //    if (!needRetry)
-                //    {
-                //        messageReply = new MessageReply(messageContext.MessageID, e.GetBaseException());
-                //        _Logger.Debug(message.ToJson(), e);
-                //    }
-                //}
                 catch (Exception e)
                 {
                     if (!(e is OptimisticConcurrencyException) || !needRetry)
