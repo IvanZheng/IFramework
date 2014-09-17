@@ -127,6 +127,7 @@
     <Compile Include="Message\MessageFormatHelper.cs" />
     <Compile Include="Message\MessageState.cs" />
     <Compile Include="SysExceptions\DomainException.cs" />
+    <Compile Include="SysExceptions\MessageDuplicatelyHandled.cs" />
     <Compile Include="SysExceptions\NoCommandHandlerExists.cs" />
     <Compile Include="Infrastructure\CookieHelper.cs" />
     <Compile Include="Infrastructure\DynamicJson.cs" />

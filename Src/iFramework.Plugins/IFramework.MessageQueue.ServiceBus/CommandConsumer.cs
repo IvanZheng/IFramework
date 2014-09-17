@@ -166,6 +166,10 @@ namespace IFramework.MessageQueue.ServiceBus
                         } while (needRetry);
                     }
                 }
+                else
+                {
+                    messageReply = new MessageReply(commandContext.MessageID, new MessageDuplicatelyHandled());
+                }
             }
             catch (Exception e)
             {

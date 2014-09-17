@@ -69,7 +69,7 @@ namespace IFramework.MessageQueue.EQueue
             ProducerSetting.BrokerAddress = brokerAddress;
             ProducerSetting.BrokerPort = producerBrokerPort;
             ProducerName = name;
-       }
+        }
 
         public override void Start()
         {
@@ -95,7 +95,7 @@ namespace IFramework.MessageQueue.EQueue
                 {
                     _Logger.Error("Get all unsent commands failed", ex);
                 }
-               
+
                 while (!_exit)
                 {
                     try
@@ -254,37 +254,45 @@ namespace IFramework.MessageQueue.EQueue
             {
                 task = Task.Factory.StartNew(() =>
                 {
-                    var needRetry = command.NeedRetry;
-                    object result = null;
-                    PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-                    IMessageStore messageStore = IoCFactory.Resolve<IMessageStore>();
-
-                    var commandHandler = HandlerProvider.GetHandler(command.GetType());
-                    if (commandHandler == null)
-                    {
-                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
-                        throw new NoHandlerExists();
-                    }
+                    IMessageStore messageStore = null;
                     try
                     {
-                        //var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                        do
+                        var needRetry = command.NeedRetry;
+                        object result = null;
+                        PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
+                        messageStore = IoCFactory.Resolve<IMessageStore>();
+
+                        if (!messageStore.HasCommandHandled(commandContext.MessageID))
                         {
-                            try
+                            var commandHandler = HandlerProvider.GetHandler(command.GetType());
+                            if (commandHandler == null)
                             {
-                                ((dynamic)commandHandler).Handle((dynamic)command);
-                                //unitOfWork.Commit();
-                                result = commandContext.Reply;
-                                needRetry = false;
+                                PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                                throw new NoHandlerExists();
                             }
-                            catch (Exception ex)
+
+                            do
                             {
-                                if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                                try
                                 {
-                                    throw;
+                                    ((dynamic)commandHandler).Handle((dynamic)command);
+                                    result = commandContext.Reply;
+                                    needRetry = false;
                                 }
-                            }
-                        } while (needRetry);
+                                catch (Exception ex)
+                                {
+                                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                                    {
+                                        throw;
+                                    }
+                                }
+                            } while (needRetry);
+                            return result;
+                        }
+                        else
+                        {
+                            throw new MessageDuplicatelyHandled();
+                        }
                     }
                     catch (Exception e)
                     {
@@ -306,7 +314,6 @@ namespace IFramework.MessageQueue.EQueue
                     {
                         PerMessageContextLifetimeManager.CurrentMessageContext = null;
                     }
-                    return result;
                 }, cancellationToken);
             }
             return task;

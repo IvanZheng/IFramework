@@ -126,6 +126,10 @@ namespace IFramework.MessageQueue.EQueue
                         } while (needRetry);
                     }
                 }
+                else
+                {
+                    messageReply = new MessageReply(messageContext.ReplyToEndPoint, messageContext.MessageID, new MessageDuplicatelyHandled());
+                }
             }
             catch (Exception e)
             {
