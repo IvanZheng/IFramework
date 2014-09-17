@@ -110,19 +110,19 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         public override void Stop()
         {
+            base.Stop();
             if (_sendCommandWorkTask != null)
             {
                 _toBeSentCommandQueue.CompleteAdding();
-                if (_sendCommandWorkTask.Wait(2000))
+                if (_sendCommandWorkTask.Wait(5000))
                 {
                     _sendCommandWorkTask.Dispose();
                 }
                 else
                 {
-                    _Logger.ErrorFormat(" consumer can't be stopped!");
+                    _Logger.ErrorFormat("SendCommandWorkTask can't be stopped!");
                 }
             }
-            base.Stop();
         }
         protected virtual void SendCommand(IMessageContext messageContext)
         {
