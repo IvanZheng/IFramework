@@ -36,6 +36,12 @@ namespace IFramework.MessageQueue.ZeroMQ
             {
                 ZmqEventPublisher = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PUB);
                 ZmqEventPublisher.Bind(_PubEndPoint);
+
+                using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                {
+                    messageStore.GetAllUnPublishedEvents()
+                        .ForEach(eventContext => MessageQueue.Add(eventContext));
+                }
                 _WorkTask = Task.Factory.StartNew(PublishEvent, TaskCreationOptions.LongRunning);
             }
         }
@@ -74,6 +80,13 @@ namespace IFramework.MessageQueue.ZeroMQ
                 {
                     var eventContext = MessageQueue.Take();
                     ZmqEventPublisher.Send(eventContext.ToJson(), Encoding.UTF8);
+                    Task.Factory.StartNew(() =>
+                    {
+                        using (var messageStore = IoCFactory.Resolve<IMessageStore>())
+                        {
+                            messageStore.RemovePublishedEvent(eventContext.MessageID);
+                        }
+                    });
                 }
             }
             catch (Exception ex)

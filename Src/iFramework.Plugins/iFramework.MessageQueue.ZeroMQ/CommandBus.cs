@@ -362,5 +362,10 @@ namespace IFramework.MessageQueue.ZeroMQ
                 CommandStateQueue.TryRemove(messageState.MessageID);
             }
         }
+
+        internal void SendCommands(IEnumerable<IMessageContext> commandContexts)
+        {
+            commandContexts.ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
+        }
     }
 }

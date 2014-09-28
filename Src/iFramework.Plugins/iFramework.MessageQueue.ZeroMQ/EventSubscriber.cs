@@ -12,6 +12,7 @@ using IFramework.Message.Impl;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.SysExceptions;
 using IFramework.MessageQueue.ZeroMQ.MessageFormat;
+using IFramework.Event;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -20,9 +21,10 @@ namespace IFramework.MessageQueue.ZeroMQ
         IHandlerProvider HandlerProvider { get; set; }
         string[] SubEndPoints { get; set; }
         List<Task> _ReceiveWorkTasks;
-
-        public EventSubscriber(IHandlerProvider handlerProvider, string[] subEndPoints)
+        string SubscriptionName { get; set; }
+        public EventSubscriber(string subscriptionName, IHandlerProvider handlerProvider, string[] subEndPoints)
         {
+            SubscriptionName = subscriptionName;
             HandlerProvider = handlerProvider;
             SubEndPoints = subEndPoints;
             _ReceiveWorkTasks = new List<Task>();
@@ -87,31 +89,58 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         protected override void ConsumeMessage(IMessageContext messageContext)
         {
-            var message = messageContext.Message;
-
+            var eventContext = messageContext as MessageContext;
+            var message = eventContext.Message;
             var messageHandlerTypes = HandlerProvider.GetHandlerTypes(message.GetType());
+
+            if (messageHandlerTypes.Count == 0)
+            {
+                return;
+            }
+
             messageHandlerTypes.ForEach(messageHandlerType =>
             {
-                try
+                PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
+                eventContext.ToBeSentMessageContexts.Clear();
+                var messageStore = IoCFactory.Resolve<IMessageStore>();
+                var subscriptionName = string.Format("{0}.{1}", SubscriptionName, messageHandlerType.FullName);
+                if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                 {
-                    PerMessageContextLifetimeManager.CurrentMessageContext = messageContext;
-                    var messageHandler = IoCFactory.Resolve(messageHandlerType);
-                    ((dynamic)messageHandler).Handle((dynamic)message);
-                }
-                catch (Exception e)
-                {
-                    if (e is DomainException)
+                    try
                     {
-                        _Logger.Warn(message.ToJson(), e);
+                        var messageHandler = IoCFactory.Resolve(messageHandlerType);
+                        ((dynamic)messageHandler).Handle((dynamic)message);
+                        var commandContexts = eventContext.ToBeSentMessageContexts;
+                        var eventBus = IoCFactory.Resolve<IEventBus>();
+                        var messageContexts = new List<MessageContext>();
+                        eventBus.GetMessages().ForEach(msg => messageContexts.Add(new MessageContext(msg)));
+                        messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
+                        if (commandContexts.Count > 0)
+                        {
+                            ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+                        }
+                        if (messageContexts.Count > 0)
+                        {
+                            IoCFactory.Resolve<IEventPublisher>().Publish(messageContexts.ToArray());
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        _Logger.Error(message.ToJson(), e);
+                        if (e is DomainException)
+                        {
+                            _Logger.Warn(message.ToJson(), e);
+                        }
+                        else
+                        {
+                            //IO error or sytem Crash
+                            _Logger.Error(message.ToJson(), e);
+                        }
+                        messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e);
                     }
-                }
-                finally
-                {
-                    PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                    finally
+                    {
+                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                    }
                 }
             });
         }
