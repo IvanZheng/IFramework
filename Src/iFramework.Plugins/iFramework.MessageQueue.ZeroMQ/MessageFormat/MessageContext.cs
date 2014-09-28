@@ -22,6 +22,7 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
             ReplyToEndPoint = null;
             Reply = null;
             FromEndPoint = null;
+            ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
         public MessageContext(IMessage message)
@@ -30,7 +31,6 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
             SentTime = DateTime.Now;
             Message = message;
             MessageID = message.ID;
-            ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
         public MessageContext(IMessage message, string key)
