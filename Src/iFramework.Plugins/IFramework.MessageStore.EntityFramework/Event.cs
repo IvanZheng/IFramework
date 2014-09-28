@@ -26,19 +26,19 @@ namespace IFramework.MessageStoring
             }
         }
 
-        public Command Parent
+        public Message Parent
         {
             get
             {
-                return ParentMessage as Command;
+                return ParentMessage;
             }
         }
 
-        public IEnumerable<Command> Children
+        public IEnumerable<Message> Children
         {
             get
             {
-                return ChildrenMessage.Cast<Command>();
+                return ChildrenMessage;
             }
         }
     }

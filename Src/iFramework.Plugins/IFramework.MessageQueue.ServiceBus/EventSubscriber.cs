@@ -10,6 +10,7 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.SysExceptions;
 using IFramework.Command;
 using System.Threading;
+using IFramework.Event;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
@@ -120,10 +121,17 @@ namespace IFramework.MessageQueue.ServiceBus
                         var messageHandler = IoCFactory.Resolve(messageHandlerType);
                         ((dynamic)messageHandler).Handle((dynamic)message);
                         var commandContexts = eventContext.ToBeSentMessageContexts;
-                        messageStore.SaveEvent(eventContext, subscriptionName, commandContexts);
+                        var eventBus = IoCFactory.Resolve<IEventBus>();
+                        var messageContexts = new List<MessageContext>();
+                        eventBus.GetMessages().ForEach(msg => messageContexts.Add(new MessageContext(msg)));
+                        messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
                         if (commandContexts.Count > 0)
                         {
                             ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+                        }
+                        if (messageContexts.Count > 0)
+                        {
+                            IoCFactory.Resolve<IEventPublisher>().Publish(messageContexts.ToArray());
                         }
                     }
                     catch (Exception e)

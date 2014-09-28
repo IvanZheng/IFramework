@@ -105,7 +105,9 @@ namespace IFramework.MessageStoring
 
 
         static object EventLock = new object();
-        public void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts)
+        public void SaveEvent(IMessageContext eventContext, string subscriptionName, 
+                              IEnumerable<IMessageContext> commandContexts,
+                              IEnumerable<IMessageContext> messageContexts)
         {
             lock (EventLock)
             {
@@ -120,6 +122,10 @@ namespace IFramework.MessageStoring
                 {
                     commandContext.CorrelationID = eventContext.MessageID;
                     UnSentCommands.Add(new UnSentCommand(commandContext));
+                });
+                messageContexts.ForEach(messageContext => {
+                    messageContext.CorrelationID = eventContext.MessageID;
+                    UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
                 });
                 SaveChanges();
             }

@@ -55,7 +55,9 @@ namespace IFramework.Message.Impl
         }
 
 
-        public void SaveEvent(IMessageContext eventContext, string subscriptionName, IEnumerable<IMessageContext> commandContexts)
+        public void SaveEvent(IMessageContext eventContext, string subscriptionName, 
+                              IEnumerable<IMessageContext> commandContexts, 
+                              IEnumerable<IMessageContext> messageContexts)
         {
         }
 

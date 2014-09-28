@@ -19,11 +19,11 @@ namespace Sample.DomainEventHandler.Community
             Console.Write("send email to user.");
 
             // here is application event, not domain event
-            _EventBus.Publish(new ApplicationEvent.AccountRegistered
-                              {
-                                  AccountID = (Guid)@event.AggregateRootID,
-                                  UserName = @event.UserName
-                              });
+            //_EventBus.Publish(new ApplicationEvent.AccountRegistered
+            //                  {
+            //                      AccountID = (Guid)@event.AggregateRootID,
+            //                      UserName = @event.UserName
+            //                  });
         }
     }
 }
