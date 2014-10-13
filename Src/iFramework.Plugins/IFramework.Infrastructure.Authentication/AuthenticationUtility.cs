@@ -39,16 +39,13 @@ namespace IFramework.Infrastructure.WebAuthentication
             {
                 try
                 {
-                    var encryptedToken = //Utility.MD5Decrypt(
-                                Encoding.UTF8.GetString(
-                                    Convert.FromBase64String(
-                                        FormsAuthentication.Decrypt(
+                    var decryptedToken = FormsAuthentication.Decrypt(
                                             CookiesHelper.GetCookieValue(
-                                                FormsAuthentication.FormsCookieName)).UserData));//);
+                                                FormsAuthentication.FormsCookieName)).UserData;
 
-                    if (!string.IsNullOrWhiteSpace(encryptedToken))
+                    if (!string.IsNullOrWhiteSpace(decryptedToken))
                     {
-                        authToken = encryptedToken.ToJsonObject<AuthenticationToken<T>>();
+                        authToken = decryptedToken.ToJsonObject<AuthenticationToken<T>>();
                         HttpContext.Current.Items[FormsAuthentication.FormsCookieName] = authToken;
                     }
                 }
@@ -63,14 +60,13 @@ namespace IFramework.Infrastructure.WebAuthentication
         public static void SetAuthentication<T>(string username, T user) where T : class, new()
         {
             var token = new AuthenticationToken<T>(user);
-            //var encryptedToken = Utility.MD5Encrypt(token.ToJson());
-            var encryptedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(token.ToJson()));
+
             var ticket = new FormsAuthenticationTicket(1, // 版本号。 
                                        username, // 与身份验证票关联的用户名。 
                                        DateTime.Now, // Cookie 的发出时间。 
                                        DateTime.MaxValue,// Cookie 的到期日期。 
                                        false, // 如果 Cookie 是持久的，为 true；否则为 false。 
-                                       encryptedToken); // 将存储在 Cookie 中的用户定义数据。  roles是一个角色字符串数组 
+                                       token.ToJson()); // 将存储在 Cookie 中的用户定义数据。  roles是一个角色字符串数组 
 
             string encryptedTicket = FormsAuthentication.Encrypt(ticket); //加密 
             CookiesHelper.AddCookie(FormsAuthentication.FormsCookieName, encryptedTicket, FormsAuthentication.CookieDomain);
