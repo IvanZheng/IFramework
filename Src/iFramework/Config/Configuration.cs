@@ -20,7 +20,6 @@ namespace IFramework.Config
     public class Configuration
     {
         public static readonly Configuration Instance = new Configuration();
-        public static readonly bool IsPersistanceMessage = GetAppConfig<bool>("PersistanceMessage");
 
         public UnityConfigurationSection UnityConfigurationSection
         {

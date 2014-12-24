@@ -8,7 +8,7 @@ namespace IFramework.MessageStoring
 {
     public class Command : Message
     {
-        public Status Status { get; set; }
+        public MessageStatus Status { get; set; }
 
         public Command() { }
         public Command(IMessageContext messageContext) :

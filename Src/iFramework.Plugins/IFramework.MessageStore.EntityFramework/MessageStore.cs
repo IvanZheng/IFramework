@@ -97,7 +97,7 @@ namespace IFramework.MessageStoring
             if (commandContext != null)
             {
                 var command = BuildCommand(commandContext);
-                command.Status = Status.Failed;
+                command.Status = MessageStatus.Failed;
                 Commands.Add(command);
                 SaveChanges();
             }

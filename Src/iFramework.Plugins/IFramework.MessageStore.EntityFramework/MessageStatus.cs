@@ -5,7 +5,7 @@ using System.Text;
 
 namespace IFramework.MessageStoring
 {
-    public enum Status
+    public enum MessageStatus
     {
         Completed,
         Failed

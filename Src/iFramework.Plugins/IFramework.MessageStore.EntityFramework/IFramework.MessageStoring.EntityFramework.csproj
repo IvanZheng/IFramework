@@ -71,7 +71,7 @@
     <Compile Include="HandledEvent.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="MessageStore.cs" />
-    <Compile Include="Status.cs" />
+    <Compile Include="MessageStatus.cs" />
     <Compile Include="UnPublishedEvent.cs" />
     <Compile Include="UnSentCommand.cs" />
     <Compile Include="UnSentMessage.cs" />
