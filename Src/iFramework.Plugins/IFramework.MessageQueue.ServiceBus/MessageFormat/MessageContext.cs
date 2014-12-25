@@ -28,6 +28,11 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             Message = message;
             MessageID = message.ID;
             ToBeSentMessageContexts = new List<IMessageContext>();
+            var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
+            if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+            {
+                Topic = topicAttribute.Topic;
+            }
         }
 
         public MessageContext(IMessage message, string key)
@@ -113,6 +118,13 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             set { Headers["SentTime"] = value; }
         }
 
-        public List<IMessageContext> ToBeSentMessageContexts { get; set; } 
+        public List<IMessageContext> ToBeSentMessageContexts { get; set; }
+
+
+        public string Topic
+        {
+            get;
+            set;
+        }
     }
 }

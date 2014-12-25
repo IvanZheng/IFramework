@@ -3,6 +3,7 @@ using IFramework.Infrastructure.Logging;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,13 +17,30 @@ namespace IFramework.MessageQueue.ServiceBus
         protected readonly ILogger _logger;
         protected NamespaceManager _namespaceManager;
         protected MessagingFactory _messageFactory;
-
+        protected ConcurrentDictionary<string, TopicClient> _topicClients;
         public MessageProcessor(string serviceBusConnectionString)
         {
             _serviceBusConnectionString = serviceBusConnectionString;
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
             _namespaceManager = NamespaceManager.CreateFromConnectionString(_serviceBusConnectionString);
             _messageFactory = MessagingFactory.CreateFromConnectionString(_serviceBusConnectionString);
+            _topicClients = new ConcurrentDictionary<string, TopicClient>();
+        }
+
+        protected void CloseTopicClients()
+        {
+            _topicClients.Values.ForEach(client => client.Close());
+        }
+        protected TopicClient GetTopicClient(string topic)
+        {
+            TopicClient topicClient = null;
+            _topicClients.TryGetValue(topic, out topicClient);
+            if (topicClient == null)
+            {
+                topicClient = CreateTopicClient(topic);
+                _topicClients.GetOrAdd(topic, topicClient);
+            }
+            return topicClient;
         }
 
         protected QueueClient CreateQueueClient(string queueName)
@@ -34,7 +52,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return _messageFactory.CreateQueueClient(queueName);
         }
 
-        protected TopicClient CreateTopicClient(string topicName)
+        private TopicClient CreateTopicClient(string topicName)
         {
             TopicDescription td = new TopicDescription(topicName);
             if (!_namespaceManager.TopicExists(topicName))

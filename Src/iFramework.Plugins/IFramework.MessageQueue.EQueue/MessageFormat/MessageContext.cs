@@ -56,7 +56,15 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         public MessageContext(string topic, IMessage message)
             : this(message)
         {
-            Topic = topic;
+            var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
+            if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+            {
+                Topic = topicAttribute.Topic;
+            }
+            else
+            {
+                Topic = topic;
+            }
         }
 
         public MessageContext(string topic, IMessage message, string key)

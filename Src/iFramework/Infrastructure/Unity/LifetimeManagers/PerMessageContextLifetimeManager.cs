@@ -73,6 +73,13 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
             get;
             set;
         }
+
+
+        public string Topic
+        {
+            get;
+            set;
+        }
     }
 
     class MessageContextWrapper

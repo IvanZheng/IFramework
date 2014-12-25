@@ -19,7 +19,7 @@ namespace IFramework.MessageQueue.ServiceBus
         protected BlockingCollection<IMessageContext> MessageQueue { get; set; }
         protected string _topic;
         protected Task _WorkTask;
-        protected TopicClient _topicClient;
+        //protected TopicClient _topicClient;
 
         public EventPublisher(string serviceBusConnectionString, string topic)
             : base(serviceBusConnectionString)
@@ -38,7 +38,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     messageStore.GetAllUnPublishedEvents()
                         .ForEach(eventContext => MessageQueue.Add(eventContext));
                 }
-                _topicClient = CreateTopicClient(_topic);
+                //_topicClient = CreateTopicClient(_topic);
                 _WorkTask = Task.Factory.StartNew(PublishEvent, TaskCreationOptions.LongRunning);
             }
         }
@@ -50,7 +50,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 MessageQueue.CompleteAdding();
                 if (_WorkTask.Wait(2000))
                 {
-                    _topicClient.Close();
+                    CloseTopicClients();
                     _WorkTask.Dispose();
                 }
                 else
@@ -81,7 +81,8 @@ namespace IFramework.MessageQueue.ServiceBus
                     {
                         try
                         {
-                            _topicClient.Send(((MessageContext)eventContext).BrokeredMessage);
+                            var topicClient = GetTopicClient(eventContext.Topic ?? _topic);
+                            topicClient.Send(((MessageContext)eventContext).BrokeredMessage);
                             Task.Factory.StartNew(() =>
                             {
                                 using (var messageStore = IoCFactory.Resolve<IMessageStore>())

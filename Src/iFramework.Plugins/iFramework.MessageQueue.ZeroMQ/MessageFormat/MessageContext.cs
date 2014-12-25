@@ -31,6 +31,11 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
             SentTime = DateTime.Now;
             Message = message;
             MessageID = message.ID;
+            var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
+            if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+            {
+                Topic = topicAttribute.Topic;
+            }
         }
 
         public MessageContext(IMessage message, string key)
@@ -130,5 +135,12 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
 
         [JsonIgnore]
         public List<IMessageContext> ToBeSentMessageContexts { get; set; }
+
+
+        public string Topic
+        {
+            get;
+            set;
+        }
     }
 }

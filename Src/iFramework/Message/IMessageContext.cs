@@ -16,5 +16,6 @@ namespace IFramework.Message
         string FromEndPoint { get; set; }
         object Message { get; }
         DateTime SentTime { get; }
+        string Topic { get; }
     }
 }

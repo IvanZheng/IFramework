@@ -19,7 +19,7 @@ namespace IFramework.MessageQueue.ServiceBus
     public class CommandConsumer : MessageProcessor, IMessageConsumer
     {
         protected IHandlerProvider _handlerProvider;
-        protected Dictionary<string, TopicClient> _replyProducers;
+        //protected Dictionary<string, TopicClient> _replyProducers;
         protected string _commandQueueName;
         protected QueueClient _commandQueueClient;
         protected Task _commandConsumerTask;
@@ -31,7 +31,7 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             _handlerProvider = handlerProvider;
             _commandQueueName = commandQueueName;
-            _replyProducers = new Dictionary<string, TopicClient>();
+            //_replyProducers = new Dictionary<string, TopicClient>();
         }
 
 
@@ -40,18 +40,19 @@ namespace IFramework.MessageQueue.ServiceBus
             TopicClient replyProducer = null;
             if (!string.IsNullOrWhiteSpace(replyTopicName))
             {
-                if (!_replyProducers.TryGetValue(replyTopicName, out replyProducer))
-                {
-                    try
-                    {
-                        replyProducer = CreateTopicClient(replyTopicName);
-                        _replyProducers[replyTopicName] = replyProducer;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(ex.GetBaseException().Message, ex);
-                    }
-                }
+                //if (!_replyProducers.TryGetValue(replyTopicName, out replyProducer))
+                //{
+                //    try
+                //    {
+                //        replyProducer = CreateTopicClient(replyTopicName);
+                //        _replyProducers[replyTopicName] = replyProducer;
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        _logger.Error(ex.GetBaseException().Message, ex);
+                //    }
+                //}
+                replyProducer = GetTopicClient(replyTopicName);
             }
             return replyProducer;
         }
@@ -203,6 +204,7 @@ namespace IFramework.MessageQueue.ServiceBus
             _exit = true;
             if (_commandConsumerTask != null)
             {
+                CloseTopicClients();
                 _commandQueueClient.Close();
                 if (!_commandConsumerTask.Wait(1000))
                 {

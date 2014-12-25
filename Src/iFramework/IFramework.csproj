@@ -126,6 +126,7 @@
     <Compile Include="Message\MessageCode.cs" />
     <Compile Include="Message\MessageFormatHelper.cs" />
     <Compile Include="Message\MessageState.cs" />
+    <Compile Include="Message\TopicAttribute.cs" />
     <Compile Include="SysExceptions\DomainException.cs" />
     <Compile Include="SysExceptions\MessageDuplicatelyHandled.cs" />
     <Compile Include="SysExceptions\NoCommandHandlerExists.cs" />
