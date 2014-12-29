@@ -75,8 +75,12 @@ namespace IFramework.MessageStoring
             string commandContextId = null;
             if (commandContext != null)
             {
-                var command = BuildCommand(commandContext);
-                Commands.Add(command);
+                var command = Commands.Find(commandContext.MessageID);
+                if (command == null)
+                {
+                    command = BuildCommand(commandContext);
+                    Commands.Add(command);
+                }
                 commandContextId = commandContext.MessageID;
             }
             var eventContexts = new List<IMessageContext>();
@@ -121,10 +125,12 @@ namespace IFramework.MessageStoring
                 commandContexts.ForEach(commandContext =>
                 {
                     commandContext.CorrelationID = eventContext.MessageID;
+                    // don't save command here like event that would be published to other bounded context
                     UnSentCommands.Add(new UnSentCommand(commandContext));
                 });
                 messageContexts.ForEach(messageContext => {
                     messageContext.CorrelationID = eventContext.MessageID;
+                    Events.Add(BuildEvent(messageContext));
                     UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
                 });
                 SaveChanges();

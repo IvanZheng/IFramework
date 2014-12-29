@@ -20,9 +20,9 @@ namespace IFramework.EntityFramework.Repositories
     {
         UnitOfWork _UnitOfWork;
 
-        public Repository(DbContext dbContext, UnitOfWork unitOfWork)
+        public Repository(DbContext dbContext, IUnitOfWork unitOfWork)
         {
-            _UnitOfWork = unitOfWork;
+            _UnitOfWork = unitOfWork as UnitOfWork;
             if (dbContext == null)
             {
                 throw new Exception("repository could not work without dbContext");
