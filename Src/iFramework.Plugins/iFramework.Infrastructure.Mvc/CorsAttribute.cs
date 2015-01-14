@@ -1,4 +1,5 @@
 ﻿using IFramework.Config;
+using IFramework.Infrastructure.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +11,32 @@ namespace IFramework.Infrastructure.Mvc
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
     public class CorsAttribute : Attribute
     {
-        public Uri[] AllowOrigins { get; private set; }
+        static ILogger _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(CorsAttribute));
+        
+        static CorsAttribute()
+        {
+            try
+            {
+                AllowOrigins = Configuration.GetAppConfig("AllowCorsOrigins")
+                                                  .Split(new char[] { ',' },
+                                                        StringSplitOptions.RemoveEmptyEntries);
+                
+                _Logger.Debug(AllowOrigins.ToJson());
+            }
+            catch (Exception ex)
+            {
+                _Logger.Error(Configuration.GetAppConfig("AllowCorsOrigins"), ex);
+            }
+        }
+        public static string[] AllowOrigins
+        {
+            get;
+            private set;
+        }
         public string ErrorMessage { get; private set; }
         public CorsAttribute()
         {
-            var configAllowOrigins = Configuration.GetAppConfig("AllowCorsOrigins")
-                                                  .Split(new char[]{','}, 
-                                                         StringSplitOptions.RemoveEmptyEntries);
 
-            this.AllowOrigins = configAllowOrigins.Select(origin => new Uri(origin)).ToArray();
         }
         public bool TryEvaluate(HttpRequestMessage request, out IDictionary<string, string> headers)
         {
@@ -34,7 +52,8 @@ namespace IFramework.Infrastructure.Mvc
                 return false;
             }
             Uri originUri = new Uri(origin);
-            if (this.AllowOrigins.Contains(originUri))
+            _Logger.DebugFormat("{0} origin: {1}", AllowOrigins.ToJson(), originUri.Authority);
+            if (AllowOrigins.Contains(originUri.Authority))
             {
                 headers = this.GenerateResponseHeaders(request);
                 return true;
