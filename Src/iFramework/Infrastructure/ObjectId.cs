@@ -525,18 +525,14 @@ namespace IFramework.Infrastructure
         /// </summary>
         /// <param name="bytes">The byte array.</param>
         /// <returns>A hex string.</returns>
+        /// 
+
+
+
+
         public static string ToHexString(byte[] bytes)
         {
-            if (bytes == null)
-            {
-                throw new ArgumentNullException("bytes");
-            }
-            var sb = new StringBuilder(bytes.Length * 2);
-            foreach (var b in bytes)
-            {
-                sb.AppendFormat("{0:x2}", b);
-            }
-            return sb.ToString();
+            return bytes.ToHexString();
         }
         /// <summary>
         /// Converts a DateTime to number of milliseconds since Unix epoch.
