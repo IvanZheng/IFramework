@@ -115,7 +115,7 @@ namespace IFramework.Infrastructure
             {
                 if (_task == null)
                 {
-                    _task = Task.Factory.StartNew(Run, _cancellationTokenSource.Token);
+                    _task = Task.Factory.StartNew(Run, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 }
             }
             return this;
