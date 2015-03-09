@@ -7,15 +7,25 @@ using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure
 {
+    public enum WorkerStatus
+    {
+        NotStarted,
+        Running,
+        Suspended,
+        Completed,
+        Canceled
+    }
     public class TaskWorker
     {
+        public string Id { get; set; }
         protected Task _task;
         protected object _mutex = new object();
         protected Semaphore _semaphore = new Semaphore(0, 1);
-        protected CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        protected CancellationTokenSource _cancellationTokenSource;
 
         protected volatile bool _toExit = false;
         protected volatile bool _suspend = false;
+        protected volatile bool _canceled = false;
         protected WorkDelegate _workDelegate;
 
         protected int _workInterval = 0;
@@ -32,8 +42,19 @@ namespace IFramework.Infrastructure
 
         public delegate void WorkDelegate();
 
+        protected virtual void RunPrepare()
+        {
+
+        }
+
+        protected virtual void RunCompleted()
+        {
+
+        }
+
         protected virtual void Run()
         {
+            RunPrepare();
             while (!_toExit)
             {
                 try
@@ -72,6 +93,7 @@ namespace IFramework.Infrastructure
                     Console.Write(ex.Message);
                 }
             }
+            RunCompleted();
         }
 
         protected virtual void Work()
@@ -100,11 +122,13 @@ namespace IFramework.Infrastructure
             }
         }
 
-        public TaskWorker()
+        public TaskWorker(string id = null)
         {
+            Id = id;
         }
 
-        public TaskWorker(WorkDelegate run)
+        public TaskWorker(WorkDelegate run, string id = null)
+        : this(id)
         {
             _workDelegate = run;
         }
@@ -113,9 +137,19 @@ namespace IFramework.Infrastructure
         {
             lock (_mutex)
             {
-                if (_task == null)
+                if (Status == WorkerStatus.Canceled
+                 || Status == WorkerStatus.Completed
+                 || Status == WorkerStatus.NotStarted)
                 {
+                    _canceled = false;
+                    _suspend = false;
+                    _toExit = false;
+                    _cancellationTokenSource = new CancellationTokenSource();
                     _task = Task.Factory.StartNew(Run, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                }
+                else
+                {
+                    throw new InvalidOperationException("can not start when task is " + Status.ToString());
                 }
             }
             return this;
@@ -133,6 +167,11 @@ namespace IFramework.Infrastructure
             }
         }
 
+        protected virtual void Complete()
+        {
+            _toExit = true;
+        }
+
         public virtual void Stop(bool forcibly = false)
         {
             lock (_mutex)
@@ -148,13 +187,39 @@ namespace IFramework.Infrastructure
                     {
                         _cancellationTokenSource.Cancel(true);
                     }
+                    _canceled = true;
+                    _task = null;
                 }
             }
         }
 
-        public TaskStatus GetState()
+        public WorkerStatus Status
         {
-            return _task.Status;
+            get
+            {
+                WorkerStatus status;
+                if (_canceled)
+                {
+                    status = WorkerStatus.Canceled;
+                }
+                else if (_task == null)
+                {
+                    status = WorkerStatus.NotStarted;
+                }
+                else if (_suspend)
+                {
+                    status = WorkerStatus.Suspended;
+                }
+                else if (_task.Status == TaskStatus.RanToCompletion)
+                {
+                    status = WorkerStatus.Completed;
+                }
+                else
+                {
+                    status = WorkerStatus.Running;
+                }
+                return status;
+            }
         }
     }
 }

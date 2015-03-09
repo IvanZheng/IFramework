@@ -60,6 +60,9 @@ namespace IFramework.EntityFramework
                 success = false;
                 if (ex is DbUpdateConcurrencyException)
                 {
+                    //(ex as DbUpdateConcurrencyException).Entries.ForEach(e => { 
+                    
+                    //});
                     _dbContexts.ForEach(dbCtx => {
                         dbCtx.ChangeTracker.Entries().ForEach(e => 
                         {
