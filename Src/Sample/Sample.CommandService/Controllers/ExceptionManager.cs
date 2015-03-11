@@ -26,26 +26,21 @@ namespace Sample.CommandService.Controllers
 
     public static class ExceptionManager
     {
-        public static Task<ApiResult> Process(Task task)
+        public async static Task<ApiResult> Process(Func<Task> func)
         {
-            return task.ContinueWith<ApiResult>(t =>
+            ApiResult apiResult = null;
+            try
             {
-                ApiResult apiResult = null;
-                if (!t.IsFaulted)
+                var t = func();
+                await t;
+                if (t.GetType().IsGenericType)
                 {
-                    if (t.GetType().IsGenericType)
+                    var result = (t as Task<object>).Result;
+                    if (result != null)
                     {
-                        var result = (t as Task<object>).Result;
-                        if (result != null)
-                        {
-                            var resultType = result.GetType();
-                            var apiResultType = typeof(ApiResult<>).MakeGenericType(resultType);
-                            apiResult = Activator.CreateInstance(apiResultType, result) as ApiResult;
-                        }
-                        else
-                        {
-                            apiResult = new ApiResult();
-                        }
+                        var resultType = result.GetType();
+                        var apiResultType = typeof(ApiResult<>).MakeGenericType(resultType);
+                        apiResult = Activator.CreateInstance(apiResultType, result) as ApiResult;
                     }
                     else
                     {
@@ -54,19 +49,23 @@ namespace Sample.CommandService.Controllers
                 }
                 else
                 {
-                    var baseException = t.Exception.GetBaseException();
-                    if (baseException is SysException)
-                    {
-                        var sysException = baseException as SysException;
-                        apiResult = new ApiResult { ErrorCode = sysException.ErrorCode, Message = sysException.Message };
-                    }
-                    else
-                    {
-                        apiResult = new ApiResult { ErrorCode = ErrorCode.UnknownError, Message = baseException.Message };
-                    }
+                    apiResult = new ApiResult();
                 }
-                return apiResult;
-            });
+            }
+            catch (Exception ex)
+            {
+                var baseException = ex.GetBaseException();
+                if (baseException is SysException)
+                {
+                    var sysException = baseException as SysException;
+                    apiResult = new ApiResult { ErrorCode = sysException.ErrorCode, Message = sysException.Message };
+                }
+                else
+                {
+                    apiResult = new ApiResult { ErrorCode = ErrorCode.UnknownError, Message = baseException.Message };
+                }
+            }
+            return apiResult;
         }
     }
 }

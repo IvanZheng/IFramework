@@ -21,22 +21,22 @@ namespace Sample.CommandService.Controllers
             _CommandBus = commandBus;
         }
 
-        public Task<ApiResult> Post([FromBody]ICommand command)
+        public async Task<ApiResult> Post([FromBody]ICommand command)
         {
             if (ModelState.IsValid)
             {
-                return ExceptionManager.Process(_CommandBus.Send(command));
+                return await ExceptionManager.Process(() => _CommandBus.Send(command));
             }
             else
             {
-                return Task.Factory.StartNew<ApiResult>(() =>
+                return 
                     new ApiResult
                     {
                         ErrorCode = ErrorCode.CommandInvalid,
                         Message = string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
-                    });
+                    };
             }
         }
 

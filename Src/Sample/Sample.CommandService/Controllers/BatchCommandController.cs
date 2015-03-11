@@ -29,24 +29,24 @@ namespace Sample.CommandService.Controllers
             _CommandBus = commandBus;
         }
 
-        Task<ApiResult> Action(ICommand command)
+        async Task<ApiResult> Action(ICommand command)
         {
             if (ModelState.IsValid)
             {
-                return ExceptionManager.Process(_CommandBus.Send(command));
+                return await ExceptionManager.Process(() => _CommandBus.Send(command));
             }
             else
             {
-                return Task.Factory.StartNew<ApiResult>(() =>
+                return
                     new ApiResult
                     {
                         ErrorCode = ErrorCode.CommandInvalid,
                         Message = string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
-                    });
+                    };
             }
-            
+
         }
 
         static List<ICommand> BatchCommands = new List<ICommand>();
@@ -55,7 +55,8 @@ namespace Sample.CommandService.Controllers
         {
             var batchCount = 1;
             int.TryParse(CookiesHelper.GetCookie("batchCount").Value, out batchCount);
-            return Task.Factory.StartNew(() => {
+            return Task.Factory.StartNew(() =>
+            {
                 BatchCommands.Add(command);
                 if (BatchCommands.Count >= 3)
                 {
@@ -76,7 +77,7 @@ namespace Sample.CommandService.Controllers
                 }
                 return new ApiResult();
             });
-           
+
         }
 
         ApiResult Login(Login loginCommand)
@@ -100,8 +101,11 @@ namespace Sample.CommandService.Controllers
             }
             else
             {
-                result = new ApiResult { ErrorCode = ErrorCode.WrongUsernameOrPassword, 
-                                         Message = ErrorCode.WrongUsernameOrPassword.ToString() };
+                result = new ApiResult
+                {
+                    ErrorCode = ErrorCode.WrongUsernameOrPassword,
+                    Message = ErrorCode.WrongUsernameOrPassword.ToString()
+                };
             }
             return result;
         }
