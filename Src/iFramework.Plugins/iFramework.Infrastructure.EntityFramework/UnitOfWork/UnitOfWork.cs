@@ -42,14 +42,17 @@ namespace IFramework.EntityFramework
             try
             {
                 var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-                IEnumerable<IEvent> events = null;
-                if (EventBus != null)
-                {
-                    events = EventBus.GetMessages();
-                }
+               
                 _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
-                if (MessageStore != null)
+                if (MessageStore != null
+                    && currentCommandContext != null 
+                    && currentCommandContext.Message is IFramework.Command.ICommand)
                 {
+                    IEnumerable<IEvent> events = null;
+                    if (EventBus != null)
+                    {
+                        events = EventBus.GetMessages();
+                    }
                     eventContexts = MessageStore.SaveCommand(currentCommandContext, events);
                 }
                 scope.Complete();
