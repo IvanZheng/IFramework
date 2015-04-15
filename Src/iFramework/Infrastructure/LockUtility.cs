@@ -14,7 +14,27 @@ namespace IFramework.Infrastructure
 
         class LockObject
         {
-            public int Counter { get; set; }
+            volatile int _Counter;
+            public int Counter
+            {
+                get
+                {
+                    return _Counter;
+                }
+            }
+
+            internal void Decrement()
+            {
+                _Counter--;
+                //Interlocked.Decrement(ref _Counter);
+            }
+
+            internal void Increate()
+            {
+                _Counter++;
+                //Interlocked.Increment(ref _Counter);
+            }
+        
         }
 
         /// <summary>
@@ -29,9 +49,9 @@ namespace IFramework.Infrastructure
         /// <param name="lockObj"></param>
         static void ReleaseLock(object key, LockObject lockObj)
         {
-            lockObj.Counter--;
             lock (_lockPool)
             {
+                lockObj.Decrement();
                 //_Logger.DebugFormat("I am thread {0}:lock counter is {1}", Thread.CurrentThread.ManagedThreadId, lockObj.Counter);
                 if (lockObj.Counter == 0)
                 {
@@ -55,7 +75,7 @@ namespace IFramework.Infrastructure
                     lockObj = new LockObject();
                     _lockPool[key] = lockObj;
                 }
-                lockObj.Counter++;
+                lockObj.Increate();
                 return lockObj;
             }
         }
