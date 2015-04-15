@@ -55,6 +55,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
@@ -80,6 +81,10 @@
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventBus.cs" />
     <Compile Include="Event\Impl\MockEventPublisher.cs" />
+    <Compile Include="Infrastructure\Caching\ICacheManager.cs" />
+    <Compile Include="Infrastructure\Caching\Impl\MemoryCacheManager.cs" />
+    <Compile Include="Infrastructure\Caching\Impl\NullCacheManager.cs" />
+    <Compile Include="Infrastructure\Caching\Impl\PerHttpRequestCacheManager.cs" />
     <Compile Include="Infrastructure\FastInvoke.cs" />
     <Compile Include="Infrastructure\JsonHelper.cs" />
     <Compile Include="Infrastructure\ObjectId.cs" />
