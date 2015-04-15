@@ -81,6 +81,7 @@
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventBus.cs" />
     <Compile Include="Event\Impl\MockEventPublisher.cs" />
+    <Compile Include="Infrastructure\Caching\CacheExtensions.cs" />
     <Compile Include="Infrastructure\Caching\ICacheManager.cs" />
     <Compile Include="Infrastructure\Caching\Impl\MemoryCacheManager.cs" />
     <Compile Include="Infrastructure\Caching\Impl\NullCacheManager.cs" />
