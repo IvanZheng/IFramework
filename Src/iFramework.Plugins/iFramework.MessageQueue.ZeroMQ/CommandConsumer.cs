@@ -1,4 +1,5 @@
 ﻿using IFramework.Command;
+using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
@@ -8,6 +9,7 @@ using IFramework.UnitOfWork;
 using System;
 using System.Data;
 using ZeroMQ;
+using System.Linq;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -79,6 +81,9 @@ namespace IFramework.MessageQueue.ZeroMQ
                             try
                             {
                                 ((dynamic)messageHandler).Handle((dynamic)message);
+                                var eventBus = IoCFactory.Resolve<IEventBus>();
+                                var eventContexts = messageStore.SaveCommand(commandContext, eventBus.GetMessages());
+                                IoCFactory.Resolve<IEventPublisher>().Publish(eventContexts.ToArray());
                                 //unitOfWork.Commit();
                                 messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
                                 needRetry = false;
