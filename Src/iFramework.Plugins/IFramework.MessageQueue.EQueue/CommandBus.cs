@@ -118,6 +118,26 @@ namespace IFramework.MessageQueue.EQueue
             #endregion
         }
 
+        public void Add(ICommand command)
+        {
+            var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;
+            if (currentMessageContext == null)
+            {
+                throw new CurrentMessageContextIsNull();
+            }
+            string commandKey = null;
+            if (command is ILinearCommand)
+            {
+                var linearKey = LinearCommandManager.GetLinearKey(command as ILinearCommand);
+                if (linearKey != null)
+                {
+                    commandKey = linearKey.ToString();
+                }
+            }
+            IMessageContext commandContext = new MessageContext(ReplyTopic, command, commandKey);
+            ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
+        }
+
         internal void SendCommands(IEnumerable<IMessageContext> commandContexts)
         {
             commandContexts.ForEach(commandContext => ToBeSentCommandQueue.Add(commandContext as MessageContext));

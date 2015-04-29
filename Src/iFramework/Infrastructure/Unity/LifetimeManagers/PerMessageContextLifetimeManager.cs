@@ -155,12 +155,12 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
             }
             set
             {
-                if (value == null)
-                {
-                    ClearCurrentMessageContextItems();
-                    CallContext.FreeNamedDataSlot("MessageContext");
-                }
-                else
+                //if (value == null)
+                //{
+                ClearCurrentMessageContextItems();
+                CallContext.FreeNamedDataSlot("MessageContext");
+                // }
+                if (value != null)
                 {
                     CallContext.SetData("MessageContext", new MessageContextWrapper(value));
                 }
@@ -211,7 +211,7 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         /// <param name="newValue"><see cref="M:Microsoft.Practices.Unity.LifetimeManager.SetValue"/></param>
         public override void SetValue(object newValue)
         {
-            if (CurrentMessageContextItems != null)
+            if (CurrentMessageContextItems != null && newValue != null)
             {
                 CurrentMessageContextItems.Add(_key, newValue);
             }

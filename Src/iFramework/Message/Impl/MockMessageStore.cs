@@ -24,7 +24,7 @@ namespace IFramework.Message.Impl
             return null;
         }
 
-        public void SaveFailedCommand(IMessageContext commandContext)
+        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null)
         {
             
         }

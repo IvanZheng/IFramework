@@ -1,4 +1,5 @@
-﻿using IFramework.Event;
+﻿using IFramework.Command;
+using IFramework.Event;
 using IFramework.SysExceptions;
 using Sample.DomainEvents.Community;
 using System;
@@ -13,7 +14,8 @@ namespace Sample.AsyncDomainEventSubscriber.Community
         IEventSubscriber<AccountRegistered>
     {
         IEventBus _EventBus;
-        public AccountEventSubscriber(IEventBus eventBus)
+        ICommandBus _CommandBus;
+        public AccountEventSubscriber(IEventBus eventBus, ICommandBus commandBus)
         {
             _EventBus = eventBus;
         }
@@ -27,6 +29,7 @@ namespace Sample.AsyncDomainEventSubscriber.Community
                                   UserName = @event.UserName
                               };
             _EventBus.Publish(applicationEvent);
+           // _CommandBus.Add(new Login { });
         }
 
        

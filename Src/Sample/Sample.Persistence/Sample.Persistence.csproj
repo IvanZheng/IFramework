@@ -65,6 +65,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\201504290400017_InitialCreate.cs" />
+    <Compile Include="Migrations\201504290400017_InitialCreate.Designer.cs">
+      <DependentUpon>201504290400017_InitialCreate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repositories\CommunityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -95,6 +99,11 @@
       <Project>{f1f1b380-f3a0-463e-8686-3af27962c100}</Project>
       <Name>Sample.Domain</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201504290400017_InitialCreate.resx">
+      <DependentUpon>201504290400017_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -19,86 +19,39 @@ using IFramework.Message;
 
 namespace IFramework.EntityFramework
 {
-    public class UnitOfWork : BaseUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         List<DbContext> _dbContexts;
-        IEventPublisher _eventPublisher;
+        // IEventPublisher _eventPublisher;
 
-        public UnitOfWork(IEventBus eventBus,  IEventPublisher eventPublisher, IMessageStore messageStore)
-            : base(eventBus, messageStore)
+        public UnitOfWork(/*IEventBus eventBus,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
+        //: base(eventBus, messageStore)
         {
             _dbContexts = new List<DbContext>();
-            _eventPublisher = eventPublisher;
+            //  _eventPublisher = eventPublisher;
         }
         #region IUnitOfWork Members
 
-        public override void Commit()
+        public void Commit()
         {
-            // TODO: should make domain events never losed, need transaction between
-            //       model context and message queue, but need transaction across different scopes.
-            TransactionScope scope = new TransactionScope();
-            bool success = false;
-            IEnumerable<IMessageContext> eventContexts = null;
-            try
+            using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
+                                                             new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
             {
-                var currentCommandContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-               
-                _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
-                if (MessageStore != null
-                    && currentCommandContext != null 
-                    && currentCommandContext.Message is IFramework.Command.ICommand)
+                try
                 {
-                    IEnumerable<IEvent> events = null;
-                    if (EventBus != null)
-                    {
-                        events = EventBus.GetMessages();
-                    }
-                    eventContexts = MessageStore.SaveCommand(currentCommandContext, events);
+                    _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
+                    scope.Complete();
                 }
-                scope.Complete();
-                success = true;
-            }
-            catch (Exception ex)
-            {
-                success = false;
-                if (ex is DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
-                    //(ex as DbUpdateConcurrencyException).Entries.ForEach(e => { 
-                    
-                    //});
-                    _dbContexts.ForEach(dbCtx => {
-                        dbCtx.ChangeTracker.Entries().ForEach(e => 
+                    _dbContexts.ForEach(dbCtx =>
+                    {
+                        dbCtx.ChangeTracker.Entries().ForEach(e =>
                         {
-                            if (e.State == EntityState.Modified || e.State == EntityState.Deleted)
-                            {
-                                e.Reload();
-                                e.State = EntityState.Unchanged;
-                            }
-                            else if (e.State == EntityState.Added)
-                            {
-                                e.State = EntityState.Detached;
-                            }
+                            e.State = EntityState.Detached;
                         });
                     });
-                    EventBus.ClearMessages();
-                    //(ex as DbUpdateConcurrencyException).Entries.ForEach(e => e.Reload());
                     throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
-                }
-                else
-                {
-                    throw;
-                }
-
-            }
-            finally
-            {
-                scope.Dispose();
-                if (success)
-                {
-                    if (_eventPublisher != null && eventContexts != null)
-                    {
-                        _eventPublisher.Publish(eventContexts.ToArray());
-                    }
                 }
             }
         }
@@ -114,5 +67,10 @@ namespace IFramework.EntityFramework
         #endregion
 
 
+
+        public void Dispose()
+        {
+            _dbContexts.ForEach(_dbCtx => _dbCtx.Dispose());
+        }
     }
 }

@@ -17,5 +17,6 @@ namespace IFramework.Command
         Task Send(ICommand command);
         Task<TResult> Send<TResult>(ICommand command);
         Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken);
+        void Add(ICommand command);
     }
 }

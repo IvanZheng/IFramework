@@ -60,9 +60,9 @@ namespace IFramework.MessageStoring
                 });
         }
 
-        protected virtual Command BuildCommand(IMessageContext commandContext)
+        protected virtual Command BuildCommand(IMessageContext commandContext, Exception ex = null)
         {
-            return new Command(commandContext);
+            return new Command(commandContext, ex);
         }
 
         protected virtual Event BuildEvent(IMessageContext eventContext)
@@ -96,11 +96,11 @@ namespace IFramework.MessageStoring
             return eventContexts;
         }
 
-        public void SaveFailedCommand(IMessageContext commandContext)
+        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null)
         {
             if (commandContext != null)
             {
-                var command = BuildCommand(commandContext);
+                var command = BuildCommand(commandContext, ex);
                 command.Status = MessageStatus.Failed;
                 Commands.Add(command);
                 SaveChanges();

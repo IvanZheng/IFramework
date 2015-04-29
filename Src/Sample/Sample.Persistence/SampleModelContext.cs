@@ -11,10 +11,10 @@ namespace Sample.Persistence
 {
     public class SampleModelContext : MessageStore
     {
-        static SampleModelContext()
-        {
-            Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SampleModelContext>());
-        }
+        //static SampleModelContext()
+        //{
+        //    Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SampleModelContext>());
+        //}
 
         public SampleModelContext() : base("SampleModelContext") 
         {

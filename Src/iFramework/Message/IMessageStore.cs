@@ -22,7 +22,7 @@ namespace IFramework.Message
         /// <param name="eventContexts"></param>
         /// <returns></returns>
         IEnumerable<IMessageContext> SaveCommand(IMessageContext commandContext, IEnumerable<IEvent> eventContexts);
-        void SaveFailedCommand(IMessageContext commandContext);
+        void SaveFailedCommand(IMessageContext commandContext, Exception ex = null);
        // void SaveUnSentCommands(IEnumerable<IMessageContext> commandContexts);
         void RemoveSentCommand(string commandId);
         void RemovePublishedEvent(string eventId);

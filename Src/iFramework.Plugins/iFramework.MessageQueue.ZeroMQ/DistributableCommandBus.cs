@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.MessageQueue.ZeroMQ.MessageFormat;
+using IFramework.Infrastructure.Unity.LifetimeManagers;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {

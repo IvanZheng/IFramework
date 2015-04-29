@@ -92,8 +92,12 @@ namespace IFramework.MessageQueue.ServiceBus
                             });
                             break;
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
+                            if (ex is InvalidOperationException)
+                            {
+                                eventContext = new MessageContext(eventContext.Message as IMessage);
+                            }
                             Thread.Sleep(1000);
                         }
                     }

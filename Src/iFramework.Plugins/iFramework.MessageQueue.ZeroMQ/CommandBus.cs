@@ -133,6 +133,27 @@ namespace IFramework.MessageQueue.ZeroMQ
                 }
             }
         }
+
+        public void Add(ICommand command)
+        {
+            var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;
+            if (currentMessageContext == null)
+            {
+                throw new CurrentMessageContextIsNull();
+            }
+            string commandKey = null;
+            if (command is ILinearCommand)
+            {
+                var linearKey = LinearCommandManager.GetLinearKey(command as ILinearCommand);
+                if (linearKey != null)
+                {
+                    commandKey = linearKey.ToString();
+                }
+            }
+            IMessageContext commandContext = new MessageContext(command, ReceiveEndPoint, commandKey);
+            ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
+        }
+
         protected virtual void SendCommand(IMessageContext messageContext)
         {
             try

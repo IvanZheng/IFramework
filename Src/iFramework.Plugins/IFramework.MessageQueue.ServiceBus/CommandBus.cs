@@ -179,21 +179,26 @@ namespace IFramework.MessageQueue.ServiceBus
                 commandProducer = _commandQueueClients[Math.Abs(keyUniqueCode % _commandQueueClients.Count)];
             }
             if (commandProducer == null) return;
-            var brokeredMessage = ((MessageContext)commandContext).BrokeredMessage;
             while (true)
             {
                 try
                 {
+                    var brokeredMessage = ((MessageContext)commandContext).BrokeredMessage;
+
                     commandProducer.Send(brokeredMessage);
+                    _logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
+                        commandContext.MessageID, brokeredMessage.Size, brokeredMessage.State);
                     break;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    if (ex is InvalidOperationException)
+                    {
+                        commandContext = new MessageContext(commandContext.Message as IMessage, commandContext.ReplyToEndPoint, commandContext.Key);
+                    }
                     Thread.Sleep(1000);
                 }
             }
-            _logger.InfoFormat("send commandID:{0} length:{1} send status:{2}",
-                commandContext.MessageID, brokeredMessage.Size, brokeredMessage.State);
         }
 
         protected void ConsumeReply(IMessageReply reply)
@@ -263,6 +268,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             else
             {
+                // remain this to be compatible for the early version that has no Add Method
                 if (currentMessageContext != null)
                 {
                     ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
@@ -275,6 +281,26 @@ namespace IFramework.MessageQueue.ServiceBus
             return task;
         }
        
+        public void Add(ICommand command)
+        {
+            var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;
+            if (currentMessageContext == null)
+            {
+                throw new CurrentMessageContextIsNull();
+            }
+            string commandKey = null;
+            if (command is ILinearCommand)
+            {
+                var linearKey = _linearCommandManager.GetLinearKey(command as ILinearCommand);
+                if (linearKey != null)
+                {
+                    commandKey = linearKey.ToString();
+                }
+            }
+            IMessageContext commandContext = new MessageContext(command, _replyTopicName, commandKey);
+            ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
+        }
+
         public Task<TResult> Send<TResult>(ICommand command)
         {
             return Send<TResult>(command, CancellationToken.None);

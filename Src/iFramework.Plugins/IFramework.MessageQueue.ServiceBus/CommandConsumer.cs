@@ -1,4 +1,5 @@
 ﻿using IFramework.Command;
+using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
@@ -13,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
@@ -120,6 +122,84 @@ namespace IFramework.MessageQueue.ServiceBus
         }
 
         void ConsumeMessage(BrokeredMessage brokeredMessage)
+        {
+            var commandContext = new MessageContext(brokeredMessage);
+            var command = commandContext.Message as ICommand;
+            MessageReply messageReply = null;
+            if (command == null)
+            {
+                return;
+            }
+            var needRetry = command.NeedRetry;
+            PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
+            IEnumerable<IMessageContext> eventContexts = null;
+            var messageStore = IoCFactory.Resolve<IMessageStore>();
+            var eventBus = IoCFactory.Resolve<IEventBus>();
+            var commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
+            if (commandHasHandled)
+            {
+                messageReply = new MessageReply(commandContext.MessageID, new MessageDuplicatelyHandled());
+            }
+            else
+            {
+                var messageHandler = _handlerProvider.GetHandler(command.GetType());
+                _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
+
+                if (messageHandler == null)
+                {
+                    messageReply = new MessageReply(commandContext.MessageID, new NoHandlerExists());
+                }
+                else
+                {
+                    bool success = false;
+                    do
+                    {
+                        try
+                        {
+                            using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+                                                               new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
+                            {
+                                ((dynamic)messageHandler).Handle((dynamic)command);
+                                messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
+                                eventContexts = messageStore.SaveCommand(commandContext, eventBus.GetMessages());
+                                transactionScope.Complete();
+                            }
+                            needRetry = false;
+                            success = true;
+                        }
+                        catch (Exception e)
+                        {
+                            if (e is OptimisticConcurrencyException && needRetry)
+                            {
+                                eventContexts = null;
+                                eventBus.ClearMessages();
+                            }
+                            else
+                            {
+                                messageReply = new MessageReply(commandContext.MessageID, e.GetBaseException());
+                                if (e is DomainException)
+                                {
+                                    _logger.Warn(command.ToJson(), e);
+                                }
+                                else
+                                {
+                                    _logger.Error(command.ToJson(), e);
+                                }
+                                messageStore.SaveFailedCommand(commandContext, e);
+                                needRetry = false;
+                            }
+                        }
+                    } while (needRetry);
+                    if (success && eventContexts != null && eventContexts.Count() > 0)
+                    {
+                        IoCFactory.Resolve<IEventPublisher>().Publish(eventContexts.ToArray());
+                    }
+                }
+            }
+            OnMessageHandled(commandContext, messageReply);
+        }
+
+        void ConsumeMessageOld(BrokeredMessage brokeredMessage)
         {
             var commandContext = new MessageContext(brokeredMessage);
             var message = commandContext.Message as ICommand;

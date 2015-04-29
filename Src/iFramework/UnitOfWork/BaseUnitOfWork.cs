@@ -29,24 +29,24 @@ namespace IFramework.UnitOfWork
         //    return type;
         //}
 
-        protected IMessageStore MessageStore
-        {
-            get;
-            private set;
-        }
+        //protected IMessageStore MessageStore
+        //{
+        //    get;
+        //    private set;
+        //}
 
-        public BaseUnitOfWork(IEventBus domainEventBus, IMessageStore messageStore)
-        {
-            EventBus = domainEventBus;
-            MessageStore = messageStore;
-        }
+        //public BaseUnitOfWork(IEventBus domainEventBus, IMessageStore messageStore)
+       // {
+            //EventBus = domainEventBus;
+            //MessageStore = messageStore;
+       // }
         #region IUnitOfWork Members
 
-        protected IEventBus EventBus
-        {
-            get;
-            private set;
-        }
+        //protected IEventBus EventBus
+        //{
+        //    get;
+        //    private set;
+        //}
 
         public abstract void Commit();
 

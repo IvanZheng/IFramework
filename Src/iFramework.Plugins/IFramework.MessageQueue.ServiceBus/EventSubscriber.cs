@@ -11,6 +11,7 @@ using IFramework.SysExceptions;
 using IFramework.Command;
 using System.Threading;
 using IFramework.Event;
+using System.Transactions;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
@@ -116,28 +117,32 @@ namespace IFramework.MessageQueue.ServiceBus
                 var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
                 if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                 {
+                    bool success = false;
+                    var messageContexts = new List<MessageContext>();
+                    List<IMessageContext> commandContexts = null;
                     try
                     {
                         var messageHandler = IoCFactory.Resolve(messageHandlerType);
-                        ((dynamic)messageHandler).Handle((dynamic)message);
-                        var commandContexts = eventContext.ToBeSentMessageContexts;
-                        var eventBus = IoCFactory.Resolve<IEventBus>();
-                        var messageContexts = new List<MessageContext>();
-                        eventBus.GetMessages().ForEach(msg => messageContexts.Add(new MessageContext(msg)));
-                        messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
-                        if (commandContexts.Count > 0)
+                        using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+                                                           new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
                         {
-                            ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+                            ((dynamic)messageHandler).Handle((dynamic)message);
+
+                            //get commands to be sent
+                            commandContexts = eventContext.ToBeSentMessageContexts;
+                            //get events to be published
+                            var eventBus = IoCFactory.Resolve<IEventBus>();
+                            eventBus.GetMessages().ForEach(msg => messageContexts.Add(new MessageContext(msg)));
+
+                            messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
+                            transactionScope.Complete();
                         }
-                        if (messageContexts.Count > 0)
-                        {
-                            IoCFactory.Resolve<IEventPublisher>().Publish(messageContexts.ToArray());
-                        }
+                        success = true;
                     }
                     catch (Exception e)
                     {
                         if (e is DomainException)
-                        {  
+                        {
                             _logger.Warn(message.ToJson(), e);
                         }
                         else
@@ -147,11 +152,19 @@ namespace IFramework.MessageQueue.ServiceBus
                         }
                         messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e);
                     }
-                    finally
+                    if (success)
                     {
-                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
+                        if (commandContexts.Count > 0)
+                        {
+                            ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+                        }
+                        if (messageContexts.Count > 0)
+                        {
+                            IoCFactory.Resolve<IEventPublisher>().Publish(messageContexts.ToArray());
+                        }
                     }
                 }
+                PerMessageContextLifetimeManager.CurrentMessageContext = null;
             });
         }
 

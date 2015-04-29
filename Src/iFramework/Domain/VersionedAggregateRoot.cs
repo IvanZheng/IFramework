@@ -21,6 +21,7 @@ namespace IFramework.Domain
                 return _newVersion;
             }
         }
+
         [ConcurrencyCheck]
         public int Version
         {
