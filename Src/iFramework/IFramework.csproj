@@ -79,6 +79,7 @@
     <Compile Include="Event\IEvent.cs" />
     <Compile Include="Event\IEventPublisher.cs" />
     <Compile Include="Event\Impl\EventBus.cs" />
+    <Compile Include="Event\Impl\EventPublisher.cs" />
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventBus.cs" />
     <Compile Include="Event\Impl\MockEventPublisher.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="Infrastructure\Logging\ILogger.cs" />
     <Compile Include="Infrastructure\Logging\ILoggerFactory.cs" />
     <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageOrExecutionContextLifetimeManager.cs" />
+    <Compile Include="MessageQueue\IMessageQueueClient.cs" />
     <Compile Include="Message\IMessage.cs" />
     <Compile Include="Message\IMessageConsumer.cs" />
     <Compile Include="Message\IMessageContext.cs" />

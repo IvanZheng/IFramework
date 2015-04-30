@@ -1,5 +1,7 @@
 ﻿using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
+using IFramework.Message;
+using IFramework.MessageQueue.ServiceBus.MessageFormat;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using System;
@@ -10,13 +12,13 @@ using System.Text;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
-    public class ServiceBusClient
+    public class ServiceBusClient : IMessageQueueClient
     {
         protected string _serviceBusConnectionString;
         protected NamespaceManager _namespaceManager;
         protected MessagingFactory _messageFactory;
         protected ConcurrentDictionary<string, TopicClient> _topicClients;
-        internal ServiceBusClient(string serviceBusConnectionString)
+        public ServiceBusClient(string serviceBusConnectionString)
         {
             _serviceBusConnectionString = serviceBusConnectionString;
             _namespaceManager = NamespaceManager.CreateFromConnectionString(_serviceBusConnectionString);
@@ -24,7 +26,7 @@ namespace IFramework.MessageQueue.ServiceBus
             _topicClients = new ConcurrentDictionary<string, TopicClient>();
         }
 
-        internal void CloseTopicClients()
+        public void CloseTopicClients()
         {
             _topicClients.Values.ForEach(client => client.Close());
         }
@@ -74,6 +76,18 @@ namespace IFramework.MessageQueue.ServiceBus
                 _namespaceManager.CreateSubscription(subscriptionDescription);
             }
             return _messageFactory.CreateSubscriptionClient(topicDescription.Path, subscriptionName);
+        }
+
+        public void Publish(IMessageContext messageContext, string topic)
+        {
+            var topicClient = GetTopicClient(topic);
+            topicClient.Send(((MessageContext)messageContext).BrokeredMessage);
+        }
+
+
+        public IMessageContext WrapMessage(IMessage message)
+        {
+            return new MessageContext(message);
         }
     }
 }

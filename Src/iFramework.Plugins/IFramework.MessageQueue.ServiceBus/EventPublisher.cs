@@ -16,7 +16,6 @@ namespace IFramework.MessageQueue.ServiceBus
 {
     public class EventPublisher : IEventPublisher
     {
-        volatile bool _exit = false;
         protected BlockingCollection<IMessageContext> MessageQueue { get; set; }
         protected string _topic;
         protected Task _WorkTask;
@@ -59,6 +58,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 {
                     _logger.ErrorFormat("consumer can't be stopped!");
                 }
+                _WorkTask = null;
             }
         }
 
