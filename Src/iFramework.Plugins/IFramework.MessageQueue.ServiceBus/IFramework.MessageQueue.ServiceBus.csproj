@@ -62,7 +62,7 @@
     <Compile Include="EventPublisher.cs" />
     <Compile Include="EventSubscriber.cs" />
     <Compile Include="MessageFormat\MessageContext.cs" />
-    <Compile Include="MessageProcessor.cs" />
+    <Compile Include="ServiceBusClient.cs" />
     <Compile Include="MessageFormat\MessageReply.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

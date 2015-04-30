@@ -12,27 +12,31 @@ using IFramework.Command;
 using System.Threading;
 using IFramework.Event;
 using System.Transactions;
+using IFramework.Infrastructure.Logging;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
-    public class EventSubscriber : MessageProcessor, IMessageConsumer
+    public class EventSubscriber : IFramework.Message.Impl.EventSubscriberBase, IMessageConsumer
     {
-        readonly IHandlerProvider _handlerProvider;
+        volatile bool _exit = false;
         readonly string[] _topics;
         readonly List<Task> _consumeWorkTasks;
-        readonly string _subscriptionName;
+        protected ServiceBusClient _serviceBusClient;
         public EventSubscriber(string serviceBusConnectionString,
                                IHandlerProvider handlerProvider,
                                string subscriptionName,
                                params string[] topics)
-            : base(serviceBusConnectionString)
+            : base(handlerProvider, subscriptionName)
         {
+            _serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
             _handlerProvider = handlerProvider;
             _topics = topics;
             _subscriptionName = subscriptionName;
             _consumeWorkTasks = new List<Task>();
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
+     
         public void Start()
         {
             _topics.ForEach(topic =>
@@ -42,7 +46,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     if (!string.IsNullOrWhiteSpace(topic))
                     {
                         // Receive messages
-                        var subscriptionClient = CreateSubscriptionClient(topic, _subscriptionName);
+                        var subscriptionClient = _serviceBusClient.CreateSubscriptionClient(topic, _subscriptionName);
                         _consumeWorkTasks.Add(Task.Factory.StartNew(ConsumeMessages, subscriptionClient, TaskCreationOptions.LongRunning));
                     }
                 }
@@ -84,7 +88,8 @@ namespace IFramework.MessageQueue.ServiceBus
                     brokeredMessage = subscriptionClient.Receive();
                     if (brokeredMessage != null)
                     {
-                        ConsumeMessage(brokeredMessage);
+                        var eventContext = new MessageContext(brokeredMessage);
+                        ConsumeMessage(eventContext);
                         brokeredMessage.Complete();
                         MessageCount++;
                     }
@@ -97,82 +102,16 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-
-        protected void ConsumeMessage(BrokeredMessage brokeredMessage)
-        {
-            var eventContext = new MessageContext(brokeredMessage);
-            var message = eventContext.Message;
-            var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
-
-            if (messageHandlerTypes.Count == 0)
-            {
-                return;
-            }
-
-            messageHandlerTypes.ForEach(messageHandlerType =>
-            {
-                PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
-                eventContext.ToBeSentMessageContexts.Clear();
-                var messageStore = IoCFactory.Resolve<IMessageStore>();
-                var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
-                if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
-                {
-                    bool success = false;
-                    var messageContexts = new List<MessageContext>();
-                    List<IMessageContext> commandContexts = null;
-                    try
-                    {
-                        var messageHandler = IoCFactory.Resolve(messageHandlerType);
-                        using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                           new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
-                        {
-                            ((dynamic)messageHandler).Handle((dynamic)message);
-
-                            //get commands to be sent
-                            commandContexts = eventContext.ToBeSentMessageContexts;
-                            //get events to be published
-                            var eventBus = IoCFactory.Resolve<IEventBus>();
-                            eventBus.GetMessages().ForEach(msg => messageContexts.Add(new MessageContext(msg)));
-
-                            messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
-                            transactionScope.Complete();
-                        }
-                        success = true;
-                    }
-                    catch (Exception e)
-                    {
-                        if (e is DomainException)
-                        {
-                            _logger.Warn(message.ToJson(), e);
-                        }
-                        else
-                        {
-                            //IO error or sytem Crash
-                            _logger.Error(message.ToJson(), e);
-                        }
-                        messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e);
-                    }
-                    if (success)
-                    {
-                        if (commandContexts.Count > 0)
-                        {
-                            ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
-                        }
-                        if (messageContexts.Count > 0)
-                        {
-                            IoCFactory.Resolve<IEventPublisher>().Publish(messageContexts.ToArray());
-                        }
-                    }
-                }
-                PerMessageContextLifetimeManager.CurrentMessageContext = null;
-            });
-        }
-
         public string GetStatus()
         {
             return string.Format("Handled message count {0}", MessageCount);
         }
 
         public decimal MessageCount { get; set; }
+
+        protected override IMessageContext NewMessageContext(IMessage message)
+        {
+            return new MessageContext(message);
+        }
     }
 }

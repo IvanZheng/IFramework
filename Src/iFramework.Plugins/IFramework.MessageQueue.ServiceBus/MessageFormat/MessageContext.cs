@@ -13,6 +13,7 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
     public class MessageContext : IMessageContext
     {
         public BrokeredMessage BrokeredMessage { get; protected set; }
+        public List<IMessageContext> ToBeSentMessageContexts { get; set; }
 
         public MessageContext(BrokeredMessage brokeredMessage)
         {
@@ -118,7 +119,6 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             set { Headers["SentTime"] = value; }
         }
 
-        public List<IMessageContext> ToBeSentMessageContexts { get; set; }
 
 
         public string Topic

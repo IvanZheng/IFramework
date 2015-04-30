@@ -13,12 +13,12 @@ namespace Sample.Persistence.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201504290400017_InitialCreate"; }
+            get { return "201504300754243_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source
         {
-            get { return null; }
+            get { return Resources.GetString("Source"); }
         }
         
         string IMigrationMetadata.Target

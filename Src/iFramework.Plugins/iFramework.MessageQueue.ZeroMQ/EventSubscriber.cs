@@ -13,24 +13,51 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.SysExceptions;
 using IFramework.MessageQueue.ZeroMQ.MessageFormat;
 using IFramework.Event;
+using IFramework.Infrastructure.Logging;
+using System.Collections.Concurrent;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
-    public class EventSubscriber : MessageConsumer<IMessageContext>
+    public class EventSubscriber : EventSubscriberBase, IMessageConsumer
     {
-        IHandlerProvider HandlerProvider { get; set; }
+        protected BlockingCollection<IMessageContext> MessageQueue { get; set; }
+        protected readonly ILogger _Logger;
+        protected Task _ConsumeWorkTask;
+        protected Task _ReceiveWorkTask;
+        protected bool _Exit = false; 
+        protected decimal HandledMessageCount { get; set; }
+        public decimal MessageCount { get; protected set; }
+
         string[] SubEndPoints { get; set; }
         List<Task> _ReceiveWorkTasks;
-        string SubscriptionName { get; set; }
         public EventSubscriber(string subscriptionName, IHandlerProvider handlerProvider, string[] subEndPoints)
+            : base(handlerProvider, subscriptionName)
         {
-            SubscriptionName = subscriptionName;
-            HandlerProvider = handlerProvider;
             SubEndPoints = subEndPoints;
             _ReceiveWorkTasks = new List<Task>();
+            MessageQueue = new BlockingCollection<IMessageContext>();
+            _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+
         }
 
-        public override void Start()
+        protected virtual void ConsumeMessages()
+        {
+            try
+            {
+                while (!_Exit)
+                {
+                    ConsumeMessage(MessageQueue.Take());
+                    HandledMessageCount++;
+                }
+            }
+            catch (Exception ex)
+            {
+                _Logger.Debug("end consuming message", ex);
+            }
+
+        }
+
+        public virtual void Start()
         {
             SubEndPoints.ForEach(subEndPoint =>
             {
@@ -52,9 +79,34 @@ namespace IFramework.MessageQueue.ZeroMQ
             _ConsumeWorkTask = Task.Factory.StartNew(ConsumeMessages, TaskCreationOptions.LongRunning);
         }
 
-        public override void Stop()
+        public virtual void Stop()
         {
-            base.Stop();
+            _Exit = true;
+            if (_ReceiveWorkTask != null)
+            {
+                var receiveSocket = (_ReceiveWorkTask.AsyncState as ZmqSocket);
+                if (_ReceiveWorkTask.Wait(5000))
+                {
+                    receiveSocket.Close();
+                    _ReceiveWorkTask.Dispose();
+                }
+                else
+                {
+                    _Logger.ErrorFormat("receiver can't be stopped!");
+                }
+            }
+            if (_ConsumeWorkTask != null)
+            {
+                MessageQueue.CompleteAdding();
+                if (_ConsumeWorkTask.Wait(2000))
+                {
+                    _ConsumeWorkTask.Dispose();
+                }
+                else
+                {
+                    _Logger.ErrorFormat(" consumer can't be stopped!");
+                }
+            }
             _ReceiveWorkTasks.ForEach(receiveWorkTask =>
             {
                 if (receiveWorkTask.Wait(5000))
@@ -69,7 +121,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             });
         }
 
-        protected override ZmqSocket CreateSocket(string subEndPoint)
+        protected virtual ZmqSocket CreateSocket(string subEndPoint)
         {
             ZmqSocket receiver = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.SUB);
             receiver.SubscribeAll();
@@ -77,7 +129,29 @@ namespace IFramework.MessageQueue.ZeroMQ
             return receiver;
         }
 
-        protected override void ReceiveMessage(Frame frame)
+
+        protected virtual void ReceiveMessages(object arg)
+        {
+            var messageReceiver = arg as ZmqSocket;
+            while (!_Exit)
+            {
+                try
+                {
+                    var frame = messageReceiver.ReceiveFrame(TimeSpan.FromSeconds(2));
+                    if (frame != null && frame.MessageSize > 0)
+                    {
+                        ReceiveMessage(frame);
+                        MessageCount++;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _Logger.Debug(e.GetBaseException().Message, e);
+                }
+            }
+        }
+
+        protected virtual void ReceiveMessage(Frame frame)
         {
             var messageContext = System.Text.Encoding
                                             .GetEncoding("utf-8")
@@ -87,62 +161,16 @@ namespace IFramework.MessageQueue.ZeroMQ
             MessageQueue.Add(messageContext);
         }
 
-        protected override void ConsumeMessage(IMessageContext messageContext)
+        protected override IMessageContext NewMessageContext(IMessage message)
         {
-            var eventContext = messageContext as MessageContext;
-            var message = eventContext.Message;
-            var messageHandlerTypes = HandlerProvider.GetHandlerTypes(message.GetType());
-
-            if (messageHandlerTypes.Count == 0)
-            {
-                return;
-            }
-
-            messageHandlerTypes.ForEach(messageHandlerType =>
-            {
-                PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
-                eventContext.ToBeSentMessageContexts.Clear();
-                var messageStore = IoCFactory.Resolve<IMessageStore>();
-                var subscriptionName = string.Format("{0}.{1}", SubscriptionName, messageHandlerType.FullName);
-                if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
-                {
-                    try
-                    {
-                        var messageHandler = IoCFactory.Resolve(messageHandlerType);
-                        ((dynamic)messageHandler).Handle((dynamic)message);
-                        var commandContexts = eventContext.ToBeSentMessageContexts;
-                        var eventBus = IoCFactory.Resolve<IEventBus>();
-                        var messageContexts = new List<MessageContext>();
-                        eventBus.GetMessages().ForEach(msg => messageContexts.Add(new MessageContext(msg)));
-                        messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
-                        if (commandContexts.Count > 0)
-                        {
-                            ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
-                        }
-                        if (messageContexts.Count > 0)
-                        {
-                            IoCFactory.Resolve<IEventPublisher>().Publish(messageContexts.ToArray());
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        if (e is DomainException)
-                        {
-                            _Logger.Warn(message.ToJson(), e);
-                        }
-                        else
-                        {
-                            //IO error or sytem Crash
-                            _Logger.Error(message.ToJson(), e);
-                        }
-                        messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e);
-                    }
-                    finally
-                    {
-                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
-                    }
-                }
-            });
+            return new MessageContext(message);
         }
+
+
+        public virtual string GetStatus()
+        {
+            return string.Format("consumer queue length: {0}/{1}<br>", MessageCount, HandledMessageCount);
+        }
+      
     }
 }

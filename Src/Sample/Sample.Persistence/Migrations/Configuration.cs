@@ -14,7 +14,6 @@ namespace Sample.Persistence.Migrations
         public Configuration()
         {
             IFramework.Config.Configuration.Instance.UseLog4Net();
-
             AutomaticMigrationsEnabled = true;
         }
 

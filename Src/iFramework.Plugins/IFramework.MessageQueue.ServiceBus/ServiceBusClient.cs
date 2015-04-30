@@ -10,28 +10,25 @@ using System.Text;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
-    public class MessageProcessor
+    public class ServiceBusClient
     {
         protected string _serviceBusConnectionString;
-        protected bool _exit = false;
-        protected readonly ILogger _logger;
         protected NamespaceManager _namespaceManager;
         protected MessagingFactory _messageFactory;
         protected ConcurrentDictionary<string, TopicClient> _topicClients;
-        public MessageProcessor(string serviceBusConnectionString)
+        internal ServiceBusClient(string serviceBusConnectionString)
         {
             _serviceBusConnectionString = serviceBusConnectionString;
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
             _namespaceManager = NamespaceManager.CreateFromConnectionString(_serviceBusConnectionString);
             _messageFactory = MessagingFactory.CreateFromConnectionString(_serviceBusConnectionString);
             _topicClients = new ConcurrentDictionary<string, TopicClient>();
         }
 
-        protected void CloseTopicClients()
+        internal void CloseTopicClients()
         {
             _topicClients.Values.ForEach(client => client.Close());
         }
-        protected TopicClient GetTopicClient(string topic)
+        internal TopicClient GetTopicClient(string topic)
         {
             TopicClient topicClient = null;
             _topicClients.TryGetValue(topic, out topicClient);
@@ -43,7 +40,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return topicClient;
         }
 
-        protected QueueClient CreateQueueClient(string queueName)
+        internal QueueClient CreateQueueClient(string queueName)
         {
             if (!_namespaceManager.QueueExists(queueName))
             {
@@ -52,7 +49,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return _messageFactory.CreateQueueClient(queueName);
         }
 
-        private TopicClient CreateTopicClient(string topicName)
+        internal TopicClient CreateTopicClient(string topicName)
         {
             TopicDescription td = new TopicDescription(topicName);
             if (!_namespaceManager.TopicExists(topicName))
@@ -62,7 +59,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return _messageFactory.CreateTopicClient(topicName);
         }
 
-        protected SubscriptionClient CreateSubscriptionClient(string topicName, string subscriptionName)
+        internal SubscriptionClient CreateSubscriptionClient(string topicName, string subscriptionName)
         {
             TopicDescription topicDescription = new TopicDescription(topicName);
             if (!_namespaceManager.TopicExists(topicName))

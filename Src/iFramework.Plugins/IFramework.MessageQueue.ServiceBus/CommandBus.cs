@@ -1,6 +1,7 @@
 ﻿using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.Logging;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
 using IFramework.MessageQueue.ServiceBus.MessageFormat;
@@ -19,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
-    public class CommandBus : MessageProcessor, ICommandBus
+    public class CommandBus : ICommandBus
     {
         protected ICommandHandlerProvider _handlerProvider;
         protected ILinearCommandManager _linearCommandManager;
@@ -32,20 +33,20 @@ namespace IFramework.MessageQueue.ServiceBus
         protected List<QueueClient> _commandQueueClients;
         protected SubscriptionClient _replySubscriptionClient;
         private BlockingCollection<IMessageContext> _toBeSentCommandQueue;
-
-
+        protected ServiceBusClient _serviceBusClient;
+        volatile bool _exit = false;
         protected bool InProc { get; set; }
         protected List<QueueClient> CommandProducers { get; set; }
-
+        ILogger _logger;
         public CommandBus(ICommandHandlerProvider handlerProvider,
                           ILinearCommandManager linearCommandManager,
                           string serviceBusConnectionString,
                           string[] commandQueueNames,
                           string replyTopicName,
-                          string replySubscriptionName,
-                          bool inProc)
-            : base(serviceBusConnectionString)
+                          string replySubscriptionName)
         {
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            _serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
             _commandStateQueues = Hashtable.Synchronized(new Hashtable());
             _handlerProvider = handlerProvider;
             _linearCommandManager = linearCommandManager;
@@ -54,7 +55,6 @@ namespace IFramework.MessageQueue.ServiceBus
             _commandQueueNames = commandQueueNames;
             _commandQueueClients = new List<QueueClient>();
             _toBeSentCommandQueue = new BlockingCollection<IMessageContext>();
-            InProc = inProc;
         }
 
         public void Start()
@@ -65,7 +65,7 @@ namespace IFramework.MessageQueue.ServiceBus
             if (_commandQueueNames != null && _commandQueueNames.Length > 0)
             {
                 _commandQueueNames.ForEach(commandQueueName =>
-                    _commandQueueClients.Add(CreateQueueClient(commandQueueName)));
+                    _commandQueueClients.Add(_serviceBusClient.CreateQueueClient(commandQueueName)));
             }
             #endregion
 
@@ -100,7 +100,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
             #region init process command reply worker
 
-            _replySubscriptionClient = CreateSubscriptionClient(_replyTopicName, _replySubscriptionName);
+            _replySubscriptionClient = _serviceBusClient.CreateSubscriptionClient(_replyTopicName, _replySubscriptionName);
 
             _subscriptionConsumeTask = Task.Factory.StartNew(() =>
             {
@@ -159,7 +159,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-        internal void SendCommands(IEnumerable<IMessageContext> commandContexts)
+        public void Send(IEnumerable<IMessageContext> commandContexts)
         {
             commandContexts.ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
         }
@@ -262,12 +262,12 @@ namespace IFramework.MessageQueue.ServiceBus
             IMessageContext commandContext = null;
             commandContext = new MessageContext(command, _replyTopicName, commandKey);
             Task task = null;
-            if (InProc && currentMessageContext == null && !(command is ILinearCommand))
-            {
-                task = SendInProc(commandContext, cancellationToken);
-            }
-            else
-            {
+            //if (InProc && currentMessageContext == null && !(command is ILinearCommand))
+            //{
+            //    task = SendInProc(commandContext, cancellationToken);
+            //}
+            //else
+            //{
                 // remain this to be compatible for the early version that has no Add Method
                 if (currentMessageContext != null)
                 {
@@ -277,7 +277,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 {
                     task = SendAsync(commandContext, cancellationToken);
                 }
-            }
+          //  }
             return task;
         }
        
@@ -321,81 +321,81 @@ namespace IFramework.MessageQueue.ServiceBus
                 });
         }
 
-        protected virtual Task SendInProc(IMessageContext commandContext, CancellationToken cancellationToken)
-        {
-            Task task = null;
-            var command = commandContext.Message as ICommand;
-            if (command is ILinearCommand)
-            {
-                task = SendAsync(commandContext, cancellationToken);
-            }
-            else if (command != null) //if not a linear command, we run synchronously.
-            {
-                task = Task.Factory.StartNew(() =>
-                {
-                    IMessageStore messageStore = null;
-                    try
-                    {
-                        var needRetry = command.NeedRetry;
-                        object result = null;
-                        PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-                        messageStore = IoCFactory.Resolve<IMessageStore>();
-                        if (!messageStore.HasCommandHandled(commandContext.MessageID))
-                        {
-                            var commandHandler = _handlerProvider.GetHandler(command.GetType());
-                            if (commandHandler == null)
-                            {
-                                PerMessageContextLifetimeManager.CurrentMessageContext = null;
-                                throw new NoHandlerExists();
-                            }
+        //protected virtual Task SendInProc(IMessageContext commandContext, CancellationToken cancellationToken)
+        //{
+        //    Task task = null;
+        //    var command = commandContext.Message as ICommand;
+        //    if (command is ILinearCommand)
+        //    {
+        //        task = SendAsync(commandContext, cancellationToken);
+        //    }
+        //    else if (command != null) //if not a linear command, we run synchronously.
+        //    {
+        //        task = Task.Factory.StartNew(() =>
+        //        {
+        //            IMessageStore messageStore = null;
+        //            try
+        //            {
+        //                var needRetry = command.NeedRetry;
+        //                object result = null;
+        //                PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
+        //                messageStore = IoCFactory.Resolve<IMessageStore>();
+        //                if (!messageStore.HasCommandHandled(commandContext.MessageID))
+        //                {
+        //                    var commandHandler = _handlerProvider.GetHandler(command.GetType());
+        //                    if (commandHandler == null)
+        //                    {
+        //                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
+        //                        throw new NoHandlerExists();
+        //                    }
 
-                            do
-                            {
-                                try
-                                {
-                                    ((dynamic)commandHandler).Handle((dynamic)command);
-                                    result = commandContext.Reply;
-                                    needRetry = false;
-                                }
-                                catch (Exception ex)
-                                {
-                                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
-                                    {
-                                        throw;
-                                    }
-                                }
-                            } while (needRetry);
-                            return result;
-                        }
-                        else
-                        {
-                            throw new MessageDuplicatelyHandled();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        if (e is DomainException)
-                        {
-                            _logger.Warn(command.ToJson(), e);
-                        }
-                        else
-                        {
-                            _logger.Error(command.ToJson(), e);
-                        }
-                        if (messageStore != null)
-                        {
-                            messageStore.SaveFailedCommand(commandContext);
-                        }
-                        throw;
-                    }
-                    finally
-                    {
-                        PerMessageContextLifetimeManager.CurrentMessageContext = null;
-                    }
-                }, cancellationToken);
-            }
-            return task;
-        }
+        //                    do
+        //                    {
+        //                        try
+        //                        {
+        //                            ((dynamic)commandHandler).Handle((dynamic)command);
+        //                            result = commandContext.Reply;
+        //                            needRetry = false;
+        //                        }
+        //                        catch (Exception ex)
+        //                        {
+        //                            if (!(ex is OptimisticConcurrencyException) || !needRetry)
+        //                            {
+        //                                throw;
+        //                            }
+        //                        }
+        //                    } while (needRetry);
+        //                    return result;
+        //                }
+        //                else
+        //                {
+        //                    throw new MessageDuplicatelyHandled();
+        //                }
+        //            }
+        //            catch (Exception e)
+        //            {
+        //                if (e is DomainException)
+        //                {
+        //                    _logger.Warn(command.ToJson(), e);
+        //                }
+        //                else
+        //                {
+        //                    _logger.Error(command.ToJson(), e);
+        //                }
+        //                if (messageStore != null)
+        //                {
+        //                    messageStore.SaveFailedCommand(commandContext);
+        //                }
+        //                throw;
+        //            }
+        //            finally
+        //            {
+        //                PerMessageContextLifetimeManager.CurrentMessageContext = null;
+        //            }
+        //        }, cancellationToken);
+        //    }
+        //    return task;
+        //}
 
         protected virtual Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
         {

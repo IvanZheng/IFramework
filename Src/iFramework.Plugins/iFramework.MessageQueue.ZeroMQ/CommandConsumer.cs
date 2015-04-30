@@ -10,20 +10,157 @@ using System;
 using System.Data;
 using ZeroMQ;
 using System.Linq;
+using IFramework.Message.Impl;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using IFramework.Infrastructure.Logging;
+using System.Threading;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
-    public class CommandConsumer : MessageConsumer<IMessageContext>
+    public class CommandConsumer : CommandConsumerBase, IMessageConsumer
     {
-        protected IHandlerProvider HandlerProvider { get; set; }
+        protected string ReceiveEndPoint { get; set; }
+        protected BlockingCollection<IMessageContext> MessageQueue { get; set; }
+        protected Dictionary<string, ZmqSocket> ReplySenders { get; set; }
+        protected readonly ILogger _Logger;
+        protected Task _ConsumeWorkTask;
+        public decimal MessageCount { get; protected set; }
+        protected Task _ReceiveWorkTask;
+        protected bool _Exit = false;
+        protected decimal HandledMessageCount { get; set; }
 
         public CommandConsumer(IHandlerProvider handlerProvider, string receiveEndPoint)
-            : base(receiveEndPoint)
+            : base(handlerProvider)
         {
-            HandlerProvider = handlerProvider;
+            MessageQueue = new BlockingCollection<IMessageContext>();
+            ReceiveEndPoint = receiveEndPoint;
+            ReplySenders = new Dictionary<string, ZmqSocket>();
+            _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
-        void OnMessageHandled(IMessageContext messageContext, IMessageReply reply)
+        protected ZmqSocket GetReplySender(string replyToEndPoint)
+        {
+            ZmqSocket replySender = null;
+            if (!string.IsNullOrWhiteSpace(replyToEndPoint))
+            {
+                replyToEndPoint = replyToEndPoint.Trim();
+                if (!ReplySenders.TryGetValue(replyToEndPoint, out replySender))
+                {
+                    try
+                    {
+                        replySender = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PUSH);
+                        replySender.Connect(replyToEndPoint);
+                        ReplySenders[replyToEndPoint] = replySender;
+                    }
+                    catch (Exception ex)
+                    {
+                        _Logger.Error(ex.GetBaseException().Message, ex);
+                    }
+                }
+            }
+            return replySender;
+        }
+
+        protected virtual ZmqSocket CreateSocket(string endPoint)
+        {
+            ZmqSocket receiver = ZeroMessageQueue.ZmqContext.CreateSocket(SocketType.PULL);
+            receiver.Bind(endPoint);
+            return receiver;
+        }
+        protected virtual void ReceiveMessages(object arg)
+        {
+            var messageReceiver = arg as ZmqSocket;
+            while (!_Exit)
+            {
+                try
+                {
+                    var frame = messageReceiver.ReceiveFrame(TimeSpan.FromSeconds(2));
+                    if (frame != null && frame.MessageSize > 0)
+                    {
+                        ReceiveMessage(frame);
+                        MessageCount++;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _Logger.Debug(e.GetBaseException().Message, e);
+                }
+            }
+        }
+
+        protected virtual void ConsumeMessages()
+        {
+            while (!_Exit)
+            {
+                try
+                {
+                    ConsumeMessage(MessageQueue.Take());
+                    HandledMessageCount++;
+                }
+                catch (Exception ex)
+                {
+                    Thread.Sleep(1000);
+                    _Logger.Error("consuming message error", ex);
+                }
+            }
+        }
+        public virtual void Start()
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(ReceiveEndPoint))
+                {
+                    // Receive messages
+                    var messageReceiver = CreateSocket(ReceiveEndPoint);
+                    _ReceiveWorkTask = Task.Factory.StartNew(ReceiveMessages, messageReceiver, TaskCreationOptions.LongRunning);
+                }
+                // Consume messages
+                _ConsumeWorkTask = Task.Factory.StartNew(ConsumeMessages, TaskCreationOptions.LongRunning);
+            }
+            catch (Exception e)
+            {
+                _Logger.Error(e.GetBaseException().Message, e);
+            }
+
+        }
+
+        public virtual void Stop()
+        {
+            _Exit = true;
+            if (_ReceiveWorkTask != null)
+            {
+                var receiveSocket = (_ReceiveWorkTask.AsyncState as ZmqSocket);
+                if (_ReceiveWorkTask.Wait(5000))
+                {
+                    receiveSocket.Close();
+                    _ReceiveWorkTask.Dispose();
+                }
+                else
+                {
+                    _Logger.ErrorFormat("receiver can't be stopped!");
+                }
+            }
+            if (_ConsumeWorkTask != null)
+            {
+                MessageQueue.CompleteAdding();
+                if (_ConsumeWorkTask.Wait(2000))
+                {
+                    _ConsumeWorkTask.Dispose();
+                }
+                else
+                {
+                    _Logger.ErrorFormat(" consumer can't be stopped!");
+                }
+            }
+            if (ReplySenders != null)
+            {
+                ReplySenders.Values.ForEach(socket => socket.Close());
+            }
+        }
+
+        protected override void OnMessageHandled(IMessageContext messageContext, IMessageReply reply)
         {
             if (!string.IsNullOrWhiteSpace(messageContext.ReplyToEndPoint))
             {
@@ -48,94 +185,24 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
         }
 
-        protected override void ConsumeMessage(IMessageContext commandContext)
-        {
-            var message = commandContext.Message as ICommand;
-            MessageReply messageReply = null;
-            if (message == null)
-            {
-                return;
-            }
-            var needRetry = message.NeedRetry;
-            bool commandHasHandled = false;
-            IMessageStore messageStore = null;
-            try
-            {
-                PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-                messageStore = IoCFactory.Resolve<IMessageStore>();
-                commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
-                if (!commandHasHandled)
-                {
-                    var messageHandler = HandlerProvider.GetHandler(message.GetType());
-                    _Logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
-
-                    if (messageHandler == null)
-                    {
-                        messageReply = new MessageReply(commandContext.MessageID, new NoHandlerExists());
-                    }
-                    else
-                    {
-                        //var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                        do
-                        {
-                            try
-                            {
-                                ((dynamic)messageHandler).Handle((dynamic)message);
-                                var eventBus = IoCFactory.Resolve<IEventBus>();
-                                var eventContexts = messageStore.SaveCommand(commandContext, eventBus.GetMessages());
-                                IoCFactory.Resolve<IEventPublisher>().Publish(eventContexts.ToArray());
-                                //unitOfWork.Commit();
-                                messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
-                                needRetry = false;
-                            }
-                            catch (Exception ex)
-                            {
-                                if (!(ex is OptimisticConcurrencyException) || !needRetry)
-                                {
-                                    throw;
-                                }
-                            }
-                        } while (needRetry);
-                    }
-                }
-                else
-                {
-                    messageReply = new MessageReply(commandContext.MessageID, new MessageDuplicatelyHandled());
-                }
-            }
-            catch (Exception e)
-            {
-                messageReply = new MessageReply(commandContext.MessageID, e.GetBaseException());
-                if (e is DomainException)
-                {
-                    _Logger.Warn(message.ToJson(), e);
-                }
-                else
-                {
-                    _Logger.Error(message.ToJson(), e);
-                }
-                if (messageStore != null)
-                {
-                    messageStore.SaveFailedCommand(commandContext);
-                }
-            }
-            finally
-            {
-                PerMessageContextLifetimeManager.CurrentMessageContext = null;
-            }
-            if (!commandHasHandled)
-            {
-                OnMessageHandled(commandContext, messageReply);
-            }
-        }
-
-        protected override void ReceiveMessage(Frame frame)
+        protected virtual void ReceiveMessage(Frame frame)
         {
             var messageContext = frame.GetMessage<MessageContext>();
             if (messageContext != null)
             {
                 MessageQueue.Add(messageContext);
             }
+        }
+
+        protected override IMessageReply NewReply(string messageId, object result)
+        {
+            return new MessageReply(messageId, result);
+        }
+
+
+        public string GetStatus()
+        {
+            return string.Format("consumer queue length: {0}/{1}<br>", MessageCount, HandledMessageCount);
         }
     }
 }

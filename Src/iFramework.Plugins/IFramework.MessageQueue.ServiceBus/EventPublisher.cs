@@ -14,17 +14,19 @@ using System.Threading.Tasks;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
-    public class EventPublisher : MessageProcessor, IEventPublisher
+    public class EventPublisher : IEventPublisher
     {
+        volatile bool _exit = false;
         protected BlockingCollection<IMessageContext> MessageQueue { get; set; }
         protected string _topic;
         protected Task _WorkTask;
-        //protected TopicClient _topicClient;
-
+        protected ServiceBusClient _serviceBusClient;
+        ILogger _logger;
         public EventPublisher(string serviceBusConnectionString, string topic)
-            : base(serviceBusConnectionString)
         {
+            _serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
             MessageQueue = new BlockingCollection<IMessageContext>();
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
             _topic = topic;
 
         }
@@ -50,7 +52,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 MessageQueue.CompleteAdding();
                 if (_WorkTask.Wait(2000))
                 {
-                    CloseTopicClients();
+                    _serviceBusClient.CloseTopicClients();
                     _WorkTask.Dispose();
                 }
                 else
@@ -81,7 +83,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     {
                         try
                         {
-                            var topicClient = GetTopicClient(eventContext.Topic ?? _topic);
+                            var topicClient = _serviceBusClient.GetTopicClient(eventContext.Topic ?? _topic);
                             topicClient.Send(((MessageContext)eventContext).BrokeredMessage);
                             Task.Factory.StartNew(() =>
                             {

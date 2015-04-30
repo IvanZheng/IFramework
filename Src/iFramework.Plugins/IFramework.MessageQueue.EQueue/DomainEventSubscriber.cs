@@ -62,7 +62,7 @@ namespace IFramework.MessageQueue.EQueue
                         messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
                         if (commandContexts.Count > 0)
                         {
-                            ((CommandBus)IoCFactory.Resolve<ICommandBus>()).SendCommands(commandContexts.AsEnumerable());
+                            IoCFactory.Resolve<ICommandBus>().Send(commandContexts.AsEnumerable());
                         }
                         if (messageContexts.Count > 0)
                         {

@@ -70,6 +70,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ZeroMQClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj">

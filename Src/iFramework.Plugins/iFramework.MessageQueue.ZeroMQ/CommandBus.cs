@@ -384,7 +384,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             }
         }
 
-        internal void SendCommands(IEnumerable<IMessageContext> commandContexts)
+        public void Send(IEnumerable<IMessageContext> commandContexts)
         {
             commandContexts.ForEach(commandContext => _toBeSentCommandQueue.Add(commandContext));
         }

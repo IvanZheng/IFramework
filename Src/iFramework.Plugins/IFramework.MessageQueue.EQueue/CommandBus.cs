@@ -138,7 +138,7 @@ namespace IFramework.MessageQueue.EQueue
             ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
         }
 
-        internal void SendCommands(IEnumerable<IMessageContext> commandContexts)
+        public void Send(IEnumerable<IMessageContext> commandContexts)
         {
             commandContexts.ForEach(commandContext => ToBeSentCommandQueue.Add(commandContext as MessageContext));
         }

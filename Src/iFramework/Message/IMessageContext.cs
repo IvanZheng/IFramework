@@ -17,5 +17,6 @@ namespace IFramework.Message
         object Message { get; }
         DateTime SentTime { get; }
         string Topic { get; }
+        List<IMessageContext> ToBeSentMessageContexts { get;}
     }
 }

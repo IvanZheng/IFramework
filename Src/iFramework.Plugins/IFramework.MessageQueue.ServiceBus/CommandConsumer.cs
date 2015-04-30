@@ -18,22 +18,20 @@ using System.Transactions;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
-    public class CommandConsumer : MessageProcessor, IMessageConsumer
+    public class CommandConsumer : IFramework.Message.Impl.CommandConsumerBase, IMessageConsumer
     {
-        protected IHandlerProvider _handlerProvider;
-        //protected Dictionary<string, TopicClient> _replyProducers;
+        volatile bool _exit = false;
         protected string _commandQueueName;
         protected QueueClient _commandQueueClient;
         protected Task _commandConsumerTask;
-
+        protected ServiceBusClient _serviceBusClient;
         public CommandConsumer(IHandlerProvider handlerProvider,
                                string serviceBusConnectionString,
                                string commandQueueName)
-            : base(serviceBusConnectionString)
+            : base(handlerProvider)
         {
-            _handlerProvider = handlerProvider;
+            _serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
             _commandQueueName = commandQueueName;
-            //_replyProducers = new Dictionary<string, TopicClient>();
         }
 
 
@@ -42,24 +40,12 @@ namespace IFramework.MessageQueue.ServiceBus
             TopicClient replyProducer = null;
             if (!string.IsNullOrWhiteSpace(replyTopicName))
             {
-                //if (!_replyProducers.TryGetValue(replyTopicName, out replyProducer))
-                //{
-                //    try
-                //    {
-                //        replyProducer = CreateTopicClient(replyTopicName);
-                //        _replyProducers[replyTopicName] = replyProducer;
-                //    }
-                //    catch (Exception ex)
-                //    {
-                //        _logger.Error(ex.GetBaseException().Message, ex);
-                //    }
-                //}
-                replyProducer = GetTopicClient(replyTopicName);
+                replyProducer = _serviceBusClient.GetTopicClient(replyTopicName);
             }
             return replyProducer;
         }
 
-        void OnMessageHandled(IMessageContext messageContext, MessageReply reply)
+        protected override void OnMessageHandled(IMessageContext messageContext, IMessageReply reply)
         {
             if (!string.IsNullOrWhiteSpace(messageContext.ReplyToEndPoint) && reply != null)
             {
@@ -70,7 +56,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     {
                         try
                         {
-                            replyProducer.Send(reply.BrokeredMessage);
+                            replyProducer.Send((reply as MessageReply).BrokeredMessage);
                             break;
                         }
                         catch (Exception ex)
@@ -88,7 +74,7 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             try
             {
-                _commandQueueClient = CreateQueueClient(_commandQueueName);
+                _commandQueueClient = _serviceBusClient.CreateQueueClient(_commandQueueName);
                 _commandConsumerTask = Task.Factory.StartNew(ConsumeMessages, TaskCreationOptions.LongRunning);
 
             }
@@ -108,7 +94,8 @@ namespace IFramework.MessageQueue.ServiceBus
                     brokeredMessage = _commandQueueClient.Receive();
                     if (brokeredMessage != null)
                     {
-                        ConsumeMessage(brokeredMessage);
+                        var commandContext = new MessageContext(brokeredMessage);
+                        ConsumeMessage(commandContext);
                         brokeredMessage.Complete();
                         MessageCount++;
                     }
@@ -121,170 +108,14 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-        void ConsumeMessage(BrokeredMessage brokeredMessage)
-        {
-            var commandContext = new MessageContext(brokeredMessage);
-            var command = commandContext.Message as ICommand;
-            MessageReply messageReply = null;
-            if (command == null)
-            {
-                return;
-            }
-            var needRetry = command.NeedRetry;
-            PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-            IEnumerable<IMessageContext> eventContexts = null;
-            var messageStore = IoCFactory.Resolve<IMessageStore>();
-            var eventBus = IoCFactory.Resolve<IEventBus>();
-            var commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
-            if (commandHasHandled)
-            {
-                messageReply = new MessageReply(commandContext.MessageID, new MessageDuplicatelyHandled());
-            }
-            else
-            {
-                var messageHandler = _handlerProvider.GetHandler(command.GetType());
-                _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
-
-                if (messageHandler == null)
-                {
-                    messageReply = new MessageReply(commandContext.MessageID, new NoHandlerExists());
-                }
-                else
-                {
-                    bool success = false;
-                    do
-                    {
-                        try
-                        {
-                            using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                               new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
-                            {
-                                ((dynamic)messageHandler).Handle((dynamic)command);
-                                messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
-                                eventContexts = messageStore.SaveCommand(commandContext, eventBus.GetMessages());
-                                transactionScope.Complete();
-                            }
-                            needRetry = false;
-                            success = true;
-                        }
-                        catch (Exception e)
-                        {
-                            if (e is OptimisticConcurrencyException && needRetry)
-                            {
-                                eventContexts = null;
-                                eventBus.ClearMessages();
-                            }
-                            else
-                            {
-                                messageReply = new MessageReply(commandContext.MessageID, e.GetBaseException());
-                                if (e is DomainException)
-                                {
-                                    _logger.Warn(command.ToJson(), e);
-                                }
-                                else
-                                {
-                                    _logger.Error(command.ToJson(), e);
-                                }
-                                messageStore.SaveFailedCommand(commandContext, e);
-                                needRetry = false;
-                            }
-                        }
-                    } while (needRetry);
-                    if (success && eventContexts != null && eventContexts.Count() > 0)
-                    {
-                        IoCFactory.Resolve<IEventPublisher>().Publish(eventContexts.ToArray());
-                    }
-                }
-            }
-            OnMessageHandled(commandContext, messageReply);
-        }
-
-        void ConsumeMessageOld(BrokeredMessage brokeredMessage)
-        {
-            var commandContext = new MessageContext(brokeredMessage);
-            var message = commandContext.Message as ICommand;
-            MessageReply messageReply = null;
-            if (message == null)
-            {
-                return;
-            }
-            var needRetry = message.NeedRetry;
-            bool commandHasHandled = false;
-            IMessageStore messageStore = null;
-            try
-            {
-                PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-                messageStore = IoCFactory.Resolve<IMessageStore>();
-                commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
-                if (!commandHasHandled)
-                {
-                    var messageHandler = _handlerProvider.GetHandler(message.GetType());
-                    _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
-
-                    if (messageHandler == null)
-                    {
-                        messageReply = new MessageReply(commandContext.MessageID, new NoHandlerExists());
-                    }
-                    else
-                    {
-                        //var unitOfWork = IoCFactory.Resolve<IUnitOfWork>();
-                        do
-                        {
-                            try
-                            {
-                                ((dynamic)messageHandler).Handle((dynamic)message);
-                                //unitOfWork.Commit();
-                                messageReply = new MessageReply(commandContext.MessageID, commandContext.Reply);
-                                needRetry = false;
-                            }
-                            catch (Exception ex)
-                            {
-                                if (!(ex is OptimisticConcurrencyException) || !needRetry)
-                                {
-                                    throw;
-                                }
-                            }
-                        } while (needRetry);
-                    }
-                }
-                else
-                {
-                    messageReply = new MessageReply(commandContext.MessageID, new MessageDuplicatelyHandled());
-                }
-            }
-            catch (Exception e)
-            {
-                messageReply = new MessageReply(commandContext.MessageID, e.GetBaseException());
-                if (e is DomainException)
-                {
-                    _logger.Warn(message.ToJson(), e);
-                }
-                else
-                {
-                    _logger.Error(message.ToJson(), e);
-                }
-                if (messageStore != null)
-                {
-                    messageStore.SaveFailedCommand(commandContext);
-                }
-            }
-            finally
-            {
-                PerMessageContextLifetimeManager.CurrentMessageContext = null;
-            }
-            if (!commandHasHandled)
-            {
-                OnMessageHandled(commandContext, messageReply);
-            }
-        }
-
+       
 
         public void Stop()
         {
             _exit = true;
             if (_commandConsumerTask != null)
             {
-                CloseTopicClients();
+                _serviceBusClient.CloseTopicClients();
                 _commandQueueClient.Close();
                 if (!_commandConsumerTask.Wait(1000))
                 {
@@ -299,5 +130,10 @@ namespace IFramework.MessageQueue.ServiceBus
         }
 
         public decimal MessageCount { get; set; }
+
+        protected override IMessageReply NewReply(string messageId, object result)
+        {
+            return new MessageReply(messageId, result);
+        }
     }
 }

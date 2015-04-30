@@ -80,6 +80,12 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
             get;
             set;
         }
+
+
+        public List<IMessageContext> ToBeSentMessageContexts
+        {
+            get { return null; }
+        }
     }
 
     class MessageContextWrapper

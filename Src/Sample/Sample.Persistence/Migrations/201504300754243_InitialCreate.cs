@@ -7,14 +7,10 @@ namespace Sample.Persistence.Migrations
     {
         public override void Up()
         {
-            AddColumn("dbo.Commands", "Error", c => c.String());
-            AddColumn("dbo.Commands", "StackTrace", c => c.String());
         }
         
         public override void Down()
         {
-            DropColumn("dbo.Commands", "StackTrace");
-            DropColumn("dbo.Commands", "Error");
         }
     }
 }

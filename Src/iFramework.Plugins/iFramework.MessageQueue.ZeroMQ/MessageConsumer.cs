@@ -158,6 +158,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                     if (frame != null && frame.MessageSize > 0)
                     {
                         ReceiveMessage(frame);
+                        MessageCount++;
                     }
                 }
                 catch (Exception e)

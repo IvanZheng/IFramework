@@ -55,6 +55,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
@@ -102,6 +103,8 @@
     <Compile Include="Message\IMessageHandler.cs" />
     <Compile Include="Message\IMessageReply.cs" />
     <Compile Include="Message\IMessageStore.cs" />
+    <Compile Include="Message\Impl\CommandConsumerBase.cs" />
+    <Compile Include="Message\Impl\EventSubscriberBase.cs" />
     <Compile Include="Message\Impl\MockMessageConsumer.cs" />
     <Compile Include="Command\ICommand.cs" />
     <Compile Include="Command\ICommandHandlerProvider.cs" />
