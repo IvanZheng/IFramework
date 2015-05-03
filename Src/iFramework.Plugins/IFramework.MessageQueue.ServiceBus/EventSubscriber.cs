@@ -33,7 +33,6 @@ namespace IFramework.MessageQueue.ServiceBus
             _topics = topics;
             _subscriptionName = subscriptionName;
             _consumeWorkTasks = new List<Task>();
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
      

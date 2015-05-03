@@ -80,6 +80,7 @@
     <Compile Include="Event\IEventPublisher.cs" />
     <Compile Include="Event\Impl\EventBus.cs" />
     <Compile Include="Event\Impl\EventPublisher.cs" />
+    <Compile Include="Event\Impl\EventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventBus.cs" />
     <Compile Include="Event\Impl\MockEventPublisher.cs" />

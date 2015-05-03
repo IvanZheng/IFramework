@@ -95,7 +95,7 @@ namespace IFramework.Event.Impl
                             });
                             break;
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             //if (ex is InvalidOperationException)
                             //{

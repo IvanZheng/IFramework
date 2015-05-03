@@ -59,7 +59,6 @@
   <ItemGroup>
     <Compile Include="CommandBus.cs" />
     <Compile Include="CommandConsumer.cs" />
-    <Compile Include="EventSubscriber.cs" />
     <Compile Include="MessageFormat\MessageContext.cs" />
     <Compile Include="ServiceBusClient.cs" />
     <Compile Include="MessageFormat\MessageReply.cs" />

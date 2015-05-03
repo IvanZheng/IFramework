@@ -12,6 +12,10 @@ namespace IFramework.MessageQueue
 
         void CloseTopicClients();
 
-        IMessageContext WrapMessage(IMessage @event);
+        IMessageContext WrapMessage(IMessage message);
+      
+        void StartSubscriptionClient(string topic, string _subscriptionName, Action<IMessageContext> OnMessageReceived);
+
+        void StopSubscriptionClients();
     }
 }
