@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace IFramework.Event.Impl
+namespace IFramework.Message.Impl
 {
-    class MockEventPublisher : IEventPublisher
+    class MockMessagePublisher : IMessagePublisher
     {
-        public void Publish(params IEvent[] events)
+        public void Publish(params IMessage[] messages)
         {
         }
 
@@ -22,7 +22,7 @@ namespace IFramework.Event.Impl
         }
 
 
-        public void Publish(params IMessageContext[] eventContexts)
+        public void Publish(params IMessageContext[] messageContexts)
         {
         }
     }

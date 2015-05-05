@@ -22,18 +22,24 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
-        public MessageContext(IMessage message)
+        public MessageContext(object message)
         {
             BrokeredMessage = new BrokeredMessage(message.ToJson());
             SentTime = DateTime.Now;
             Message = message;
-            MessageID = message.ID;
+            MessageID = ObjectId.GenerateNewId().ToString();
             ToBeSentMessageContexts = new List<IMessageContext>();
             var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
             if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
             {
                 Topic = topicAttribute.Topic;
             }
+        }
+
+        public MessageContext(IMessage message)
+            : this((object)message)
+        {
+            MessageID = message.ID;
         }
 
         public MessageContext(IMessage message, string key)
@@ -61,7 +67,7 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
 
         public string Key
         {
-            get { return (string)Headers["Key"]; }
+            get { return (string)Headers.TryGetValue("Key"); }
             set { Headers["Key"] = value; }
         }
 
@@ -91,17 +97,27 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
 
         public string FromEndPoint
         {
-            get { return (string)Headers["FromEndPoint"]; }
+            get { return (string)Headers.TryGetValue("FromEndPoint"); }
             set { Headers["FromEndPoint"] = value; }
         }
 
         object _Message;
         public object Message
         {
-            get
+           get
             {
-                return _Message ?? (_Message = BrokeredMessage.GetBody<string>()
-                                                .ToJsonObject(Type.GetType(Headers["MessageType"].ToString())));
+                if (_Message != null)
+                {
+                    return _Message;
+                }
+                object messageType = null;
+                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
+                {
+                    _Message = BrokeredMessage.GetBody<string>()
+                                               .ToJsonObject(Type.GetType(messageType.ToString()));
+                
+                }
+                return _Message;
             }
             protected set
             {
@@ -115,7 +131,7 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
 
         public DateTime SentTime
         {
-            get { return (DateTime) Headers["SentTime"]; }
+            get { return (DateTime)Headers.TryGetValue("SentTime"); }
             set { Headers["SentTime"] = value; }
         }
 
@@ -123,8 +139,8 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
 
         public string Topic
         {
-            get;
-            set;
+            get { return (string)Headers.TryGetValue("Topic"); }
+            set { Headers["Topic"] = value; }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using IFramework.Event;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,10 +19,8 @@ namespace IFramework.Message
         /// </summary>
         /// <param name="commandContext"></param>
         /// <param name="eventContexts"></param>
-        /// <returns></returns>
-        IEnumerable<IMessageContext> SaveCommand(IMessageContext commandContext, IEnumerable<IEvent> eventContexts);
-        void SaveFailedCommand(IMessageContext commandContext, Exception ex = null);
-       // void SaveUnSentCommands(IEnumerable<IMessageContext> commandContexts);
+        void SaveCommand(IMessageContext commandContext, params IMessageContext[] eventContexts);
+        void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, IMessageContext reply = null);
         void RemoveSentCommand(string commandId);
         void RemovePublishedEvent(string eventId);
         IEnumerable<IMessageContext> GetAllUnSentCommands();

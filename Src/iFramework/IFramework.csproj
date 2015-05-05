@@ -69,6 +69,7 @@
   <ItemGroup>
     <Compile Include="Bus\IBus.cs" />
     <Compile Include="Command\ILinearCommandManager.cs" />
+    <Compile Include="Command\Impl\CommandConsumer.cs" />
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
     <Compile Include="Domain\AggregateRootWithIdentity.cs" />
@@ -77,13 +78,14 @@
     <Compile Include="Domain\VersionedAggregateRoot.cs" />
     <Compile Include="Event\IApplicationEvent.cs" />
     <Compile Include="Event\IEvent.cs" />
-    <Compile Include="Event\IEventPublisher.cs" />
+    <Compile Include="Infrastructure\DictionaryExtension.cs" />
+    <Compile Include="Message\IMessagePublisher.cs" />
     <Compile Include="Event\Impl\EventBus.cs" />
-    <Compile Include="Event\Impl\EventPublisher.cs" />
+    <Compile Include="Message\Impl\MessagePublisher.cs" />
     <Compile Include="Event\Impl\EventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventBus.cs" />
-    <Compile Include="Event\Impl\MockEventPublisher.cs" />
+    <Compile Include="Message\Impl\MockMessagePublisher.cs" />
     <Compile Include="Infrastructure\Caching\CacheExtensions.cs" />
     <Compile Include="Infrastructure\Caching\ICacheManager.cs" />
     <Compile Include="Infrastructure\Caching\Impl\MemoryCacheManager.cs" />
@@ -104,10 +106,7 @@
     <Compile Include="Message\IMessageDistributor.cs" />
     <Compile Include="Message\IMessageHandledNotification.cs" />
     <Compile Include="Message\IMessageHandler.cs" />
-    <Compile Include="Message\IMessageReply.cs" />
     <Compile Include="Message\IMessageStore.cs" />
-    <Compile Include="Message\Impl\CommandConsumerBase.cs" />
-    <Compile Include="Message\Impl\EventSubscriberBase.cs" />
     <Compile Include="Message\Impl\MockMessageConsumer.cs" />
     <Compile Include="Command\ICommand.cs" />
     <Compile Include="Command\ICommandHandlerProvider.cs" />

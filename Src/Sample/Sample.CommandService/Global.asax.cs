@@ -17,6 +17,7 @@ using System.Web.Routing;
 using System.Threading.Tasks;
 using IFramework.MessageQueue.ServiceBus;
 using IFramework.MessageQueue.ServiceBus.MessageFormat;
+using IFramework.Command.Impl;
 
 namespace Sample.CommandService
 {
@@ -26,7 +27,7 @@ namespace Sample.CommandService
     public class WebApiApplication : System.Web.HttpApplication
     {
         static ILogger _Logger;
-        static IEventPublisher _EventPublisher;
+        static IMessagePublisher _MessagePublisher;
         static ICommandBus _CommandBus;
         static IMessageConsumer _CommandConsumer1;
         static IMessageConsumer _CommandConsumer2;
@@ -49,8 +50,8 @@ namespace Sample.CommandService
                              .RegisterMvc();
 
                 #region EventPublisher init
-                _EventPublisher = IoCFactory.Resolve<IEventPublisher>();
-                _EventPublisher.Start();
+                _MessagePublisher = IoCFactory.Resolve<IMessagePublisher>();
+                _MessagePublisher.Start();
                 #endregion
 
                 #region event subscriber init
@@ -72,9 +73,11 @@ namespace Sample.CommandService
                 var serviceBusConnectionString = IoCFactory.Resolve<string>("serviceBusConnectionString");
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
 
-                _CommandConsumer1 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue1");
-                _CommandConsumer2 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue2");
-                _CommandConsumer3 = new CommandConsumer(commandHandlerProvider, serviceBusConnectionString, "commandqueue3");
+
+                
+                _CommandConsumer1 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue1");
+                _CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
+                _CommandConsumer3 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue3");
                
                 _CommandConsumer1.Start();
                 _CommandConsumer2.Start();
@@ -108,7 +111,7 @@ namespace Sample.CommandService
                     Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
                     Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
                     Task.Factory.StartNew(() => _CommandBus.Stop()),
-                    Task.Factory.StartNew(() => _EventPublisher.Stop()),
+                    Task.Factory.StartNew(() => _MessagePublisher.Stop()),
                     Task.Factory.StartNew(() => _DomainEventConsumer.Stop()),
                     Task.Factory.StartNew(() => _ApplicationEventConsumer.Stop())
                    );

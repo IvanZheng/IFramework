@@ -8,14 +8,19 @@ namespace IFramework.MessageQueue
 {
     public interface IMessageQueueClient
     {
+        void Send(IMessageContext messageContext, string queue);
         void Publish(IMessageContext messageContext, string topic);
 
         void CloseTopicClients();
 
-        IMessageContext WrapMessage(IMessage message);
-      
-        void StartSubscriptionClient(string topic, string _subscriptionName, Action<IMessageContext> OnMessageReceived);
+        IMessageContext WrapMessage(object message, string correlationId = null, string topic = null);
+
+        void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived);
 
         void StopSubscriptionClients();
+
+        void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived);
+
+        void StopQueueClients();
     }
 }

@@ -12,11 +12,11 @@ namespace Sample.CommandHandler
 {
     public class CommandHandlerBase
     {
-        protected IEventPublisher EventPublisher
+        protected IMessagePublisher EventPublisher
         {
             get
             {
-                return IoCFactory.Resolve<IEventPublisher>();
+                return IoCFactory.Resolve<IMessagePublisher>();
             }
         }
 

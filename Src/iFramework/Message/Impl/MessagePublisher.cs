@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IFramework.Event.Impl
+namespace IFramework.Message.Impl
 {
-    public class EventPublisher : IEventPublisher
+    public class MessagePublisher : IMessagePublisher
     {
         protected BlockingCollection<IMessageContext> _MessageQueue { get; set; }
         protected string _DefaultTopic;
@@ -20,7 +20,7 @@ namespace IFramework.Event.Impl
         protected IMessageQueueClient _MessageQueueClient;
         ILogger _Logger;
 
-        public EventPublisher(IMessageQueueClient messageQueueClient, string defaultTopic)
+        public MessagePublisher(IMessageQueueClient messageQueueClient, string defaultTopic)
         {
             if (string.IsNullOrEmpty(defaultTopic))
             {
@@ -62,14 +62,14 @@ namespace IFramework.Event.Impl
             }
         }
 
-        public void Publish(params IEvent[] events)
+        public void Publish(params IMessage[] messages)
         {
-            events.ForEach(@event => _MessageQueue.Add(_MessageQueueClient.WrapMessage(@event)));
+            messages.ForEach(message => _MessageQueue.Add(_MessageQueueClient.WrapMessage(message)));
         }
 
-        public void Publish(params Message.IMessageContext[] eventContexts)
+        public void Publish(params Message.IMessageContext[] messageContexts)
         {
-            eventContexts.ForEach(@messageContext => _MessageQueue.Add(messageContext));
+            messageContexts.ForEach(@messageContext => _MessageQueue.Add(messageContext));
         }
 
         void PublishEvent()

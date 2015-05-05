@@ -70,7 +70,7 @@ namespace IFramework.MessageStoring
             return new Event(eventContext);
         }
 
-        public IEnumerable<IMessageContext> SaveCommand(IMessageContext commandContext, IEnumerable<IEvent> events)
+        public void SaveCommand(IMessageContext commandContext, params IMessageContext[] messageContexts)
         {
             string commandContextId = null;
             if (commandContext != null)
@@ -83,26 +83,29 @@ namespace IFramework.MessageStoring
                 }
                 commandContextId = commandContext.MessageID;
             }
-            var eventContexts = new List<IMessageContext>();
-            events.ForEach(@event =>
+            messageContexts.ForEach(eventContext =>
             {
-                var eventContext = IoCFactory.Resolve<IMessageContext>("MessageStoreMapping", new ParameterOverride("message", @event));
-                eventContexts.Add(eventContext);
-                eventContext.CorrelationID = commandContextId;
+                eventContext.CorrelationID = commandContext.MessageID;
                 Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
             SaveChanges();
-            return eventContexts;
         }
 
-        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null)
+        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, IMessageContext reply = null)
         {
             if (commandContext != null)
             {
                 var command = BuildCommand(commandContext, ex);
                 command.Status = MessageStatus.Failed;
                 Commands.Add(command);
+
+                if (reply != null)
+                {
+                    reply.CorrelationID = commandContext.MessageID;
+                    Events.Add(BuildEvent(reply));
+                    UnPublishedEvents.Add(new UnPublishedEvent(reply));
+                }
                 SaveChanges();
             }
         }

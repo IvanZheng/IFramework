@@ -20,7 +20,10 @@ namespace IFramework.MessageQueue.ServiceBus
         protected NamespaceManager _namespaceManager;
         protected MessagingFactory _messageFactory;
         protected ConcurrentDictionary<string, TopicClient> _topicClients;
+        protected ConcurrentDictionary<string, QueueClient> _queueClients;
+
         protected List<Task> _subscriptionClientTasks;
+        protected List<Task> _commandClientTasks;
         protected ILogger _logger = null;
         public ServiceBusClient(string serviceBusConnectionString)
         {
@@ -28,7 +31,9 @@ namespace IFramework.MessageQueue.ServiceBus
             _namespaceManager = NamespaceManager.CreateFromConnectionString(_serviceBusConnectionString);
             _messageFactory = MessagingFactory.CreateFromConnectionString(_serviceBusConnectionString);
             _topicClients = new ConcurrentDictionary<string, TopicClient>();
+            _queueClients = new ConcurrentDictionary<string, QueueClient>();
             _subscriptionClientTasks = new List<Task>();
+            _commandClientTasks = new List<Task>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
@@ -46,6 +51,17 @@ namespace IFramework.MessageQueue.ServiceBus
                 _topicClients.GetOrAdd(topic, topicClient);
             }
             return topicClient;
+        }
+
+        internal QueueClient GetQueueClient(string queue)
+        {
+            QueueClient queueClient = _queueClients.TryGetValue(queue);
+            if (queueClient == null)
+            {
+                queueClient = CreateQueueClient(queue);
+                _queueClients.GetOrAdd(queue, queueClient);
+            }
+            return queueClient;
         }
 
         internal QueueClient CreateQueueClient(string queueName)
@@ -90,9 +106,24 @@ namespace IFramework.MessageQueue.ServiceBus
             topicClient.Send(((MessageContext)messageContext).BrokeredMessage);
         }
 
-        public IMessageContext WrapMessage(IMessage message)
+        public void Send(IMessageContext messageContext, string queue)
         {
-            return new MessageContext(message);
+            var queueClient = GetQueueClient(queue);
+            queueClient.Send(((MessageContext)messageContext).BrokeredMessage);
+        }
+
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null)
+        {
+            var messageContext = new MessageContext(message);
+            if (!string.IsNullOrEmpty(correlationId))
+            {
+                messageContext.CorrelationID = correlationId;
+            }
+            if (!string.IsNullOrEmpty(topic))
+            {
+                messageContext.Topic = topic;
+            }
+            return messageContext;
         }
 
 
@@ -136,7 +167,7 @@ namespace IFramework.MessageQueue.ServiceBus
                         brokeredMessage.Complete();
                     }
                 }
-                catch(ThreadAbortException)
+                catch (ThreadAbortException)
                 {
                     return;
                 }
@@ -146,6 +177,32 @@ namespace IFramework.MessageQueue.ServiceBus
                     _logger.Error(ex.GetBaseException().Message, ex);
                 }
             }
+        }
+
+
+        public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        {
+
+            var commandQueueClient = CreateQueueClient(commandQueueName);
+            var cancellationSource = new CancellationTokenSource();
+            var task = Task.Factory.StartNew(() => ReceiveMessages(cancellationSource,
+                                                                   onMessageReceived,
+                                                                   () => commandQueueClient.Receive(new TimeSpan(0, 0, 2))),
+                                             cancellationSource.Token,
+                                             TaskCreationOptions.LongRunning,
+                                             TaskScheduler.Default);
+            _commandClientTasks.Add(task);
+        }
+
+        public void StopQueueClients()
+        {
+            _commandClientTasks.ForEach(task =>
+            {
+                CancellationTokenSource cancellationSource = ((dynamic)(task.AsyncState)).CancellationSource;
+                cancellationSource.Cancel(true);
+            }
+           );
+            Task.WaitAll(_commandClientTasks.ToArray());
         }
     }
 }

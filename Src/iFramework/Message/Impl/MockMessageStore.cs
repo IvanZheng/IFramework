@@ -19,12 +19,11 @@ namespace IFramework.Message.Impl
             
         }
 
-        public IEnumerable<IMessageContext> SaveCommand(IMessageContext commandContext, IEnumerable<IEvent> eventContexts)
+        public void SaveCommand(IMessageContext commandContext, params IMessageContext[] messageContexts)
         {
-            return null;
         }
 
-        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null)
+        public void SaveFailedCommand(IMessageContext commandContext, Exception ex, IMessageContext reply = null)
         {
             
         }

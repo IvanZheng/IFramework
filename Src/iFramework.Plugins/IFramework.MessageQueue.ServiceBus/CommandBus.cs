@@ -112,7 +112,7 @@ namespace IFramework.MessageQueue.ServiceBus
                         brokeredMessage = _replySubscriptionClient.Receive();
                         if (brokeredMessage != null)
                         {
-                            var reply = new MessageReply(brokeredMessage);
+                            var reply = new MessageContext(brokeredMessage);
                             ConsumeReply(reply);
                         }
                     }
@@ -201,20 +201,20 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-        protected void ConsumeReply(IMessageReply reply)
+        protected void ConsumeReply(IMessageContext reply)
         {
             _logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
-            var messageState = _commandStateQueues[reply.MessageID] as IFramework.Message.MessageState;
+            var messageState = _commandStateQueues[reply.CorrelationID] as IFramework.Message.MessageState;
             if (messageState != null)
             {
                 _commandStateQueues.TryRemove(reply.MessageID);
-                if (reply.Result is Exception)
+                if (reply.Message is Exception)
                 {
-                    messageState.TaskCompletionSource.TrySetException(reply.Result as Exception);
+                    messageState.TaskCompletionSource.TrySetException(reply.Message as Exception);
                 }
                 else
                 {
-                    messageState.TaskCompletionSource.TrySetResult(reply.Result);
+                    messageState.TaskCompletionSource.TrySetResult(reply.Message);
                 }
             }
         }
@@ -268,19 +268,19 @@ namespace IFramework.MessageQueue.ServiceBus
             //}
             //else
             //{
-                // remain this to be compatible for the early version that has no Add Method
-                if (currentMessageContext != null)
-                {
-                    ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
-                }
-                else
-                {
-                    task = SendAsync(commandContext, cancellationToken);
-                }
-          //  }
+            // remain this to be compatible for the early version that has no Add Method
+            //if (currentMessageContext != null)
+            //{
+            //    ((MessageContext)currentMessageContext).ToBeSentMessageContexts.Add(commandContext);
+            //}
+            //else
+            // {
+            task = SendAsync(commandContext, cancellationToken);
+            //}
+            //  }
             return task;
         }
-       
+
         public void Add(ICommand command)
         {
             var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;

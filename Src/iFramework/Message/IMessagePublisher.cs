@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace IFramework.Event
+namespace IFramework.Message
 {
-    public interface IEventPublisher
+    public interface IMessagePublisher
     {
         void Start();
         void Stop();
-        void Publish(params IEvent[] events);
+        void Publish(params IMessage[] events);
         void Publish(params IMessageContext[] eventContexts);
     }
 }
