@@ -13,7 +13,9 @@ namespace IFramework.MessageQueue
 
         void CloseTopicClients();
 
-        IMessageContext WrapMessage(object message, string correlationId = null, string topic = null);
+        IMessageContext WrapMessage(object message, string correlationId = null,
+                                    string topic = null, string key = null, 
+                                    string replyEndPoint = null);
 
         void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived);
 

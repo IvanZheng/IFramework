@@ -6,11 +6,7 @@ using System.Text;
 
 namespace IFramework.Message
 {
-    public interface IMessagePublisher
+    public interface IMessagePublisher : IMessageSender
     {
-        void Start();
-        void Stop();
-        void Publish(params IMessage[] events);
-        void Publish(params IMessageContext[] eventContexts);
     }
 }

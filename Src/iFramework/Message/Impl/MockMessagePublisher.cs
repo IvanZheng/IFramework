@@ -8,7 +8,7 @@ namespace IFramework.Message.Impl
 {
     class MockMessagePublisher : IMessagePublisher
     {
-        public void Publish(params IMessage[] messages)
+        public void Send(params IMessage[] messages)
         {
         }
 
@@ -22,7 +22,7 @@ namespace IFramework.Message.Impl
         }
 
 
-        public void Publish(params IMessageContext[] messageContexts)
+        public void Send(params IMessageContext[] messageContexts)
         {
         }
     }

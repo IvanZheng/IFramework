@@ -54,12 +54,6 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             ReplyToEndPoint = replyToEndPoint;
         }
 
-        public MessageContext(IMessage message, string replyToEndPoint, string fromEndPoint, string key)
-            : this(message, replyToEndPoint, key)
-        {
-            FromEndPoint = fromEndPoint;
-        }
-
         public IDictionary<string, object> Headers
         {
             get { return BrokeredMessage.Properties; }
@@ -93,12 +87,6 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
         {
             get;
             set;
-        }
-
-        public string FromEndPoint
-        {
-            get { return (string)Headers.TryGetValue("FromEndPoint"); }
-            set { Headers["FromEndPoint"] = value; }
         }
 
         object _Message;

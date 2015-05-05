@@ -13,7 +13,6 @@ namespace IFramework.Message
         string CorrelationID { get; set; }
         string ReplyToEndPoint { get; }
         object Reply { get; set; }
-        string FromEndPoint { get; set; }
         object Message { get; }
         DateTime SentTime { get; }
         string Topic { get; }

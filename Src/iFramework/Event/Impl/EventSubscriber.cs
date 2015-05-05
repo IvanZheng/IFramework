@@ -100,7 +100,7 @@ namespace IFramework.Event.Impl
                         }
                         if (messageContexts.Count > 0)
                         {
-                            _messagePublisher.Publish(messageContexts.ToArray());
+                            _messagePublisher.Send(messageContexts.ToArray());
                         }
                     }
                 }

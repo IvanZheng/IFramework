@@ -36,7 +36,7 @@ namespace IFramework.Command.Impl
         {
             if (_messagePublisher != null && !string.IsNullOrWhiteSpace(reply.Topic) && reply != null)
             {
-                _messagePublisher.Publish(reply);
+                _messagePublisher.Send(reply);
             }
         }
 
@@ -163,7 +163,7 @@ namespace IFramework.Command.Impl
             }
             if (_messagePublisher != null && eventContexts.Count > 0)
             {
-                _messagePublisher.Publish(eventContexts.ToArray());
+                _messagePublisher.Send(eventContexts.ToArray());
             }
         }
     }

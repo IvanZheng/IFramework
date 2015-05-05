@@ -69,6 +69,9 @@
   <ItemGroup>
     <Compile Include="Bus\IBus.cs" />
     <Compile Include="Command\ILinearCommandManager.cs" />
+    <Compile Include="Command\Impl\CommandBus.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Command\Impl\CommandConsumer.cs" />
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
@@ -81,10 +84,12 @@
     <Compile Include="Infrastructure\DictionaryExtension.cs" />
     <Compile Include="Message\IMessagePublisher.cs" />
     <Compile Include="Event\Impl\EventBus.cs" />
+    <Compile Include="Message\IMessageSender.cs" />
     <Compile Include="Message\Impl\MessagePublisher.cs" />
     <Compile Include="Event\Impl\EventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventBus.cs" />
+    <Compile Include="Message\Impl\MessageSender.cs" />
     <Compile Include="Message\Impl\MockMessagePublisher.cs" />
     <Compile Include="Infrastructure\Caching\CacheExtensions.cs" />
     <Compile Include="Infrastructure\Caching\ICacheManager.cs" />

@@ -70,11 +70,7 @@ namespace Sample.CommandService
                 #endregion
 
                 #region Command Consuemrs init
-                var serviceBusConnectionString = IoCFactory.Resolve<string>("serviceBusConnectionString");
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
-
-
-                
                 _CommandConsumer1 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue1");
                 _CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
                 _CommandConsumer3 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue3");

@@ -112,7 +112,9 @@ namespace IFramework.MessageQueue.ServiceBus
             queueClient.Send(((MessageContext)messageContext).BrokeredMessage);
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null)
+        public IMessageContext WrapMessage(object message, string correlationId = null, 
+                                           string topic = null, string key = null, 
+                                           string replyEndPoint = null)
         {
             var messageContext = new MessageContext(message);
             if (!string.IsNullOrEmpty(correlationId))
@@ -123,6 +125,14 @@ namespace IFramework.MessageQueue.ServiceBus
             {
                 messageContext.Topic = topic;
             }
+            if (!string.IsNullOrEmpty(key))
+            {
+                messageContext.Key = key;
+            }
+            if (!string.IsNullOrEmpty(replyEndPoint))
+            {
+                messageContext.ReplyToEndPoint = replyEndPoint;
+            }
             return messageContext;
         }
 
@@ -132,9 +142,10 @@ namespace IFramework.MessageQueue.ServiceBus
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName);
             var cancellationSource = new CancellationTokenSource();
 
-            var task = Task.Factory.StartNew(() => ReceiveMessages(cancellationSource,
+            var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
                                                                    onMessageReceived,
                                                                    () => subscriptionClient.Receive(new TimeSpan(0, 0, 2))),
+                                             cancellationSource,
                                              cancellationSource.Token,
                                              TaskCreationOptions.LongRunning,
                                              TaskScheduler.Default);
@@ -145,7 +156,7 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             _subscriptionClientTasks.ForEach(subscriptionClientTask =>
                 {
-                    CancellationTokenSource cancellationSource = ((dynamic)(subscriptionClientTask.AsyncState)).CancellationSource;
+                    CancellationTokenSource cancellationSource = subscriptionClientTask.AsyncState as CancellationTokenSource;
                     cancellationSource.Cancel(true);
                 }
             );
@@ -167,6 +178,10 @@ namespace IFramework.MessageQueue.ServiceBus
                         brokeredMessage.Complete();
                     }
                 }
+                catch (TaskCanceledException)
+                {
+                    return;
+                }
                 catch (ThreadAbortException)
                 {
                     return;
@@ -185,9 +200,10 @@ namespace IFramework.MessageQueue.ServiceBus
 
             var commandQueueClient = CreateQueueClient(commandQueueName);
             var cancellationSource = new CancellationTokenSource();
-            var task = Task.Factory.StartNew(() => ReceiveMessages(cancellationSource,
+            var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
                                                                    onMessageReceived,
                                                                    () => commandQueueClient.Receive(new TimeSpan(0, 0, 2))),
+                                             cancellationSource,
                                              cancellationSource.Token,
                                              TaskCreationOptions.LongRunning,
                                              TaskScheduler.Default);
@@ -198,7 +214,7 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             _commandClientTasks.ForEach(task =>
             {
-                CancellationTokenSource cancellationSource = ((dynamic)(task.AsyncState)).CancellationSource;
+                CancellationTokenSource cancellationSource = task.AsyncState as CancellationTokenSource;
                 cancellationSource.Cancel(true);
             }
            );
