@@ -11,8 +11,6 @@ namespace IFramework.MessageQueue
         void Send(IMessageContext messageContext, string queue);
         void Publish(IMessageContext messageContext, string topic);
 
-        void CloseTopicClients();
-
         IMessageContext WrapMessage(object message, string correlationId = null,
                                     string topic = null, string key = null, 
                                     string replyEndPoint = null);

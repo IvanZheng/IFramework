@@ -37,10 +37,6 @@ namespace IFramework.MessageQueue.ServiceBus
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
-        public void CloseTopicClients()
-        {
-            _topicClients.Values.ForEach(client => client.Close());
-        }
         internal TopicClient GetTopicClient(string topic)
         {
             TopicClient topicClient = null;
