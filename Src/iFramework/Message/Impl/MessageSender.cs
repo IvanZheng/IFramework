@@ -83,7 +83,7 @@ namespace IFramework.Message.Impl
                         }
                     }
                 }
-                catch (TaskCanceledException)
+                catch(OperationCanceledException)
                 {
                     return;
                 }

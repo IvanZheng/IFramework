@@ -40,8 +40,7 @@ namespace Sample.CommandService
         {
             try
             {
-                Configuration.Instance.UseLog4Net()
-                                      .RegisterMessageContextType(typeof(MessageContext));
+                Configuration.Instance.UseLog4Net();
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
                 Configuration.Instance

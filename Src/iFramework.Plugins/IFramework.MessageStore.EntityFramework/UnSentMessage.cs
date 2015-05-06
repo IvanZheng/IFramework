@@ -19,6 +19,7 @@ namespace IFramework.MessageStoring
             CreateTime = messageContext.SentTime;
             Name = messageContext.Message.GetType().Name;
             Type = messageContext.Message.GetType().AssemblyQualifiedName;
+            Topic = messageContext.Topic;
         }
 
         public string ID { get; set; }
@@ -27,5 +28,6 @@ namespace IFramework.MessageStoring
         public DateTime CreateTime { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
+        public string Topic { get; set; }
     }
 }

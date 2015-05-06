@@ -99,20 +99,46 @@ namespace IFramework.MessageQueue.ServiceBus
         public void Publish(IMessageContext messageContext, string topic)
         {
             var topicClient = GetTopicClient(topic);
-            topicClient.Send(((MessageContext)messageContext).BrokeredMessage);
+            var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;
+            while (true)
+            {
+                try
+                {
+                    topicClient.Send(brokeredMessage);
+                    break;
+                }
+                catch (InvalidOperationException)
+                {
+                    brokeredMessage = brokeredMessage.Clone();
+                }
+            }
+
         }
 
         public void Send(IMessageContext messageContext, string queue)
         {
             var queueClient = GetQueueClient(queue);
-            queueClient.Send(((MessageContext)messageContext).BrokeredMessage);
+            var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;
+            while (true)
+            {
+                try
+                {
+                    queueClient.Send(brokeredMessage);
+                    break;
+                }
+                catch (InvalidOperationException)
+                {
+                    brokeredMessage = brokeredMessage.Clone();
+                }
+            }
+
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, 
-                                           string topic = null, string key = null, 
-                                           string replyEndPoint = null)
+        public IMessageContext WrapMessage(object message, string correlationId = null,
+                                           string topic = null, string key = null,
+                                           string replyEndPoint = null, string messageId = null)
         {
-            var messageContext = new MessageContext(message);
+            var messageContext = new MessageContext(message, messageId);
             if (!string.IsNullOrEmpty(correlationId))
             {
                 messageContext.CorrelationID = correlationId;
@@ -174,7 +200,7 @@ namespace IFramework.MessageQueue.ServiceBus
                         brokeredMessage.Complete();
                     }
                 }
-                catch (TaskCanceledException)
+                catch (OperationCanceledException)
                 {
                     return;
                 }

@@ -22,12 +22,23 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
-        public MessageContext(object message)
+        public MessageContext(object message, string id = null)
         {
             BrokeredMessage = new BrokeredMessage(message.ToJson());
             SentTime = DateTime.Now;
             Message = message;
-            MessageID = ObjectId.GenerateNewId().ToString();
+            if (!string.IsNullOrEmpty(id))
+            {
+                MessageID = id;
+            }
+            else if (message is IMessage)
+            {
+                MessageID = (message as IMessage).ID;
+            }
+            else
+            {
+                MessageID = ObjectId.GenerateNewId().ToString();
+            }
             ToBeSentMessageContexts = new List<IMessageContext>();
             var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
             if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
@@ -35,12 +46,7 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
                 Topic = topicAttribute.Topic;
             }
         }
-
-        public MessageContext(IMessage message)
-            : this((object)message)
-        {
-            MessageID = message.ID;
-        }
+     
 
         public MessageContext(IMessage message, string key)
             : this(message)

@@ -180,17 +180,17 @@ namespace IFramework.MessageStoring
         }
 
 
-        public IEnumerable<IMessageContext> GetAllUnSentCommands()
+        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, object, string, string, IMessageContext> wrapMessage)
         {
-            return GetAllUnSentMessages<UnSentCommand>();
+            return GetAllUnSentMessages<UnSentCommand>(wrapMessage);
         }
 
-        public IEnumerable<IMessageContext> GetAllUnPublishedEvents()
+        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, object, string, string, IMessageContext> wrapMessage)
         {
-            return GetAllUnSentMessages<UnPublishedEvent>();
+            return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
 
-        IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>()
+        IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>(Func<string, object, string, string, IMessageContext> wrapMessage)
             where TMessage : UnSentMessage
         {
             var messageContexts = new List<IMessageContext>();
@@ -198,11 +198,10 @@ namespace IFramework.MessageStoring
             {
                 try
                 {
-                    var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type)) as IMessage;
+                    var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type));
                     if (rawMessage != null)
                     {
-                        var messageContext = IoCFactory.Resolve<IMessageContext>("MessageStoreMapping", new ParameterOverride("message", rawMessage));
-                        messageContexts.Add(messageContext);
+                        messageContexts.Add(wrapMessage(message.ID, rawMessage, message.Topic, message.CorrelationID));
                     }
                     else
                     {

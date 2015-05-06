@@ -44,7 +44,8 @@ namespace IFramework.Command.Impl
         {
             using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
             {
-                return messageStore.GetAllUnSentCommands().ToList();
+                return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId) =>
+                                                          _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationId));
             }
         }
 
@@ -91,7 +92,7 @@ namespace IFramework.Command.Impl
         protected void OnMessageReceived(IMessageContext reply)
         {
             _logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
-            var messageState = _commandStateQueues[reply.CorrelationID] as IFramework.Message.MessageState;
+            var messageState = _commandStateQueues.TryGetValue(reply.CorrelationID);
             if (messageState != null)
             {
                 _commandStateQueues.TryRemove(reply.MessageID);

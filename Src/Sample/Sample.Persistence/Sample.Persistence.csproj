@@ -69,6 +69,10 @@
     <Compile Include="Migrations\201504300754243_InitialCreate.Designer.cs">
       <DependentUpon>201504300754243_InitialCreate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201505060539435_AddMessageTopic.cs" />
+    <Compile Include="Migrations\201505060539435_AddMessageTopic.Designer.cs">
+      <DependentUpon>201505060539435_AddMessageTopic.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repositories\CommunityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -104,6 +108,12 @@
     <EmbeddedResource Include="Migrations\201504300754243_InitialCreate.resx">
       <DependentUpon>201504300754243_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505060539435_AddMessageTopic.resx">
+      <DependentUpon>201505060539435_AddMessageTopic.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Migrations\sql\201505060539435_AddMessageTopic.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

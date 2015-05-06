@@ -38,15 +38,7 @@ namespace IFramework.Message.Impl
            
         }
 
-        public IEnumerable<IMessageContext> GetAllUnSentCommands()
-        {
-            return null;
-        }
-
-        public IEnumerable<IMessageContext> GetAllUnPublishedEvents()
-        {
-            return null;
-        }
+       
 
         public void Dispose()
         {
@@ -62,6 +54,17 @@ namespace IFramework.Message.Impl
 
         public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e)
         {
+        }
+
+
+        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, object, string, string, IMessageContext> wrapMessage)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, object, string, string, IMessageContext> wrapMessage)
+        {
+            throw new NotImplementedException();
         }
     }
 }

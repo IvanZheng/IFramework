@@ -13,7 +13,7 @@ namespace IFramework.MessageQueue
 
         IMessageContext WrapMessage(object message, string correlationId = null,
                                     string topic = null, string key = null, 
-                                    string replyEndPoint = null);
+                                    string replyEndPoint = null, string messageId = null);
 
         void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived);
 

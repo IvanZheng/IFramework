@@ -51,6 +51,10 @@
       <Project>{7c17f97f-3515-4a1b-aead-01689d087de0}</Project>
       <Name>Sample.ApplicationEvent</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Sample.Command\Sample.Command.csproj">
+      <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
+      <Name>Sample.Command</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
