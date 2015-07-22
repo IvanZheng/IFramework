@@ -23,6 +23,7 @@ using System.Collections;
 using System.Globalization;
 using Newtonsoft.Json;
 using IFramework.Domain;
+using System.Web.Hosting;
 
 namespace IFramework.Infrastructure
 {
@@ -754,7 +755,7 @@ namespace IFramework.Infrastructure
             return sBuilder.ToString();
         }
 
-        static public string Serialize(object xmlContent, Encoding encoding = null)
+        static public string Serialize(object xmlContent, bool omitXmlDeclaration = false, Encoding encoding = null)
         {
             System.Xml.Serialization.XmlSerializer serializer = new XmlSerializer(xmlContent.GetType());
             //StringBuilder builder = new System.Text.StringBuilder();
@@ -766,6 +767,7 @@ namespace IFramework.Infrastructure
 
             MemoryStream stream = new MemoryStream();
             XmlWriterSettings setting = new XmlWriterSettings();
+            setting.OmitXmlDeclaration = omitXmlDeclaration;
             setting.Encoding = encoding ?? Encoding.GetEncoding("utf-8");
             setting.Indent = true;
             using (XmlWriter writer = XmlWriter.Create(stream, setting))
@@ -835,6 +837,16 @@ namespace IFramework.Infrastructure
             var clonedObject = valueObject.Clone() as TValueObject;
             initAction(clonedObject);
             return clonedObject;
+        }
+
+        public static string ResolveVirtualPath(string path)
+        {
+            return Path.Combine(HttpRuntime.AppDomainAppVirtualPath, path).Replace('\\', '/');
+        }
+
+        public static string MapPath(string virtualPath)
+        {
+            return HostingEnvironment.MapPath(virtualPath);
         }
     }
 }
