@@ -841,7 +841,11 @@ namespace IFramework.Infrastructure
 
         public static string ResolveVirtualPath(string path)
         {
-            return Path.Combine(HttpRuntime.AppDomainAppVirtualPath, path).Replace('\\', '/');
+            if (string.IsNullOrEmpty(HttpRuntime.AppDomainAppVirtualPath))
+            {
+                return Path.Combine("/", path).Replace('\\', '/').Replace("//", "/");
+            }
+            return Path.Combine(HttpRuntime.AppDomainAppVirtualPath, path).Replace('\\', '/').Replace("//", "/");
         }
 
         public static string MapPath(string virtualPath)
