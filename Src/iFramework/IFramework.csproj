@@ -109,7 +109,6 @@
     <Compile Include="Message\IMessageConsumer.cs" />
     <Compile Include="Message\IMessageContext.cs" />
     <Compile Include="Message\IMessageDistributor.cs" />
-    <Compile Include="Message\IMessageHandledNotification.cs" />
     <Compile Include="Message\IMessageHandler.cs" />
     <Compile Include="Message\IMessageStore.cs" />
     <Compile Include="Message\Impl\MockMessageConsumer.cs" />
