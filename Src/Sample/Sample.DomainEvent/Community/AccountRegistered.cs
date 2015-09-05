@@ -44,8 +44,9 @@ namespace Sample.DomainEvents.Community
     public class AccountModified : DomainEvent
     {
         public string Email { get; private set; }
-        public AccountModified(Guid id, string email)
-            :base(id)
+
+        public AccountModified(Guid accountId, string email)
+            :base(accountId)
         {
             Email = email;
         }

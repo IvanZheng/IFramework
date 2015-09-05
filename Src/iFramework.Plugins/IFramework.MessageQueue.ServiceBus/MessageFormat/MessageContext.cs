@@ -111,8 +111,8 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
                 object messageType = null;
                 if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
                 {
-                    _Message = BrokeredMessage.GetBody<string>()
-                                               .ToJsonObject(Type.GetType(messageType.ToString()));
+                    var jsonValue = BrokeredMessage.GetBody<string>();
+                    _Message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
                 
                 }
                 return _Message;

@@ -16,14 +16,25 @@ namespace IFramework.Infrastructure
             //this.DefaultMembersSearchFlags |= BindingFlags.NonPublic;
         }
 
-        protected override List<MemberInfo> GetSerializableMembers(Type objectType)
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
-            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            return objectType.GetProperties(flags)
-                .Where(propInfo => propInfo.CanWrite)
-                .Cast<MemberInfo>()
-                .ToList();
+            //TODO: Maybe cache
+            var prop = base.CreateProperty(member, memberSerialization);
+
+            if (!prop.Writable)
+            {
+                var property = member as PropertyInfo;
+                if (property != null)
+                {
+                    var hasPrivateSetter = property.GetSetMethod(true) != null;
+                    prop.Writable = hasPrivateSetter;
+                }
+            }
+            return prop;
         }
+
+
+
     }
     public static class JsonHelper
     {
