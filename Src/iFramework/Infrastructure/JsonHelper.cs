@@ -13,12 +13,16 @@ namespace IFramework.Infrastructure
     {
         public NonPublicContractResolver()
         {
-            this.DefaultMembersSearchFlags |= BindingFlags.NonPublic;
+            
         }
 
         protected override List<MemberInfo> GetSerializableMembers(Type objectType)
         {
-            return base.GetSerializableMembers(objectType);
+            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            MemberInfo[] fields = objectType.GetFields(flags);
+            return fields
+                .Concat(objectType.GetProperties(flags).Where(propInfo => propInfo.CanWrite))
+                .ToList();
         }
     }
     public static class JsonHelper
