@@ -15,6 +15,11 @@ namespace IFramework.Infrastructure
         {
             this.DefaultMembersSearchFlags |= BindingFlags.NonPublic;
         }
+
+        protected override List<MemberInfo> GetSerializableMembers(Type objectType)
+        {
+            return base.GetSerializableMembers(objectType);
+        }
     }
     public static class JsonHelper
     {
