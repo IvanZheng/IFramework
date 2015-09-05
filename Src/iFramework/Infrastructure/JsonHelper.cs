@@ -13,15 +13,15 @@ namespace IFramework.Infrastructure
     {
         public NonPublicContractResolver()
         {
-            
+            //this.DefaultMembersSearchFlags |= BindingFlags.NonPublic;
         }
 
         protected override List<MemberInfo> GetSerializableMembers(Type objectType)
         {
             var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            MemberInfo[] fields = objectType.GetFields(flags);
-            return fields
-                .Concat(objectType.GetProperties(flags).Where(propInfo => propInfo.CanWrite))
+            return objectType.GetProperties(flags)
+                .Where(propInfo => propInfo.CanWrite)
+                .Cast<MemberInfo>()
                 .ToList();
         }
     }

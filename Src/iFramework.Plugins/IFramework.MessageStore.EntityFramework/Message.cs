@@ -17,8 +17,11 @@ namespace IFramework.MessageStoring
             CorrelationID = messageContext.CorrelationID;
             MessageBody = messageContext.Message.ToJson();
             CreateTime = messageContext.SentTime;
-            Name = messageContext.Message.GetType().Name;
-            Type = messageContext.Message.GetType().AssemblyQualifiedName;
+            if (messageContext.Message != null)
+            {
+                Name = messageContext.Message.GetType().Name;
+                Type = messageContext.Message.GetType().AssemblyQualifiedName;
+            }
         }
 
         public string ID { get; set; }

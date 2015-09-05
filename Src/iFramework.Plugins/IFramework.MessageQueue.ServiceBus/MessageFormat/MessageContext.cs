@@ -40,11 +40,15 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
                 MessageID = ObjectId.GenerateNewId().ToString();
             }
             ToBeSentMessageContexts = new List<IMessageContext>();
-            var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
-            if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+            if (message != null)
             {
-                Topic = topicAttribute.Topic;
+                var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
+                if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+                {
+                    Topic = topicAttribute.Topic;
+                }
             }
+           
         }
      
 
