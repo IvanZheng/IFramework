@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IFramework.Infrastructure.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,7 @@ namespace IFramework.Infrastructure
     }
     public class TaskWorker
     {
+        ILogger _logger;
         public string Id { get; set; }
         protected Task _task;
         protected object _mutex = new object();
@@ -26,6 +28,7 @@ namespace IFramework.Infrastructure
         protected volatile bool _toExit = false;
         protected volatile bool _suspend = false;
         protected volatile bool _canceled = false;
+        public delegate void WorkDelegate();
         protected WorkDelegate _workDelegate;
 
         protected int _workInterval = 0;
@@ -35,12 +38,24 @@ namespace IFramework.Infrastructure
             set { _workInterval = value; }
         }
 
+        public TaskWorker(string id = null)
+        {
+            Id = id;
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+        }
+
+        public TaskWorker(WorkDelegate run, string id = null)
+            : this(id)
+        {
+            _workDelegate = run;
+        }
+
+
         protected void Sleep(int timeout)
         {
             Thread.Sleep(timeout);
         }
 
-        public delegate void WorkDelegate();
 
         protected virtual void RunPrepare()
         {
@@ -54,46 +69,54 @@ namespace IFramework.Infrastructure
 
         protected virtual void Run()
         {
-            RunPrepare();
-            while (!_toExit)
+            try
             {
-                try
+                RunPrepare();
+                while (!_toExit)
                 {
-                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    if (_suspend)
+                    try
                     {
-                        _semaphore.WaitOne();
-                        _suspend = false;
+                        _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                        if (_suspend)
+                        {
+                            _semaphore.WaitOne();
+                            _suspend = false;
+                        }
+                        _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                        if (_workDelegate != null)
+                        {
+                            _workDelegate.Invoke();
+                        }
+                        else
+                        {
+                            Work();
+                        }
+                        _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                        if (WorkInterval > 0)
+                        {
+                            Sleep(WorkInterval);
+                        }
                     }
-                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    if (_workDelegate != null)
+                    catch (OperationCanceledException)
                     {
-                        _workDelegate.Invoke();
+                        break;
                     }
-                    else
+                    catch (ThreadInterruptedException)
                     {
-                        Work();
+                        break;
                     }
-                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    if (WorkInterval > 0)
+                    catch (System.Exception ex)
                     {
-                        Sleep(WorkInterval);
+                        Console.Write(ex.Message);
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-                catch (ThreadInterruptedException)
-                {
-                    break;
-                }
-                catch (System.Exception ex)
-                {
-                    Console.Write(ex.Message);
-                }
+                RunCompleted();
             }
-            RunCompleted();
+            catch (Exception ex)
+            {
+                System.IO.File.AppendAllText(System.AppDomain.CurrentDomain.BaseDirectory + "/log/taskError.txt",
+                    ex.InnerException.Message + "\r\n" + ex.InnerException.StackTrace);
+            }
         }
 
         protected virtual void Work()
@@ -122,17 +145,6 @@ namespace IFramework.Infrastructure
             }
         }
 
-        public TaskWorker(string id = null)
-        {
-            Id = id;
-        }
-
-        public TaskWorker(WorkDelegate run, string id = null)
-        : this(id)
-        {
-            _workDelegate = run;
-        }
-
         public virtual TaskWorker Start()
         {
             lock (_mutex)
@@ -159,7 +171,7 @@ namespace IFramework.Infrastructure
         {
             if (millionSecondsTimeout > 0)
             {
-                Task.WaitAll(new Task[]{_task}, millionSecondsTimeout);
+                Task.WaitAll(new Task[] { _task }, millionSecondsTimeout);
             }
             else
             {
