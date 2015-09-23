@@ -17,18 +17,32 @@ namespace IFramework.MessageQueue.ZeroMQ
             throw new NotImplementedException();
         }
 
-        public Message.IMessageContext WrapMessage(Message.IMessage @event)
-        {
-            throw new NotImplementedException();
-        }
-
-
         public void StartSubscriptionClient(string topic, string _subscriptionName, Action<Message.IMessageContext> OnMessageReceived)
         {
             throw new NotImplementedException();
         }
 
         public void StopSubscriptionClients()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Send(Message.IMessageContext messageContext, string queue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Message.IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StartQueueClient(string commandQueueName, Action<Message.IMessageContext> onMessageReceived)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StopQueueClients()
         {
             throw new NotImplementedException();
         }

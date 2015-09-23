@@ -16,12 +16,12 @@ namespace IFramework.MessageQueue.ZeroMQ
     
     public static class ZeroMessageQueue
     {
-        static ZmqContext _ZmqContext;
+        static ZmqContext _ZmqContext = ZmqContext.Create();
         public static ZmqContext ZmqContext
         {
             get
             {
-                return _ZmqContext ?? (_ZmqContext = ZmqContext.Create());
+                return _ZmqContext;
             }
         }
     }
