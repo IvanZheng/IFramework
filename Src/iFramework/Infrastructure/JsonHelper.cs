@@ -106,6 +106,10 @@ namespace IFramework.Infrastructure
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    return null;
+                }
                 return Newtonsoft.Json.JsonConvert.DeserializeObject(json, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize));
             }
             catch (System.Exception)
@@ -117,6 +121,10 @@ namespace IFramework.Infrastructure
 
         public static object ToJsonObject(this string json, Type jsonType, bool serializeNonPublic = true, bool loopSerialize = false)
         {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
             try
             {
                 if (jsonType == typeof(List<dynamic>))
@@ -141,6 +149,10 @@ namespace IFramework.Infrastructure
 
         public static T ToJsonObject<T>(this string json, bool serializeNonPublic = true, bool loopSerialize = false)
         {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return default(T);
+            }
             try
             {
                 if (typeof(T) == typeof(List<dynamic>))

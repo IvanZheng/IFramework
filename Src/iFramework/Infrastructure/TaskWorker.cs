@@ -114,8 +114,9 @@ namespace IFramework.Infrastructure
             }
             catch (Exception ex)
             {
-                System.IO.File.AppendAllText(System.AppDomain.CurrentDomain.BaseDirectory + "/log/taskError.txt",
-                    ex.InnerException.Message + "\r\n" + ex.InnerException.StackTrace);
+                _logger.Error(ex);
+                //System.IO.File.AppendAllText(System.AppDomain.CurrentDomain.BaseDirectory + "/log/taskError.txt",
+                //    ex.InnerException.Message + "\r\n" + ex.InnerException.StackTrace);
             }
         }
 
