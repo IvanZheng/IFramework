@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace IFramework.Infrastructure
 {
-    class DisposeObjectHttpModule : IHttpModule
+    public class DisposeObjectHttpModule : IHttpModule
     {
         #region IHttpModule 成员
 

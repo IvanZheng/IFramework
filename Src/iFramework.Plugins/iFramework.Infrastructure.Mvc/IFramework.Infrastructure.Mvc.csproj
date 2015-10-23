@@ -96,7 +96,6 @@
     <Compile Include="Config\MvcControllerElement.cs" />
     <Compile Include="CorsAttribute.cs" />
     <Compile Include="CorsMessageHandler.cs" />
-    <Compile Include="DisposeObjectHttpModule.cs" />
     <Compile Include="InternalDefaultController.cs" />
     <Compile Include="IoCControllerFactory.cs" />
     <Compile Include="IoCPageHandlerFactory.cs" />
