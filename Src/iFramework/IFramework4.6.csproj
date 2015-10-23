@@ -95,6 +95,7 @@
     <Compile Include="Event\IApplicationEvent.cs" />
     <Compile Include="Event\IEvent.cs" />
     <Compile Include="Infrastructure\DictionaryExtension.cs" />
+    <Compile Include="Infrastructure\DisposeObjectHttpModule.cs" />
     <Compile Include="Message\IMessagePublisher.cs" />
     <Compile Include="Event\Impl\EventBus.cs" />
     <Compile Include="Message\IMessageSender.cs" />
