@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Web.Helpers;
 using System.Web.Http.Controllers;
 
-namespace IFramework.Infrastructure.Mvc
+namespace IFramework.Infrastructure.WebAuthentication
 {
     public class ValidateApiAntiForgeryTokenAttribute : System.Web.Http.AuthorizeAttribute
     {
