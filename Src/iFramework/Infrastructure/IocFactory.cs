@@ -55,11 +55,12 @@ namespace IFramework.Infrastructure
         static IoCFactory() 
         {
             _CurrentContainer = new UnityContainer();
-            UnityConfigurationSection section = (UnityConfigurationSection)ConfigurationManager.GetSection(UnityConfigurationSection.SectionName);
-            if (section != null)
-            {
-                section.Configure(_CurrentContainer);
-            }
+            _CurrentContainer.LoadConfiguration();
+            //UnityConfigurationSection section = (UnityConfigurationSection)ConfigurationManager.GetSection(UnityConfigurationSection.SectionName);
+            //if (section != null)
+            //{
+            //    section.Configure(_CurrentContainer);
+            //}
         }
 
         public static T Resolve<T>(string name, params ResolverOverride[] overrides)
