@@ -10,7 +10,6 @@ namespace IFramework.MessageStoring
     public class HandledEvent
     {
         public string Id { get; set; }
-        [MaxLength(200)]
         public string SubscriptionName { get; set; }
         public DateTime HandledTime { get; set; }
 
