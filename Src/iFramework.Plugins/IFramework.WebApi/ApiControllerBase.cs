@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
+using System.Web.Http.Results;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Web.Http.Controllers;
 
 namespace IFramework.WebApi
 {
@@ -53,13 +57,45 @@ namespace IFramework.WebApi
                     );
             }
         }
+        List<CookieHeaderValue> _cookies;
+        protected void AddCookies(params CookieHeaderValue[]  cookies)
+        {
+            if (_cookies == null)
+            {
+                _cookies = new List<CookieHeaderValue>();
+            }
+            _cookies.AddRange(cookies);
+        }
+        
+        public string TryGetCookie(string key, string defaultValue)
+        {
+            var value = defaultValue;
+            CookieHeaderValue cookie = Request.Headers.GetCookies(key).FirstOrDefault();
+            if (cookie != null)
+            {
+                value = cookie[key].Value;
+            }
+            return value;
+        }
 
+        public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext, CancellationToken cancellationToken)
+        {
+            return base.ExecuteAsync(controllerContext, cancellationToken)
+                .ContinueWith(t => {
+                    if (_cookies != null && _cookies.Count > 0)
+                    {
+                        t.Result.Headers.AddCookies(_cookies);
+                    }
+                    return t.Result;
+                }); ;
+        }
+        
 
-        protected async Task<ApiResult> ProcessAsync(Func<Task> func)
+        protected async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false)
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.ProcessAsync(func);
+                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext).ConfigureAwait(continueOnCapturedContext);
             }
             else
             {
@@ -74,11 +110,11 @@ namespace IFramework.WebApi
             }
         }
 
-        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func)
+        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false)
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.ProcessAsync(func);
+                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext).ConfigureAwait(continueOnCapturedContext);
             }
             else
             {

@@ -55,12 +55,12 @@ namespace IFramework.WebApi
     public static class ExceptionManager
     {
         static ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager));
-        public async static Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func)
+        public async static Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false)
         {
             ApiResult<T> apiResult = null;
             try
             {
-                var t = await func();
+                var t = await func().ConfigureAwait(continueOnCapturedContext);
                 apiResult = new ApiResult<T>(t);
             }
             catch (Exception ex)
@@ -80,12 +80,12 @@ namespace IFramework.WebApi
             return apiResult;
         }
 
-        public async static Task<ApiResult> ProcessAsync(Func<Task> func)
+        public async static Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false)
         {
             ApiResult apiResult = null;
             try
             {
-                await func();
+                await func().ConfigureAwait(continueOnCapturedContext);
                 apiResult = new ApiResult();
             }
             catch (Exception ex)
