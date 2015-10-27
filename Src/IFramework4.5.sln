@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageStoring.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.ServiceBus4.5", "iFramework.Plugins\IFramework.MessageQueue.ServiceBus\IFramework.MessageQueue.ServiceBus4.5.csproj", "{081BB2EB-CC5D-4512-B61E-917CD7AA795D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.WebApi", "iFramework.Plugins\IFramework.WebApi\IFramework.WebApi.csproj", "{BAFCA280-6B58-44E8-B0E7-ED6F51C0EAEC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.AspNet", "iFramework.Plugins\IFramework.WebApi\IFramework.AspNet.csproj", "{BAFCA280-6B58-44E8-B0E7-ED6F51C0EAEC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EntityFramework4.5", "iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.5.csproj", "{C00B8AD6-47C2-4642-877E-2C759D05DCFE}"
 EndProject
