@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace IFramework.WebApi
+namespace IFramework.AspNet
 {
     public class ApiResult
     {

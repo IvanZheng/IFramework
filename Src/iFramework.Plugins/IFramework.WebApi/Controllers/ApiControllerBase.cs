@@ -14,7 +14,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Web.Http.Controllers;
 
-namespace IFramework.WebApi
+namespace IFramework.AspNet
 {
     public class ApiControllerBase : ApiController
     {
