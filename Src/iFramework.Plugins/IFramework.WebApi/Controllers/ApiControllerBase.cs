@@ -78,6 +78,13 @@ namespace IFramework.AspNet
             return value;
         }
 
+        public void RemoveCookies(string key)
+        {
+            var cookies = Request.Headers.GetCookies(key).ToList();
+            cookies.ForEach(c => c.Expires = DateTimeOffset.Now.AddDays(-1));
+            AddCookies(cookies.ToArray());
+        }
+
         public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext, CancellationToken cancellationToken)
         {
             return base.ExecuteAsync(controllerContext, cancellationToken)
