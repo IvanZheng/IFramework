@@ -57,11 +57,10 @@ namespace IFramework.Event.Impl
                 var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
                 if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                 {
-                    bool success = false;
                     var messageContexts = new List<IMessageContext>();
                     List<IMessageContext> commandContexts = null;
                     var eventBus = IoCFactory.Resolve<IEventBus>();
-
+                    eventBus.ClearMessages();
                     try
                     {
                         var messageHandler = IoCFactory.Resolve(messageHandlerType);
@@ -78,7 +77,14 @@ namespace IFramework.Event.Impl
                             messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
                             transactionScope.Complete();
                         }
-                        success = true;
+                        if (commandContexts.Count > 0)
+                        {
+                            _commandBus.Send(commandContexts.AsEnumerable());
+                        }
+                        if (messageContexts.Count > 0)
+                        {
+                            _messagePublisher.Send(messageContexts.ToArray());
+                        }
                     }
                     catch (Exception e)
                     {
@@ -93,15 +99,7 @@ namespace IFramework.Event.Impl
                         }
                         messageStore.Rollback();
                         eventBus.GetToPublishAnywayMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
-
                         messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, messageContexts.ToArray());
-                    }
-                    if (success)
-                    {
-                        if (commandContexts.Count > 0)
-                        {
-                            _commandBus.Send(commandContexts.AsEnumerable());
-                        }
                         if (messageContexts.Count > 0)
                         {
                             _messagePublisher.Send(messageContexts.ToArray());
