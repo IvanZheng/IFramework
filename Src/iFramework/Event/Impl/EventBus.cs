@@ -10,11 +10,13 @@ namespace IFramework.Event.Impl
     public class EventBus : IEventBus
     {
         protected List<IEvent> EventQueue;
+        protected List<IEvent> ToPublishAnywayEventQueue;
         protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
         public EventBus(IEventSubscriberProvider provider)
         {
             EventSubscriberProvider = provider;
             EventQueue = new List<IEvent>();
+            ToPublishAnywayEventQueue = new List<IEvent>();
         }
 
         public virtual void Commit()
@@ -53,6 +55,18 @@ namespace IFramework.Event.Impl
         public void ClearMessages()
         {
             EventQueue.Clear();
+            ToPublishAnywayEventQueue.Clear();
+        }
+
+        public void PublishAnyway(params IEvent[] events)
+        {
+            Publish(events.AsEnumerable());
+            ToPublishAnywayEventQueue.AddRange(events);
+        }
+
+        public IEnumerable<IEvent> GetToPublishAnywayMessages()
+        {
+            return ToPublishAnywayEventQueue;
         }
     }
 }

@@ -13,14 +13,14 @@ namespace IFramework.Message
                        IEnumerable<IMessageContext> commandContexts,
                        IEnumerable<IMessageContext> messageContexts);
 
-        void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e);
+        void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e, params IMessageContext[] messageContexts);
         /// <summary>
         /// return event IMessageContext
         /// </summary>
         /// <param name="commandContext"></param>
         /// <param name="eventContexts"></param>
         void SaveCommand(IMessageContext commandContext, params IMessageContext[] eventContexts);
-        void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, IMessageContext reply = null);
+        void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, params IMessageContext[] eventContexts);
         void RemoveSentCommand(string commandId);
         void RemovePublishedEvent(string eventId);
         IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, object, string, string, IMessageContext> wrapMessage);

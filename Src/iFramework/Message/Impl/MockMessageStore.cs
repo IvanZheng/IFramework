@@ -23,10 +23,7 @@ namespace IFramework.Message.Impl
         {
         }
 
-        public void SaveFailedCommand(IMessageContext commandContext, Exception ex, IMessageContext reply = null)
-        {
-            
-        }
+     
 
         public void RemoveSentCommand(string commandId)
         {
@@ -51,10 +48,7 @@ namespace IFramework.Message.Impl
                               IEnumerable<IMessageContext> messageContexts)
         {
         }
-
-        public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e)
-        {
-        }
+        
 
 
         public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, object, string, string, IMessageContext> wrapMessage)
@@ -70,6 +64,14 @@ namespace IFramework.Message.Impl
         public void Rollback()
         {
             throw new NotImplementedException();
+        }
+
+        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, params IMessageContext[] eventContexts)
+        {
+        }
+
+        public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e, params IMessageContext[] messageContexts)
+        {
         }
     }
 }

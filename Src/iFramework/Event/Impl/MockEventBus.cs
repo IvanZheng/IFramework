@@ -36,5 +36,15 @@ namespace IFramework.Event.Impl
         public void ClearMessages()
         {
         }
+
+        public void PublishAnyway(params IEvent[] events)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IEvent> GetToPublishAnywayMessages()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

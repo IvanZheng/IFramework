@@ -60,6 +60,8 @@ namespace IFramework.Event.Impl
                     bool success = false;
                     var messageContexts = new List<IMessageContext>();
                     List<IMessageContext> commandContexts = null;
+                    var eventBus = IoCFactory.Resolve<IEventBus>();
+
                     try
                     {
                         var messageHandler = IoCFactory.Resolve(messageHandlerType);
@@ -71,7 +73,6 @@ namespace IFramework.Event.Impl
                             //get commands to be sent
                             commandContexts = eventContext.ToBeSentMessageContexts;
                             //get events to be published
-                            var eventBus = IoCFactory.Resolve<IEventBus>();
                             eventBus.GetMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
 
                             messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
@@ -91,7 +92,9 @@ namespace IFramework.Event.Impl
                             _logger.Error(message.ToJson(), e);
                         }
                         messageStore.Rollback();
-                        messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e);
+                        eventBus.GetToPublishAnywayMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
+
+                        messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, messageContexts.ToArray());
                     }
                     if (success)
                     {

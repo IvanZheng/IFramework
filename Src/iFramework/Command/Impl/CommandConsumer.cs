@@ -148,6 +148,12 @@ namespace IFramework.Command.Impl
                                 messageStore.Rollback();
                                 messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
                                 eventContexts.Add(messageReply);
+                                eventBus.GetToPublishAnywayMessages().ForEach(@event =>
+                                {
+                                    var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
+                                    eventContexts.Add(eventContext);
+                                });
+
                                 if (e is DomainException)
                                 {
                                     _logger.Warn(command.ToJson(), e);
@@ -156,7 +162,7 @@ namespace IFramework.Command.Impl
                                 {
                                     _logger.Error(command.ToJson(), e);
                                 }
-                                messageStore.SaveFailedCommand(commandContext, e, messageReply);
+                                messageStore.SaveFailedCommand(commandContext, e, eventContexts.ToArray());
                                 needRetry = false;
                             }
                         }
