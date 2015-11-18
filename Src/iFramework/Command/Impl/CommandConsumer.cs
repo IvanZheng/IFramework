@@ -5,6 +5,7 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.SysExceptions;
+using IFramework.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -144,6 +145,7 @@ namespace IFramework.Command.Impl
                             }
                             else
                             {
+                                messageStore.Rollback();
                                 messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
                                 eventContexts.Add(messageReply);
                                 if (e is DomainException)

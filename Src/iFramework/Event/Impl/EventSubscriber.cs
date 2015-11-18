@@ -90,6 +90,7 @@ namespace IFramework.Event.Impl
                             //IO error or sytem Crash
                             _logger.Error(message.ToJson(), e);
                         }
+                        messageStore.Rollback();
                         messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e);
                     }
                     if (success)

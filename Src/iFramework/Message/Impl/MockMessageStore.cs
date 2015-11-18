@@ -66,5 +66,10 @@ namespace IFramework.Message.Impl
         {
             throw new NotImplementedException();
         }
+
+        public void Rollback()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

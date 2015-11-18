@@ -16,5 +16,9 @@ namespace IFramework.UnitOfWork
         {
            
         }
+
+        public void Rollback()
+        {
+        }
     }
 }

@@ -25,5 +25,6 @@ namespace IFramework.Message
         void RemovePublishedEvent(string eventId);
         IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, object, string, string, IMessageContext> wrapMessage);
         IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, object, string, string, IMessageContext> wrapMessage);
+        void Rollback();
     }
 }
