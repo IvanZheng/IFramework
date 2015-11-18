@@ -6,7 +6,7 @@ namespace IFramework.Infrastructure
 {
     public static class TimerTaskFactory
     {
-        private static readonly TimeSpan DoNotRepeat = TimeSpan.FromMilliseconds(-1), Infinite = DoNotRepeat;
+        public static readonly TimeSpan DoNotRepeat = TimeSpan.FromMilliseconds(-1), Infinite = DoNotRepeat;
 
 
         public static Task<TResult> Timeout<TResult>(this Task<TResult> task, TimeSpan timeout)
@@ -165,11 +165,11 @@ namespace IFramework.Infrastructure
         /// <param name="pollInterval">Polling interval.</param>
         /// <param name="timeout">The timeout interval.</param>
         /// <returns>The result returned by the specified function, or <see langword="null"/> if the result is not valid and the task times out.</returns>
-        public static Task<T> StartNew<T>(Func<T> getResult, Func<T, bool> isResultValid, TimeSpan pollInterval, TimeSpan timeout)
+        public static Task<T> StartNew<T>(Func<T> getResult, Func<T, bool> isResultValid, TimeSpan pollInterval, TimeSpan timeout, bool immediatelyStart = true)
         {
             Timer timer = null;
             TaskCompletionSource<T> taskCompletionSource = null;
-            DateTime expirationTime = DateTime.UtcNow.Add(timeout);
+            DateTime expirationTime = Infinite == timeout ? DateTime.MaxValue : DateTime.UtcNow.Add(timeout);
 
             timer =
                 new Timer(_ =>
@@ -183,9 +183,18 @@ namespace IFramework.Infrastructure
                             return;
                         }
 
-                        var result = getResult();
-
-                        if (isResultValid(result))
+                        bool valid = false;
+                        T result = default(T);
+                        if (immediatelyStart)
+                        {
+                            result = getResult();
+                            valid = isResultValid(result);
+                        }
+                        else
+                        {
+                            immediatelyStart = true;
+                        }
+                        if (valid)
                         {
                             timer.Dispose();
                             taskCompletionSource.SetResult(result);
