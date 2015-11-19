@@ -117,6 +117,15 @@
       <Name>IFramework</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="refbins\System.Net.Http.dll" />
+    <Content Include="refbins\System.Net.Http.Formatting.dll" />
+    <Content Include="refbins\System.Net.Http.WebRequest.dll" />
+    <Content Include="refbins\System.Web.Http.dll" />
+    <Content Include="refbins\System.Web.Http.SelfHost.dll" />
+    <Content Include="refbins\System.Web.Http.WebHost.dll" />
+    <Content Include="refbins\System.Web.Mvc.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
