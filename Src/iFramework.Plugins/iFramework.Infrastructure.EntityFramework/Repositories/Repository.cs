@@ -20,7 +20,7 @@ namespace IFramework.EntityFramework.Repositories
     {
         UnitOfWork _UnitOfWork;
 
-        public Repository(DbContext dbContext, IUnitOfWork unitOfWork)
+        public Repository(MSDbContext dbContext, IUnitOfWork unitOfWork)
         {
             _UnitOfWork = unitOfWork as UnitOfWork;
             if (dbContext == null)

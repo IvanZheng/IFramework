@@ -92,7 +92,7 @@ namespace IFramework.MessageStoring
             SaveChanges();
         }
 
-        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, IMessageContext reply = null)
+        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, params IMessageContext[] eventContexts)
         {
             if (commandContext != null)
             {
@@ -100,11 +100,14 @@ namespace IFramework.MessageStoring
                 command.Status = MessageStatus.Failed;
                 Commands.Add(command);
 
-                if (reply != null)
+                if (eventContexts != null)
                 {
-                    reply.CorrelationID = commandContext.MessageID;
-                    Events.Add(BuildEvent(reply));
-                    UnPublishedEvents.Add(new UnPublishedEvent(reply));
+                    eventContexts.ForEach(eventContext => {
+                        eventContext.CorrelationID = commandContext.MessageID;
+                        Events.Add(BuildEvent(eventContext));
+                        UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
+                    });
+                   
                 }
                 SaveChanges();
             }
@@ -140,7 +143,7 @@ namespace IFramework.MessageStoring
             }
         }
 
-        public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e)
+        public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e, params IMessageContext[] messageContexts)
         {
             lock (EventLock)
             {
@@ -151,6 +154,14 @@ namespace IFramework.MessageStoring
                     Events.Add(@event);
                 }
                 HandledEvents.Add(new FailHandledEvent(@event.ID, subscriptionName, DateTime.Now, e));
+
+
+                messageContexts.ForEach(messageContext =>
+                {
+                    messageContext.CorrelationID = eventContext.MessageID;
+                    Events.Add(BuildEvent(messageContext));
+                    UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
+                });
                 SaveChanges();
             }
         }
@@ -218,5 +229,7 @@ namespace IFramework.MessageStoring
             SaveChanges();
             return messageContexts;
         }
+
+      
     }
 }

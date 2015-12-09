@@ -5,6 +5,7 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.SysExceptions;
+using IFramework.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -144,8 +145,15 @@ namespace IFramework.Command.Impl
                             }
                             else
                             {
+                                messageStore.Rollback();
                                 messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
                                 eventContexts.Add(messageReply);
+                                eventBus.GetToPublishAnywayMessages().ForEach(@event =>
+                                {
+                                    var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
+                                    eventContexts.Add(eventContext);
+                                });
+
                                 if (e is DomainException)
                                 {
                                     _logger.Warn(command.ToJson(), e);
@@ -154,7 +162,7 @@ namespace IFramework.Command.Impl
                                 {
                                     _logger.Error(command.ToJson(), e);
                                 }
-                                messageStore.SaveFailedCommand(commandContext, e, messageReply);
+                                messageStore.SaveFailedCommand(commandContext, e, eventContexts.ToArray());
                                 needRetry = false;
                             }
                         }

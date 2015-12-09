@@ -4,38 +4,39 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.Infrastructure;
 
 namespace IFramework.SysExceptions
 {
     public class ErrorCodeDictionary
     {
-        private static Dictionary<int, string> errorcodeDic;
+        private static Dictionary<object, string> errorcodeDic;
 
-        public static string GetErrorMessage(int errorcode)
+        public static string GetErrorMessage(object errorcode)
         {
-            string errorMessage = errorcodeDic.FirstOrDefault(c => c.Key == errorcode).Value;
+            string errorMessage = errorcodeDic.TryGetValue(errorcode, string.Empty);
             if (String.IsNullOrEmpty(errorMessage))
                 errorMessage = errorcode.ToString();
             return errorMessage;
         }
 
-        public static void InitErrorCodeDictionary(IDictionary<int, string> dictionary)
+        public static void InitErrorCodeDictionary(IDictionary<object, string> dictionary)
         {
-            errorcodeDic = new Dictionary<int, string>(dictionary);
+            errorcodeDic = new Dictionary<object, string>(dictionary);
         }
        
     }
 
     public class SysException : DomainException
     {
-        public int ErrorCode { get; set; }
+        public object ErrorCode { get; set; }
         public SysException() { }
         protected SysException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            ErrorCode = (int)info.GetValue("ErrorCode", typeof(int));
+            ErrorCode = info.GetValue("ErrorCode", typeof(object));
         }
-        public SysException(int errorCode, string message = null)
+        public SysException(object errorCode, string message = null)
             : base(message ?? ErrorCodeDictionary.GetErrorMessage(errorCode))
         {
             ErrorCode = errorCode;

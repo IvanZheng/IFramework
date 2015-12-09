@@ -57,5 +57,13 @@ namespace IFramework.EntityFramework
                                  (s, e) => this.InitializeQueryableCollections(e.Entity);
             }
         }
+
+        public virtual void Rollback()
+        {
+            ChangeTracker.Entries().ForEach(e =>
+            {
+                e.State = EntityState.Detached;
+            });
+        }
     }
 }

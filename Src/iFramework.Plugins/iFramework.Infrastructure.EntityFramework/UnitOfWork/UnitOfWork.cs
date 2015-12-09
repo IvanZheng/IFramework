@@ -21,13 +21,13 @@ namespace IFramework.EntityFramework
 {
     public class UnitOfWork : IUnitOfWork
     {
-        List<DbContext> _dbContexts;
+        List<MSDbContext> _dbContexts;
         // IEventPublisher _eventPublisher;
 
         public UnitOfWork(/*IEventBus eventBus,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
         //: base(eventBus, messageStore)
         {
-            _dbContexts = new List<DbContext>();
+            _dbContexts = new List<MSDbContext>();
             //  _eventPublisher = eventPublisher;
         }
         #region IUnitOfWork Members
@@ -44,19 +44,13 @@ namespace IFramework.EntityFramework
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    _dbContexts.ForEach(dbCtx =>
-                    {
-                        dbCtx.ChangeTracker.Entries().ForEach(e =>
-                        {
-                            e.State = EntityState.Detached;
-                        });
-                    });
+                    Rollback();
                     throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
                 }
             }
         }
 
-        internal void RegisterDbContext(DbContext dbContext)
+        internal void RegisterDbContext(MSDbContext dbContext)
         {
             if (!_dbContexts.Exists(dbCtx => dbCtx.Equals(dbContext)))
             {
@@ -71,6 +65,14 @@ namespace IFramework.EntityFramework
         public void Dispose()
         {
             _dbContexts.ForEach(_dbCtx => _dbCtx.Dispose());
+        }
+
+        public void Rollback()
+        {
+            _dbContexts.ForEach(dbCtx =>
+            {
+                dbCtx.Rollback();
+            });
         }
     }
 }

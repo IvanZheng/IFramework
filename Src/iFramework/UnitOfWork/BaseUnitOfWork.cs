@@ -55,5 +55,7 @@ namespace IFramework.UnitOfWork
         public virtual void Dispose()
         {
         }
+
+        public abstract void Rollback();
     }
 }
