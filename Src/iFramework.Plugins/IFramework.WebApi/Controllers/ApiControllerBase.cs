@@ -13,6 +13,7 @@ using System.Web.Http.Results;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Web.Http.Controllers;
+using IFramework.Infrastructure;
 
 namespace IFramework.AspNet
 {

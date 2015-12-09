@@ -1,5 +1,4 @@
 ﻿
-using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.SysExceptions;
 using IFramework.SysExceptions.ErrorCodes;
@@ -7,14 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
-namespace IFramework.AspNet
+namespace IFramework.Infrastructure
 {
     public class ApiResult
     {
         public bool success { get; set; }
-        public int errorCode { get; set; }
+        public object errorCode { get; set; }
         public string message { get; set; }
 
         public ApiResult()
@@ -22,7 +20,7 @@ namespace IFramework.AspNet
             success = true;
         }
 
-        public ApiResult(int errorCode, string message = null)
+        public ApiResult(object errorCode, string message = null)
         {
             this.errorCode = errorCode;
             this.message = message;
@@ -45,7 +43,7 @@ namespace IFramework.AspNet
             this.result = result;
         }
 
-        public ApiResult(int errorCode, string message = null)
+        public ApiResult(object errorCode, string message = null)
             : base(errorCode, message)
         {
            
