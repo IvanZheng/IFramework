@@ -18,6 +18,7 @@ namespace IFramework.Infrastructure
         public ApiResult()
         {
             success = true;
+            errorCode = 0;
         }
 
         public ApiResult(object errorCode, string message = null)
