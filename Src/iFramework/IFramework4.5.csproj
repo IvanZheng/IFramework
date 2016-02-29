@@ -87,6 +87,7 @@
     </Compile>
     <Compile Include="Command\Impl\CommandConsumer.cs" />
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
+    <Compile Include="Command\Impl\MockCommandBus.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
     <Compile Include="Domain\AggregateRootWithIdentity.cs" />
     <Compile Include="Domain\TimestampedAggregateRoot.cs" />
