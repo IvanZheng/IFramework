@@ -35,9 +35,10 @@ namespace IFramework.AspNet.Cors
             private set;
         }
         public string ErrorMessage { get; private set; }
-        public CorsAttribute()
+        protected string AllowMethod { get; set; }
+        public CorsAttribute(string allowMethod = "*")
         {
-
+            AllowMethod = allowMethod;
         }
         public bool TryEvaluate(HttpRequestMessage request, out IDictionary<string, string> headers)
         {
@@ -79,7 +80,7 @@ namespace IFramework.AspNet.Cors
             {
                 //设置响应头"Access-Control-Request-Headers"
                 //和"Access-Control-Allow-Headers"
-                headers.Add("Access-Control-Allow-Methods", "*");
+                headers.Add("Access-Control-Allow-Methods", AllowMethod);
 
                 string requestHeaders = request.Headers.GetValues("Access-Control-Request-Headers").FirstOrDefault();
 
