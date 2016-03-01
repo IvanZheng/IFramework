@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http.Formatting;
@@ -112,9 +113,9 @@ namespace IFramework.AspNet
                 };
                 return binder.BindModel(new ControllerContext(), modelBindingContext);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Debug.Write(ex.Message);
                 return null;
             }
            
