@@ -24,6 +24,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using IFramework.Domain;
 using System.Web.Hosting;
+using System.Numerics;
 
 namespace IFramework.Infrastructure
 {
@@ -84,6 +85,24 @@ namespace IFramework.Infrastructure
                 result[i] = ((uint)s[0]) + ((uint)s[1] << 16);
             }
             return result;
+        }
+        const string k_base36_digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+        public static string ToBase36string(this byte[] bytes, EndianFormat bytesEndian = EndianFormat.Little, bool includeProceedingZeros = true)
+        {
+            var base36_no_zeros = new RadixEncoding(k_base36_digits, bytesEndian, includeProceedingZeros);
+            return base36_no_zeros.Encode(bytes);
+        }
+
+        public static byte[] ConvertBase36StringToBytes(string base36string, EndianFormat bytesEndian = EndianFormat.Little, bool includeProceedingZeros = true)
+        {
+            var base36_no_zeros = new RadixEncoding(k_base36_digits, bytesEndian, includeProceedingZeros);
+            var bytes = new List<byte>(base36_no_zeros.Decode(base36string));
+            //while (bytes[bytes.Count - 1] == 0)
+            //{
+            //    bytes.RemoveAt(bytes.Count - 1);
+            //}
+            return bytes.ToArray();
         }
 
         public static string ToHexString(this byte[] bytes)
