@@ -14,6 +14,7 @@ using System.Configuration;
 using IFramework.Command;
 using IFramework.Event;
 using IFramework.Message;
+using System.Web.Configuration;
 
 namespace IFramework.Config
 {
@@ -32,6 +33,12 @@ namespace IFramework.Config
         Configuration()
         {
         }
+
+        public static CompilationSection GetCompliationSection()
+        {
+            return ConfigurationManager.GetSection("system.web/compilation") as CompilationSection;
+        }
+
 
         public static T GetAppConfig<T>(string key)
         {
