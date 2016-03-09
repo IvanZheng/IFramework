@@ -170,7 +170,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
             var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
                                                                    onMessageReceived,
-                                                                   () => subscriptionClient.Receive(/*new TimeSpan(0, 0, 2)*/)),
+                                                                   () => subscriptionClient.Receive(Configuration.Instance.GetMessageQueueReceiveMessageTimeout())),
                                              cancellationSource,
                                              cancellationSource.Token,
                                              TaskCreationOptions.LongRunning,
@@ -228,7 +228,7 @@ namespace IFramework.MessageQueue.ServiceBus
             var cancellationSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
                                                                    onMessageReceived,
-                                                                   () => commandQueueClient.Receive(/*new TimeSpan(0, 0, 2)*/)),
+                                                                   () => commandQueueClient.Receive(Configuration.Instance.GetMessageQueueReceiveMessageTimeout())),
                                              cancellationSource,
                                              cancellationSource.Token,
                                              TaskCreationOptions.LongRunning,

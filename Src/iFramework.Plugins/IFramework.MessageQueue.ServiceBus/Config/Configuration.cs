@@ -7,11 +7,23 @@ namespace IFramework.Config
 {
     public static class IFrameworkConfigurationExtension
     {
-        static string MessageQueueNameFormat { get; set; }
+        static string _MessageQueueNameFormat = string.Empty;
+        static TimeSpan _ReceiveMessageTimeout = new TimeSpan(0, 0, 10); 
+
+        public static TimeSpan GetMessageQueueReceiveMessageTimeout(this Configuration configuration)
+        {
+            return _ReceiveMessageTimeout;
+        }
+
+        public static Configuration SetMessageQueueReceiveMessageTimeout(this Configuration configuration, TimeSpan timeout)
+        {
+            _ReceiveMessageTimeout = timeout;
+            return configuration;
+        }
        
         public static Configuration SetMessageQueueNameFormat(this Configuration configuration, string format)
         {
-            MessageQueueNameFormat = format;
+            _MessageQueueNameFormat = format;
             return configuration;
         }
 
@@ -20,7 +32,7 @@ namespace IFramework.Config
             var compliationSection = Configuration.GetCompliationSection();
             if (!onlyInDebug || (compliationSection != null && compliationSection.Debug))
             {
-                MessageQueueNameFormat = Environment.MachineName + ".{0}";
+                configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
             }
             return configuration;
         }
@@ -28,9 +40,9 @@ namespace IFramework.Config
 
         public static string FormatMessageQueueName(this Configuration configuration, string name)
         {
-            return string.IsNullOrEmpty(MessageQueueNameFormat) ?
+            return string.IsNullOrEmpty(_MessageQueueNameFormat) ?
                           name:
-                          string.Format(MessageQueueNameFormat, name);
+                          string.Format(_MessageQueueNameFormat, name);
         }
 
        
