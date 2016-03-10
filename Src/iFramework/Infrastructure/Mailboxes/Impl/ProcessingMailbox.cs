@@ -1,5 +1,4 @@
-﻿using IFramework.Message;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +14,20 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         readonly IProcessingMessageScheduler<TMessage> _scheduler;
         internal ConcurrentQueue<TMessage> MessageQueue { get; private set; }
         Action<TMessage> _processingMessage;
+        Action<ProcessingMailbox<TMessage>> _handleMailboxEmpty;
         public string Key { get; private set; }
         private volatile int _isHandlingMessage;
+        
 
-        public ProcessingMailbox(string key, IProcessingMessageScheduler<TMessage> scheduler, Action<TMessage> processingMessage)
+
+        public ProcessingMailbox(string key, 
+            IProcessingMessageScheduler<TMessage> scheduler, 
+            Action<TMessage> processingMessage,
+            Action<ProcessingMailbox<TMessage>> handleMailboxEmpty)
         {
             _scheduler = scheduler;
             _processingMessage = processingMessage;
+            _handleMailboxEmpty = handleMailboxEmpty;
             Key = key;
             MessageQueue = new ConcurrentQueue<TMessage>();
         }
@@ -61,6 +67,10 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             if (!MessageQueue.IsEmpty)
             {
                 RegisterForExecution();
+            }
+            else
+            {
+                _handleMailboxEmpty(this);
             }
         }
 

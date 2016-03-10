@@ -55,7 +55,13 @@ namespace IFramework.Infrastructure
         static IoCFactory() 
         {
             _CurrentContainer = new UnityContainer();
-            _CurrentContainer.LoadConfiguration();
+            try
+            {
+                _CurrentContainer.LoadConfiguration(UnityConfigurationSection.SectionName);
+            }
+            catch (Exception)
+            {
+            }
             //UnityConfigurationSection section = (UnityConfigurationSection)ConfigurationManager.GetSection(UnityConfigurationSection.SectionName);
             //if (section != null)
             //{

@@ -11,8 +11,8 @@ namespace IFramework.Infrastructure.Mailboxes
     public interface IMessageProcessor<TMessage>
         where TMessage : class
     {
-        void Process(TMessage messageContext, Action<TMessage> processingMessage);
-        void CompleteProcessMessage(ProcessingMailbox<TMessage> processingMessage);
-
+        void Start();
+        void Stop();
+        void Process(ProcessMessageCommand<TMessage> command);
     }
 }
