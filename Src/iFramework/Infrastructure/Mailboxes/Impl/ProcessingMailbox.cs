@@ -13,21 +13,23 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         where TMessage : class
     {
         readonly IProcessingMessageScheduler<TMessage> _scheduler;
-        readonly ConcurrentQueue<TMessage> _messageQueue;
+        internal ConcurrentQueue<TMessage> MessageQueue { get; private set; }
         Action<TMessage> _processingMessage;
+        public string Key { get; private set; }
         private volatile int _isHandlingMessage;
 
-        public ProcessingMailbox(IProcessingMessageScheduler<TMessage> scheduler, Action<TMessage> processingMessage)
+        public ProcessingMailbox(string key, IProcessingMessageScheduler<TMessage> scheduler, Action<TMessage> processingMessage)
         {
             _scheduler = scheduler;
             _processingMessage = processingMessage;
-            _messageQueue = new ConcurrentQueue<TMessage>();
+            Key = key;
+            MessageQueue = new ConcurrentQueue<TMessage>();
         }
 
 
         public void EnqueueMessage(TMessage processingMessage)
         {
-            _messageQueue.Enqueue(processingMessage);
+            MessageQueue.Enqueue(processingMessage);
         }
 
 
@@ -41,7 +43,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             TMessage processingMessage = null;
             try
             {
-                if (_messageQueue.TryDequeue(out processingMessage))
+                if (MessageQueue.TryDequeue(out processingMessage))
                 {
                     _processingMessage(processingMessage);
                 }
@@ -49,10 +51,6 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             finally
             {
                 ExitHandlingMessage();
-                if (!_messageQueue.IsEmpty)
-                {
-                    RegisterForExecution();
-                }
             }
         }
 
@@ -60,6 +58,10 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         private void ExitHandlingMessage()
         {
             Interlocked.Exchange(ref _isHandlingMessage, 0);
+            if (!MessageQueue.IsEmpty)
+            {
+                RegisterForExecution();
+            }
         }
 
         private void RegisterForExecution()

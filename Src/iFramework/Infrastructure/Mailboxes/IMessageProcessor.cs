@@ -1,4 +1,5 @@
-﻿using IFramework.Message;
+﻿using IFramework.Infrastructure.Mailboxes.Impl;
+using IFramework.Message;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,7 @@ namespace IFramework.Infrastructure.Mailboxes
         where TMessage : class
     {
         void Process(TMessage messageContext, Action<TMessage> processingMessage);
+        void CompleteProcessMessage(ProcessingMailbox<TMessage> processingMessage);
+
     }
 }
