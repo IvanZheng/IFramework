@@ -97,9 +97,14 @@
     <Compile Include="Infrastructure\DictionaryExtension.cs" />
     <Compile Include="Infrastructure\DisposeObjectHttpModule.cs" />
     <Compile Include="Infrastructure\ExceptionManager.cs" />
+    <Compile Include="Infrastructure\Mailboxes\Impl\DefaultProcessingMessageScheduler.cs" />
+    <Compile Include="Infrastructure\Mailboxes\Impl\ProcessingMailbox.cs" />
+    <Compile Include="Infrastructure\Mailboxes\IProcessingMessageScheduler.cs" />
+    <Compile Include="Infrastructure\Mailboxes\IMessageProcessor.cs" />
     <Compile Include="Message\IMessagePublisher.cs" />
     <Compile Include="Event\Impl\EventBus.cs" />
     <Compile Include="Message\IMessageSender.cs" />
+    <Compile Include="Infrastructure\Mailboxes\Impl\MessageProcessor.cs" />
     <Compile Include="Message\Impl\MessagePublisher.cs" />
     <Compile Include="Event\Impl\EventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />
