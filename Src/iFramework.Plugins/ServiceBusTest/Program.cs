@@ -27,36 +27,69 @@ namespace ServiceBusTest
             var messageFactory = MessagingFactory.Create();
 
             var queueName = "ServiceBusTest";
-            if (namespaceManager.QueueExists(queueName))
+            if (!namespaceManager.QueueExists(queueName))
             {
-                namespaceManager.DeleteQueue(queueName);
+                QueueDescription queueDescription = new QueueDescription(queueName)
+                {
+                    EnableDeadLetteringOnMessageExpiration = true,
+                    RequiresSession = false
+                };
+                namespaceManager.CreateQueue(queueDescription);
+                //namespaceManager.DeleteQueue(queueName);
             }
-            QueueDescription queueDescription = new QueueDescription(queueName)
-            {
-                EnableDeadLetteringOnMessageExpiration = true,
-                RequiresSession = false
-            };
-            namespaceManager.CreateQueue(queueDescription);
+          
             var queueClient = messageFactory.CreateQueueClient(queueName);
             List<BrokeredMessage> toSendMessages = new List<BrokeredMessage>();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 toSendMessages.Add(new BrokeredMessage(new Payload { Id = i, Time = DateTime.Now }));
             }
             queueClient.SendBatch(toSendMessages);
             IEnumerable<BrokeredMessage> brokeredMessages = null;
-
+            long sequenceNumber = 0;
+            bool needPeek = true;
             Task.Run(() =>
             {
-                // while ((brokeredMessages = queueClient.PeekBatch(sequenceNumber, 5)) != null && brokeredMessages.Count() > 0)
+                while (needPeek && (brokeredMessages = queueClient.PeekBatch(sequenceNumber, 5)) != null && brokeredMessages.Count() > 0)
+                {
+                    foreach (var message in brokeredMessages)
+                    {
+                        try
+                        {
+                            if (message.State != MessageState.Deferred)
+                            {
+                                needPeek = false;
+                                break;
+                            }
+                            Messages.Add(message);
+                            sequenceNumber = message.SequenceNumber + 1;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.GetBaseException().Message);
+                        }
+                    }
+                }
+
+
+
                 while ((brokeredMessages = queueClient.ReceiveBatch(2, new TimeSpan(0, 0, 5))) != null && brokeredMessages.Count() > 0)
                 {
                     foreach (var message in brokeredMessages)
                     {
-                        message.Defer();
-                        Messages.Add(message);
+                        try
+                        {
+                            message.Defer();
+                            Messages.Add(message);
+                            sequenceNumber = message.SequenceNumber + 1;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.GetBaseException().Message);
+                        }
                     }
                 }
+
             });
 
             Task.Run(() =>
