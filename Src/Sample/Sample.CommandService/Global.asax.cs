@@ -15,8 +15,6 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using System.Threading.Tasks;
-using IFramework.MessageQueue.ServiceBus;
-using IFramework.MessageQueue.ServiceBus.MessageFormat;
 using IFramework.Command.Impl;
 
 namespace Sample.CommandService
@@ -44,9 +42,8 @@ namespace Sample.CommandService
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
                 Configuration.Instance
-                             .CommandHandlerProviderBuild(null, "CommandHandlers")
-                             .RegisterDisposeModule()
-                             .RegisterMvc();
+                             .MessageQueueUseMachineNameFormat()
+                             .CommandHandlerProviderBuild(null, "CommandHandlers");
 
                 #region EventPublisher init
                 _MessagePublisher = IoCFactory.Resolve<IMessagePublisher>();

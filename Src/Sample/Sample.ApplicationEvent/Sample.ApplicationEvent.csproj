@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F1F1B380-F3A0-463E-8686-3AF27962C100}</ProjectGuid>
+    <ProjectGuid>{7C17F97F-3515-4A1B-AEAD-01689D087DE0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Sample.Domain</RootNamespace>
-    <AssemblyName>Sample.Domain</AssemblyName>
+    <RootNamespace>Sample.ApplicationEvent</RootNamespace>
+    <AssemblyName>Sample.ApplicationEvent</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -42,8 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\Account.cs" />
-    <Compile Include="Model\People.cs" />
+    <Compile Include="AccountLogined.cs" />
+    <Compile Include="AccountRegistered.cs" />
+    <Compile Include="ApplicationEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -51,16 +52,7 @@
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
       <Name>IFramework4.5</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Sample.Command\Sample.Command.csproj">
-      <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
-      <Name>Sample.Command</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj">
-      <Project>{af5512aa-caf1-4066-90bd-efb9b951fe18}</Project>
-      <Name>Sample.DomainEvents</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

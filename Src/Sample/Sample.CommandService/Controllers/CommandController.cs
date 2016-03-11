@@ -7,8 +7,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using IFramework.Infrastructure.Mvc;
 using System.Net.Http.Headers;
+using IFramework.AspNet;
+using IFramework.Infrastructure;
 
 namespace Sample.CommandService.Controllers
 {
@@ -25,15 +26,15 @@ namespace Sample.CommandService.Controllers
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.Process(() => _CommandBus.Send(command));
+                return await ExceptionManager.ProcessAsync(() => _CommandBus.Send(command));
             }
             else
             {
                 return 
                     new ApiResult
                     {
-                        ErrorCode = ErrorCode.CommandInvalid,
-                        Message = string.Join(",", ModelState.Values
+                        errorCode = DTO.ErrorCode.CommandInvalid,
+                        message = string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
                     };
@@ -56,8 +57,8 @@ namespace Sample.CommandService.Controllers
                 return Task.Factory.StartNew<ApiResult>(() =>
                     new ApiResult
                     {
-                        ErrorCode = ErrorCode.CommandInvalid,
-                        Message = string.Join(",", ModelState.Values
+                        errorCode = DTO.ErrorCode.CommandInvalid,
+                        message = string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
                     });

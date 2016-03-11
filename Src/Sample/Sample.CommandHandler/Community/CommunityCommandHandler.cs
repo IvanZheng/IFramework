@@ -3,6 +3,7 @@ using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Repositories;
+using IFramework.SysExceptions;
 using IFramework.UnitOfWork;
 using Sample.ApplicationEvent;
 using Sample.Command;
@@ -46,7 +47,7 @@ namespace Sample.CommandHandler.Community
                                                                       && a.Password.Equals(command.Password));
             if (account == null)
             {
-                throw new SysException(ErrorCode.WrongUsernameOrPassword);
+                throw new SysException(DTO.ErrorCode.WrongUsernameOrPassword);
             }
 
             _EventBus.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });
@@ -58,7 +59,7 @@ namespace Sample.CommandHandler.Community
         {
             if (_DomainRepository.Find<Account>(a => a.UserName == command.UserName) != null)
             {
-                throw new SysException(ErrorCode.UsernameAlreadyExists, string.Format("Username {0} exists!", command.UserName));
+                throw new SysException(DTO.ErrorCode.UsernameAlreadyExists, string.Format("Username {0} exists!", command.UserName));
             }
 
             Account account = new Account(command.UserName, command.Password, command.Email);
@@ -72,7 +73,7 @@ namespace Sample.CommandHandler.Community
             var account = _DomainRepository.Find<Account>(a => a.UserName == command.UserName);
             if (account == null)
             {
-                throw new SysException(ErrorCode.UserNotExists);
+                throw new SysException(DTO.ErrorCode.UserNotExists);
             }
             account.Modify(command.Email);
             _UnitOfWork.Commit();
