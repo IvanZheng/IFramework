@@ -13,12 +13,13 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
     public class MessageContext : IMessageContext
     {
         public BrokeredMessage BrokeredMessage { get; protected set; }
-        public List<IMessageContext> ToBeSentMessageContexts { get; set; }
-
-        public MessageContext(BrokeredMessage brokeredMessage)
+        public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
+        public Action Complete { get; protected set; }
+        public MessageContext(BrokeredMessage brokeredMessage, Action complete = null)
         {
             BrokeredMessage = brokeredMessage;
             SentTime = DateTime.Now;
+            Complete = complete;
             ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
@@ -132,8 +133,6 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             get { return (DateTime)Headers.TryGetValue("SentTime"); }
             set { Headers["SentTime"] = value; }
         }
-
-
 
         public string Topic
         {

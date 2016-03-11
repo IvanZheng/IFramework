@@ -127,7 +127,5 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 _processingMessageScheduler.SchedulProcessing(() => processingMessage(messageContext));
             }
         }
-
-
     }
 }

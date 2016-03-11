@@ -212,6 +212,7 @@ namespace IFramework.Command.Impl
             {
                 _messagePublisher.Send(eventContexts.ToArray());
             }
+            _messageQueueClient.CompleteMessage(commandContext);
         }
     }
 }

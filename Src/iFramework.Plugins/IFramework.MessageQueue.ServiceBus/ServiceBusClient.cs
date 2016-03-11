@@ -198,6 +198,11 @@ namespace IFramework.MessageQueue.ServiceBus
             _subscriptionClientTasks.Add(task);
         }
 
+        public void CompleteMessage(IMessageContext messageContext)
+        {
+            (messageContext as MessageContext).Complete();
+        }
+
         public void StopSubscriptionClients()
         {
             _subscriptionClientTasks.ForEach(subscriptionClientTask =>
@@ -263,7 +268,8 @@ namespace IFramework.MessageQueue.ServiceBus
                             needPeek = false;
                             break;
                         }
-                        onMessageReceived(new MessageContext(message));
+                        onMessageReceived(new MessageContext(message,
+                                                            () => CompleteMessage(queueClient, message.SequenceNumber)));
                         sequenceNumber = message.SequenceNumber + 1;
                     }
                 }
@@ -291,9 +297,9 @@ namespace IFramework.MessageQueue.ServiceBus
                     brokeredMessages = queueClient.ReceiveBatch(50, new TimeSpan(0, 0, 5));
                     foreach (var message in brokeredMessages)
                     {
-
                         message.Defer();
-                        onMessageReceived(new MessageContext(message));
+                        onMessageReceived(new MessageContext(message, 
+                                                            () => CompleteMessage(queueClient, message.SequenceNumber)));
                     }
                 }
                 catch (OperationCanceledException)
@@ -311,6 +317,20 @@ namespace IFramework.MessageQueue.ServiceBus
                 }
             }
             #endregion
+        }
+
+        private void CompleteMessage(QueueClient queueClient, long sequenceNumber)
+        {
+            try
+            {
+                var toCompleteMessage = queueClient.Receive(sequenceNumber);
+                toCompleteMessage.Complete();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.GetBaseException().Message, ex);
+            }
+
         }
     }
 }
