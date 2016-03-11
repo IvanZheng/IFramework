@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
-    public interface IMailboxProcessorCommand
+    interface IMailboxProcessorCommand
     {
 
     }
 
-    public class ProcessMessageCommand<TMessage> : IMailboxProcessorCommand
+    class ProcessMessageCommand<TMessage> : IMailboxProcessorCommand
         where TMessage : class
     {
         public TMessage Message { get; private set; }
@@ -26,7 +26,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
     }
 
-    public class CompleteMessageCommand<TMessage> : IMailboxProcessorCommand
+    class CompleteMessageCommand<TMessage> : IMailboxProcessorCommand
         where TMessage : class
     {
         public ProcessingMailbox<TMessage> Mailbox { get; private set; }

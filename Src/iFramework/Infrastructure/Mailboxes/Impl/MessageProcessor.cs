@@ -55,9 +55,9 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
         }
 
-        public void Process(ProcessMessageCommand<IMessageContext> command)
+        public void Process(IMessageContext messageContext, Action<IMessageContext> process)
         {
-            _mailboxProcessorCommands.Add(command);
+            _mailboxProcessorCommands.Add(new ProcessMessageCommand<IMessageContext>(messageContext, process));
         }
 
         private void ProcessMailboxProcessorCommands(CancellationTokenSource cancellationSource)

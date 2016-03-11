@@ -44,7 +44,7 @@ namespace IFramework4._5Tests
                         MessageID = string.Format("batch:{0}-key:{1}", i, k),
                         Key = k.ToString()
                     };
-                    processor.Process(new ProcessMessageCommand<IMessageContext>(messageContext, ProcessingMessage));
+                    processor.Process(messageContext, ProcessingMessage);
                 }
             }
            

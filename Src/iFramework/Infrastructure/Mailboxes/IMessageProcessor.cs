@@ -13,6 +13,6 @@ namespace IFramework.Infrastructure.Mailboxes
     {
         void Start();
         void Stop();
-        void Process(ProcessMessageCommand<TMessage> command);
+        void Process(IMessageContext messageContext, Action<IMessageContext> process);
     }
 }

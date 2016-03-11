@@ -157,14 +157,38 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             return messageContext;
         }
+        public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        {
 
+            var commandQueueClient = CreateQueueClient(commandQueueName);
+            var cancellationSource = new CancellationTokenSource();
+            var task = Task.Factory.StartNew((cs) => ReceiveQueueMessages(cs as CancellationTokenSource,
+                                                                          onMessageReceived,
+                                                                          commandQueueClient),
+                                                     cancellationSource,
+                                                     cancellationSource.Token,
+                                                     TaskCreationOptions.LongRunning,
+                                                     TaskScheduler.Default);
+            _commandClientTasks.Add(task);
+        }
+
+        public void StopQueueClients()
+        {
+            _commandClientTasks.ForEach(task =>
+            {
+                CancellationTokenSource cancellationSource = task.AsyncState as CancellationTokenSource;
+                cancellationSource.Cancel(true);
+            }
+           );
+            Task.WaitAll(_commandClientTasks.ToArray());
+        }
 
         public void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
         {
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName);
             var cancellationSource = new CancellationTokenSource();
 
-            var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
+            var task = Task.Factory.StartNew((cs) => ReceiveTopicMessages(cs as CancellationTokenSource,
                                                                    onMessageReceived,
                                                                    () => subscriptionClient.Receive(new TimeSpan(0, 0, 2))),
                                              cancellationSource,
@@ -185,7 +209,7 @@ namespace IFramework.MessageQueue.ServiceBus
             Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
 
-        private void ReceiveMessages(CancellationTokenSource cancellationSource, Action<IMessageContext> onMessageReceived, Func<BrokeredMessage> receiveMessage)
+        private void ReceiveTopicMessages(CancellationTokenSource cancellationSource, Action<IMessageContext> onMessageReceived, Func<BrokeredMessage> receiveMessage)
         {
             while (!cancellationSource.IsCancellationRequested)
             {
@@ -216,31 +240,77 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-
-        public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, Action<IMessageContext> onMessageReceived, QueueClient queueClient)
         {
+            bool needPeek = true;
+            long sequenceNumber = 0;
+            IEnumerable<BrokeredMessage> brokeredMessages = null;
 
-            var commandQueueClient = CreateQueueClient(commandQueueName);
-            var cancellationSource = new CancellationTokenSource();
-            var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
-                                                                   onMessageReceived,
-                                                                   () => commandQueueClient.Receive(new TimeSpan(0, 0, 2))),
-                                             cancellationSource,
-                                             cancellationSource.Token,
-                                             TaskCreationOptions.LongRunning,
-                                             TaskScheduler.Default);
-            _commandClientTasks.Add(task);
-        }
-
-        public void StopQueueClients()
-        {
-            _commandClientTasks.ForEach(task =>
+            #region peek messages that not been consumed since last time
+            while (!cancellationTokenSource.IsCancellationRequested && needPeek)
             {
-                CancellationTokenSource cancellationSource = task.AsyncState as CancellationTokenSource;
-                cancellationSource.Cancel(true);
+                try
+                {
+                    brokeredMessages = queueClient.PeekBatch(sequenceNumber, 50);
+                    if (brokeredMessages == null || brokeredMessages.Count() == 0)
+                    {
+                        break;
+                    }
+                    foreach (var message in brokeredMessages)
+                    {
+                        if (message.State != Microsoft.ServiceBus.Messaging.MessageState.Deferred)
+                        {
+                            needPeek = false;
+                            break;
+                        }
+                        onMessageReceived(new MessageContext(message));
+                        sequenceNumber = message.SequenceNumber + 1;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Thread.Sleep(1000);
+                    _logger.Error(ex.GetBaseException().Message, ex);
+                }
             }
-           );
-            Task.WaitAll(_commandClientTasks.ToArray());
+            #endregion
+
+            #region receive messages to enqueue consuming queue
+            while (!cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    brokeredMessages = queueClient.ReceiveBatch(50, new TimeSpan(0, 0, 5));
+                    foreach (var message in brokeredMessages)
+                    {
+
+                        message.Defer();
+                        onMessageReceived(new MessageContext(message));
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Thread.Sleep(1000);
+                    _logger.Error(ex.GetBaseException().Message, ex);
+                }
+            }
+            #endregion
         }
     }
 }
