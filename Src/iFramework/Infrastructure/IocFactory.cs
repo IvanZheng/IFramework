@@ -57,7 +57,7 @@ namespace IFramework.Infrastructure
             _CurrentContainer = new UnityContainer();
             try
             {
-                _CurrentContainer.LoadConfiguration(UnityConfigurationSection.SectionName);
+                _CurrentContainer.LoadConfiguration();
             }
             catch (Exception)
             {

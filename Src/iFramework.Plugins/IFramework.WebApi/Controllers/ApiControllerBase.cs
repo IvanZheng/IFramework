@@ -20,11 +20,11 @@ namespace IFramework.AspNet
     public class ApiControllerBase : ApiController
     {
         #region process wrapping
-        protected ApiResult<T> Process<T>(Func<T> func)
+        protected ApiResult<T> Process<T>(Func<T> func, bool needRetry = false)
         {
             if (ModelState.IsValid)
             {
-                var apiResult = ExceptionManager.Process<T>(func);
+                var apiResult = ExceptionManager.Process<T>(func, needRetry);
                 return apiResult;
             }
             else
@@ -39,11 +39,11 @@ namespace IFramework.AspNet
                     );
             }
         }
-        protected ApiResult Process(Action action)
+        protected ApiResult Process(Action action, bool needRetry = false)
         {
             if (ModelState.IsValid)
             {
-                var apiResult = ExceptionManager.Process(action);
+                var apiResult = ExceptionManager.Process(action, needRetry);
                 return apiResult;
             }
             else
@@ -100,11 +100,11 @@ namespace IFramework.AspNet
         }
 
 
-        protected async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false)
+        protected async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false)
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext).ConfigureAwait(continueOnCapturedContext);
+                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry).ConfigureAwait(continueOnCapturedContext);
             }
             else
             {
@@ -119,11 +119,11 @@ namespace IFramework.AspNet
             }
         }
 
-        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false)
+        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false)
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext).ConfigureAwait(continueOnCapturedContext);
+                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry).ConfigureAwait(continueOnCapturedContext);
             }
             else
             {

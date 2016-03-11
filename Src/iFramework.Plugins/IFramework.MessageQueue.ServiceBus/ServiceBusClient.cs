@@ -1,4 +1,5 @@
-﻿using IFramework.Infrastructure;
+﻿using IFramework.Config;
+using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Message;
 using IFramework.MessageQueue.ServiceBus.MessageFormat;
@@ -37,7 +38,7 @@ namespace IFramework.MessageQueue.ServiceBus
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
-        internal TopicClient GetTopicClient(string topic)
+        TopicClient GetTopicClient(string topic)
         {
             TopicClient topicClient = null;
             _topicClients.TryGetValue(topic, out topicClient);
@@ -49,7 +50,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return topicClient;
         }
 
-        internal QueueClient GetQueueClient(string queue)
+        QueueClient GetQueueClient(string queue)
         {
             QueueClient queueClient = _queueClients.TryGetValue(queue);
             if (queueClient == null)
@@ -60,7 +61,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return queueClient;
         }
 
-        internal QueueClient CreateQueueClient(string queueName)
+        QueueClient CreateQueueClient(string queueName)
         {
             if (!_namespaceManager.QueueExists(queueName))
             {
@@ -69,7 +70,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return _messageFactory.CreateQueueClient(queueName);
         }
 
-        internal TopicClient CreateTopicClient(string topicName)
+        TopicClient CreateTopicClient(string topicName)
         {
             TopicDescription td = new TopicDescription(topicName);
             if (!_namespaceManager.TopicExists(topicName))
@@ -79,7 +80,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return _messageFactory.CreateTopicClient(topicName);
         }
 
-        internal SubscriptionClient CreateSubscriptionClient(string topicName, string subscriptionName)
+        SubscriptionClient CreateSubscriptionClient(string topicName, string subscriptionName)
         {
             TopicDescription topicDescription = new TopicDescription(topicName);
             if (!_namespaceManager.TopicExists(topicName))
@@ -98,6 +99,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public void Publish(IMessageContext messageContext, string topic)
         {
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
             var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;
             while (true)
@@ -117,6 +119,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public void Send(IMessageContext messageContext, string queue)
         {
+            queue = Configuration.Instance.FormatMessageQueueName(queue);
             var queueClient = GetQueueClient(queue);
             var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;
             while (true)
@@ -159,7 +162,7 @@ namespace IFramework.MessageQueue.ServiceBus
         }
         public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
         {
-
+            commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var commandQueueClient = CreateQueueClient(commandQueueName);
             var cancellationSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew((cs) => ReceiveQueueMessages(cs as CancellationTokenSource,
@@ -185,12 +188,14 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
         {
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
+            subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName);
             var cancellationSource = new CancellationTokenSource();
 
             var task = Task.Factory.StartNew((cs) => ReceiveTopicMessages(cs as CancellationTokenSource,
                                                                    onMessageReceived,
-                                                                   () => subscriptionClient.Receive(new TimeSpan(0, 0, 2))),
+                                                                   () => subscriptionClient.Receive(Configuration.Instance.GetMessageQueueReceiveMessageTimeout())),
                                              cancellationSource,
                                              cancellationSource.Token,
                                              TaskCreationOptions.LongRunning,
@@ -294,11 +299,11 @@ namespace IFramework.MessageQueue.ServiceBus
             {
                 try
                 {
-                    brokeredMessages = queueClient.ReceiveBatch(50, new TimeSpan(0, 0, 5));
+                    brokeredMessages = queueClient.ReceiveBatch(50, Configuration.Instance.GetMessageQueueReceiveMessageTimeout());
                     foreach (var message in brokeredMessages)
                     {
                         message.Defer();
-                        onMessageReceived(new MessageContext(message, 
+                        onMessageReceived(new MessageContext(message,
                                                             () => CompleteMessage(queueClient, message.SequenceNumber)));
                     }
                 }

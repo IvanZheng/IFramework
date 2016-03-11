@@ -63,6 +63,7 @@ namespace IFramework.Command.Impl
                                                                 _cancellationTokenSource.Token,
                                                                 TaskCreationOptions.LongRunning,
                                                                 TaskScheduler.Default);
+                    _messageProcessor.Start();
                 }
             }
             catch (Exception e)

@@ -69,6 +69,7 @@
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
@@ -87,6 +88,7 @@
     </Compile>
     <Compile Include="Command\Impl\CommandConsumer.cs" />
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
+    <Compile Include="Command\Impl\MockCommandBus.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
     <Compile Include="Domain\AggregateRootWithIdentity.cs" />
     <Compile Include="Domain\TimestampedAggregateRoot.cs" />
@@ -94,6 +96,7 @@
     <Compile Include="Domain\VersionedAggregateRoot.cs" />
     <Compile Include="Event\IApplicationEvent.cs" />
     <Compile Include="Event\IEvent.cs" />
+    <Compile Include="Infrastructure\RadixEncoding.cs" />
     <Compile Include="Infrastructure\DictionaryExtension.cs" />
     <Compile Include="Infrastructure\DisposeObjectHttpModule.cs" />
     <Compile Include="Infrastructure\ExceptionManager.cs" />
