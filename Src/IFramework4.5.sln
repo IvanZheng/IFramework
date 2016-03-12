@@ -51,7 +51,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.ApplicationEvent", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandHttpClient", "Sample\Sample.CommandHttpClient\Sample.CommandHttpClient.csproj", "{20165B82-F0C3-439C-91BB-AFCC731DCFEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandServiceTests", "Sample.CommandServiceTests\Sample.CommandServiceTests.csproj", "{FC17A405-80E6-4485-B311-4F68D6454CEE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandServiceTests", "Sample\Sample.CommandServiceTests\Sample.CommandServiceTests.csproj", "{FC17A405-80E6-4485-B311-4F68D6454CEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -169,6 +169,7 @@ Global
 		{07B18368-3D3F-4C12-B2F1-E38FC709226A} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 		{7C17F97F-3515-4A1B-AEAD-01689D087DE0} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 		{20165B82-F0C3-439C-91BB-AFCC731DCFEE} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
+		{FC17A405-80E6-4485-B311-4F68D6454CEE} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
