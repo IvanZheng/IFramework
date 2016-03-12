@@ -1,6 +1,7 @@
 ﻿using IFramework.Command;
 using IFramework.Infrastructure;
 using IFramework.Message;
+using Sample.CommandService.Tests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,14 @@ namespace Sample.ApiService.Controllers
         {
             return View();
         }
+
+        public ActionResult Mailbox()
+        {
+            var test = new CommandBusTests();
+            test.CommandBusPressureTest();
+            return View();
+        }
+
 
         [HttpGet]
         public Task<string> CommandDistributorStatus()

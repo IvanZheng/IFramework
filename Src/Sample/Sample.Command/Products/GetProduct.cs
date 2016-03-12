@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Sample.Command
 {
-    public class GetProduct : CommandBase
+    public class GetProducts : CommandBase
     {
-        public Guid ProductId { get; set; }
+        public List<Guid> ProductIds { get; set; }
     }
 }

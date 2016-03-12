@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IFramework.Command.Impl
 {
-    public class LinerKeyAttribute : Attribute
+    public class LinearKeyAttribute : Attribute
     {
     }
 }

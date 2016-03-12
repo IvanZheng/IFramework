@@ -14,7 +14,7 @@ namespace Sample.CommandHandler.Products
 {
     public class ProdutCommandHandler : ICommandHandler<CreateProduct>,
         ICommandHandler<ReduceProduct>,
-        ICommandHandler<GetProduct>
+        ICommandHandler<GetProducts>
     {
      //   IEventBus _EventBus;
         IMessageContext _CommandContext;
@@ -31,10 +31,12 @@ namespace Sample.CommandHandler.Products
            // _EventBus = eventBus;
         }
 
-        public void Handle(GetProduct command)
+        public void Handle(GetProducts command)
         {
-            var product = _DomainRepository.GetByKey<Product>(command.ProductId);
-            _CommandContext.Reply = product.Count;
+            var products = _DomainRepository.FindAll<Product>(p => command.ProductIds.Contains(p.Id))
+                                           .Select(p => new Sample.DTO.Project { Id = p.Id, Name = p.Name, Count = p.Count })
+                                           .ToList();
+            _CommandContext.Reply = products;
         }
 
         public void Handle(ReduceProduct command)

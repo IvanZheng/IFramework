@@ -105,7 +105,7 @@ namespace IFramework.Command.Impl
             {
                 var propertyWithKeyAttribute = CommandLinerKeys.GetOrAdd(command.GetType(), (type) => {
                     var keyProperty = command.GetType().GetProperties()
-                                                  .Where(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(LinerKeyAttribute)))
+                                                  .Where(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(LinearKeyAttribute)))
                                                   .FirstOrDefault() as _MemberInfo;
                     if (keyProperty == null)
                     {

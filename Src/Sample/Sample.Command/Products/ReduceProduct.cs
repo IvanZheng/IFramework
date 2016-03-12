@@ -9,7 +9,7 @@ namespace Sample.Command
 {
     public class ReduceProduct : LinearCommandBase
     {
-        [LinerKey]
+        [LinearKey]
         public Guid ProductId { get; set; }
         public int ReduceCount { get; set; }
     }
