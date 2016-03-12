@@ -33,7 +33,7 @@ namespace IFramework.MessageStoring
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<HandledEvent>().HasKey(e => new {e.Id, e.SubscriptionName});
+            modelBuilder.Entity<HandledEvent>().HasKey(e => new { e.Id, e.SubscriptionName });
 
             modelBuilder.Entity<Message>()
                 .Map<Command>(map =>
@@ -72,16 +72,10 @@ namespace IFramework.MessageStoring
 
         public void SaveCommand(IMessageContext commandContext, params IMessageContext[] messageContexts)
         {
-            string commandContextId = null;
             if (commandContext != null)
             {
-                var command = Commands.Find(commandContext.MessageID);
-                if (command == null)
-                {
-                    command = BuildCommand(commandContext);
-                    Commands.Add(command);
-                }
-                commandContextId = commandContext.MessageID;
+                var command = BuildCommand(commandContext);
+                Commands.Add(command);
             }
             messageContexts.ForEach(eventContext =>
             {
@@ -102,12 +96,13 @@ namespace IFramework.MessageStoring
 
                 if (eventContexts != null)
                 {
-                    eventContexts.ForEach(eventContext => {
+                    eventContexts.ForEach(eventContext =>
+                    {
                         eventContext.CorrelationID = commandContext.MessageID;
                         Events.Add(BuildEvent(eventContext));
                         UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
                     });
-                   
+
                 }
                 SaveChanges();
             }
@@ -115,7 +110,7 @@ namespace IFramework.MessageStoring
 
 
         static object EventLock = new object();
-        public void SaveEvent(IMessageContext eventContext, string subscriptionName, 
+        public void SaveEvent(IMessageContext eventContext, string subscriptionName,
                               IEnumerable<IMessageContext> commandContexts,
                               IEnumerable<IMessageContext> messageContexts)
         {
@@ -134,7 +129,8 @@ namespace IFramework.MessageStoring
                     // don't save command here like event that would be published to other bounded context
                     UnSentCommands.Add(new UnSentCommand(commandContext));
                 });
-                messageContexts.ForEach(messageContext => {
+                messageContexts.ForEach(messageContext =>
+                {
                     messageContext.CorrelationID = eventContext.MessageID;
                     Events.Add(BuildEvent(messageContext));
                     UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
@@ -173,7 +169,7 @@ namespace IFramework.MessageStoring
 
         public bool HasEventHandled(string eventId, string subscriptionName)
         {
-            return HandledEvents.Count(@event => @event.Id == eventId 
+            return HandledEvents.Count(@event => @event.Id == eventId
                                     && @event.SubscriptionName == subscriptionName) > 0;
         }
 
@@ -230,6 +226,6 @@ namespace IFramework.MessageStoring
             return messageContexts;
         }
 
-      
+
     }
 }

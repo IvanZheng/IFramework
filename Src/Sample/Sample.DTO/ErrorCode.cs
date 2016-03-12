@@ -12,6 +12,7 @@ namespace Sample.DTO
         UsernameAlreadyExists,
         WrongUsernameOrPassword,
         UserNotExists,
+        CountNotEnougth,
         CommandInvalid = 0x7ffffffe,
         UnknownError = 0x7fffffff
     }

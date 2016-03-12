@@ -49,6 +49,9 @@
     <Compile Include="Community\Register.cs" />
     <Compile Include="ConcurrentCommand.cs" />
     <Compile Include="LinearCommandManager.cs" />
+    <Compile Include="Products\CreateProduct.cs" />
+    <Compile Include="Products\GetProduct.cs" />
+    <Compile Include="Products\ReduceProduct.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

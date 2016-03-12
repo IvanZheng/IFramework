@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="CommandHandlerBase.cs" />
     <Compile Include="Community\CommunityCommandHandler.cs" />
+    <Compile Include="Products\ProdutCommandHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

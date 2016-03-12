@@ -68,12 +68,12 @@ namespace Sample.CommandService
                 #region Command Consuemrs init
                 var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
                 _CommandConsumer1 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue1");
-                _CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
-                _CommandConsumer3 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue3");
+                //_CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
+                //_CommandConsumer3 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue3");
                
                 _CommandConsumer1.Start();
-                _CommandConsumer2.Start();
-                _CommandConsumer3.Start();
+                //_CommandConsumer2.Start();
+                //_CommandConsumer3.Start();
                 #endregion
 
             }
@@ -100,8 +100,8 @@ namespace Sample.CommandService
             {
                 Task.WaitAll(
                     Task.Factory.StartNew(() => _CommandConsumer1.Stop()),
-                    Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
-                    Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
+                    //Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
+                    //Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
                     Task.Factory.StartNew(() => _CommandBus.Stop()),
                     Task.Factory.StartNew(() => _MessagePublisher.Stop()),
                     Task.Factory.StartNew(() => _DomainEventConsumer.Stop()),

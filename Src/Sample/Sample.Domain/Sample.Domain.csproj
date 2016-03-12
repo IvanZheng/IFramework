@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Model\Account.cs" />
     <Compile Include="Model\People.cs" />
+    <Compile Include="Model\Product.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +59,10 @@
     <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj">
       <Project>{af5512aa-caf1-4066-90bd-efb9b951fe18}</Project>
       <Name>Sample.DomainEvents</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Sample.DTO\Sample.DTO.csproj">
+      <Project>{279b5ee0-22ca-4672-be92-9b6658dcdae3}</Project>
+      <Name>Sample.DTO</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

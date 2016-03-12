@@ -36,11 +36,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\EntityFramework.6.1.3\lib\net40\EntityFramework.dll</HintPath>
+      <HintPath>..\..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\EntityFramework.6.1.3\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
@@ -81,6 +81,10 @@
     <Compile Include="Migrations\201505060539435_AddMessageTopic.Designer.cs">
       <DependentUpon>201505060539435_AddMessageTopic.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603121337495_AddProduct.cs" />
+    <Compile Include="Migrations\201603121337495_AddProduct.Designer.cs">
+      <DependentUpon>201603121337495_AddProduct.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repositories\CommunityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -91,9 +95,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.5.csproj">
       <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
-      <Name>IFramework.EntityFramework</Name>
+      <Name>IFramework.EntityFramework4.5</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net4.5.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
@@ -119,9 +123,13 @@
     <EmbeddedResource Include="Migrations\201505060539435_AddMessageTopic.resx">
       <DependentUpon>201505060539435_AddMessageTopic.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603121337495_AddProduct.resx">
+      <DependentUpon>201603121337495_AddProduct.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Migrations\sql\201505060539435_AddMessageTopic.sql" />
+    <Content Include="Migrations\sql\201603121337495_AddProduct.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

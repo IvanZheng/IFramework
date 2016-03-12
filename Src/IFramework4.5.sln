@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.ApplicationEvent", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandHttpClient", "Sample\Sample.CommandHttpClient\Sample.CommandHttpClient.csproj", "{20165B82-F0C3-439C-91BB-AFCC731DCFEE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandServiceTests", "Sample.CommandServiceTests\Sample.CommandServiceTests.csproj", "{FC17A405-80E6-4485-B311-4F68D6454CEE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -137,6 +139,10 @@ Global
 		{20165B82-F0C3-439C-91BB-AFCC731DCFEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20165B82-F0C3-439C-91BB-AFCC731DCFEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20165B82-F0C3-439C-91BB-AFCC731DCFEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC17A405-80E6-4485-B311-4F68D6454CEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC17A405-80E6-4485-B311-4F68D6454CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC17A405-80E6-4485-B311-4F68D6454CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC17A405-80E6-4485-B311-4F68D6454CEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
