@@ -85,6 +85,10 @@
     <Compile Include="Migrations\201603121337495_AddProduct.Designer.cs">
       <DependentUpon>201603121337495_AddProduct.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603121628546_AddProductCreateTime.cs" />
+    <Compile Include="Migrations\201603121628546_AddProductCreateTime.Designer.cs">
+      <DependentUpon>201603121628546_AddProductCreateTime.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repositories\CommunityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -126,10 +130,14 @@
     <EmbeddedResource Include="Migrations\201603121337495_AddProduct.resx">
       <DependentUpon>201603121337495_AddProduct.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603121628546_AddProductCreateTime.resx">
+      <DependentUpon>201603121628546_AddProductCreateTime.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Migrations\sql\201505060539435_AddMessageTopic.sql" />
     <Content Include="Migrations\sql\201603121337495_AddProduct.sql" />
+    <Content Include="Migrations\sql\AddProductCreateTime.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

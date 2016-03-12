@@ -13,13 +13,14 @@ namespace Sample.Domain.Model
         public Guid Id { get; set; }
         public string Name { get; set; }
         public int Count { get; set; }
-
+        public DateTime CreateTime { get; set; }
         public Product() { }
         public Product(Guid id, string name, int count)
         {
             Id = id;
             Name = name;
             Count = count;
+            CreateTime = DateTime.Now;
         }
 
         public void SetCount(int count)
