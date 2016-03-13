@@ -28,8 +28,8 @@ namespace Sample.CommandService
         static IMessagePublisher _MessagePublisher;
         static ICommandBus _CommandBus;
         static IMessageConsumer _CommandConsumer1;
-        static IMessageConsumer _CommandConsumer2;
-        static IMessageConsumer _CommandConsumer3;
+        //static IMessageConsumer _CommandConsumer2;
+        //static IMessageConsumer _CommandConsumer3;
         //static IMessageConsumer _CommandDistributor;
         static IMessageConsumer _DomainEventConsumer;
         static IMessageConsumer _ApplicationEventConsumer;

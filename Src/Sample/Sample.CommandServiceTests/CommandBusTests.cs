@@ -4,6 +4,7 @@ using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sample.Command;
+using Sample.CommandServiceTests.Products;
 using Sample.DTO;
 using System;
 using System.Collections.Generic;
@@ -31,24 +32,26 @@ namespace Sample.CommandService.Tests
             _commandBus = IoCFactory.Resolve<ICommandBus>();
             _commandBus.Start();
 
-
-            _createProducts = new List<CreateProduct>();
-            var tasks = new List<Task>();
-            for (int i = 0; i< productCount; i ++)
-            {
-                var createProduct = new CreateProduct
-                {
-                    ProductId = Guid.NewGuid(),
-                    Name = string.Format("{0}-{1}", DateTime.Now.ToString(), i),
-                    Count = 20000
-                };
-                _createProducts.Add(createProduct);
-                tasks.Add(_commandBus.Send(createProduct));
-            }
-            Task.WaitAll(tasks.ToArray());
+            var handlerTest = new ProductCommandHandlerTest(batchCount, productCount);
+            handlerTest.Initialize();
+            _createProducts = handlerTest._createProducts;
+            //_createProducts = new List<CreateProduct>();
+            //var tasks = new List<Task>();
+            //for (int i = 0; i< productCount; i ++)
+            //{
+            //    var createProduct = new CreateProduct
+            //    {
+            //        ProductId = Guid.NewGuid(),
+            //        Name = string.Format("{0}-{1}", DateTime.Now.ToString(), i),
+            //        Count = 20000
+            //    };
+            //    _createProducts.Add(createProduct);
+            //    tasks.Add(_commandBus.Send(createProduct));
+            //}
+            //Task.WaitAll(tasks.ToArray());
         }
 
-        int batchCount = 500;
+        int batchCount = 1000;
         int productCount = 2;
 
         [TestMethod()]
