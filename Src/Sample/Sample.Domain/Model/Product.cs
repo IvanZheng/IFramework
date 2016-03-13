@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sample.Domain.Model
 {
-    public class Product : AggregateRoot
+    public class Product : TimestampedAggregateRoot
     {
         public Guid Id { get; set; }
         public string Name { get; set; }

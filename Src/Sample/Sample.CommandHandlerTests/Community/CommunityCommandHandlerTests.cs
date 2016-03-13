@@ -11,26 +11,18 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Infrastructure;
 using IFramework.Config;
 using IFramework.Command;
+using Sample.CommandHandlerTests;
 
 namespace Sample.CommandHandler.Community.Tests
 {
     [TestClass()]
-    public class CommunityCommandHandlerTests
+    public class CommunityCommandHandlerTests : CommandHandlerTest<CommunityCommandHandler>
     {
         static string _UserName;
         public CommunityCommandHandlerTests()
         {
             Configuration.Instance.UseLog4Net();
 
-        }
-
-        static object ExecuteCommandHandler(ICommand command)
-        {
-            IMessageContext commandContext = new EmptyMessageContext(command);
-            PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-            var commandHandler = IoCFactory.Resolve<CommunityCommandHandler>();
-            ((dynamic)commandHandler).Handle((dynamic)command);
-            return commandContext.Reply;
         }
 
         [TestMethod()]
@@ -41,7 +33,7 @@ namespace Sample.CommandHandler.Community.Tests
                 UserName = "ivan",
                 Password = "123456"
             };
-            var result = ExecuteCommandHandler(registerCommand);
+            var result = ExecuteCommand(registerCommand);
             Assert.IsNotNull(result);
         }
 
@@ -52,7 +44,7 @@ namespace Sample.CommandHandler.Community.Tests
                  UserName = "ivan" + DateTime.Now.ToString("HH:mm:ss"),
                  Password = "1234"
             };
-            var result = ExecuteCommandHandler(registerCommand);
+            var result = ExecuteCommand(registerCommand);
             _UserName = registerCommand.UserName;
             Assert.IsNotNull(result);
         }
@@ -64,7 +56,7 @@ namespace Sample.CommandHandler.Community.Tests
                  Email = "haojie77@163.com",
                  UserName = _UserName
             };
-            ExecuteCommandHandler(modifyCommand);
+            ExecuteCommand(modifyCommand);
         }
     }
 }

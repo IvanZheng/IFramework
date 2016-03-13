@@ -10,7 +10,7 @@ namespace IFramework.SysExceptions
 {
     public class ErrorCodeDictionary
     {
-        private static Dictionary<object, string> errorcodeDic;
+        private static Dictionary<object, string> errorcodeDic = new Dictionary<object, string>();
 
         public static string GetErrorMessage(object errorcode)
         {

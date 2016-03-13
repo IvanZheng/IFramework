@@ -89,6 +89,10 @@
     <Compile Include="Migrations\201603121628546_AddProductCreateTime.Designer.cs">
       <DependentUpon>201603121628546_AddProductCreateTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603131106064_AddProjectVersion.cs" />
+    <Compile Include="Migrations\201603131106064_AddProjectVersion.Designer.cs">
+      <DependentUpon>201603131106064_AddProjectVersion.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repositories\CommunityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -133,10 +137,14 @@
     <EmbeddedResource Include="Migrations\201603121628546_AddProductCreateTime.resx">
       <DependentUpon>201603121628546_AddProductCreateTime.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603131106064_AddProjectVersion.resx">
+      <DependentUpon>201603131106064_AddProjectVersion.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Migrations\sql\201505060539435_AddMessageTopic.sql" />
     <Content Include="Migrations\sql\201603121337495_AddProduct.sql" />
+    <Content Include="Migrations\sql\201603131106064_AddProjectVersion.sql" />
     <Content Include="Migrations\sql\AddProductCreateTime.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
