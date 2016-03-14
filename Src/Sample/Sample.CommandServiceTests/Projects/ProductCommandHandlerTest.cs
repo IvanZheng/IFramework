@@ -1,4 +1,5 @@
 ﻿using IFramework.Command;
+using IFramework.Command.Impl;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Mailboxes.Impl;
@@ -138,6 +139,47 @@ namespace Sample.CommandServiceTests.Products
                     var commandContext = new MessageContext { Message = reduceProduct, Key = reduceProduct.ProductId.ToString() };
 
                     messageProcessor.Process(commandContext, (messageContext) => ExecuteCommand(messageContext));
+                }
+            }
+            do
+            {
+                Task.Delay(100).Wait();
+
+            } while (ProcessingMailbox<IMessageContext>.ProcessedCount != batchCount * productCount);
+
+            var products = ExecuteCommand(new GetProducts
+            {
+                ProductIds = _createProducts.Select(p => p.ProductId).ToList()
+            }) as List<DTO.Project>;
+
+            for (int i = 0; i < _createProducts.Count; i++)
+            {
+                Assert.AreEqual(products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
+                                        .Count,
+                                _createProducts[i].Count - batchCount);
+
+            }
+        }
+
+        [TestMethod]
+        public void ReduceProductByCommandConsumer()
+        {
+            Configuration.Instance.CommandHandlerProviderBuild(null, "CommandHandlers");
+            var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
+            var commandConsumer = new CommandConsumer(commandHandlerProvider, null, "commandqueue1");
+
+            for (int i = 0; i < batchCount; i++)
+            {
+                for (int j = 0; j < _createProducts.Count; j++)
+                {
+                    ReduceProduct reduceProduct = new ReduceProduct
+                    {
+                        ProductId = _createProducts[j].ProductId,
+                        ReduceCount = 1
+                    };
+                    var commandContext = new MessageContext { Message = reduceProduct, Key = reduceProduct.ProductId.ToString() };
+
+                    commandConsumer.PostMessage(commandContext);
                 }
             }
             do
