@@ -59,12 +59,13 @@ namespace IFramework.Command.Impl
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
                     _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
-                    _consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
+                    
+                }
+                _consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
                                                                 _cancellationTokenSource.Token,
                                                                 TaskCreationOptions.LongRunning,
                                                                 TaskScheduler.Default);
-                    _messageProcessor.Start();
-                }
+                _messageProcessor.Start();
             }
             catch (Exception e)
             {
@@ -104,6 +105,11 @@ namespace IFramework.Command.Impl
                     _logger.Error(ex.GetBaseException().Message, ex);
                 }
             }
+        }
+
+        public void PostMessage(IMessageContext messageContext)
+        {
+            _commandContexts.Add(messageContext);
         }
 
         protected void OnMessageReceived(IMessageContext messageContext)
