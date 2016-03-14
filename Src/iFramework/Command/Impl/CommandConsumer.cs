@@ -30,12 +30,12 @@ namespace IFramework.Command.Impl
         protected CancellationTokenSource _cancellationTokenSource;
         protected Task _consumeMessageTask;
         protected MessageProcessor _messageProcessor;
-        public CommandConsumer(IHandlerProvider handlerProvider,
-                               IMessagePublisher messagePublisher,
-                               string commandQueueName)
+        public CommandConsumer(IMessagePublisher messagePublisher,
+                               string commandQueueName,
+                               IHandlerProvider handlerProvider = null)
         {
             _commandQueueName = commandQueueName;
-            _handlerProvider = handlerProvider;
+            _handlerProvider = handlerProvider?? IoCFactory.Resolve<ICommandHandlerProvider>();
             _messagePublisher = messagePublisher;
             _cancellationTokenSource = new CancellationTokenSource();
             _commandContexts = new BlockingCollection<IMessageContext>();
