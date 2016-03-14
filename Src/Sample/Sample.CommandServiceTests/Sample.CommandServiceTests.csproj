@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="CommandBusTests.cs" />
     <Compile Include="CommandHandlerTest.cs" />
+    <Compile Include="MessageContext.cs" />
     <Compile Include="Projects\ProductCommandHandlerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

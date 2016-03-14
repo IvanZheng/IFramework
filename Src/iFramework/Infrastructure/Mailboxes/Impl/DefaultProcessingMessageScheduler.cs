@@ -9,17 +9,19 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
     public class DefaultProcessingMessageScheduler<TMessage> : IProcessingMessageScheduler<TMessage>
         where TMessage : class
     {
-        public void ScheduleMailbox(ProcessingMailbox<TMessage> mailbox)
+        public Task ScheduleMailbox(ProcessingMailbox<TMessage> mailbox)
         {
+            Task task = null;
             if (mailbox.EnterHandlingMessage())
             {
-               Task.Run(() => mailbox.Run());
+                task = Task.Run(() => mailbox.Run());
             }
+            return task;
         }
 
-        public void SchedulProcessing(Action processing)
+        public Task SchedulProcessing(Action processing)
         {
-            Task.Run(processing);
+            return Task.Run(processing);
         }
     }
 }

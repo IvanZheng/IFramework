@@ -10,7 +10,7 @@ namespace IFramework.Infrastructure.Mailboxes
     public interface IProcessingMessageScheduler<TMessage>
         where TMessage : class
     {
-        void ScheduleMailbox(ProcessingMailbox<TMessage> mailbox);
-        void SchedulProcessing(Action processing);
+        Task ScheduleMailbox(ProcessingMailbox<TMessage> mailbox);
+        Task SchedulProcessing(Action processing);
     }
 }

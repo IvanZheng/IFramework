@@ -13,12 +13,18 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
     {
         readonly IProcessingMessageScheduler<TMessage> _scheduler;
         internal ConcurrentQueue<TMessage> MessageQueue { get; private set; }
-        Action<TMessage> _processingMessage;
+        Action<TMessage> _processMessage;
         Action<ProcessingMailbox<TMessage>> _handleMailboxEmpty;
         public string Key { get; private set; }
         private volatile int _isHandlingMessage;
-        
-
+        static int _processedCount;
+        public static int ProcessedCount
+        {
+            get
+            {
+                return _processedCount;
+            }
+        }
 
         public ProcessingMailbox(string key, 
             IProcessingMessageScheduler<TMessage> scheduler, 
@@ -26,7 +32,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             Action<ProcessingMailbox<TMessage>> handleMailboxEmpty)
         {
             _scheduler = scheduler;
-            _processingMessage = processingMessage;
+            _processMessage = processingMessage;
             _handleMailboxEmpty = handleMailboxEmpty;
             Key = key;
             MessageQueue = new ConcurrentQueue<TMessage>();
@@ -51,12 +57,17 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             {
                 if (MessageQueue.TryDequeue(out processingMessage))
                 {
-                    _processingMessage(processingMessage);
+                    _processMessage(processingMessage);
                 }
             }
             finally
             {
+                if (processingMessage != null)
+                {
+                    Interlocked.Add(ref _processedCount, 1);
+                }
                 ExitHandlingMessage();
+              
             }
         }
 
@@ -70,7 +81,10 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
             else
             {
-                _handleMailboxEmpty(this);
+                if (_handleMailboxEmpty != null)
+                {
+                    _handleMailboxEmpty(this);
+                }
             }
         }
 

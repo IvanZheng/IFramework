@@ -5,7 +5,7 @@ using IFramework.Message;
 
 namespace Sample.CommandServiceTests
 {
-    public class CommandHandlerTest<TCommandHanlder>
+    public class CommandHandlerProxy<TCommandHanlder>
     {
         public object ExecuteCommand(ICommand command)
         {
@@ -13,6 +13,16 @@ namespace Sample.CommandServiceTests
             PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
             var commandHandler = IoCFactory.Resolve<TCommandHanlder>();
             ((dynamic)commandHandler).Handle((dynamic)command);
+            var result = commandContext.Reply;
+            PerMessageContextLifetimeManager.CurrentMessageContext = null;
+            return result;
+        }
+
+        public object ExecuteCommand(IMessageContext commandContext)
+        {
+            PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
+            var commandHandler = IoCFactory.Resolve<TCommandHanlder>();
+            ((dynamic)commandHandler).Handle((dynamic)commandContext.Message);
             var result = commandContext.Reply;
             PerMessageContextLifetimeManager.CurrentMessageContext = null;
             return result;
