@@ -70,7 +70,7 @@ namespace IFramework.Infrastructure
                 }
                 else
                 {
-                    _json.Add(binder.Name, new JObject(val));
+                    _json.Add(binder.Name, JToken.FromObject(val));
                 }
             }
             catch (Exception)
