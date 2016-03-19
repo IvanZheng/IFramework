@@ -16,11 +16,11 @@ namespace IFramework.AspNet
         private CorsPolicy _corsPolicy;
         private bool _originsValidated;
 
-        public EnableCorsAttribute(string origins, string headers, string methods) : this(origins, headers, methods, null)
+        public EnableCorsAttribute(string origins, string headers, string methods) : this(origins, headers, methods, false, null)
         {
         }
 
-        public EnableCorsAttribute(string origins, string headers, string methods, string exposedHeaders)
+        public EnableCorsAttribute(string origins, string headers, string methods, bool supportsCredentials = true, string exposedHeaders = null)
         {
             if (string.IsNullOrEmpty(origins))
             {
@@ -31,6 +31,7 @@ namespace IFramework.AspNet
                 } 
             }
             this._corsPolicy = new CorsPolicy();
+            this._corsPolicy.SupportsCredentials = supportsCredentials;
             if (origins == "*")
             {
                 this._corsPolicy.AllowAnyOrigin = true;
