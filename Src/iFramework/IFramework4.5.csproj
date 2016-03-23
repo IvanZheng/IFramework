@@ -106,6 +106,7 @@
     <Compile Include="Infrastructure\Mailboxes\Impl\ProcessingMailbox.cs" />
     <Compile Include="Infrastructure\Mailboxes\IProcessingMessageScheduler.cs" />
     <Compile Include="Infrastructure\Mailboxes\IMessageProcessor.cs" />
+    <Compile Include="Infrastructure\Parser.cs" />
     <Compile Include="Message\IMessagePublisher.cs" />
     <Compile Include="Event\Impl\EventBus.cs" />
     <Compile Include="Message\IMessageSender.cs" />
