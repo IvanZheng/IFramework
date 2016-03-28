@@ -68,9 +68,9 @@
       <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
       <Name>IFramework.EntityFramework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework4.5.csproj">
-      <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework4.5</Name>
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
+      <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
+      <Name>IFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj">
       <Project>{7c17f97f-3515-4a1b-aead-01689d087de0}</Project>

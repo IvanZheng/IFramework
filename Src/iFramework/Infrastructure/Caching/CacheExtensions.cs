@@ -50,7 +50,8 @@ namespace IFramework.Infrastructure.Caching
 
         public static Task<T> GetAsync<T>(this ICacheManager cacheManager, string key, int cacheTime, Func<System.Threading.Tasks.Task<T>> acquire)
         {
-            var taskResult = Task.FromResult(cacheManager.Get<T>(key));
+            var taskResult = new Task<T>(() => cacheManager.Get<T>(key));
+            taskResult.RunSynchronously();
             if (taskResult.Result == null)
             {
                 taskResult = acquire().ContinueWith(t =>

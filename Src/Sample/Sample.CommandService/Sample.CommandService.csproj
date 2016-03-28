@@ -282,29 +282,29 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.5.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj">
       <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
-      <Name>IFramework.EntityFramework4.5</Name>
+      <Name>IFramework.EntityFramework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net4.5.csproj">
-      <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
-      <Name>IFramework.Log4Net4.5</Name>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj">
+      <Project>{fa2a9b98-456f-487b-b911-6c730abb6bb6}</Project>
+      <Name>IFramework.Log4Net</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.ServiceBus\IFramework.MessageQueue.ServiceBus4.5.csproj">
       <Project>{081bb2eb-cc5d-4512-b61e-917cd7aa795d}</Project>
       <Name>IFramework.MessageQueue.ServiceBus4.5</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.5.csproj">
-      <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
-      <Name>IFramework.MessageStoring.EntityFramework4.5</Name>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework.csproj">
+      <Project>{797ff912-2e32-49ac-b521-f4884f59041c}</Project>
+      <Name>IFramework.MessageStoring.EntityFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.WebApi\IFramework.AspNet.csproj">
       <Project>{bafca280-6b58-44e8-b0e7-ed6f51c0eaec}</Project>
       <Name>IFramework.AspNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework4.5.csproj">
-      <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework4.5</Name>
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
+      <Project>{f3932367-d3ea-4e8a-ab12-5fb785b93a39}</Project>
+      <Name>IFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\ApplicationEventSubscriber\Sample.ApplicationEventSubscriber.csproj">
       <Project>{46731c1c-71c7-474a-9be7-45f3caa755f9}</Project>

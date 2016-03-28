@@ -27,7 +27,7 @@ namespace IFramework.Command.Impl
         protected ILinearCommandManager _linearCommandManager;
         protected ConcurrentDictionary<string, MessageState> _commandStateQueues;
         protected bool _needMessageStore;
-        public CommandBus(IMessageQueueClient messageQueueClient, 
+        public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
                           string[] commandQueueNames,
                           string replyTopicName,
@@ -64,13 +64,16 @@ namespace IFramework.Command.Impl
         {
             if (_needMessageStore)
             {
-                Task.Run(() =>
+                Task.Factory.StartNew(() =>
                 {
                     using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
                     {
                         messageStore.RemoveSentCommand(messageId);
                     }
-                });
+                }, 
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                TaskScheduler.Default);
             }
         }
 
@@ -162,9 +165,9 @@ namespace IFramework.Command.Impl
                 commandKey.GetUniqueCode() : command.ID.GetUniqueCode();
             var queue = _commandQueueNames[Math.Abs(keyUniqueCode % _commandQueueNames.Length)];
             #endregion
-            commandContext = _messageQueueClient.WrapMessage(command, topic:queue, 
-                                                             key:commandKey, 
-                                                             replyEndPoint:_replyTopicName);
+            commandContext = _messageQueueClient.WrapMessage(command, topic: queue,
+                                                             key: commandKey,
+                                                             replyEndPoint: _replyTopicName);
             return SendAsync(commandContext, cancellationToken);
         }
 
