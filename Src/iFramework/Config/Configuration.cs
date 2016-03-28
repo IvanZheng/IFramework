@@ -70,15 +70,18 @@ namespace IFramework.Config
                 if (string.IsNullOrWhiteSpace(config))
                 {
                     string filePath = Path.Combine(System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase, configPath);
-                    using (TextReader reader = new StreamReader(filePath))
+                    if (File.Exists(filePath))
                     {
-                        XElement xml = XElement.Load(filePath);
-                        if (xml != null)
+                        using (TextReader reader = new StreamReader(filePath))
                         {
-                            var element = xml.Elements().SingleOrDefault(e => e.Attribute("key") != null && e.Attribute("key").Value.Equals(keyname));
-                            if (element != null)
+                            XElement xml = XElement.Load(filePath);
+                            if (xml != null)
                             {
-                                config = element.Attribute("value").Value;
+                                var element = xml.Elements().SingleOrDefault(e => e.Attribute("key") != null && e.Attribute("key").Value.Equals(keyname));
+                                if (element != null)
+                                {
+                                    config = element.Attribute("value").Value;
+                                }
                             }
                         }
                     }

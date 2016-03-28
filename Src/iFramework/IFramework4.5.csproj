@@ -59,9 +59,9 @@
       <HintPath>..\packages\Unity.4.0.1\lib\net45\Microsoft.Practices.Unity.RegistrationByConvention.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -88,6 +88,7 @@
     </Compile>
     <Compile Include="Command\Impl\CommandConsumer.cs" />
     <Compile Include="Command\Impl\LinearCommandManager.cs" />
+    <Compile Include="Command\Impl\LinerKeyAttribute.cs" />
     <Compile Include="Command\Impl\MockCommandBus.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
     <Compile Include="Domain\AggregateRootWithIdentity.cs" />
@@ -100,9 +101,16 @@
     <Compile Include="Infrastructure\DictionaryExtension.cs" />
     <Compile Include="Infrastructure\DisposeObjectHttpModule.cs" />
     <Compile Include="Infrastructure\ExceptionManager.cs" />
+    <Compile Include="Infrastructure\Mailboxes\Impl\DefaultProcessingMessageScheduler.cs" />
+    <Compile Include="Infrastructure\Mailboxes\Impl\MailboxProcessorCommand.cs" />
+    <Compile Include="Infrastructure\Mailboxes\Impl\ProcessingMailbox.cs" />
+    <Compile Include="Infrastructure\Mailboxes\IProcessingMessageScheduler.cs" />
+    <Compile Include="Infrastructure\Mailboxes\IMessageProcessor.cs" />
+    <Compile Include="Infrastructure\Parser.cs" />
     <Compile Include="Message\IMessagePublisher.cs" />
     <Compile Include="Event\Impl\EventBus.cs" />
     <Compile Include="Message\IMessageSender.cs" />
+    <Compile Include="Infrastructure\Mailboxes\Impl\MessageProcessor.cs" />
     <Compile Include="Message\Impl\MessagePublisher.cs" />
     <Compile Include="Event\Impl\EventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />

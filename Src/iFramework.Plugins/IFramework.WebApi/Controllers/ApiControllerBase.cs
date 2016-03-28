@@ -33,7 +33,7 @@ namespace IFramework.AspNet
                     new ApiResult<T>
                     (
                         ErrorCode.InvalidParameters,
-                       string.Join(",", ModelState.Values
+                        string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
                     );
@@ -59,7 +59,7 @@ namespace IFramework.AspNet
             }
         }
         List<CookieHeaderValue> _cookies;
-        protected void AddCookies(params CookieHeaderValue[]  cookies)
+        protected void AddCookies(params CookieHeaderValue[] cookies)
         {
             if (_cookies == null)
             {
@@ -67,7 +67,7 @@ namespace IFramework.AspNet
             }
             _cookies.AddRange(cookies);
         }
-        
+
         public string TryGetCookie(string key, string defaultValue)
         {
             var value = defaultValue;
@@ -89,7 +89,8 @@ namespace IFramework.AspNet
         public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext, CancellationToken cancellationToken)
         {
             return base.ExecuteAsync(controllerContext, cancellationToken)
-                .ContinueWith(t => {
+                .ContinueWith(t =>
+                {
                     if (_cookies != null && _cookies.Count > 0)
                     {
                         t.Result.Headers.AddCookies(_cookies);
@@ -97,7 +98,7 @@ namespace IFramework.AspNet
                     return t.Result;
                 }); ;
         }
-        
+
 
         protected async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false)
         {

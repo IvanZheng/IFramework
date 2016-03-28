@@ -26,12 +26,13 @@ namespace IFramework.Command.Impl
         protected string[] _commandQueueNames;
         protected ILinearCommandManager _linearCommandManager;
         protected ConcurrentDictionary<string, MessageState> _commandStateQueues;
-
+        protected bool _needMessageStore;
         public CommandBus(IMessageQueueClient messageQueueClient, 
                           ILinearCommandManager linearCommandManager,
                           string[] commandQueueNames,
                           string replyTopicName,
-                          string replySubscriptionName)
+                          string replySubscriptionName,
+                          bool needMessageStore = true)
             : base(messageQueueClient)
         {
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();
@@ -39,14 +40,19 @@ namespace IFramework.Command.Impl
             _replyTopicName = replyTopicName;
             _replySubscriptionName = replySubscriptionName;
             _commandQueueNames = commandQueueNames;
+            _needMessageStore = needMessageStore;
         }
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {
-            using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
+            if (_needMessageStore)
             {
-                return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId) =>
-                                                          _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationId));
+                using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
+                {
+                    return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId) =>
+                                                              _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationId));
+                }
             }
+            return null;
         }
 
         protected override void Send(IMessageContext messageContext, string queue)
@@ -56,13 +62,16 @@ namespace IFramework.Command.Impl
 
         protected override void CompleteSendingMessage(string messageId)
         {
-            Task.Factory.StartNew(() =>
+            if (_needMessageStore)
             {
-                using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
+                Task.Run(() =>
                 {
-                    messageStore.RemoveSentCommand(messageId);
-                }
-            });
+                    using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
+                    {
+                        messageStore.RemoveSentCommand(messageId);
+                    }
+                });
+            }
         }
 
         public override void Start()

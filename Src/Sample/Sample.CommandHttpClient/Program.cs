@@ -5,8 +5,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using IFramework.Infrastructure.Mvc;
 using IFramework.Command;
+using IFramework.AspNet;
 
 namespace Sample.CommandHttpClient
 {
@@ -16,6 +16,16 @@ namespace Sample.CommandHttpClient
         public string Name { get; set; }
         public int Type { get; set; }
         public string Remark { get; set; }
+
+        public bool NeedRetry
+        {
+            get; set;
+        }
+
+        public string ID
+        {
+            get; set;
+        }
 
         public ModifyCooperatorBasic() { }
         

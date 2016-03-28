@@ -1,16 +1,20 @@
 ﻿using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
+using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.SysExceptions;
 using IFramework.UnitOfWork;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 
 namespace IFramework.Command.Impl
@@ -22,14 +26,21 @@ namespace IFramework.Command.Impl
         protected IMessageQueueClient _messageQueueClient;
         protected IMessagePublisher _messagePublisher;
         protected string _commandQueueName;
-        public CommandConsumer(IHandlerProvider handlerProvider,
-                               IMessagePublisher messagePublisher,
-                               string commandQueueName)
+        protected BlockingCollection<IMessageContext> _commandContexts;
+        protected CancellationTokenSource _cancellationTokenSource;
+        protected Task _consumeMessageTask;
+        protected MessageProcessor _messageProcessor;
+        public CommandConsumer(IMessagePublisher messagePublisher,
+                               string commandQueueName,
+                               IHandlerProvider handlerProvider = null)
         {
             _commandQueueName = commandQueueName;
-            _handlerProvider = handlerProvider;
+            _handlerProvider = handlerProvider?? IoCFactory.Resolve<ICommandHandlerProvider>();
             _messagePublisher = messagePublisher;
+            _cancellationTokenSource = new CancellationTokenSource();
+            _commandContexts = new BlockingCollection<IMessageContext>();
             _messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
+            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
@@ -48,7 +59,13 @@ namespace IFramework.Command.Impl
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
                     _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
+                    
                 }
+                _consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
+                                                                _cancellationTokenSource.Token,
+                                                                TaskCreationOptions.LongRunning,
+                                                                TaskScheduler.Default);
+                _messageProcessor.Start();
             }
             catch (Exception e)
             {
@@ -66,11 +83,40 @@ namespace IFramework.Command.Impl
             //}
         }
 
+        void ConsumeMessages()
+        {
+            while (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    var commandContext = _commandContexts.Take(_cancellationTokenSource.Token);
+                    _messageProcessor.Process(commandContext, ConsumeMessage);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex.GetBaseException().Message, ex);
+                }
+            }
+        }
+
+        public void PostMessage(IMessageContext messageContext)
+        {
+            _commandContexts.Add(messageContext);
+        }
 
         protected void OnMessageReceived(IMessageContext messageContext)
         {
-            ConsumeMessage(messageContext);
-            MessageCount++;
+            _commandContexts.Add(messageContext);
+            //ConsumeMessage(messageContext);
+            //MessageCount++;
         }
 
         public void Stop()
@@ -173,6 +219,7 @@ namespace IFramework.Command.Impl
             {
                 _messagePublisher.Send(eventContexts.ToArray());
             }
+            _messageQueueClient.CompleteMessage(commandContext);
         }
     }
 }

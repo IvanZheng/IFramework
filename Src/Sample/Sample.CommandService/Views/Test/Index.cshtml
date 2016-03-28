@@ -23,11 +23,11 @@
                 url: '@Url.Content("~/api/Command")',
                 data: command,
                 success: function (data) {
-                    if (data.ErrorCode == 0) {
+                    if (data.errorCode == 0) {
                         alert($.toJSON(data));
                     }
                     else {
-                        alert(data.ErrorCode + " " + data.Message);
+                        alert(data.errorCode + " " + data.message);
                     }
                 }
             });
