@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandHttpClient", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandServiceTests", "Sample\Sample.CommandServiceTests\Sample.CommandServiceTests.csproj", "{FC17A405-80E6-4485-B311-4F68D6454CEE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.ZeroMQ", "iFramework.Plugins\iFramework.MessageQueue.ZeroMQ\IFramework.MessageQueue.ZeroMQ.csproj", "{9636759C-63BC-470E-B95C-E120FBCB830B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -143,6 +145,10 @@ Global
 		{FC17A405-80E6-4485-B311-4F68D6454CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC17A405-80E6-4485-B311-4F68D6454CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC17A405-80E6-4485-B311-4F68D6454CEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9636759C-63BC-470E-B95C-E120FBCB830B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9636759C-63BC-470E-B95C-E120FBCB830B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9636759C-63BC-470E-B95C-E120FBCB830B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9636759C-63BC-470E-B95C-E120FBCB830B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -170,6 +176,7 @@ Global
 		{7C17F97F-3515-4A1B-AEAD-01689D087DE0} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 		{20165B82-F0C3-439C-91BB-AFCC731DCFEE} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 		{FC17A405-80E6-4485-B311-4F68D6454CEE} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
+		{9636759C-63BC-470E-B95C-E120FBCB830B} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35

@@ -2,22 +2,38 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using IFramework.Message;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
     public class ZeroMQClient : IMessageQueueClient
     {
-        public void Publish(Message.IMessageContext messageContext, string topic)
+        public void CompleteMessage(IMessageContext messageContext)
         {
             throw new NotImplementedException();
         }
 
-        public void CloseTopicClients()
+        public void Publish(IMessageContext messageContext, string topic)
         {
             throw new NotImplementedException();
         }
 
-        public void StartSubscriptionClient(string topic, string _subscriptionName, Action<Message.IMessageContext> OnMessageReceived)
+        public void Send(IMessageContext messageContext, string queue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StopQueueClients()
         {
             throw new NotImplementedException();
         }
@@ -27,22 +43,7 @@ namespace IFramework.MessageQueue.ZeroMQ
             throw new NotImplementedException();
         }
 
-        public void Send(Message.IMessageContext messageContext, string queue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Message.IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StartQueueClient(string commandQueueName, Action<Message.IMessageContext> onMessageReceived)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StopQueueClients()
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null)
         {
             throw new NotImplementedException();
         }
