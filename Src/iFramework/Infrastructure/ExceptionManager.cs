@@ -55,16 +55,18 @@ namespace IFramework.Infrastructure
     public static class ExceptionManager
     {
         static ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager));
-        public async static Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false)
+        public static Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool needRetry = false)
         {
-            ApiResult<T> apiResult = null;
-            do
-            {
+            return func().ContinueWith<Task<ApiResult<T>>>(t => {
+                ApiResult<T> apiResult = null;
                 try
                 {
-                    var t = await func().ConfigureAwait(continueOnCapturedContext);
+                    if (t.IsFaulted)
+                    {
+                        throw t.Exception.GetBaseException();
+                    }
                     needRetry = false;
-                    apiResult = new ApiResult<T>(t);
+                    apiResult = new ApiResult<T>(t.Result);
                 }
                 catch (Exception ex)
                 {
@@ -84,19 +86,28 @@ namespace IFramework.Infrastructure
                         needRetry = false;
                     }
                 }
-            } while (needRetry);
-
-            return apiResult;
+                if (needRetry)
+                {
+                     return ProcessAsync(func, needRetry);
+                }
+                
+                var task = new Task<ApiResult<T>>(() => apiResult);
+                task.RunSynchronously();
+                return task;
+            }).Unwrap();
         }
 
-        public async static Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false)
+        public static Task<ApiResult> ProcessAsync(Func<Task> func, bool needRetry = false)
         {
-            ApiResult apiResult = null;
-            do
+            return func().ContinueWith<Task<ApiResult>>(t =>
             {
+                ApiResult apiResult = null;
                 try
                 {
-                    await func().ConfigureAwait(continueOnCapturedContext);
+                    if (t.IsFaulted)
+                    {
+                        throw t.Exception.GetBaseException();
+                    }
                     needRetry = false;
                     apiResult = new ApiResult();
                 }
@@ -118,9 +129,15 @@ namespace IFramework.Infrastructure
                         needRetry = false;
                     }
                 }
-            } while (needRetry);
+                if (needRetry)
+                {
+                    return ProcessAsync(func, needRetry);
+                }
 
-            return apiResult;
+                var task = new Task<ApiResult>(() => apiResult);
+                task.RunSynchronously();
+                return task;
+            }).Unwrap();
         }
 
         public static ApiResult Process(Action action, bool needRetry = false)

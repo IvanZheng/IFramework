@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
@@ -14,14 +15,20 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             Task task = null;
             if (mailbox.EnterHandlingMessage())
             {
-                task = Task.Run(() => mailbox.Run());
+                task = Task.Factory.StartNew(() => mailbox.Run(),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                TaskScheduler.Default);
             }
             return task;
         }
 
         public Task SchedulProcessing(Action processing)
         {
-            return Task.Run(processing);
+            return Task.Factory.StartNew(processing,
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                TaskScheduler.Default);
         }
     }
 }
