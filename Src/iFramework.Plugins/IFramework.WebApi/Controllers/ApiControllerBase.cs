@@ -8,6 +8,8 @@ using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Web.Mvc;
+using System.Web.Http.Results;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Web.Http.Controllers;
@@ -98,45 +100,41 @@ namespace IFramework.AspNet
         }
 
 
-        protected Task<ApiResult> ProcessAsync(Func<Task> func, bool needRetry = false)
+        protected async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false)
         {
             if (ModelState.IsValid)
             {
-                return ExceptionManager.ProcessAsync(func, needRetry);
+                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry).ConfigureAwait(continueOnCapturedContext);
             }
             else
             {
-                var task = new Task<ApiResult>(() =>
+                return
                     new ApiResult
                     (
                         ErrorCode.InvalidParameters,
                         string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
-                    ));
-                task.RunSynchronously();
-                return task;
+                    );
             }
         }
 
-        protected Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool needRetry = false)
+        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false)
         {
             if (ModelState.IsValid)
             {
-                return ExceptionManager.ProcessAsync(func, needRetry);
+                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry).ConfigureAwait(continueOnCapturedContext);
             }
             else
             {
-                var task = new Task<ApiResult<T>>(() => 
+                return
                    new ApiResult<T>
                    (
                       ErrorCode.InvalidParameters,
                       string.Join(",", ModelState.Values
                                                       .SelectMany(v => v.Errors
                                                                         .Select(e => e.ErrorMessage)))
-                   ));
-                task.RunSynchronously();
-                return task;
+                   );
             }
 
         }

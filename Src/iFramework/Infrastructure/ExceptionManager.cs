@@ -55,7 +55,7 @@ namespace IFramework.Infrastructure
     public static class ExceptionManager
     {
         static ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager));
-        public static Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool needRetry = false)
+        public static Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false)
         {
             return func().ContinueWith<Task<ApiResult<T>>>(t => {
                 ApiResult<T> apiResult = null;
@@ -97,7 +97,7 @@ namespace IFramework.Infrastructure
             }).Unwrap();
         }
 
-        public static Task<ApiResult> ProcessAsync(Func<Task> func, bool needRetry = false)
+        public static Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false)
         {
             return func().ContinueWith<Task<ApiResult>>(t =>
             {
