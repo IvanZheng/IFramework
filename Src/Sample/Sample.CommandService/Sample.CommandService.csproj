@@ -228,6 +228,7 @@
     <Compile Include="Controllers\CommandController.cs" />
     <Compile Include="Controllers\BatchCommandController.cs" />
     <Compile Include="Controllers\TestController.cs" />
+    <Compile Include="CustomIsssuerNameRegistry.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
