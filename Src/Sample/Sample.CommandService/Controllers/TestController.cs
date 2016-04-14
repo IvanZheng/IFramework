@@ -11,6 +11,7 @@ using System.Web.Mvc;
 
 namespace Sample.ApiService.Controllers
 {
+    [Authorize]
     public class TestController : Controller
     {
         // GET: /Test/

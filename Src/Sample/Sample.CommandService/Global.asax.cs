@@ -16,6 +16,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using System.Threading.Tasks;
 using IFramework.Command.Impl;
+using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 
 namespace Sample.CommandService
 {

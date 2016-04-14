@@ -55,6 +55,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandServiceTests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.ZeroMQ", "iFramework.Plugins\iFramework.MessageQueue.ZeroMQ\IFramework.MessageQueue.ZeroMQ.csproj", "{9636759C-63BC-470E-B95C-E120FBCB830B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.SingleSignOn", "iFramework.Plugins\IFramework.SingleSignOn\IFramework.SingleSignOn.csproj", "{6554CD55-20A4-4200-9C70-E14D61F2B30A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Sample.AuthWeb", "iFramework.Plugins\IFramework.Sample.AuthWeb\IFramework.Sample.AuthWeb.csproj", "{2600160C-F89E-4F29-9A30-FA0F50022013}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -149,6 +153,14 @@ Global
 		{9636759C-63BC-470E-B95C-E120FBCB830B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9636759C-63BC-470E-B95C-E120FBCB830B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9636759C-63BC-470E-B95C-E120FBCB830B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6554CD55-20A4-4200-9C70-E14D61F2B30A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6554CD55-20A4-4200-9C70-E14D61F2B30A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6554CD55-20A4-4200-9C70-E14D61F2B30A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6554CD55-20A4-4200-9C70-E14D61F2B30A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2600160C-F89E-4F29-9A30-FA0F50022013}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2600160C-F89E-4F29-9A30-FA0F50022013}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2600160C-F89E-4F29-9A30-FA0F50022013}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2600160C-F89E-4F29-9A30-FA0F50022013}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -177,6 +189,8 @@ Global
 		{20165B82-F0C3-439C-91BB-AFCC731DCFEE} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 		{FC17A405-80E6-4485-B311-4F68D6454CEE} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 		{9636759C-63BC-470E-B95C-E120FBCB830B} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
+		{6554CD55-20A4-4200-9C70-E14D61F2B30A} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
+		{2600160C-F89E-4F29-9A30-FA0F50022013} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35

@@ -17,8 +17,8 @@
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -117,6 +117,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.identitymodel.services">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
       <Private>True</Private>
@@ -301,6 +305,10 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.5.csproj">
       <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
       <Name>IFramework.MessageStoring.EntityFramework4.5</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.SingleSignOn\IFramework.SingleSignOn.csproj">
+      <Project>{6554cd55-20a4-4200-9c70-e14d61f2b30a}</Project>
+      <Name>IFramework.SingleSignOn</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.WebApi\IFramework.AspNet.csproj">
       <Project>{bafca280-6b58-44e8-b0e7-ed6f51c0eaec}</Project>
