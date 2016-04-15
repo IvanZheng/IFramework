@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace IFramework.SingleSignOn.IdentityProvider
 {
-    public class CustomIdentityObject
+    public interface ICustomIdentityObject
     {
-        public string Identity { get; set; }
-        public string Name { get; set; }
+        string ID { get; }
+        string Name { get; }
     }
 }

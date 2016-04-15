@@ -33,7 +33,7 @@ namespace IFramework.SingleSignOn.IdentityProvider
             }
         }
 
-        protected abstract CustomIdentityObject GetCustomIdentity(string identity);
+        protected abstract ICustomIdentityObject GetCustomIdentity(string identity);
 
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace IFramework.SingleSignOn.IdentityProvider
 
             var outgoingIdentity = new ClaimsIdentity();
             outgoingIdentity.AddClaim(new Claim(ClaimTypes.Name, identityObject.Name));
-            outgoingIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, identityObject.Identity));
+            outgoingIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, identityObject.ID));
             
             outgoingIdentity.AddClaim(new Claim("IFramework/Info", JsonConvert.SerializeObject(identityObject)));
             SingleSignOnManager.RegisterRP(scope.AppliesToAddress);

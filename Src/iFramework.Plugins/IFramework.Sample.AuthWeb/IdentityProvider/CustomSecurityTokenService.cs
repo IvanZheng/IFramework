@@ -22,10 +22,9 @@ namespace IFramework.Sample.AuthWeb.IdentityProvider
             _applicationUserManager = new ApplicationUserManager(new UserStore<ApplicationUser>(new ApplicationDbContext()));
         }
 
-        protected override CustomIdentityObject GetCustomIdentity(string identity)
+        protected override ICustomIdentityObject GetCustomIdentity(string identity)
         {
-            var user = _applicationUserManager.FindByNameAsync(identity).Result;
-            return new CustomIdentityObject { Identity = user.Id, Name = user.UserName };
+            return _applicationUserManager.FindByNameAsync(identity).Result;
         }
     }
 }
