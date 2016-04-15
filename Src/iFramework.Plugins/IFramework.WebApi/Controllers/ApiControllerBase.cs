@@ -70,13 +70,20 @@ namespace IFramework.AspNet
 
         public string TryGetCookie(string key, string defaultValue)
         {
-            var value = defaultValue;
-            CookieHeaderValue cookie = Request.Headers.GetCookies(key).FirstOrDefault();
-            if (cookie != null)
+            try
             {
-                value = cookie[key].Value;
+                var value = defaultValue;
+                CookieHeaderValue cookie = Request.Headers.GetCookies(key).FirstOrDefault();
+                if (cookie != null)
+                {
+                    value = cookie[key].Value;
+                }
+                return value;
             }
-            return value;
+            catch (Exception)
+            {
+                return defaultValue;
+            }
         }
 
         public void RemoveCookies(string key)

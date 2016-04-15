@@ -11,13 +11,21 @@ namespace IFramework.AspNet
     {
         public static string TryGetCookie(this Controller controller, string key, string defaultValue)
         {
-            var cookieValue = defaultValue;
-            var cookie = controller.Request.Cookies[key];
-            if (cookie != null)
+            try
             {
-                cookieValue = cookie.Value;
+                var cookieValue = defaultValue;
+                var cookie = controller.Request.Cookies[key];
+                if (cookie != null)
+                {
+                    cookieValue = cookie.Value;
+                }
+                return cookieValue;
             }
-            return cookieValue;
+            catch (Exception)
+            {
+                return defaultValue;
+            }
+            
         }
     }
 }
