@@ -59,6 +59,7 @@ namespace IFramework.Sample.AuthWeb.Controllers
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
+            ViewData["AddressesExpected"] = SingleSignOnManager.SignOut().Distinct().ToArray();
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
@@ -404,10 +405,11 @@ namespace IFramework.Sample.AuthWeb.Controllers
         public ActionResult SignOut(string returnUrl)
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-            ViewData["AddressesExpected"] = SingleSignOnManager.SignOut().Distinct().ToArray();
             if (string.IsNullOrWhiteSpace(returnUrl))
             {
-                return View("Login");
+                var redirectUrl = string.Format("~/Account/Login?returnUrl=~/?{0}", HttpUtility.UrlEncode(string.Join("&", Request.QueryString)));
+
+                Response.Redirect(redirectUrl, true);
             }
             return Redirect(returnUrl);
         }
