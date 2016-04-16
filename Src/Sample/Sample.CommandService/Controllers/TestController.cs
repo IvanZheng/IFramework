@@ -1,6 +1,7 @@
 ﻿using IFramework.Command;
 using IFramework.Infrastructure;
 using IFramework.Message;
+using IFramework.SingleSignOn;
 using Sample.CommandService.Tests;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,12 @@ namespace Sample.ApiService.Controllers
             return View();
         }
 
+        public ActionResult SignOut()
+        {
+            var signOutRequest = SingleSignOnContext<object>.SignOut("Account/SignOut");
+            var signOutUrl = signOutRequest.WriteQueryString();
+            return Redirect(signOutUrl);
+        }
 
         [HttpGet]
         public Task<string> CommandDistributorStatus()

@@ -5,6 +5,8 @@ using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 using System.Security.Claims;
+using System.IdentityModel.Services;
+using System.Web.Security;
 
 namespace IFramework.SingleSignOn
 {
@@ -39,6 +41,38 @@ namespace IFramework.SingleSignOn
                 }
               
             }
+        }
+
+        public static SignOutRequestMessage SignOut(string signOutUrl)
+        {
+            var fam = FederatedAuthentication.WSFederationAuthenticationModule;
+            try
+            {
+                FormsAuthentication.SignOut();
+            }
+            finally
+            {
+                fam.SignOut(true);
+            }
+            var currentAudienceUri = GetCurrentAudienceUri();
+            return new SignOutRequestMessage(new Uri(new Uri(fam.Issuer), signOutUrl), currentAudienceUri.AbsoluteUri);
+        }
+
+        /// <summary>
+        /// 获取当前AudienceUri
+        /// </summary>
+        /// <returns>当前AudienceUri</returns>
+        public static Uri GetCurrentAudienceUri()
+        {
+            var audienceUris = FederatedAuthentication.WSFederationAuthenticationModule.FederationConfiguration.IdentityConfiguration.AudienceRestriction.AllowedAudienceUris;
+            var currentUrl = HttpContext.Current.Request.Url.AbsoluteUri.ToLower();
+            var compareUrl = currentUrl.EndsWith("/") ? currentUrl : currentUrl + "/";
+            var currentAudienceUri = audienceUris.FirstOrDefault(ent => compareUrl.ToLower().Contains(ent.AbsoluteUri.ToLower()));
+            if (currentAudienceUri == null)
+            {
+                throw new Exception("未找到到与访问地址匹配的audienceUri,请检查配置文件中的audienceUris");
+            }
+            return currentAudienceUri;
         }
     }
 }

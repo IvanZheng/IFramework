@@ -58,7 +58,6 @@
     <Compile Include="IdentityProvider\SingleSignOnManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SingleSignOnContext.cs" />
-    <Compile Include="SingleSignOnModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

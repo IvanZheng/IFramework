@@ -14,13 +14,11 @@ namespace IFramework.Sample.AuthWeb.Controllers
         [Authorize]
         public ActionResult Index()
         {
-
             FederatedPassiveSecurityTokenServiceOperations.ProcessRequest(
-                    System.Web.HttpContext.Current.Request,
-                    User as ClaimsPrincipal,
-                    CustomSecurityTokenServiceConfiguration.Current.CreateSecurityTokenService(),
-                    System.Web.HttpContext.Current.Response);
-
+            System.Web.HttpContext.Current.Request,
+            User as ClaimsPrincipal,
+            CustomSecurityTokenServiceConfiguration.Current.CreateSecurityTokenService(),
+            System.Web.HttpContext.Current.Response);
             return View();
         }
 

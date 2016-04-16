@@ -9,6 +9,8 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using IFramework.Sample.AuthWeb.Models;
 using System.Web;
+using System.Web.Security;
+using IFramework.SingleSignOn.IdentityProvider;
 
 namespace IFramework.Sample.AuthWeb.Controllers
 {
@@ -65,7 +67,7 @@ namespace IFramework.Sample.AuthWeb.Controllers
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (!ModelState.IsValid)
@@ -393,6 +395,21 @@ namespace IFramework.Sample.AuthWeb.Controllers
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
             return RedirectToAction("Index", "Home");
+        }
+
+        //
+        // POST: /Account/LogOff
+        [HttpGet]
+        //[ValidateAntiForgeryToken]
+        public ActionResult SignOut(string returnUrl)
+        {
+            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            ViewData["AddressesExpected"] = SingleSignOnManager.SignOut().Distinct().ToArray();
+            if (string.IsNullOrWhiteSpace(returnUrl))
+            {
+                return View("Login");
+            }
+            return Redirect(returnUrl);
         }
 
         //
