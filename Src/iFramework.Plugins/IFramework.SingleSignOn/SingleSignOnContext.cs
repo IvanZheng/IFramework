@@ -43,7 +43,7 @@ namespace IFramework.SingleSignOn
             }
         }
 
-        public static SignOutRequestMessage SignOut(string signOutUrl)
+        public static SignInRequestMessage SignOut(string signOutUrl)
         {
             var fam = FederatedAuthentication.WSFederationAuthenticationModule;
             try
@@ -55,7 +55,7 @@ namespace IFramework.SingleSignOn
                 fam.SignOut(true);
             }
             var currentAudienceUri = GetCurrentAudienceUri();
-            return new SignOutRequestMessage(new Uri(new Uri(fam.Issuer), signOutUrl), currentAudienceUri.AbsoluteUri);
+            return new SignInRequestMessage(new Uri(new Uri(fam.Issuer), signOutUrl), currentAudienceUri.AbsoluteUri);
         }
 
         /// <summary>
