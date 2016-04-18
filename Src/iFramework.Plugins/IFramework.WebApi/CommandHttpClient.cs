@@ -87,5 +87,19 @@ namespace IFramework.AspNet
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             return client.SendAsync(requestMessage);
         }
+
+        public static Task<HttpResponseMessage> PutAsJsonAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
+        {
+            var mediaType = new MediaTypeWithQualityHeaderValue("application/command");
+            mediaType.Parameters.Add(new NameValueHeaderValue("command",
+                 HttpUtility.UrlEncode(string.Format("{0}, {1}",
+                                                command.GetType().FullName,
+                                                command.GetType().Assembly.GetName().Name))));
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, new Uri(client.BaseAddress, requestUrl));
+            requestMessage.Content = new ObjectContent(command.GetType(), command, new JsonMediaTypeFormatter(), mediaType);
+            //requestMessage.Method = HttpMethod.Post;
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            return client.SendAsync(requestMessage);
+        }
     }
 }

@@ -46,7 +46,7 @@ namespace IFramework.AspNet.MediaTypeFormatters
             return type;
         }
 
-        public override Task<object> ReadFromStreamAsync(Type type, System.IO.Stream readStream, HttpContent content, System.Net.Http.Formatting.IFormatterLogger formatterLogger)
+        public async override Task<object> ReadFromStreamAsync(Type type, System.IO.Stream readStream, HttpContent content, System.Net.Http.Formatting.IFormatterLogger formatterLogger)
         {
             var commandType = type;
             if (type.IsAbstract || type.IsInterface)
@@ -61,22 +61,18 @@ namespace IFramework.AspNet.MediaTypeFormatters
                     commandType = GetCommandType(HttpContext.Current.Request.Url.Segments.Last());
                 }
             }
-            var part = content.ReadAsStringAsync();
+            var part = await content.ReadAsStringAsync();
             var mediaType = content.Headers.ContentType.MediaType;
-            return Task.Factory.StartNew<object>(() =>
+            object command = null;
+            if (mediaType == "application/x-www-form-urlencoded" || mediaType == "application/command+form")
             {
-                object command = null;
-                if (mediaType == "application/x-www-form-urlencoded" || mediaType == "application/command+form")
-                {
-                    command = new FormDataCollection(part.Result).ConvertToObject(commandType);
-                }
-                if (command == null)
-                {
-                    command = part.Result.ToJsonObject(commandType);
-                }
-                return command;
-            });
-
+                command = new FormDataCollection(part).ConvertToObject(commandType);
+            }
+            if (command == null)
+            {
+                command = part.ToJsonObject(commandType);
+            }
+            return command;
         }
     }
 }
