@@ -12,3 +12,13 @@ obj
 *.vsmdi
 /Src/Sample/Sample.CommandService/log
 /Src/Sample/Sample.CommandService/log.txt
+/Src/iFramework/bin4.5/Debug
+/Src/.vs/config
+/Src/iFramework.Plugins/iFramework.Infrastructure.EntityFramework/bin4.5/Debug
+/Src/iFramework.Plugins/IFramework.Log4Net/bin4.5/Debug
+/Src/iFramework.Plugins/IFramework.MessageQueue.ServiceBus/bin4.5/Debug
+/Src/iFramework.Plugins/IFramework.MessageStore.EntityFramework/bin4.5/Debug
+/Src/Sample/Sample.CommandService.ZeroMQ/log
+/Src/packagelink.bat
+/Src/Sample/Sample.CommandService.ZeroMQ/App_Data
+/Src/iFramework.Plugins/IFramework.Sample.AuthWeb/App_Data

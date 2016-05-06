@@ -60,10 +60,17 @@ namespace IFramework.EntityFramework
 
         public virtual void Rollback()
         {
-            ChangeTracker.Entries().ForEach(e =>
-            {
-                e.State = EntityState.Detached;
-            });
+            var context = (this as IObjectContextAdapter).ObjectContext;
+            ChangeTracker.Entries().Where(e => e.State == EntityState.Added || e.State == EntityState.Deleted)
+                                   .ForEach(e =>
+                                   {
+                                       e.State = EntityState.Detached;
+                                   });
+            var refreshableObjects = ChangeTracker
+                                                .Entries()
+                                                .Where(e => e.State == EntityState.Modified)
+                                                .Select(c => c.Entity);
+            context.Refresh(RefreshMode.StoreWins, refreshableObjects);
         }
     }
 }
