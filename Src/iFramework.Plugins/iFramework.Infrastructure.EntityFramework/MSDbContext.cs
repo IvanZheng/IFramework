@@ -11,6 +11,7 @@ using IFramework.UnitOfWork;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using System.Web;
 using System.ServiceModel;
+using System.Data.Entity.Core.Objects;
 
 namespace IFramework.EntityFramework
 {
@@ -66,10 +67,9 @@ namespace IFramework.EntityFramework
                                    {
                                        e.State = EntityState.Detached;
                                    });
-            var refreshableObjects = ChangeTracker
-                                                .Entries()
-                                                .Where(e => e.State == EntityState.Modified)
-                                                .Select(c => c.Entity);
+            var refreshableObjects = ChangeTracker.Entries()
+                                                  .Where(e => e.State == EntityState.Modified)
+                                                  .Select(c => c.Entity);
             context.Refresh(RefreshMode.StoreWins, refreshableObjects);
         }
     }
