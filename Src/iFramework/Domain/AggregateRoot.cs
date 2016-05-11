@@ -12,13 +12,16 @@ namespace IFramework.Domain
 {
     public abstract class AggregateRoot : Entity, IAggregateRoot
     {
-        //// per request life time 
-        IEventBus EventBus
+        Queue<IDomainEvent> EventQueue = new Queue<IDomainEvent>();
+
+        public IEnumerable<IDomainEvent> GetDomainEvents()
         {
-            get
-            {
-                return IoCFactory.Resolve<IEventBus>();
-            }
+            return EventQueue.ToList();
+        }
+
+        public void Rollback()
+        {
+            EventQueue.Clear();
         }
 
         string _aggreagetRootType;
@@ -44,7 +47,7 @@ namespace IFramework.Domain
         {
             HandleEvent<TDomainEvent>(@event);
             @event.AggregateRootName = AggregateRootName;
-            EventBus.Publish(@event);
+            EventQueue.Enqueue(@event);
         }
 
         private void HandleEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent

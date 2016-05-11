@@ -103,13 +103,13 @@ namespace IFramework.Infrastructure.Unity.LifetimeManagers
         : LifetimeManager
     {
         //static EmptyMessageContext EmptyMessageContext;
-        static PerMessageContextLifetimeManager PerMessageContextLifeTimeManager;
+        static PerMessageContextLifetimeManager PerMessageContextLifeTimeManager = new PerMessageContextLifetimeManager();
         Guid _key;
 
         static PerMessageContextLifetimeManager()
         {
             //EmptyMessageContext = new EmptyMessageContext();
-            PerMessageContextLifeTimeManager = new PerMessageContextLifetimeManager();
+           // PerMessageContextLifeTimeManager = new PerMessageContextLifetimeManager();
             IoCFactory.Instance.CurrentContainer.RegisterType<IMessageContext>(PerMessageContextLifeTimeManager);
         }
 

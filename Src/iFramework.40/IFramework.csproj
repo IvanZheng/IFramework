@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F3932367-D3EA-4E8A-AB12-5FB785B93A39}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>IFramework</RootNamespace>
+    <AssemblyName>IFramework</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AutoMapper, Version=3.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AutoMapper.3.1.1\lib\net40\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper.Net4, Version=3.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AutoMapper.3.1.1\lib\net40\AutoMapper.Net4.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity">
+      <HintPath>..\packages\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity.Configuration">
+      <HintPath>..\packages\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\iFramework\Bus\IBus.cs" />
+    <Compile Include="..\iFramework\Command\ILinearCommandManager.cs" />
+    <Compile Include="..\iFramework\Command\Impl\CommandBus.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Command\Impl\CommandConsumer.cs" />
+    <Compile Include="Command\Impl\LinearCommandManager.cs" />
+    <Compile Include="Command\Impl\MockCommandBus.cs" />
+    <Compile Include="Domain\AggregateRoot.cs" />
+    <Compile Include="Domain\AggregateRootWithIdentity.cs" />
+    <Compile Include="Domain\TimestampedAggregateRoot.cs" />
+    <Compile Include="Domain\ValueObject.cs" />
+    <Compile Include="Domain\VersionedAggregateRoot.cs" />
+    <Compile Include="Event\IApplicationEvent.cs" />
+    <Compile Include="Event\IEvent.cs" />
+    <Compile Include="Infrastructure\DictionaryExtension.cs" />
+    <Compile Include="Infrastructure\DisposeObjectHttpModule.cs" />
+    <Compile Include="Message\IMessagePublisher.cs" />
+    <Compile Include="Event\Impl\EventBus.cs" />
+    <Compile Include="Message\IMessageSender.cs" />
+    <Compile Include="Message\Impl\MessagePublisher.cs" />
+    <Compile Include="Event\Impl\EventSubscriber.cs" />
+    <Compile Include="Event\Impl\MockEventSubscriber.cs" />
+    <Compile Include="Event\Impl\MockEventBus.cs" />
+    <Compile Include="Message\Impl\MessageSender.cs" />
+    <Compile Include="Message\Impl\MockMessagePublisher.cs" />
+    <Compile Include="Infrastructure\Caching\CacheExtensions.cs" />
+    <Compile Include="Infrastructure\Caching\ICacheManager.cs" />
+    <Compile Include="Infrastructure\Caching\Impl\MemoryCacheManager.cs" />
+    <Compile Include="Infrastructure\Caching\Impl\NullCacheManager.cs" />
+    <Compile Include="Infrastructure\Caching\Impl\PerHttpRequestCacheManager.cs" />
+    <Compile Include="Infrastructure\FastInvoke.cs" />
+    <Compile Include="Infrastructure\JsonHelper.cs" />
+    <Compile Include="Infrastructure\ObjectId.cs" />
+    <Compile Include="Infrastructure\TimerTaskFactory.cs" />
+    <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageContextLifetimeManager.cs" />
+    <Compile Include="Infrastructure\Logging\ILogger.cs" />
+    <Compile Include="Infrastructure\Logging\ILoggerFactory.cs" />
+    <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageOrExecutionContextLifetimeManager.cs" />
+    <Compile Include="MessageQueue\IMessageQueueClient.cs" />
+    <Compile Include="Message\IMessage.cs" />
+    <Compile Include="Message\IMessageConsumer.cs" />
+    <Compile Include="Message\IMessageContext.cs" />
+    <Compile Include="Message\IMessageDistributor.cs" />
+    <Compile Include="Message\IMessageHandler.cs" />
+    <Compile Include="Message\IMessageStore.cs" />
+    <Compile Include="Message\Impl\MockMessageConsumer.cs" />
+    <Compile Include="Command\ICommand.cs" />
+    <Compile Include="Command\ICommandHandlerProvider.cs" />
+    <Compile Include="Command\ICommandHandler.cs" />
+    <Compile Include="Command\ICommandBus.cs" />
+    <Compile Include="Command\Impl\CommandHandlerProvider.cs" />
+    <Compile Include="Config\BaseConfigurationCollection.cs" />
+    <Compile Include="Config\Configuration.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Config\ConfigurationReader.cs" />
+    <Compile Include="Config\ConfigurationSectionNameAttribute.cs" />
+    <Compile Include="Config\Constants.cs" />
+    <Compile Include="Config\EndpointElement.cs" />
+    <Compile Include="Config\FrameworkConfigurationSection.cs" />
+    <Compile Include="Config\HandlerElement.cs" />
+    <Compile Include="Config\HandlerElementCollection.cs" />
+    <Compile Include="Config\HandlerSourceType.cs" />
+    <Compile Include="Config\MessageEndpointElementCollection.cs" />
+    <Compile Include="Domain\Entity.cs" />
+    <Compile Include="Domain\IAggregateRoot.cs" />
+    <Compile Include="Domain\IEntity.cs" />
+    <Compile Include="Event\IDomainEvent.cs" />
+    <Compile Include="Event\IEventBus.cs" />
+    <Compile Include="Event\IEventSubscriber.cs" />
+    <Compile Include="Event\IEventSubscriberProvider.cs" />
+    <Compile Include="Event\Impl\EventSubscriberProvider.cs" />
+    <Compile Include="Message\Impl\MockMessageStore.cs" />
+    <Compile Include="Message\MessageCode.cs" />
+    <Compile Include="Message\MessageFormatHelper.cs" />
+    <Compile Include="Message\MessageState.cs" />
+    <Compile Include="Message\TopicAttribute.cs" />
+    <Compile Include="SysExceptions\CurrentMessageContextIsNull.cs" />
+    <Compile Include="SysExceptions\DomainException.cs" />
+    <Compile Include="SysExceptions\MessageDuplicatelyHandled.cs" />
+    <Compile Include="SysExceptions\NoCommandHandlerExists.cs" />
+    <Compile Include="Infrastructure\CookieHelper.cs" />
+    <Compile Include="Infrastructure\DynamicJson.cs" />
+    <Compile Include="Infrastructure\GuidUtil.cs" />
+    <Compile Include="Infrastructure\IContainer.cs" />
+    <Compile Include="Infrastructure\IocFactory.cs" />
+    <Compile Include="Infrastructure\IoCInstanceProvider.cs" />
+    <Compile Include="Infrastructure\IoCServiceBehavior.cs" />
+    <Compile Include="Infrastructure\LockUtility.cs" />
+    <Compile Include="Infrastructure\SBase64Utility.cs" />
+    <Compile Include="Infrastructure\TaskWorker.cs" />
+    <Compile Include="Infrastructure\Unity\InstanceItems.cs" />
+    <Compile Include="Infrastructure\Unity\LifetimeManagers\PerExecutionContextLifetimeManager.cs" />
+    <Compile Include="Infrastructure\Unity\WcfServiceInstanceExtension.cs" />
+    <Compile Include="Infrastructure\Utility.cs" />
+    <Compile Include="Message\IHandlerProvider.cs" />
+    <Compile Include="Message\Impl\HandlerProvider.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\BaseRepository.cs" />
+    <Compile Include="Repositories\IDomainRepository.cs" />
+    <Compile Include="Repositories\IRepository.cs" />
+    <Compile Include="Repositories\OrderExpression.cs" />
+    <Compile Include="Repositories\OrderExpressionUtility.cs" />
+    <Compile Include="Repositories\SortOrder.cs" />
+    <Compile Include="Specifications\AllSpecification.cs" />
+    <Compile Include="Specifications\AndNotSpecification.cs" />
+    <Compile Include="Specifications\AndSpecification.cs" />
+    <Compile Include="Specifications\CompositeSpecification.cs" />
+    <Compile Include="Specifications\ExpressionSpecification.cs" />
+    <Compile Include="Specifications\ICompositeSpecification.cs" />
+    <Compile Include="Specifications\ISpecification.cs" />
+    <Compile Include="Specifications\ISpecificationParser.cs" />
+    <Compile Include="Specifications\NoneSpecification.cs" />
+    <Compile Include="Specifications\NotSpecification.cs" />
+    <Compile Include="Specifications\OrSpecification.cs" />
+    <Compile Include="Specifications\Semantics.cs" />
+    <Compile Include="Specifications\SemanticsAttribute.cs" />
+    <Compile Include="Specifications\Specification.cs" />
+    <Compile Include="Specifications\SpecificationUtility.cs" />
+    <Compile Include="SysExceptions\NoHandlerExists.cs" />
+    <Compile Include="UnitOfWork\BaseUnitOfWork.cs" />
+    <Compile Include="UnitOfWork\IUnitOfWork.cs" />
+    <Compile Include="UnitOfWork\MockUnitOfWork.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

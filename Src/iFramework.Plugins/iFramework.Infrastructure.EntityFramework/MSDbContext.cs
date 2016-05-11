@@ -63,6 +63,10 @@ namespace IFramework.EntityFramework
             ChangeTracker.Entries().ForEach(e =>
             {
                 e.State = EntityState.Detached;
+                if (e.Entity is AggregateRoot)
+                {
+                    (e.Entity as AggregateRoot).Rollback();
+                }
             });
         }
     }

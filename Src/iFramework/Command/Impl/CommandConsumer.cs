@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using Microsoft.Practices.Unity;
 
 namespace IFramework.Command.Impl
 {
@@ -140,86 +141,93 @@ namespace IFramework.Command.Impl
                 return;
             }
             var needRetry = command.NeedRetry;
-            PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-            List<IMessageContext> eventContexts = new List<IMessageContext>();
-            var messageStore = IoCFactory.Resolve<IMessageStore>();
-            var eventBus = IoCFactory.Resolve<IEventBus>();
-            var commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
-            if (commandHasHandled)
-            {
-                messageReply = _messageQueueClient.WrapMessage(new MessageDuplicatelyHandled(), commandContext.MessageID, commandContext.ReplyToEndPoint);
-                eventContexts.Add(messageReply);
-            }
-            else
-            {
-                var messageHandler = _handlerProvider.GetHandler(command.GetType());
-                _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
 
-                if (messageHandler == null)
+            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+            {
+                scope.RegisterInstance(typeof(IMessageContext), commandContext);
+                List<IMessageContext> eventContexts = new List<IMessageContext>();
+                var messageStore = scope.Resolve<IMessageStore>();
+                var eventBus = scope.Resolve<IEventBus>();
+                var commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
+                if (commandHasHandled)
                 {
-                    messageReply = _messageQueueClient.WrapMessage(new NoHandlerExists(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                    messageReply = _messageQueueClient.WrapMessage(new MessageDuplicatelyHandled(), commandContext.MessageID, commandContext.ReplyToEndPoint);
                     eventContexts.Add(messageReply);
                 }
                 else
                 {
-                    do
+                    var messageHandlerType = _handlerProvider.GetHandlerTypes(command.GetType()).FirstOrDefault();
+                    _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
+
+                    if (messageHandlerType == null)
                     {
-                        try
+                        messageReply = _messageQueueClient.WrapMessage(new NoHandlerExists(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                        eventContexts.Add(messageReply);
+                    }
+                    else
+                    {
+                        var messageHandler = scope.Resolve(messageHandlerType);
+                        do
                         {
-                            using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                               new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
+                            try
                             {
-                                ((dynamic)messageHandler).Handle((dynamic)command);
-                                messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
-                                eventContexts.Add(messageReply);
-                                eventBus.GetMessages().ForEach(@event => {
-                                    var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
-                                    eventContexts.Add(eventContext);
-                                });
-
-                                messageStore.SaveCommand(commandContext, eventContexts.ToArray());
-                                transactionScope.Complete();
-                            }
-                            needRetry = false;
-                        }
-                        catch (Exception e)
-                        {
-                            eventContexts.Clear();
-                            if (e is OptimisticConcurrencyException && needRetry)
-                            {
-                                eventBus.ClearMessages();
-                            }
-                            else
-                            {
-                                messageStore.Rollback();
-                                messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
-                                eventContexts.Add(messageReply);
-                                eventBus.GetToPublishAnywayMessages().ForEach(@event =>
+                                using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+                                                                   new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
                                 {
-                                    var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
-                                    eventContexts.Add(eventContext);
-                                });
+                                    ((dynamic)messageHandler).Handle((dynamic)command);
+                                    messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
+                                    eventContexts.Add(messageReply);
+                                    eventBus.GetMessages().ForEach(@event =>
+                                    {
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
+                                        eventContexts.Add(eventContext);
+                                    });
 
-                                if (e is DomainException)
+                                    messageStore.SaveCommand(commandContext, eventContexts.ToArray());
+                                    transactionScope.Complete();
+                                }
+                                needRetry = false;
+                            }
+                            catch (Exception e)
+                            {
+                                eventContexts.Clear();
+                                if (e is OptimisticConcurrencyException && needRetry)
                                 {
-                                    _logger.Warn(command.ToJson(), e);
+                                    eventBus.ClearMessages();
                                 }
                                 else
                                 {
-                                    _logger.Error(command.ToJson(), e);
+                                    messageStore.Rollback();
+                                    messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                                    eventContexts.Add(messageReply);
+                                    eventBus.GetToPublishAnywayMessages().ForEach(@event =>
+                                    {
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
+                                        eventContexts.Add(eventContext);
+                                    });
+
+                                    if (e is DomainException)
+                                    {
+                                        _logger.Warn(command.ToJson(), e);
+                                    }
+                                    else
+                                    {
+                                        _logger.Error(command.ToJson(), e);
+                                    }
+                                    messageStore.SaveFailedCommand(commandContext, e, eventContexts.ToArray());
+                                    needRetry = false;
                                 }
-                                messageStore.SaveFailedCommand(commandContext, e, eventContexts.ToArray());
-                                needRetry = false;
                             }
-                        }
-                    } while (needRetry);
+                        } while (needRetry);
+                    }
                 }
+                if (_messagePublisher != null && eventContexts.Count > 0)
+                {
+                    _messagePublisher.Send(eventContexts.ToArray());
+                }
+                _messageQueueClient.CompleteMessage(commandContext);
             }
-            if (_messagePublisher != null && eventContexts.Count > 0)
-            {
-                _messagePublisher.Send(eventContexts.ToArray());
-            }
-            _messageQueueClient.CompleteMessage(commandContext);
+           // PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
         }
     }
 }

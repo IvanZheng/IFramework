@@ -22,12 +22,13 @@ namespace IFramework.EntityFramework
     public class UnitOfWork : IUnitOfWork
     {
         List<MSDbContext> _dbContexts;
+        IEventBus _eventBus;
         // IEventPublisher _eventPublisher;
 
-        public UnitOfWork(/*IEventBus eventBus,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
-        //: base(eventBus, messageStore)
+        public UnitOfWork(IEventBus eventBus)//,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
         {
             _dbContexts = new List<MSDbContext>();
+            _eventBus = eventBus;
             //  _eventPublisher = eventPublisher;
         }
         #region IUnitOfWork Members
@@ -39,7 +40,17 @@ namespace IFramework.EntityFramework
             {
                 try
                 {
-                    _dbContexts.ForEach(dbContext => dbContext.SaveChanges());
+                    _dbContexts.ForEach(dbContext =>
+                    {
+                        dbContext.SaveChanges();
+                        dbContext.ChangeTracker.Entries().ForEach(e =>
+                        {
+                            if (e.Entity is AggregateRoot)
+                            {
+                                _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
+                            }
+                        });
+                    });
                     scope.Complete();
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -73,6 +84,7 @@ namespace IFramework.EntityFramework
             {
                 dbCtx.Rollback();
             });
+            _eventBus.ClearMessages();
         }
     }
 }

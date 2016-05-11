@@ -143,7 +143,7 @@ namespace IFramework.Message.Impl
             _HandlerConstuctParametersInfo[handlerType] = parameterInfoes;
         }
 
-        protected Type GetHandlerType(Type messageType)
+        public Type GetHandlerType(Type messageType)
         {
             return GetHandlerTypes(messageType).FirstOrDefault();
         }
@@ -183,6 +183,7 @@ namespace IFramework.Message.Impl
             }
             return avaliableHandlerTypes;
         }
+
 
         public object GetHandler(Type messageType)
         {

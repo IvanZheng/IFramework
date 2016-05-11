@@ -9,6 +9,7 @@ using IFramework.Infrastructure.Unity.LifetimeManagers;
 using System.Transactions;
 using IFramework.SysExceptions;
 using IFramework.Command;
+using Microsoft.Practices.Unity;
 
 namespace IFramework.Event.Impl
 {
@@ -49,62 +50,66 @@ namespace IFramework.Event.Impl
 
             messageHandlerTypes.ForEach(messageHandlerType =>
             {
-                PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
-                eventContext.ToBeSentMessageContexts.Clear();
-                var messageStore = IoCFactory.Resolve<IMessageStore>();
-                var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
-                if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
+                using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                 {
-                    var messageContexts = new List<IMessageContext>();
-                    List<IMessageContext> commandContexts = null;
-                    var eventBus = IoCFactory.Resolve<IEventBus>();
-                    eventBus.ClearMessages();
-                    try
+                    scope.RegisterInstance(typeof(IMessageContext), eventContext);
+                    // PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
+                    eventContext.ToBeSentMessageContexts.Clear();
+                    var messageStore = scope.Resolve<IMessageStore>();
+                    var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
+                    if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                     {
-                        var messageHandler = IoCFactory.Resolve(messageHandlerType);
-                        using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                           new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
+                        var messageContexts = new List<IMessageContext>();
+                        List<IMessageContext> commandContexts = null;
+                        var eventBus = scope.Resolve<IEventBus>();
+                        eventBus.ClearMessages();
+                        try
                         {
-                            ((dynamic)messageHandler).Handle((dynamic)message);
+                            var messageHandler = scope.Resolve(messageHandlerType);
+                            using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+                                                               new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
+                            {
+                                ((dynamic)messageHandler).Handle((dynamic)message);
 
-                            //get commands to be sent
-                            commandContexts = eventContext.ToBeSentMessageContexts;
-                            //get events to be published
-                            eventBus.GetMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
+                                //get commands to be sent
+                                commandContexts = eventContext.ToBeSentMessageContexts;
+                                //get events to be published
+                                eventBus.GetMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
 
-                            messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
-                            transactionScope.Complete();
+                                messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
+                                transactionScope.Complete();
+                            }
+                            if (commandContexts.Count > 0)
+                            {
+                                _commandBus.Send(commandContexts.AsEnumerable());
+                            }
+                            if (messageContexts.Count > 0)
+                            {
+                                _messagePublisher.Send(messageContexts.ToArray());
+                            }
                         }
-                        if (commandContexts.Count > 0)
+                        catch (Exception e)
                         {
-                            _commandBus.Send(commandContexts.AsEnumerable());
-                        }
-                        if (messageContexts.Count > 0)
-                        {
-                            _messagePublisher.Send(messageContexts.ToArray());
+                            if (e is DomainException)
+                            {
+                                _logger.Warn(message.ToJson(), e);
+                            }
+                            else
+                            {
+                                //IO error or sytem Crash
+                                _logger.Error(message.ToJson(), e);
+                            }
+                            messageStore.Rollback();
+                            eventBus.GetToPublishAnywayMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
+                            messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, messageContexts.ToArray());
+                            if (messageContexts.Count > 0)
+                            {
+                                _messagePublisher.Send(messageContexts.ToArray());
+                            }
                         }
                     }
-                    catch (Exception e)
-                    {
-                        if (e is DomainException)
-                        {
-                            _logger.Warn(message.ToJson(), e);
-                        }
-                        else
-                        {
-                            //IO error or sytem Crash
-                            _logger.Error(message.ToJson(), e);
-                        }
-                        messageStore.Rollback();
-                        eventBus.GetToPublishAnywayMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
-                        messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, messageContexts.ToArray());
-                        if (messageContexts.Count > 0)
-                        {
-                            _messagePublisher.Send(messageContexts.ToArray());
-                        }
-                    }
+                    //PerMessageContextLifetimeManager.CurrentMessageContext = null;
                 }
-                PerMessageContextLifetimeManager.CurrentMessageContext = null;
             });
         }
         public void Start()
