@@ -11,6 +11,7 @@ using IFramework.UnitOfWork;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using System.Web;
 using System.ServiceModel;
+using System.Data.Entity.Core.Objects;
 
 namespace IFramework.EntityFramework
 {
@@ -60,9 +61,18 @@ namespace IFramework.EntityFramework
 
         public virtual void Rollback()
         {
+            var context = (this as IObjectContextAdapter).ObjectContext;
+            ChangeTracker.Entries().Where(e => e.State == EntityState.Added || e.State == EntityState.Deleted)
+                                   .ForEach(e =>
+                                   {
+                                       e.State = EntityState.Detached;
+                                   });
+            var refreshableObjects = ChangeTracker.Entries()
+                                                  .Where(e => e.State == EntityState.Modified)
+                                                  .Select(c => c.Entity);
+            context.Refresh(RefreshMode.StoreWins, refreshableObjects);
             ChangeTracker.Entries().ForEach(e =>
             {
-                e.State = EntityState.Detached;
                 if (e.Entity is AggregateRoot)
                 {
                     (e.Entity as AggregateRoot).Rollback();
