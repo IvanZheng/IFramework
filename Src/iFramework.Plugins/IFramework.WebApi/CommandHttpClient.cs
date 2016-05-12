@@ -42,6 +42,7 @@ namespace IFramework.AspNet
                 return new ApiResult<TResult>(ErrorCode.HttpStatusError, response.StatusCode.ToString());
             }
         }
+
         //static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");    
 
         public async static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
@@ -53,7 +54,8 @@ namespace IFramework.AspNet
 
         public async static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, TimeSpan timeout, string requestUrl = "api/command")
         {
-            var response = await apiClient.PostAsJsonAsync(command, requestUrl).Timeout(timeout);
+            apiClient.Timeout = timeout;
+            var response = await apiClient.PostAsJsonAsync(command, requestUrl);
             return await response.Content.ReadAsAsync<TResult>();
         }
 
