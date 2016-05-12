@@ -2,6 +2,7 @@
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Message;
+using Microsoft.Practices.Unity;
 
 namespace Sample.CommandServiceTests
 {
@@ -10,22 +11,27 @@ namespace Sample.CommandServiceTests
         public object ExecuteCommand(ICommand command)
         {
             IMessageContext commandContext = new EmptyMessageContext(command);
-            PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-            var commandHandler = IoCFactory.Resolve<TCommandHanlder>();
-            ((dynamic)commandHandler).Handle((dynamic)command);
-            var result = commandContext.Reply;
-            PerMessageContextLifetimeManager.CurrentMessageContext = null;
-            return result;
+            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+            {
+                scope.RegisterInstance(typeof(IMessageContext), commandContext);
+                var commandHandler = scope.Resolve<TCommandHanlder>();
+                ((dynamic)commandHandler).Handle((dynamic)command);
+                var result = commandContext.Reply;
+
+                return result;
+            }
         }
 
         public object ExecuteCommand(IMessageContext commandContext)
         {
-            PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
-            var commandHandler = IoCFactory.Resolve<TCommandHanlder>();
-            ((dynamic)commandHandler).Handle((dynamic)commandContext.Message);
-            var result = commandContext.Reply;
-            PerMessageContextLifetimeManager.CurrentMessageContext = null;
-            return result;
+            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+            {
+                scope.RegisterInstance(typeof(IMessageContext), commandContext);
+                var commandHandler = scope.Resolve<TCommandHanlder>();
+                ((dynamic)commandHandler).Handle((dynamic)commandContext.Message);
+                var result = commandContext.Reply;
+                return result;
+            }
         }
     }
 }

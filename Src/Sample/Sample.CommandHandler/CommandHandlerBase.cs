@@ -32,7 +32,7 @@ namespace Sample.CommandHandler
         {
             get
             {
-                return PerMessageContextLifetimeManager.CurrentMessageContext;
+                return IoCFactory.Resolve<IMessageContext>();
             }
         }
     }

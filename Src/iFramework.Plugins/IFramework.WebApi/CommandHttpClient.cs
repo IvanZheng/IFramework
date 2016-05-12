@@ -5,6 +5,7 @@ using IFramework.SysExceptions.ErrorCodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -16,57 +17,65 @@ namespace IFramework.AspNet
 {
     public static class CommandHttpClient
     {
-
-        public static ApiResult PostJson<T>(this HttpClient apiClient, string requestUri, T value)
+        public async static Task<ApiResult> PostJson<T>(this HttpClient apiClient, string requestUri, T value)
         {
-            var task = apiClient.PostAsJsonAsync(requestUri, value);
-            if (task.Result.StatusCode == System.Net.HttpStatusCode.OK)
+            var response = await apiClient.PostAsJsonAsync(requestUri, value);
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                return task.Result.Content.ReadAsAsync<ApiResult>().Result;
+                return response.Content.ReadAsAsync<ApiResult>().Result;
             }
             else
             {
-                return new ApiResult(ErrorCode.HttpStatusError, task.Result.StatusCode.ToString());
+                return new ApiResult(ErrorCode.HttpStatusError, response.StatusCode.ToString());
             }
         }
 
-        public static ApiResult<TResult> PostJson<T, TResult>(this HttpClient apiClient, string requestUri, T value)
+        public async static Task<ApiResult<TResult>> PostJson<T, TResult>(this HttpClient apiClient, string requestUri, T value)
         {
-            var task = apiClient.PostAsJsonAsync(requestUri, value);
-            if (task.Result.StatusCode == System.Net.HttpStatusCode.OK)
+            var response = await apiClient.PostAsJsonAsync(requestUri, value);
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                return task.Result.Content.ReadAsAsync<ApiResult<TResult>>().Result;
+                return response.Content.ReadAsAsync<ApiResult<TResult>>().Result;
             }
             else
             {
-                return new ApiResult<TResult>(ErrorCode.HttpStatusError, task.Result.StatusCode.ToString());
+                return new ApiResult<TResult>(ErrorCode.HttpStatusError, response.StatusCode.ToString());
             }
         }
         //static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");    
 
-        public static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
+        public async static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
         {
-            return apiClient.PostAsJsonAsync(command, requestUrl)
-                            .ContinueWith(t =>
-                                t.Result.Content.ReadAsAsync<TResult>()
-                            )
-                            .Unwrap();
+            var resposne = await apiClient.PostAsJsonAsync(command, requestUrl);
+            return await resposne.Content.ReadAsAsync<TResult>();
         }
 
 
-        public static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, TimeSpan timeout, string requestUrl = "api/command")
+        public async static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, TimeSpan timeout, string requestUrl = "api/command")
         {
-            return apiClient.PostAsJsonAsync(command, requestUrl)
-                            .ContinueWith(t =>
-                                t.Result.Content.ReadAsAsync<TResult>()
-                             )
-                             .Unwrap()
-                            .Timeout(timeout);
+            var response = await apiClient.PostAsJsonAsync(command, requestUrl).Timeout(timeout);
+            return await response.Content.ReadAsAsync<TResult>();
         }
 
-        public static Task<HttpResponseMessage> DoCommand(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
+        public async static Task<HttpResponseMessage> DoCommand(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
         {
-            return apiClient.PostAsJsonAsync(command, requestUrl);
+            return await apiClient.PostAsJsonAsync(command, requestUrl);
+        }
+
+        public async static Task<HttpResponseMessage> GetAsync(this HttpClient client, string requestUrl, object request)
+        {
+            //解析参数
+            var nameValueCollection = request.ToNameValueCollection();
+            requestUrl += requestUrl.Contains("?") ? "&" : "?" + nameValueCollection.ToString();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(client.BaseAddress, requestUrl));
+            var response = await client.SendAsync(requestMessage);
+            return response.EnsureSuccessStatusCode();
+        }
+
+        public async static Task<T> GetAsync<T>(this HttpClient client, string requestUrl, object request)
+        {
+            var response = await GetAsync(client, requestUrl, request);
+            return await response.Content.ReadAsAsync<T>();
         }
 
         //static string GetCommandUrl(ICommand command)
@@ -74,7 +83,7 @@ namespace IFramework.AspNet
         //    return string.Format(CommandActionUrlTemplate, command.GetType().Name);
         //}
 
-        public static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
+        public async static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
         {
             var mediaType = new MediaTypeWithQualityHeaderValue("application/command");
             mediaType.Parameters.Add(new NameValueHeaderValue("command",
@@ -85,10 +94,11 @@ namespace IFramework.AspNet
             requestMessage.Content = new ObjectContent(command.GetType(), command, new JsonMediaTypeFormatter(), mediaType);
             //requestMessage.Method = HttpMethod.Post;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            return client.SendAsync(requestMessage);
+            var response = await client.SendAsync(requestMessage);
+            return response.EnsureSuccessStatusCode();
         }
 
-        public static Task<HttpResponseMessage> PutAsJsonAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
+        public async static Task<HttpResponseMessage> PutAsJsonAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
         {
             var mediaType = new MediaTypeWithQualityHeaderValue("application/command");
             mediaType.Parameters.Add(new NameValueHeaderValue("command",
@@ -99,7 +109,8 @@ namespace IFramework.AspNet
             requestMessage.Content = new ObjectContent(command.GetType(), command, new JsonMediaTypeFormatter(), mediaType);
             //requestMessage.Method = HttpMethod.Post;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            return client.SendAsync(requestMessage);
+            var response = await client.SendAsync(requestMessage);
+            return response.EnsureSuccessStatusCode();
         }
     }
 }

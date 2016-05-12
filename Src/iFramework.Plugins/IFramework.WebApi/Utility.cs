@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Mvc;
 
 namespace IFramework.AspNet
@@ -68,7 +71,7 @@ namespace IFramework.AspNet
                             var arrayValues = value.Split(',');
                             if (arrayValues.Length > 0)
                             {
-                                for (int i = 0; i < arrayValues.Length; i ++)
+                                for (int i = 0; i < arrayValues.Length; i++)
                                 {
                                     values[string.Format("{0}[{1}]", arrayKey, i)] = arrayValues[i];
                                 }
@@ -118,7 +121,67 @@ namespace IFramework.AspNet
                 Debug.Write(ex.Message);
                 return null;
             }
-           
+        }
+
+
+
+
+        public static NameValueCollection ToNameValueCollection<T>(this T dynamicObject, string key = null, NameValueCollection nameValueCollection = null)
+        {
+            nameValueCollection = nameValueCollection ?? HttpUtility.ParseQueryString("");
+            if (dynamicObject == null)
+            {
+                return nameValueCollection;
+            }
+            var objectType = dynamicObject.GetType();
+            if (objectType.IsPrimitive || objectType == typeof(string) || objectType == typeof(DateTime))
+            {
+                nameValueCollection.Add(key, dynamicObject.ToString());
+                return nameValueCollection;
+            }
+            var propertyDescriptors = TypeDescriptor.GetProperties(dynamicObject);
+            for (int i = 0; i < propertyDescriptors.Count; i ++ )
+            {
+                PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
+                var value = propertyDescriptor.GetValue(dynamicObject);
+              
+                if (value is IEnumerable)
+                {
+                    int j = 0;
+                    foreach (var val in (value as IEnumerable))
+                    {
+                        var formDataKey = string.IsNullOrEmpty(key) ? $"{propertyDescriptor.Name}[{j}]" :
+                                          $"{key}[{propertyDescriptor.Name}][{j}]";
+                        var valType = val.GetType();
+                        if (valType.IsPrimitive ||
+                            valType == typeof(string) ||
+                            valType == typeof(DateTime))
+                        {
+                            nameValueCollection.Add(formDataKey, val.ToString());
+                        }
+                        else
+                        {
+                            ToNameValueCollection(val, formDataKey, nameValueCollection);
+                        }
+                        j++;
+                    }
+                }
+                else if (propertyDescriptor.PropertyType.IsPrimitive ||
+                         propertyDescriptor.PropertyType == typeof(string) ||
+                         propertyDescriptor.PropertyType == typeof(DateTime))
+                {
+                    var formDataKey = string.IsNullOrEmpty(key) ? $"{propertyDescriptor.Name}" :
+                                        $"{key}[{propertyDescriptor.Name}]";
+                    nameValueCollection.Add(formDataKey, value.ToString());
+                }
+                else
+                {
+                    var formDataKey = string.IsNullOrEmpty(key) ? $"{propertyDescriptor.Name}" :
+                                        $"{key}[{propertyDescriptor.Name}]";
+                    ToNameValueCollection(value, formDataKey, nameValueCollection);
+                }
+            }
+            return nameValueCollection;
         }
     }
 }

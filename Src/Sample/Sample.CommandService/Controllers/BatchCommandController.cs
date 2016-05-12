@@ -14,6 +14,19 @@ using Sample.ApplicationEvent;
 
 namespace Sample.CommandService.Controllers
 {
+    public class ArrayModelCollection
+    {
+        public ArrayModel[] ArrayModels { get; set; }
+    }
+    public class ArrayModel
+    {
+        public string[] Ids { get; set; }
+        public DateTime DateTime { get; set; }
+        public ArrayModel[] ArrayModels { get; set; }
+
+    }
+
+    [AllowAnonymous]
     public class BatchCommandController : ApiController
     {
         SampleModelContext _QueryContext = IoCFactory.Resolve<SampleModelContext>();
@@ -23,6 +36,27 @@ namespace Sample.CommandService.Controllers
         public BatchCommandController(ICommandBus commandBus)
         {
             _CommandBus = commandBus;
+        }
+
+
+        //[HttpGet]
+        //[Route("api/BatchCommand")]
+        //public ArrayModel Get([FromUri]ArrayModel model)
+        //{
+        //    return model;
+        //}
+
+        [HttpGet]
+        [Route("api/BatchCommand/Collection")]
+        public ArrayModelCollection Collection([FromUri]ArrayModelCollection models)
+        {
+            return models;
+        }
+
+
+        public ArrayModelCollection Post([FromBody]ArrayModelCollection models)
+        {
+            return models;
         }
 
         async Task<ApiResult> Action(ICommand command)

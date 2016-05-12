@@ -38,7 +38,7 @@ namespace IFramework.Message.Impl
         void RegisterHandlers()
         {
             var handlerElements = ConfigurationReader.Instance
-                                                     .GetConfigurationSection<FrameworkConfigurationSection>()
+                                                     .GetConfigurationSection<FrameworkConfigurationSection>()?
                                                      .Handlers;
             if (handlerElements != null)
             {

@@ -1,4 +1,5 @@
-﻿using IFramework.Command;
+﻿using IFramework.AspNet;
+using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
@@ -9,6 +10,7 @@ using Sample.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
