@@ -140,12 +140,23 @@ namespace IFramework.AspNet
                 return nameValueCollection;
             }
             var propertyDescriptors = TypeDescriptor.GetProperties(dynamicObject);
-            for (int i = 0; i < propertyDescriptors.Count; i ++ )
+            for (int i = 0; i < propertyDescriptors.Count; i++)
             {
                 PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
                 var value = propertyDescriptor.GetValue(dynamicObject);
-              
-                if (value is IEnumerable)
+                if (value == null)
+                {
+                    continue;
+                }
+                if (propertyDescriptor.PropertyType.IsPrimitive ||
+                         propertyDescriptor.PropertyType == typeof(string) ||
+                         propertyDescriptor.PropertyType == typeof(DateTime))
+                {
+                    var formDataKey = string.IsNullOrEmpty(key) ? $"{propertyDescriptor.Name}" :
+                                        $"{key}[{propertyDescriptor.Name}]";
+                    nameValueCollection.Add(formDataKey, value.ToString());
+                }
+                else if (value is IEnumerable)
                 {
                     int j = 0;
                     foreach (var val in (value as IEnumerable))
@@ -165,14 +176,6 @@ namespace IFramework.AspNet
                         }
                         j++;
                     }
-                }
-                else if (propertyDescriptor.PropertyType.IsPrimitive ||
-                         propertyDescriptor.PropertyType == typeof(string) ||
-                         propertyDescriptor.PropertyType == typeof(DateTime))
-                {
-                    var formDataKey = string.IsNullOrEmpty(key) ? $"{propertyDescriptor.Name}" :
-                                        $"{key}[{propertyDescriptor.Name}]";
-                    nameValueCollection.Add(formDataKey, value.ToString());
                 }
                 else
                 {
