@@ -44,7 +44,7 @@ namespace Sample.CommandHandler.Community
         public void Handle(Login command)
         {
             var account = _DomainRepository.Find<Account>(a => a.UserName.Equals(command.UserName)
-                                                                      && a.Password.Equals(command.Password));
+                                                            && a.Password.Equals(command.Password));
             if (account == null)
             {
                 throw new SysException(DTO.ErrorCode.WrongUsernameOrPassword);

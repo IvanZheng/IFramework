@@ -111,6 +111,7 @@
     <Compile Include="Event\Impl\EventBus.cs" />
     <Compile Include="Message\IMessageSender.cs" />
     <Compile Include="Infrastructure\Mailboxes\Impl\MessageProcessor.cs" />
+    <Compile Include="Message\Impl\EmptyMessageContext.cs" />
     <Compile Include="Message\Impl\MessagePublisher.cs" />
     <Compile Include="Event\Impl\EventSubscriber.cs" />
     <Compile Include="Event\Impl\MockEventSubscriber.cs" />
@@ -126,10 +127,8 @@
     <Compile Include="Infrastructure\JsonHelper.cs" />
     <Compile Include="Infrastructure\ObjectId.cs" />
     <Compile Include="Infrastructure\TimerTaskFactory.cs" />
-    <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageContextLifetimeManager.cs" />
     <Compile Include="Infrastructure\Logging\ILogger.cs" />
     <Compile Include="Infrastructure\Logging\ILoggerFactory.cs" />
-    <Compile Include="Infrastructure\Unity\LifetimeManagers\PerMessageOrExecutionContextLifetimeManager.cs" />
     <Compile Include="MessageQueue\IMessageQueueClient.cs" />
     <Compile Include="Message\IMessage.cs" />
     <Compile Include="Message\IMessageConsumer.cs" />

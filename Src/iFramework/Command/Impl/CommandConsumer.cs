@@ -177,7 +177,7 @@ namespace IFramework.Command.Impl
                                     ((dynamic)messageHandler).Handle((dynamic)command);
                                     messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
                                     eventContexts.Add(messageReply);
-                                    eventBus.GetMessages().ForEach(@event =>
+                                    eventBus.GetEvents().ForEach(@event =>
                                     {
                                         var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
                                         eventContexts.Add(eventContext);
@@ -227,7 +227,6 @@ namespace IFramework.Command.Impl
                 }
                 _messageQueueClient.CompleteMessage(commandContext);
             }
-           // PerMessageContextLifetimeManager.CurrentMessageContext = commandContext;
         }
     }
 }

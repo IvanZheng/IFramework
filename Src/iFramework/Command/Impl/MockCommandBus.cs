@@ -10,10 +10,7 @@ namespace IFramework.Command.Impl
 {
     public class MockCommandBus : ICommandBus
     {
-        public void Add(ICommand command)
-        {
-        }
-
+       
         public void Send(IEnumerable<IMessageContext> commandContexts)
         {
             
@@ -47,6 +44,11 @@ namespace IFramework.Command.Impl
         public void Stop()
         {
            
+        }
+
+        public IMessageContext WrapCommand(ICommand command, bool needReply = true)
+        {
+            throw new NotImplementedException();
         }
     }
 }

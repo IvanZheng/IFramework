@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using IFramework.Command;
 
 namespace IFramework.Event.Impl
 {
@@ -27,7 +28,7 @@ namespace IFramework.Event.Impl
         {
         }
 
-        public IEnumerable<IEvent> GetMessages()
+        public IEnumerable<IEvent> GetEvents()
         {
             return null;
         }
@@ -43,6 +44,16 @@ namespace IFramework.Event.Impl
         }
 
         public IEnumerable<IEvent> GetToPublishAnywayMessages()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SendCommand(ICommand command)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<ICommand> GetCommands()
         {
             throw new NotImplementedException();
         }

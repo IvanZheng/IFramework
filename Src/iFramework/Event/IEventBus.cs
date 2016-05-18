@@ -1,4 +1,5 @@
 ﻿using IFramework.Bus;
+using IFramework.Command;
 using IFramework.Message;
 using System;
 using System.Collections.Generic;
@@ -9,8 +10,10 @@ namespace IFramework.Event
 {
     public interface IEventBus : IBus<IEvent>
     {
+        void SendCommand(ICommand command);
         void PublishAnyway(params IEvent[] events);
-        IEnumerable<IEvent> GetMessages();
+        IEnumerable<ICommand> GetCommands();
+        IEnumerable<IEvent> GetEvents();
         IEnumerable<IEvent> GetToPublishAnywayMessages();
         void ClearMessages();
     }

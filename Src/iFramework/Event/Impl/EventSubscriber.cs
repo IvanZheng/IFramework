@@ -53,39 +53,40 @@ namespace IFramework.Event.Impl
                 using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                 {
                     scope.RegisterInstance(typeof(IMessageContext), eventContext);
-                    // PerMessageContextLifetimeManager.CurrentMessageContext = eventContext;
-                    eventContext.ToBeSentMessageContexts.Clear();
                     var messageStore = scope.Resolve<IMessageStore>();
                     var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
                     if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                     {
-                        var messageContexts = new List<IMessageContext>();
-                        List<IMessageContext> commandContexts = null;
+                        var eventContexts = new List<IMessageContext>();
+                        List<IMessageContext> commandContexts = new List<IMessageContext>();
                         var eventBus = scope.Resolve<IEventBus>();
-                        eventBus.ClearMessages();
                         try
                         {
                             var messageHandler = scope.Resolve(messageHandlerType);
                             using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                               new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
+                                                                               new TransactionOptions {
+                                                                                   IsolationLevel = IsolationLevel.ReadUncommitted
+                                                                               }))
                             {
                                 ((dynamic)messageHandler).Handle((dynamic)message);
 
                                 //get commands to be sent
-                                commandContexts = eventContext.ToBeSentMessageContexts;
+                                eventBus.GetCommands().ForEach(cmd =>
+                                   commandContexts.Add(_commandBus.WrapCommand(cmd, false))
+                               );
                                 //get events to be published
-                                eventBus.GetMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
+                                eventBus.GetEvents().ForEach(msg => eventContexts.Add(_MessageQueueClient.WrapMessage(msg)));
 
-                                messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, messageContexts);
+                                messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, eventContexts);
                                 transactionScope.Complete();
                             }
                             if (commandContexts.Count > 0)
                             {
                                 _commandBus.Send(commandContexts.AsEnumerable());
                             }
-                            if (messageContexts.Count > 0)
+                            if (eventContexts.Count > 0)
                             {
-                                _messagePublisher.Send(messageContexts.ToArray());
+                                _messagePublisher.Send(eventContexts.ToArray());
                             }
                         }
                         catch (Exception e)
@@ -100,15 +101,14 @@ namespace IFramework.Event.Impl
                                 _logger.Error(message.ToJson(), e);
                             }
                             messageStore.Rollback();
-                            eventBus.GetToPublishAnywayMessages().ForEach(msg => messageContexts.Add(_MessageQueueClient.WrapMessage(msg)));
-                            messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, messageContexts.ToArray());
-                            if (messageContexts.Count > 0)
+                            eventBus.GetToPublishAnywayMessages().ForEach(msg => eventContexts.Add(_MessageQueueClient.WrapMessage(msg)));
+                            messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventContexts.ToArray());
+                            if (eventContexts.Count > 0)
                             {
-                                _messagePublisher.Send(messageContexts.ToArray());
+                                _messagePublisher.Send(eventContexts.ToArray());
                             }
                         }
                     }
-                    //PerMessageContextLifetimeManager.CurrentMessageContext = null;
                 }
             });
         }

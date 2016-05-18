@@ -12,11 +12,11 @@ namespace Sample.ApplicationEventSubscriber.Community
     public class AccountEventSubscriber : IEventSubscriber<AccountLogined>,
         IEventSubscriber<AccountRegistered>
     {
-        ICommandBus _commandBus;
+        IEventBus _eventBus;
 
-        public AccountEventSubscriber(ICommandBus bus)
+        public AccountEventSubscriber(IEventBus eventBus)
         {
-            _commandBus = bus;
+            _eventBus = eventBus;
         }
         public void Handle(AccountLogined @event)
         {
@@ -26,7 +26,7 @@ namespace Sample.ApplicationEventSubscriber.Community
         public void Handle(AccountRegistered @event)
         {
             Console.Write("account({0}) registered at {1}", @event.AccountID, @event.UserName);
-            _commandBus.Add(new Login { UserName = "ivan", Password = "123456"});
+            _eventBus.SendCommand(new Login { UserName = "ivan", Password = "123456"});
         }
     }
 }

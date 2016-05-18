@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
+using IFramework.Command;
 
 namespace IFramework.Event.Impl
 {
     public class EventBus : IEventBus
     {
+        protected List<ICommand> CommandQueue;
         protected List<IEvent> EventQueue;
         protected List<IEvent> ToPublishAnywayEventQueue;
         protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
@@ -16,11 +18,8 @@ namespace IFramework.Event.Impl
         {
             EventSubscriberProvider = provider;
             EventQueue = new List<IEvent>();
+            CommandQueue = new List<ICommand>();
             ToPublishAnywayEventQueue = new List<IEvent>();
-        }
-
-        public virtual void Commit()
-        {
         }
 
         public void Publish<TEvent>(TEvent @event) where TEvent : IEvent
@@ -47,7 +46,7 @@ namespace IFramework.Event.Impl
 
         }
 
-        public IEnumerable<IEvent> GetMessages()
+        public IEnumerable<IEvent> GetEvents()
         {
             return EventQueue;
         }
@@ -55,6 +54,7 @@ namespace IFramework.Event.Impl
         public void ClearMessages()
         {
             EventQueue.Clear();
+            CommandQueue.Clear();
             ToPublishAnywayEventQueue.Clear();
         }
 
@@ -67,6 +67,15 @@ namespace IFramework.Event.Impl
         public IEnumerable<IEvent> GetToPublishAnywayMessages()
         {
             return ToPublishAnywayEventQueue;
+        }
+        public void SendCommand(ICommand command)
+        {
+            CommandQueue.Add(command);
+        }
+
+        public IEnumerable<ICommand> GetCommands()
+        {
+            return CommandQueue;
         }
     }
 }

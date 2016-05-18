@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Practices.Unity;
 
 namespace IFramework.Message.Impl
 {
@@ -25,7 +26,8 @@ namespace IFramework.Message.Impl
 
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {
-            using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
+            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+            using (var messageStore = scope.Resolve<IMessageStore>())
             {
                 return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationID) =>
                                         _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationID));
@@ -41,7 +43,8 @@ namespace IFramework.Message.Impl
         {
             Task.Factory.StartNew(() =>
             {
-                using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
+                using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+                using (var messageStore = scope.Resolve<IMessageStore>())
                 {
                     messageStore.RemovePublishedEvent(messageId);
                 }

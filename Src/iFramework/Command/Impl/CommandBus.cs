@@ -46,7 +46,8 @@ namespace IFramework.Command.Impl
         {
             if (_needMessageStore)
             {
-                using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
+                using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+                using (var messageStore = scope.Resolve<IMessageStore>())
                 {
                     return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId) =>
                                                               _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationId));
@@ -66,7 +67,8 @@ namespace IFramework.Command.Impl
             {
                 Task.Factory.StartNew(() =>
                 {
-                    using (var messageStore = IoCFactory.Resolve<IMessageStore>("perResolveMessageStore"))
+                    using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+                    using (var messageStore = scope.Resolve<IMessageStore>())
                     {
                         messageStore.RemoveSentCommand(messageId);
                     }
@@ -141,15 +143,8 @@ namespace IFramework.Command.Impl
             return Send(command, CancellationToken.None);
         }
 
-        public Task Send(ICommand command, CancellationToken cancellationToken)
+        public IMessageContext WrapCommand(ICommand command, bool needReply = true)
         {
-            var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-            if (currentMessageContext != null && currentMessageContext.Message is ICommand)
-            {
-                // A command sent in a CommandContext is not allowed. We throw exception!!!
-                throw new NotSupportedException("Command is not allowd to be sent in another command context!");
-            }
-
             string commandKey = null;
             if (command is ILinearCommand)
             {
@@ -167,36 +162,42 @@ namespace IFramework.Command.Impl
             #endregion
             commandContext = _messageQueueClient.WrapMessage(command, topic: queue,
                                                              key: commandKey,
-                                                             replyEndPoint: _replyTopicName);
+                                                             replyEndPoint: needReply?  _replyTopicName : null);
+            return commandContext;
+        }
+
+        public Task Send(ICommand command, CancellationToken cancellationToken)
+        {
+            var commandContext = WrapCommand(command);
             return SendAsync(commandContext, cancellationToken);
         }
 
-        public void Add(ICommand command)
-        {
-            var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-            if (currentMessageContext == null)
-            {
-                throw new CurrentMessageContextIsNull();
-            }
-            string commandKey = null;
-            if (command is ILinearCommand)
-            {
-                var linearKey = _linearCommandManager.GetLinearKey(command as ILinearCommand);
-                if (linearKey != null)
-                {
-                    commandKey = linearKey.ToString();
-                }
-            }
-            #region pickup a queue to send command
-            int keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey) ?
-                commandKey.GetUniqueCode() : command.ID.GetUniqueCode();
-            var queue = _commandQueueNames[Math.Abs(keyUniqueCode % _commandQueueNames.Length)];
-            #endregion
-            var commandContext = _messageQueueClient.WrapMessage(command, topic: queue,
-                                                             key: commandKey,
-                                                             replyEndPoint: _replyTopicName);
-            currentMessageContext.ToBeSentMessageContexts.Add(commandContext);
-        }
+        //public void Add(ICommand command)
+        //{
+        //    var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;
+        //    if (currentMessageContext == null)
+        //    {
+        //        throw new CurrentMessageContextIsNull();
+        //    }
+        //    string commandKey = null;
+        //    if (command is ILinearCommand)
+        //    {
+        //        var linearKey = _linearCommandManager.GetLinearKey(command as ILinearCommand);
+        //        if (linearKey != null)
+        //        {
+        //            commandKey = linearKey.ToString();
+        //        }
+        //    }
+        //    #region pickup a queue to send command
+        //    int keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey) ?
+        //        commandKey.GetUniqueCode() : command.ID.GetUniqueCode();
+        //    var queue = _commandQueueNames[Math.Abs(keyUniqueCode % _commandQueueNames.Length)];
+        //    #endregion
+        //    var commandContext = _messageQueueClient.WrapMessage(command, topic: queue,
+        //                                                     key: commandKey,
+        //                                                     replyEndPoint: _replyTopicName);
+        //    currentMessageContext.ToBeSentMessageContexts.Add(commandContext);
+        //}
 
         public Task<TResult> Send<TResult>(ICommand command)
         {

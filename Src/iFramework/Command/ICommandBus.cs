@@ -18,6 +18,8 @@ namespace IFramework.Command
         void Send(IEnumerable<IMessageContext> commandContexts);
         Task<TResult> Send<TResult>(ICommand command);
         Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken);
-        void Add(ICommand command);
+        //void Add(ICommand command);
+        IMessageContext WrapCommand(ICommand command, bool needReply = true);
+
     }
 }

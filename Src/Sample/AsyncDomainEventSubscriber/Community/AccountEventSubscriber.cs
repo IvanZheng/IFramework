@@ -14,8 +14,7 @@ namespace Sample.AsyncDomainEventSubscriber.Community
         IEventSubscriber<AccountRegistered>
     {
         IEventBus _EventBus;
-        ICommandBus _CommandBus;
-        public AccountEventSubscriber(IEventBus eventBus, ICommandBus commandBus)
+        public AccountEventSubscriber(IEventBus eventBus)
         {
             _EventBus = eventBus;
         }
@@ -29,7 +28,6 @@ namespace Sample.AsyncDomainEventSubscriber.Community
                                   UserName = @event.UserName
                               };
             _EventBus.Publish(applicationEvent);
-           // _CommandBus.Add(new Login { });
         }
 
        

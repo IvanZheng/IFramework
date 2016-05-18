@@ -59,7 +59,13 @@ namespace IFramework.Message.Impl
 
         public void Send(params Message.IMessageContext[] messageContexts)
         {
-            messageContexts.ForEach(@messageContext => _messageQueue.Add(messageContext));
+            messageContexts.ForEach(@messageContext =>
+            {
+                if (!string.IsNullOrEmpty(messageContext.Topic))
+                {
+                    _messageQueue.Add(messageContext);
+                }
+            });
         }
 
         void SendMessages(CancellationTokenSource cancellationTokenSource)
