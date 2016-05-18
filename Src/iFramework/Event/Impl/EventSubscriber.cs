@@ -72,7 +72,7 @@ namespace IFramework.Event.Impl
 
                                 //get commands to be sent
                                 eventBus.GetCommands().ForEach(cmd =>
-                                   commandContexts.Add(_commandBus.WrapCommand(cmd, false))
+                                   commandContexts.Add(_commandBus.WrapCommand(cmd))
                                );
                                 //get events to be published
                                 eventBus.GetEvents().ForEach(msg => eventContexts.Add(_MessageQueueClient.WrapMessage(msg)));
