@@ -108,13 +108,14 @@ namespace IFramework.MessageStoring
             }
         }
 
-
-        static object EventLock = new object();
+        // if not subscribe the sampe event message by topic's mulitple subscriptions
+        // we don't need EventLock to assure Events.Add(@event) having no conflict.
+        //static object EventLock = new object();
         public void SaveEvent(IMessageContext eventContext, string subscriptionName,
                               IEnumerable<IMessageContext> commandContexts,
                               IEnumerable<IMessageContext> messageContexts)
         {
-            lock (EventLock)
+            //lock (EventLock)
             {
                 var @event = Events.Find(eventContext.MessageID);
                 if (@event == null)
@@ -141,7 +142,7 @@ namespace IFramework.MessageStoring
 
         public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e, params IMessageContext[] messageContexts)
         {
-            lock (EventLock)
+            //lock (EventLock)
             {
                 var @event = Events.Find(eventContext.MessageID);
                 if (@event == null)
@@ -225,7 +226,5 @@ namespace IFramework.MessageStoring
             SaveChanges();
             return messageContexts;
         }
-
-
     }
 }
