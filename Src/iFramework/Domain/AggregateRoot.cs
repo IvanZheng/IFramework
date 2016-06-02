@@ -19,7 +19,7 @@ namespace IFramework.Domain
             return EventQueue.ToList();
         }
 
-        public void Rollback()
+        public virtual void Rollback()
         {
             EventQueue.Clear();
         }

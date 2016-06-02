@@ -55,9 +55,44 @@ namespace IFramework.Infrastructure
     public static class ExceptionManager
     {
         static ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager));
-        public static Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false)
+        public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false, int retryCount = 50)
         {
-            return func().ContinueWith<Task<ApiResult<T>>>(t => {
+            ApiResult<T> apiResult = null;
+            do
+            {
+                try
+                {
+                    var result = await func().ConfigureAwait(continueOnCapturedContext);
+                    apiResult = new ApiResult<T>(result);
+                    needRetry = false;
+                }
+                catch (Exception ex)
+                {
+                    if (!(ex.GetBaseException() is OptimisticConcurrencyException) || !needRetry)
+                    {
+                        var baseException = ex.GetBaseException();
+                        if (baseException is SysException)
+                        {
+                            var sysException = baseException as SysException;
+                            apiResult = new ApiResult<T>(sysException.ErrorCode, sysException.Message);
+                            _logger.Debug(ex);
+                        }
+                        else
+                        {
+                            apiResult = new ApiResult<T>(ErrorCode.UnknownError, baseException.Message);
+                            _logger.Error(ex);
+                        }
+                        needRetry = false;
+                    }
+                }
+            } while (needRetry && retryCount-- > 0);
+            return apiResult;
+
+            #region Old Method for .net 4
+            /*
+             * old method for .net 4
+            return func().ContinueWith<Task<ApiResult<T>>>(t =>
+            {
                 ApiResult<T> apiResult = null;
                 try
                 {
@@ -88,32 +123,28 @@ namespace IFramework.Infrastructure
                 }
                 if (needRetry)
                 {
-                     return ProcessAsync(func, needRetry);
+                    return ProcessAsync(func, needRetry);
                 }
-                
-                var task = new Task<ApiResult<T>>(() => apiResult);
-                task.RunSynchronously();
-                return task;
+
+                return Task.FromResult(apiResult);
             }).Unwrap();
+            */
+            #endregion
         }
 
-        public static Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false)
+        public static async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false, int retryCount = 50)
         {
-            return func().ContinueWith<Task<ApiResult>>(t =>
+            ApiResult apiResult = null;
+            do
             {
-                ApiResult apiResult = null;
                 try
                 {
-                    if (t.IsFaulted)
-                    {
-                        throw t.Exception.GetBaseException();
-                    }
+                    await func().ConfigureAwait(continueOnCapturedContext);
                     needRetry = false;
-                    apiResult = new ApiResult();
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                    if (!(ex.GetBaseException() is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
                         if (baseException is SysException)
@@ -129,18 +160,51 @@ namespace IFramework.Infrastructure
                         needRetry = false;
                     }
                 }
-                if (needRetry)
-                {
-                    return ProcessAsync(func, needRetry);
-                }
+            } while (needRetry && retryCount-- > 0);
+            return apiResult;
 
-                var task = new Task<ApiResult>(() => apiResult);
-                task.RunSynchronously();
-                return task;
-            }).Unwrap();
+            #region Old Method for .net 4
+            //return func().ContinueWith<Task<ApiResult>>(t =>
+            //{
+            //    ApiResult apiResult = null;
+            //    try
+            //    {
+            //        if (t.IsFaulted)
+            //        {
+            //            throw t.Exception.GetBaseException();
+            //        }
+            //        needRetry = false;
+            //        apiResult = new ApiResult();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        if (!(ex is OptimisticConcurrencyException) || !needRetry)
+            //        {
+            //            var baseException = ex.GetBaseException();
+            //            if (baseException is SysException)
+            //            {
+            //                var sysException = baseException as SysException;
+            //                apiResult = new ApiResult(sysException.ErrorCode, sysException.Message);
+            //            }
+            //            else
+            //            {
+            //                apiResult = new ApiResult(ErrorCode.UnknownError, baseException.Message);
+            //                _logger.Error(ex);
+            //            }
+            //            needRetry = false;
+            //        }
+            //    }
+            //    if (needRetry)
+            //    {
+            //        return ProcessAsync(func, needRetry);
+            //    }
+
+            //    return Task.FromResult(apiResult);
+            //}).Unwrap();
+            #endregion
         }
 
-        public static ApiResult Process(Action action, bool needRetry = false)
+        public static ApiResult Process(Action action, bool needRetry = false, int retryCount = 50)
         {
             ApiResult apiResult = null;
             do
@@ -170,11 +234,11 @@ namespace IFramework.Infrastructure
                     }
                 }
             }
-            while (needRetry);
+            while (needRetry && retryCount -- > 0);
             return apiResult;
         }
 
-        public static ApiResult<T> Process<T>(Func<T> func, bool needRetry = false)
+        public static ApiResult<T> Process<T>(Func<T> func, bool needRetry = false, int retryCount = 50)
         {
             ApiResult<T> apiResult = null;
             do
@@ -211,7 +275,7 @@ namespace IFramework.Infrastructure
                     }
                 }
             }
-            while (needRetry);
+            while (needRetry && retryCount -- > 0);
             return apiResult;
         }
     }

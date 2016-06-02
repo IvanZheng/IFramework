@@ -37,7 +37,7 @@ namespace Sample.CommandService.Tests
                     Count = 20000
                 };
                 _createProducts.Add(createProduct);
-                tasks.Add(_commandBus.Send(createProduct));
+                tasks.Add(_commandBus.SendAsync(createProduct).Result.Reply);
             }
             Task.WaitAll(tasks.ToArray());
         }
@@ -59,7 +59,7 @@ namespace Sample.CommandService.Tests
                         ProductId = _createProducts[j].ProductId,
                         ReduceCount = 1
                     };
-                    tasks.Add(_commandBus.Send(reduceProduct));
+                    tasks.Add(_commandBus.SendAsync(reduceProduct).Result.Reply);
                 }
             }
             Task.WaitAll(tasks.ToArray());

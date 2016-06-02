@@ -10,6 +10,6 @@ namespace IFramework.Message
         void Start();
         void Stop();
         void Send(params IMessage[] events);
-        void Send(params IMessageContext[] eventContexts);
+        void Send(params MessageState[] messageStates);
     }
 }

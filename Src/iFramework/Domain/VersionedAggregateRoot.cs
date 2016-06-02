@@ -22,6 +22,12 @@ namespace IFramework.Domain
             }
         }
 
+        public override void Rollback()
+        {
+            _newVersion = 0;
+            base.Rollback();
+        }
+
         [ConcurrencyCheck]
         public int Version
         {

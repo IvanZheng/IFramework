@@ -57,8 +57,8 @@ namespace IFramework.Event.Impl
                     var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
                     if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                     {
-                        var eventContexts = new List<IMessageContext>();
-                        List<IMessageContext> commandContexts = new List<IMessageContext>();
+                        var eventMessageStates = new List<MessageState>();
+                        var commandMessageStates = new List<MessageState>();
                         var eventBus = scope.Resolve<IEventBus>();
                         try
                         {
@@ -72,21 +72,25 @@ namespace IFramework.Event.Impl
 
                                 //get commands to be sent
                                 eventBus.GetCommands().ForEach(cmd =>
-                                   commandContexts.Add(_commandBus.WrapCommand(cmd))
+                                   commandMessageStates.Add(new MessageState(_commandBus.WrapCommand(cmd)))
                                );
                                 //get events to be published
-                                eventBus.GetEvents().ForEach(msg => eventContexts.Add(_MessageQueueClient.WrapMessage(msg)));
+                                eventBus.GetEvents().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg))));
 
-                                messageStore.SaveEvent(eventContext, subscriptionName, commandContexts, eventContexts);
+                                messageStore.SaveEvent(eventContext, 
+                                                       subscriptionName,
+                                                       commandMessageStates.Select(s => s.MessageContext), 
+                                                       eventMessageStates.Select(s => s.MessageContext));
+
                                 transactionScope.Complete();
                             }
-                            if (commandContexts.Count > 0)
+                            if (commandMessageStates.Count > 0)
                             {
-                                _commandBus.Send(commandContexts.AsEnumerable());
+                                _commandBus.SendMessageStates(commandMessageStates);
                             }
-                            if (eventContexts.Count > 0)
+                            if (eventMessageStates.Count > 0)
                             {
-                                _messagePublisher.Send(eventContexts.ToArray());
+                                _messagePublisher.Send(eventMessageStates.ToArray());
                             }
                         }
                         catch (Exception e)
@@ -101,11 +105,11 @@ namespace IFramework.Event.Impl
                                 _logger.Error(message.ToJson(), e);
                             }
                             messageStore.Rollback();
-                            eventBus.GetToPublishAnywayMessages().ForEach(msg => eventContexts.Add(_MessageQueueClient.WrapMessage(msg)));
-                            messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventContexts.ToArray());
-                            if (eventContexts.Count > 0)
+                            eventBus.GetToPublishAnywayMessages().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg))));
+                            messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
+                            if (eventMessageStates.Count > 0)
                             {
-                                _messagePublisher.Send(eventContexts.ToArray());
+                                _messagePublisher.Send(eventMessageStates.ToArray());
                             }
                         }
                     }

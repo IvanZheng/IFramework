@@ -8,8 +8,14 @@ namespace IFramework.Message.Impl
 {
     class MockMessagePublisher : IMessagePublisher
     {
-        public void Send(params IMessage[] messages)
+        public void Send(params MessageState[] messageStates)
         {
+            
+        }
+
+        public void Send(params IMessage[] events)
+        {
+            
         }
 
         public void Start()
@@ -19,11 +25,7 @@ namespace IFramework.Message.Impl
 
         public void Stop()
         {
-        }
-
-
-        public void Send(params IMessageContext[] messageContexts)
-        {
+           
         }
     }
 }

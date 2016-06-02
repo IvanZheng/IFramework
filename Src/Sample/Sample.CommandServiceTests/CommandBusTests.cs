@@ -71,17 +71,17 @@ namespace Sample.CommandService.Tests
                         ProductId = _createProducts[j].ProductId,
                         ReduceCount = 1
                     };
-                    tasks.Add(_commandBus.Send(reduceProduct));
+                    tasks.Add(_commandBus.SendAsync(reduceProduct).Result.Reply);
                 }
             }
             Task.WaitAll(tasks.ToArray());
             var costTime = (DateTime.Now - startTime).TotalMilliseconds;
             _logger.ErrorFormat("cost time : {0} ms", costTime);
 
-            var products = _commandBus.Send<List<Project>>(new GetProducts
+            var products = _commandBus.SendAsync(new GetProducts
             {
                 ProductIds = _createProducts.Select(p => p.ProductId).ToList()
-            }).Result;
+            }).Result.ReadAsAsync<List<Project>>().Result;
 
             for (int i = 0; i < _createProducts.Count; i++)
             {

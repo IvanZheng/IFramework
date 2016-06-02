@@ -26,7 +26,11 @@ namespace Sample.CommandService.Controllers
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.ProcessAsync(() => _CommandBus.Send(command));
+                return await ExceptionManager.ProcessAsync(async () =>
+                {
+                    var messageResponse = await _CommandBus.SendAsync(command, TimeSpan.FromSeconds(5));
+                    return await messageResponse.Reply.Timeout(TimeSpan.FromMilliseconds(2000));
+                });
             }
             else
             {

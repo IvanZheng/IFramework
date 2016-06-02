@@ -10,32 +10,24 @@ namespace IFramework.Command.Impl
 {
     public class MockCommandBus : ICommandBus
     {
-       
-        public void Send(IEnumerable<IMessageContext> commandContexts)
+        public void SendMessageStates(IEnumerable<MessageState> messageStates)
         {
             
         }
 
-        public Task Send(ICommand command)
+        public Task<MessageResponse> SendAsync(ICommand command, bool needReply = true)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
-        public Task Send(ICommand command, CancellationToken cancellationToken)
+        public Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken, TimeSpan sendTimeout, CancellationToken replyCancellationToken, bool needReply = true)
         {
-            return null;
+            throw new NotImplementedException();
         }
-
-        public Task<TResult> Send<TResult>(ICommand command)
+        public Task<MessageResponse> SendAsync(ICommand command, TimeSpan timeout, bool needReply = true)
         {
-            return null;
+            throw new NotImplementedException();
         }
-
-        public Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken)
-        {
-            return null;
-        }
-
         public void Start()
         {
            
@@ -43,12 +35,14 @@ namespace IFramework.Command.Impl
 
         public void Stop()
         {
-           
+            
         }
 
         public IMessageContext WrapCommand(ICommand command, bool needReply = true)
         {
             throw new NotImplementedException();
         }
+
+      
     }
 }

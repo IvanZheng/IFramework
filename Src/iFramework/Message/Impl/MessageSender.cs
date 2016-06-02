@@ -13,7 +13,7 @@ namespace IFramework.Message.Impl
 {
     public abstract class MessageSender : IMessageSender
     {
-        protected BlockingCollection<IMessageContext> _messageQueue { get; set; }
+        protected BlockingCollection<MessageState> _messageStateQueue { get; set; }
         protected string _defaultTopic;
         protected Task _sendMessageTask;
         protected IMessageQueueClient _messageQueueClient;
@@ -23,17 +23,17 @@ namespace IFramework.Message.Impl
         {
             _messageQueueClient = messageQueueClient;
             _defaultTopic = defaultTopic;
-            _messageQueue = new BlockingCollection<IMessageContext>();
+            _messageStateQueue = new BlockingCollection<MessageState>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
         protected abstract IEnumerable<IMessageContext> GetAllUnSentMessages();
         protected abstract void Send(IMessageContext messageContext, string topic);
-        protected abstract void CompleteSendingMessage(string messageId);
+        protected abstract void CompleteSendingMessage(MessageState messageState);
 
         public virtual void Start()
         {
-            GetAllUnSentMessages().ForEach(eventContext => _messageQueue.Add(eventContext));
+            GetAllUnSentMessages().ForEach(eventContext => _messageStateQueue.Add(new MessageState(eventContext)));
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             _sendMessageTask = Task.Factory.StartNew((cs) => SendMessages(cs as CancellationTokenSource),
                 cancellationTokenSource,
@@ -54,16 +54,17 @@ namespace IFramework.Message.Impl
 
         public void Send(params IMessage[] messages)
         {
-            messages.ForEach(message => _messageQueue.Add(_messageQueueClient.WrapMessage(message)));
+            messages.ForEach(message => _messageStateQueue.Add(new MessageState(_messageQueueClient.WrapMessage(message))));
         }
 
-        public void Send(params Message.IMessageContext[] messageContexts)
+        public void Send(params MessageState[] messageStates)
         {
-            messageContexts.ForEach(@messageContext =>
+            messageStates.ForEach(messageState =>
             {
+                var messageContext = messageState.MessageContext;
                 if (!string.IsNullOrEmpty(messageContext.Topic))
                 {
-                    _messageQueue.Add(messageContext);
+                    _messageStateQueue.Add(messageState);
                 }
             });
         }
@@ -74,13 +75,14 @@ namespace IFramework.Message.Impl
             {
                 try
                 {
-                    var messageContext = _messageQueue.Take(cancellationTokenSource.Token);
+                    var messageState = _messageStateQueue.Take(cancellationTokenSource.Token);
                     while (true)
                     {
                         try
                         {
+                            var messageContext = messageState.MessageContext;
                             Send(messageContext, messageContext.Topic ?? _defaultTopic);
-                            CompleteSendingMessage(messageContext.MessageID);
+                            CompleteSendingMessage(messageState);
                             break;
                         }
                         catch (Exception)

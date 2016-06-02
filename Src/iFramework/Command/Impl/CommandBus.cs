@@ -25,6 +25,9 @@ namespace IFramework.Command.Impl
         protected string _replySubscriptionName;
         protected string[] _commandQueueNames;
         protected ILinearCommandManager _linearCommandManager;
+        /// <summary>
+        /// cache command states for command reply. When reply comes, make replyTaskCompletionSouce completed
+        /// </summary>
         protected ConcurrentDictionary<string, MessageState> _commandStateQueues;
         protected bool _needMessageStore;
         public CommandBus(IMessageQueueClient messageQueueClient,
@@ -61,21 +64,26 @@ namespace IFramework.Command.Impl
             _messageQueueClient.Send(messageContext, queue);
         }
 
-        protected override void CompleteSendingMessage(string messageId)
+        protected override void CompleteSendingMessage(MessageState messageState)
         {
+            if (messageState != null && messageState.SendTaskCompletionSource != null)
+            {
+                messageState.SendTaskCompletionSource
+                            .TrySetResult(new MessageResponse(messageState.MessageContext,
+                                          messageState.ReplyTaskCompletionSource?.Task,
+                                          messageState.NeedReply));
+            }
+
             if (_needMessageStore)
             {
-                Task.Factory.StartNew(() =>
+                Task.Run(() =>
                 {
                     using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                     using (var messageStore = scope.Resolve<IMessageStore>())
                     {
-                        messageStore.RemoveSentCommand(messageId);
+                        messageStore.RemoveSentCommand(messageState.MessageID);
                     }
-                }, 
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                TaskScheduler.Default);
+                });
             }
         }
 
@@ -112,35 +120,67 @@ namespace IFramework.Command.Impl
                 _commandStateQueues.TryRemove(reply.MessageID);
                 if (reply.Message is Exception)
                 {
-                    messageState.TaskCompletionSource.TrySetException(reply.Message as Exception);
+                    messageState.ReplyTaskCompletionSource.TrySetException(reply.Message as Exception);
                 }
                 else
                 {
-                    messageState.TaskCompletionSource.TrySetResult(reply.Message);
+                    messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
                 }
             }
         }
 
-        protected IFramework.Message.MessageState BuildMessageState(IMessageContext messageContext, CancellationToken cancellationToken)
+        protected MessageState BuildCommandState(IMessageContext commandContext, CancellationToken sendCancellationToken, TimeSpan timeout, CancellationToken replyCancellationToken, bool needReply)
         {
-            var pendingRequestsCts = new CancellationTokenSource();
-            CancellationTokenSource linkedCts = CancellationTokenSource
-                   .CreateLinkedTokenSource(cancellationToken, pendingRequestsCts.Token);
-            cancellationToken = linkedCts.Token;
-            var source = new TaskCompletionSource<object>();
-            var state = new IFramework.Message.MessageState
+            var sendTaskCompletionSource = new TaskCompletionSource<MessageResponse>();
+            if (timeout != TimerTaskFactory.Infinite)
             {
-                MessageID = messageContext.MessageID,
-                TaskCompletionSource = source,
-                CancellationToken = cancellationToken,
-                MessageContext = messageContext
-            };
-            return state;
+                var timeoutCancellationTokenSource = new CancellationTokenSource(timeout);
+                timeoutCancellationTokenSource.Token.Register(OnSendTimeout, sendTaskCompletionSource);
+            }
+           
+            if (sendCancellationToken != CancellationToken.None)
+            {
+                sendCancellationToken.Register(OnSendCancel, sendTaskCompletionSource);
+            }
+
+            TaskCompletionSource<object> replyTaskCompletionSource = null;
+            MessageState commandState = null;
+            if (needReply)
+            {
+                replyTaskCompletionSource = new TaskCompletionSource<object>();
+                commandState = new MessageState(commandContext, sendTaskCompletionSource, replyTaskCompletionSource, needReply);
+                if (replyCancellationToken != CancellationToken.None)
+                {
+                    replyCancellationToken.Register(OnReplyCancel, commandState);
+                }
+            }
+            else
+            {
+                commandState = new MessageState(commandContext, sendTaskCompletionSource, needReply);
+            }
+            return commandState;
         }
 
-        public Task Send(ICommand command)
+        public Task<MessageResponse> SendAsync(ICommand command, bool needReply = true)
         {
-            return Send(command, CancellationToken.None);
+            return SendAsync(command, CancellationToken.None, TimerTaskFactory.Infinite, CancellationToken.None, needReply);
+        }
+
+        public Task<MessageResponse> SendAsync(ICommand command, TimeSpan timeout, bool needReply = true)
+        {
+            return SendAsync(command, CancellationToken.None, timeout, CancellationToken.None, needReply);
+        }
+
+        public Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken, TimeSpan timeout, CancellationToken replyCancellationToken, bool needReply = true)
+        {
+            var commandContext = WrapCommand(command, needReply);
+            var commandState = BuildCommandState(commandContext, sendCancellationToken, timeout, replyCancellationToken, needReply);
+            if (needReply)
+            {
+                _commandStateQueues.GetOrAdd(commandState.MessageID, commandState);
+            }
+            Send(commandState);
+            return commandState.SendTaskCompletionSource.Task;
         }
 
         public IMessageContext WrapCommand(ICommand command, bool needReply = true)
@@ -162,15 +202,43 @@ namespace IFramework.Command.Impl
             #endregion
             commandContext = _messageQueueClient.WrapMessage(command, topic: queue,
                                                              key: commandKey,
-                                                             replyEndPoint: needReply?  _replyTopicName : null);
+                                                             replyEndPoint: needReply ? _replyTopicName : null);
             return commandContext;
         }
-
-        public Task Send(ICommand command, CancellationToken cancellationToken)
+ 
+        protected void OnSendTimeout(object state)
         {
-            var commandContext = WrapCommand(command);
-            return SendAsync(commandContext, cancellationToken);
+            var sendTaskCompletionSource = state as TaskCompletionSource<MessageResponse>;
+            if (sendTaskCompletionSource != null)
+            {
+                sendTaskCompletionSource.TrySetException(new TimeoutException());
+            }
         }
+
+        protected void OnSendCancel(object state)
+        {
+            var sendTaskCompletionSource = state as TaskCompletionSource<MessageResponse>;
+            if (sendTaskCompletionSource != null)
+            {
+                sendTaskCompletionSource.TrySetCanceled();
+            }
+        }
+
+        protected void OnReplyCancel(object state)
+        {
+            var messageState = state as MessageState;
+            if (messageState != null)
+            {
+                messageState.ReplyTaskCompletionSource.TrySetCanceled();
+                _commandStateQueues.TryRemove(messageState.MessageID);
+            }
+        }
+
+        public void SendMessageStates(IEnumerable<MessageState> commandStates)
+        {
+            commandStates.ForEach(commandState => Send(commandState));
+        }
+
 
         //public void Add(ICommand command)
         //{
@@ -199,48 +267,26 @@ namespace IFramework.Command.Impl
         //    currentMessageContext.ToBeSentMessageContexts.Add(commandContext);
         //}
 
-        public Task<TResult> Send<TResult>(ICommand command)
-        {
-            return Send<TResult>(command, CancellationToken.None);
-        }
+        //public Task<TResult> Send<TResult>(ICommand command)
+        //{
+        //    return Send<TResult>(command, CancellationToken.None);
+        //}
 
-        public Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken)
-        {
-            return Send(command).ContinueWith<TResult>(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    throw t.Exception;
-                }
-                else
-                {
-                    return (TResult)(t as Task<object>).Result;
-                }
-            });
-        }
+        //public Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken)
+        //{
+        //    return Send(command).ContinueWith<TResult>(t =>
+        //    {
+        //        if (t.IsFaulted)
+        //        {
+        //            throw t.Exception;
+        //        }
+        //        else
+        //        {
+        //            return (TResult)(t as Task<object>).Result;
+        //        }
+        //    });
+        //}
 
-        protected virtual Task SendAsync(IMessageContext commandContext, CancellationToken cancellationToken)
-        {
-            var commandState = BuildMessageState(commandContext, cancellationToken);
-            commandState.CancellationToken.Register(OnCancel, commandState);
-            _commandStateQueues.GetOrAdd(commandState.MessageID, commandState);
-            Send(commandContext);
-            return commandState.TaskCompletionSource.Task;
-        }
-
-        protected void OnCancel(object state)
-        {
-            var messageState = state as IFramework.Message.MessageState;
-            if (messageState != null)
-            {
-                _commandStateQueues.TryRemove(messageState.MessageID);
-            }
-        }
-
-        public void Send(IEnumerable<IMessageContext> commandContexts)
-        {
-            commandContexts.ForEach(commandContext => Send(commandContext));
-        }
     }
 
 }

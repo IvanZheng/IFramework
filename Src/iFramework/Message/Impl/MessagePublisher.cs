@@ -39,14 +39,14 @@ namespace IFramework.Message.Impl
             _messageQueueClient.Publish(messageContext, topic);
         }
 
-        protected override void CompleteSendingMessage(string messageId)
+        protected override void CompleteSendingMessage(MessageState messageState)
         {
-            Task.Factory.StartNew(() =>
+            Task.Run(() =>
             {
                 using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                 using (var messageStore = scope.Resolve<IMessageStore>())
                 {
-                    messageStore.RemovePublishedEvent(messageId);
+                    messageStore.RemovePublishedEvent(messageState.MessageID);
                 }
             });
         }

@@ -45,13 +45,13 @@ namespace IFramework.Command.Impl
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
-        protected virtual void OnMessageHandled(IMessageContext reply)
-        {
-            if (_messagePublisher != null && !string.IsNullOrWhiteSpace(reply.Topic) && reply != null)
-            {
-                _messagePublisher.Send(reply);
-            }
-        }
+        //protected virtual void OnMessageHandled(IMessageContext reply)
+        //{
+        //    if (_messagePublisher != null && !string.IsNullOrWhiteSpace(reply.Topic) && reply != null)
+        //    {
+        //        _messagePublisher.Send(reply);
+        //    }
+        //}
 
         public void Start()
         {
@@ -145,14 +145,14 @@ namespace IFramework.Command.Impl
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
             {
                 scope.RegisterInstance(typeof(IMessageContext), commandContext);
-                List<IMessageContext> eventContexts = new List<IMessageContext>();
+                var eventMessageStates = new List<MessageState>();
                 var messageStore = scope.Resolve<IMessageStore>();
                 var eventBus = scope.Resolve<IEventBus>();
                 var commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
                 if (commandHasHandled)
                 {
                     messageReply = _messageQueueClient.WrapMessage(new MessageDuplicatelyHandled(), commandContext.MessageID, commandContext.ReplyToEndPoint);
-                    eventContexts.Add(messageReply);
+                    eventMessageStates.Add(new MessageState(messageReply));
                 }
                 else
                 {
@@ -162,7 +162,7 @@ namespace IFramework.Command.Impl
                     if (messageHandlerType == null)
                     {
                         messageReply = _messageQueueClient.WrapMessage(new NoHandlerExists(), commandContext.MessageID, commandContext.ReplyToEndPoint);
-                        eventContexts.Add(messageReply);
+                        eventMessageStates.Add(new MessageState(messageReply));
                     }
                     else
                     {
@@ -176,21 +176,21 @@ namespace IFramework.Command.Impl
                                 {
                                     ((dynamic)messageHandler).Handle((dynamic)command);
                                     messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
-                                    eventContexts.Add(messageReply);
+                                    eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetEvents().ForEach(@event =>
                                     {
                                         var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
-                                        eventContexts.Add(eventContext);
+                                        eventMessageStates.Add(new MessageState(eventContext));
                                     });
 
-                                    messageStore.SaveCommand(commandContext, eventContexts.ToArray());
+                                    messageStore.SaveCommand(commandContext, eventMessageStates.Select(s => s.MessageContext).ToArray());
                                     transactionScope.Complete();
                                 }
                                 needRetry = false;
                             }
                             catch (Exception e)
                             {
-                                eventContexts.Clear();
+                                eventMessageStates.Clear();
                                 if (e is OptimisticConcurrencyException && needRetry)
                                 {
                                     eventBus.ClearMessages();
@@ -199,11 +199,11 @@ namespace IFramework.Command.Impl
                                 {
                                     messageStore.Rollback();
                                     messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
-                                    eventContexts.Add(messageReply);
+                                    eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetToPublishAnywayMessages().ForEach(@event =>
                                     {
                                         var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
-                                        eventContexts.Add(eventContext);
+                                        eventMessageStates.Add(new MessageState(eventContext));
                                     });
 
                                     if (e is DomainException)
@@ -214,16 +214,16 @@ namespace IFramework.Command.Impl
                                     {
                                         _logger.Error(command.ToJson(), e);
                                     }
-                                    messageStore.SaveFailedCommand(commandContext, e, eventContexts.ToArray());
+                                    messageStore.SaveFailedCommand(commandContext, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
                                     needRetry = false;
                                 }
                             }
                         } while (needRetry);
                     }
                 }
-                if (_messagePublisher != null && eventContexts.Count > 0)
+                if (_messagePublisher != null && eventMessageStates.Count > 0)
                 {
-                    _messagePublisher.Send(eventContexts.ToArray());
+                    _messagePublisher.Send(eventMessageStates.ToArray());
                 }
                 _messageQueueClient.CompleteMessage(commandContext);
             }
