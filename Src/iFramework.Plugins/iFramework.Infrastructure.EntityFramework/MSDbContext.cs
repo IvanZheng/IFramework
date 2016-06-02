@@ -68,7 +68,7 @@ namespace IFramework.EntityFramework
                                        e.State = EntityState.Detached;
                                    });
             var refreshableObjects = ChangeTracker.Entries()
-                                                  .Where(e => e.State == EntityState.Modified)
+                                                  .Where(e => e.State == EntityState.Modified || e.State == EntityState.Unchanged)
                                                   .Select(c => c.Entity);
             context.Refresh(RefreshMode.StoreWins, refreshableObjects);
             ChangeTracker.Entries().ForEach(e =>
