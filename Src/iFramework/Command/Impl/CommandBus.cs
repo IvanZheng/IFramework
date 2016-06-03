@@ -238,8 +238,6 @@ namespace IFramework.Command.Impl
         {
             commandStates.ForEach(commandState => Send(commandState));
         }
-
-
         //public void Add(ICommand command)
         //{
         //    var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;

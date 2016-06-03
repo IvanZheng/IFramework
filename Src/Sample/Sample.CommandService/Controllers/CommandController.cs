@@ -28,8 +28,9 @@ namespace Sample.CommandService.Controllers
             {
                 return await ExceptionManager.ProcessAsync(async () =>
                 {
-                    var messageResponse = await _CommandBus.SendAsync(command, TimeSpan.FromSeconds(5));
-                    return await messageResponse.Reply.Timeout(TimeSpan.FromMilliseconds(2000));
+                    return await _CommandBus.Execute(command, TimeSpan.FromMilliseconds(2000));
+                    //var messageResponse = await _CommandBus.SendAsync(command, TimeSpan.FromSeconds(5));
+                    //return await messageResponse.Reply.Timeout(TimeSpan.FromMilliseconds(2000));
                 });
             }
             else

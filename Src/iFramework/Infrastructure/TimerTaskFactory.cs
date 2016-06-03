@@ -9,6 +9,48 @@ namespace IFramework.Infrastructure
         public static readonly TimeSpan DoNotRepeat = TimeSpan.FromMilliseconds(-1), Infinite = DoNotRepeat;
 
 
+        public static Task Timeout(this Task task, TimeSpan timeout)
+        {
+            // Short-circuit #1: infinite timeout or task already completed
+            if (task.IsCompleted || (timeout == Infinite))
+            {
+                // Either the task has already completed or timeout will never occur.
+                // No proxy necessary.
+                return task;
+            }
+
+            // tcs.Task will be returned as a proxy to the caller
+            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+
+            // Short-circuit #2: zero timeout
+            if (timeout == TimeSpan.Zero)
+            {
+                // We've already timed out.
+                tcs.SetException(new TimeoutException());
+                return tcs.Task;
+            }
+
+            // Set up a timer to complete after the specified timeout period
+            Timer timer = null;
+            timer = new Timer(_ =>
+            {
+                timer.Dispose();
+                // Fault our proxy with a TimeoutException
+                tcs.TrySetException(new TimeoutException());
+            }, null, timeout, DoNotRepeat);
+
+            // Wire up the logic for what happens when source task completes
+            task.ContinueWith(antecedent =>
+            {
+                timer.Dispose();
+                // Marshal results to proxy
+                MarshalTaskResults(antecedent, tcs);
+            });
+
+            return tcs.Task;
+        }
+
+
         public static Task<TResult> Timeout<TResult>(this Task<TResult> task, TimeSpan timeout)
         {
             // Short-circuit #1: infinite timeout or task already completed
