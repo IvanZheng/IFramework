@@ -22,8 +22,7 @@ namespace IFramework.Unity
         internal IUnityContainer _unityContainer;
         public ObjectContainer(IUnityContainer unityContainer)
         {
-
-            _unityContainer = unityContainer ?? new UnityContainer();
+            _unityContainer = unityContainer;
         }
 
         public object ContainerInstanse
