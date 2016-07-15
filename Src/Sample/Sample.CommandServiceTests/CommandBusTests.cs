@@ -3,6 +3,7 @@ using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sample.Command;
 using Sample.CommandServiceTests.Products;

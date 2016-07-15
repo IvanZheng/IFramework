@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
-using Microsoft.Practices.Unity;
 using System.Reflection;
 using IFramework.Event;
 using IFramework.Event.Impl;

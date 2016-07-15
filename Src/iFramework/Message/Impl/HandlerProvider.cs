@@ -6,8 +6,8 @@ using System.Collections;
 using System.Reflection;
 using IFramework.Infrastructure;
 using IFramework.Config;
-using IFramework.Infrastructure.Unity.LifetimeManagers;
 using System.Collections.Concurrent;
+using IFramework.IoC;
 
 namespace IFramework.Message.Impl
 {

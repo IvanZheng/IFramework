@@ -1,12 +1,8 @@
 using System;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
-using IFramework.Infrastructure;
-using IFramework.IoC;
-using IFramework.Config;
-using IFramework.Unity;
 
-namespace Sample.CommandService.App_Start
+namespace IFramework.Unity.App_Start
 {
     /// <summary>
     /// Specifies the Unity configuration for the main container.
@@ -15,9 +11,8 @@ namespace Sample.CommandService.App_Start
     {
         #region Unity Container
         private static Lazy<IUnityContainer> container = new Lazy<IUnityContainer>(() =>
-        { 
-            Configuration.Instance.UseUnityContainer();
-            var container = IoCFactory.Instance.CurrentContainer.GetUnityContainer();
+        {
+            var container = new UnityContainer();
             RegisterTypes(container);
             return container;
         });

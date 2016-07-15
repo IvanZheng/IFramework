@@ -5,11 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
-using IFramework.Infrastructure.Unity.LifetimeManagers;
 using System.Transactions;
 using IFramework.SysExceptions;
 using IFramework.Command;
-using Microsoft.Practices.Unity;
+using IFramework.IoC;
 
 namespace IFramework.Event.Impl
 {

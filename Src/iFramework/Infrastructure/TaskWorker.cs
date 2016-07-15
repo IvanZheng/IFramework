@@ -1,4 +1,5 @@
 ﻿using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using System;
 using System.Collections.Generic;
 using System.Linq;

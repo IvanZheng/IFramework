@@ -2,19 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using IFramework.Infrastructure;
-
-using Microsoft.Practices.Unity;
 using System.IO;
 using System.Xml.Linq;
-
-using Microsoft.Practices.Unity.Configuration;
 using System.Configuration;
 using IFramework.Command;
 using IFramework.Event;
 using IFramework.Message;
 using System.Web.Configuration;
+using IFramework.IoC;
 
 namespace IFramework.Config
 {
@@ -22,13 +17,13 @@ namespace IFramework.Config
     {
         public static readonly Configuration Instance = new Configuration();
 
-        public UnityConfigurationSection UnityConfigurationSection
-        {
-            get
-            {
-                return (UnityConfigurationSection)ConfigurationManager.GetSection("unity");
-            }
-        }
+        //public UnityConfigurationSection UnityConfigurationSection
+        //{
+        //    get
+        //    {
+        //        return (UnityConfigurationSection)ConfigurationManager.GetSection("unity");
+        //    }
+        //}
 
         Configuration()
         {
@@ -106,8 +101,7 @@ namespace IFramework.Config
             {
                 IoCFactory.Instance.CurrentContainer
                          .RegisterInstance<IMessageConsumer>(name
-                                           , commandConsumer
-                                           , new ContainerControlledLifetimeManager());
+                                           , commandConsumer);
             }
             return this;
         }
@@ -116,14 +110,13 @@ namespace IFramework.Config
         {
             if (provider == null)
             {
-                provider = IoCFactory.Resolve<ICommandHandlerProvider>(new ParameterOverride("assemblies", assemblies));
+                provider = IoCFactory.Resolve<ICommandHandlerProvider>(new Parameter("assemblies", assemblies));
             }
             else
             {
                 IoCFactory.Instance.CurrentContainer
                          .RegisterInstance(typeof(ICommandHandlerProvider)
-                                           , provider
-                                           , new ContainerControlledLifetimeManager());
+                                           , provider);
             }
             return this;
         }
@@ -133,14 +126,13 @@ namespace IFramework.Config
         {
             if (provider == null)
             {
-                provider = IoCFactory.Resolve<IEventSubscriberProvider>(new ParameterOverride("assemblies", assemblies));
+                provider = IoCFactory.Resolve<IEventSubscriberProvider>(new Parameter("assemblies", assemblies));
             }
             else
             {
                 IoCFactory.Instance.CurrentContainer
                          .RegisterInstance(typeof(IEventSubscriberProvider)
-                                           , provider
-                                           , new ContainerControlledLifetimeManager());
+                                           , provider);
             }
             return this;
         }

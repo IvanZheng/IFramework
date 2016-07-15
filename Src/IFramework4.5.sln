@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iFramework", "iFramework", "{87E489A9-46B4-4FB8-9F6B-085FBB27C3B7}"
 EndProject
@@ -60,6 +60,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Sample.AuthWeb", "iFramework.Plugins\IFramework.Sample.AuthWeb\IFramework.Sample.AuthWeb.csproj", "{2600160C-F89E-4F29-9A30-FA0F50022013}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Infrastructure.WebAuthentication", "iFramework.Plugins\IFramework.Infrastructure.Authentication\IFramework.Infrastructure.WebAuthentication.csproj", "{9EB89F05-AD00-4F39-A51F-A352E488F8CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Unity", "IFramework.Unity\IFramework.Unity.csproj", "{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -167,6 +169,10 @@ Global
 		{9EB89F05-AD00-4F39-A51F-A352E488F8CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EB89F05-AD00-4F39-A51F-A352E488F8CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EB89F05-AD00-4F39-A51F-A352E488F8CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,6 +204,7 @@ Global
 		{6554CD55-20A4-4200-9C70-E14D61F2B30A} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 		{2600160C-F89E-4F29-9A30-FA0F50022013} = {2540921D-94A3-43F0-92AA-0231B8AB244C}
 		{9EB89F05-AD00-4F39-A51F-A352E488F8CD} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
+		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35

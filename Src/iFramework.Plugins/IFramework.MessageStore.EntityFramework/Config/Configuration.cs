@@ -1,5 +1,6 @@
 ﻿using IFramework.Config;
 using IFramework.Infrastructure;
+using IFramework.IoC;
 using IFramework.Message;
 using Microsoft.Practices.Unity;
 using System;
@@ -12,7 +13,7 @@ namespace IFramework.Config
         /// <summary>Use Log4Net as the logger for the enode framework.
         /// </summary>
         /// <returns></returns>
-        public static Configuration RegisterMessageContextType(this Configuration configuration, Type messageContextType, InjectionConstructor injectionConstructor = null)
+        public static Configuration RegisterMessageContextType(this Configuration configuration, Type messageContextType)
         {
             if (injectionConstructor == null)
             {
@@ -21,8 +22,7 @@ namespace IFramework.Config
             IoCFactory.Instance.CurrentContainer
                                .RegisterType(typeof(IMessageContext),
                                              messageContextType,
-                                             "MessageStoreMapping",
-                                             injectionConstructor);
+                                             "MessageStoreMapping");
                               
             return configuration;
         }

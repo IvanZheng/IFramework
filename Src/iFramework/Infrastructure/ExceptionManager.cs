@@ -1,5 +1,6 @@
 ﻿
 using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using IFramework.SysExceptions;
 using IFramework.SysExceptions.ErrorCodes;
 using System;

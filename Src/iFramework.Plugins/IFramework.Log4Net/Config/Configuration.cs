@@ -1,8 +1,8 @@
 ﻿using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using IFramework.Log4Net;
-using Microsoft.Practices.Unity;
 
 
 namespace IFramework.Config
@@ -16,8 +16,7 @@ namespace IFramework.Config
         {
              IoCFactory.Instance.CurrentContainer
                                 .RegisterInstance(typeof(ILoggerFactory)
-                                           , new Log4NetLoggerFactory(configFile)
-                                           , new ContainerControlledLifetimeManager());
+                                           , new Log4NetLoggerFactory(configFile));
             return configuration;
         }
     }

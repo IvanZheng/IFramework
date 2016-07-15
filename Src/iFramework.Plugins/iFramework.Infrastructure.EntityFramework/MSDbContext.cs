@@ -8,7 +8,6 @@ using System.Reflection;
 using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.UnitOfWork;
-using IFramework.Infrastructure.Unity.LifetimeManagers;
 using System.Web;
 using System.ServiceModel;
 using System.Data.Entity.Core.Objects;

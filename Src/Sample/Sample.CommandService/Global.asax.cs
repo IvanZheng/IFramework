@@ -17,6 +17,7 @@ using System.Web.Routing;
 using System.Threading.Tasks;
 using IFramework.Command.Impl;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
+using IFramework.IoC;
 
 namespace Sample.CommandService
 {
@@ -39,7 +40,8 @@ namespace Sample.CommandService
         {
             try
             {
-                Configuration.Instance.UseLog4Net();
+                Configuration.Instance
+                             .UseLog4Net();
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
                 Configuration.Instance
@@ -60,7 +62,7 @@ namespace Sample.CommandService
                 _ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
                 _ApplicationEventConsumer.Start();
                 #endregion
-                
+
                 #region CommandBus init
                 _CommandBus = IoCFactory.Resolve<ICommandBus>();
                 _CommandBus.Start();
@@ -70,7 +72,7 @@ namespace Sample.CommandService
                 _CommandConsumer1 = new CommandConsumer(_MessagePublisher, "commandqueue1");
                 //_CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
                 //_CommandConsumer3 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue3");
-               
+
                 _CommandConsumer1.Start();
                 //_CommandConsumer2.Start();
                 //_CommandConsumer3.Start();

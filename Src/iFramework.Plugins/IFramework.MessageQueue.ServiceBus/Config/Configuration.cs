@@ -1,6 +1,5 @@
 ﻿using IFramework.Config;
 using IFramework.Infrastructure;
-using Microsoft.Practices.Unity;
 using System;
 
 namespace IFramework.Config

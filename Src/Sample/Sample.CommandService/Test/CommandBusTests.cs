@@ -2,6 +2,7 @@
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using Sample.Command;
 using Sample.DTO;
 using System;

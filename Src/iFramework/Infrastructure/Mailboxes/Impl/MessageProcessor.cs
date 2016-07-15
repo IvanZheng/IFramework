@@ -1,4 +1,5 @@
 ﻿using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using IFramework.Message;
 using System;
 using System.Collections.Concurrent;

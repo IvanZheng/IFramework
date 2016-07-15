@@ -12,6 +12,7 @@ using System.Diagnostics;
 using IFramework.Config;
 using IFramework.Infrastructure.Logging;
 using IFramework.Infrastructure;
+using IFramework.IoC;
 
 namespace IFramework4._5Tests
 {

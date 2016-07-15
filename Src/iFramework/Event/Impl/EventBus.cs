@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
 using IFramework.Command;
+using IFramework.IoC;
 
 namespace IFramework.Event.Impl
 {

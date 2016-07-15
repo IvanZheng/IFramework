@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections;
 using IFramework.Infrastructure.Logging;
 using System.Threading;
+using IFramework.IoC;
 
 namespace IFramework.Infrastructure
 {

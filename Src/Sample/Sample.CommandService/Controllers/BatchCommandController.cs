@@ -11,6 +11,7 @@ using IFramework.Message;
 using Sample.Command;
 using Sample.Persistence;
 using Sample.ApplicationEvent;
+using IFramework.IoC;
 
 namespace Sample.CommandService.Controllers
 {

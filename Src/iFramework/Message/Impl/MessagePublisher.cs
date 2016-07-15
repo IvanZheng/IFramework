@@ -1,5 +1,6 @@
 ﻿using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using System;
@@ -9,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Practices.Unity;
 
 namespace IFramework.Message.Impl
 {

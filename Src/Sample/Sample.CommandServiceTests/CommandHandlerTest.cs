@@ -1,9 +1,8 @@
 ﻿using IFramework.Command;
 using IFramework.Infrastructure;
-using IFramework.Infrastructure.Unity.LifetimeManagers;
+using IFramework.IoC;
 using IFramework.Message;
 using IFramework.Message.Impl;
-using Microsoft.Practices.Unity;
 
 namespace Sample.CommandServiceTests
 {

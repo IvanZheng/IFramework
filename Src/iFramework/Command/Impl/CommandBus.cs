@@ -8,14 +8,13 @@ using IFramework.Message;
 using IFramework.UnitOfWork;
 using IFramework.Message.Impl;
 using System.Collections;
-using Microsoft.Practices.Unity;
 using System.Threading;
-using IFramework.Infrastructure.Unity.LifetimeManagers;
 using IFramework.Config;
 using IFramework.Infrastructure.Logging;
 using IFramework.MessageQueue;
 using System.Collections.Concurrent;
 using IFramework.SysExceptions;
+using IFramework.IoC;
 
 namespace IFramework.Command.Impl
 {

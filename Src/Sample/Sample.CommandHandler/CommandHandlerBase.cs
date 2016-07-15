@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
 using IFramework.Message;
-using IFramework.Infrastructure.Unity.LifetimeManagers;
+using IFramework.IoC;
 
 namespace Sample.CommandHandler
 {

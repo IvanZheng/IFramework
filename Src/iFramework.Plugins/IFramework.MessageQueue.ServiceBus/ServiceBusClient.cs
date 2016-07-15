@@ -1,6 +1,7 @@
 ﻿using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using IFramework.Message;
 using IFramework.MessageQueue.ServiceBus.MessageFormat;
 using Microsoft.ServiceBus;

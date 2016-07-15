@@ -8,7 +8,7 @@ using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Event;
 using IFramework.EntityFramework;
-using Microsoft.Practices.Unity;
+using IFramework.IoC;
 
 namespace IFramework.MessageStoring
 {

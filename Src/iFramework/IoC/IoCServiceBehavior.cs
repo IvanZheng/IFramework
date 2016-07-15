@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
 
-namespace IFramework.Infrastructure
+namespace IFramework.IoC
 {
     public class IocServiceBehavior : Attribute, IServiceBehavior
     {

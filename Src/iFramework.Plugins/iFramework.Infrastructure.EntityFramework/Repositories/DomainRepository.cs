@@ -9,7 +9,7 @@ using IFramework.Repositories;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity;
 using IFramework.Infrastructure;
-using Microsoft.Practices.Unity;
+using IFramework.IoC;
 
 namespace IFramework.EntityFramework.Repositories
 {
@@ -42,8 +42,8 @@ namespace IFramework.EntityFramework.Repositories
             IRepository repository;
             if (!_Repositories.TryGetValue(typeof(IRepository<TAggregateRoot>), out repository))
             {
-                repository = IoCFactory.Resolve<IRepository<TAggregateRoot>>(new ParameterOverride("dbContext", _DbContext),
-                                                                             new ParameterOverride("unitOfWork", _UnitOfWork));
+                repository = IoCFactory.Resolve<IRepository<TAggregateRoot>>(new Parameter("dbContext", _DbContext),
+                                                                             new Parameter("unitOfWork", _UnitOfWork));
                 _Repositories.Add(typeof(IRepository<TAggregateRoot>), repository);
             }
             return repository as IRepository<TAggregateRoot>;

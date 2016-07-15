@@ -4,15 +4,13 @@ using System.Linq;
 using System.Text;
 using System.ServiceModel.Dispatcher;
 using System.ServiceModel;
-using System.ServiceModel.Channels;
-using Microsoft.Practices.Unity;
 
-namespace IFramework.Infrastructure
+namespace IFramework.IoC
 {
     public class IocInstanceProvider : IInstanceProvider
     {
         Type _serviceType;
-        IUnityContainer _container;
+        IContainer _container;
 
         public IocInstanceProvider(Type serviceType)
         {

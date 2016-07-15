@@ -2,7 +2,7 @@
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using IFramework.Infrastructure.Unity.LifetimeManagers;
+using IFramework.IoC;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.SysExceptions;
@@ -16,7 +16,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using Microsoft.Practices.Unity;
 
 namespace IFramework.Command.Impl
 {
