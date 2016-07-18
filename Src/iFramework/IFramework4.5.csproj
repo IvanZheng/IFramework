@@ -62,6 +62,7 @@
     <Compile Include="IoC\IContainer.cs" />
     <Compile Include="IoC\Lifetime.cs" />
     <Compile Include="IoC\Parameter.cs" />
+    <Compile Include="MessageQueue\Configuration.cs" />
     <Compile Include="Message\MessageResponse.cs" />
     <Compile Include="Command\ILinearCommandManager.cs" />
     <Compile Include="Command\Impl\CommandBus.cs">
