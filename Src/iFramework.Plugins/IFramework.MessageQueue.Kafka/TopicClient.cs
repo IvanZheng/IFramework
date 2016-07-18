@@ -1,4 +1,5 @@
-﻿using Kafka.Client.Producers;
+﻿using Kafka.Client.Cfg;
+using Kafka.Client.Producers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,22 @@ namespace IFramework.MessageQueue.MSKafka
     public class TopicClient
     {
         Producer _producer;
-        public TopicClient(Producer producer)
+        string _zkConnectionString;
+        string _topic;
+        public TopicClient(string topic, string zkConnectionString)
         {
-            _producer = producer;
+            _topic = topic;
+            _zkConnectionString = zkConnectionString;
+            var producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
+            {
+                ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 3000)
+            };
+            _producer = new Producer(producerConfiguration);
+        }
+
+        public void Send(ProducerData<string, Kafka.Client.Messages.Message> data)
+        {
+            _producer.Send(data);
         }
     }
 }

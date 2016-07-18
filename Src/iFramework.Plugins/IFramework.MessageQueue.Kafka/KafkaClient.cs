@@ -13,6 +13,9 @@ using IFramework.IoC;
 using IFramework.Infrastructure;
 using Kafka.Client.Cfg;
 using Kafka.Client.Requests;
+using IFramework.Config;
+using System.Threading;
+using Kafka.Client.Helper;
 
 namespace IFramework.MessageQueue.MSKafka
 {
@@ -20,6 +23,8 @@ namespace IFramework.MessageQueue.MSKafka
     {
         protected ConcurrentDictionary<string, QueueClient> _queueClients;
         protected ConcurrentDictionary<string, TopicClient> _topicClients;
+        protected List<Task> _subscriptionClientTasks;
+        protected List<Task> _commandClientTasks;
         protected string _zkConnectionString;
         protected ILogger _logger = null;
 
@@ -49,44 +54,80 @@ namespace IFramework.MessageQueue.MSKafka
             return queueClient;
         }
 
-        QueueClient CreateQueueClient(string queueName)
+        private bool TopicExsits(string topic)
         {
-            var queueClient = new QueueClient(queueName, _zkConnectionString);
-            return queueClient;
+            var managerConfig = new KafkaSimpleManagerConfiguration()
+            {
+                FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
+                BufferSize = KafkaSimpleManagerConfiguration.DefaultBufferSize,
+                Zookeeper = _zkConnectionString
+            };
+            var kafkaManager = new KafkaSimpleManager<string, Kafka.Client.Messages.Message>(managerConfig);
+            try
+            {
+                // get all available partitions for a topic through the manager
+                var allPartitions = kafkaManager.GetTopicPartitionsFromZK(topic);
+                return allPartitions.Count > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+           
         }
 
-        TopicClient CreateTopicClient(string topicName)
+        private void CreateTopic(string topic)
         {
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 3000)
             };
             Producer producer = new Producer(producerConfiguration);
-            return new TopicClient(producer);
+            try
+            {
+                var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty, new Kafka.Client.Messages.Message(new byte[0]));
+                producer.Send(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Create topic {topic} failed", ex);
+            }
         }
 
-        SubscriptionClient CreateSubscriptionClient(string topicName, string subscriptionName)
+        void CreateTopicIfNotExists(string topic)
         {
-            //TopicDescription topicDescription = new TopicDescription(topicName);
-            //if (!_namespaceManager.TopicExists(topicName))
-            //{
-            //    _namespaceManager.CreateTopic(topicDescription);
-            //}
+            if (!TopicExsits(topic))
+            {
+                CreateTopic(topic);
+            }
+        }
 
-            //if (!_namespaceManager.SubscriptionExists(topicDescription.Path, subscriptionName))
-            //{
-            //    var subscriptionDescription =
-            //        new SubscriptionDescription(topicDescription.Path, subscriptionName);
-            //    _namespaceManager.CreateSubscription(subscriptionDescription);
-            //}
-            //return _messageFactory.CreateSubscriptionClient(topicDescription.Path, subscriptionName);
-            return null;
+        QueueClient CreateQueueClient(string queue)
+        {
+            CreateTopicIfNotExists(queue);
+            var queueClient = new QueueClient(queue, _zkConnectionString);
+            return queueClient;
+        }
+
+        TopicClient CreateTopicClient(string topic)
+        {
+            CreateTopicIfNotExists(topic);
+            return new TopicClient(topic, _zkConnectionString);
+        }
+
+        SubscriptionClient CreateSubscriptionClient(string topic, string subscriptionName)
+        {
+            CreateTopicIfNotExists(topic);
+            return new SubscriptionClient(topic, subscriptionName, _zkConnectionString);
         }
         #endregion
 
 
-        public KafkaClient()
+        public KafkaClient(string zkConnectionString)
         {
+            _zkConnectionString = zkConnectionString;
+            _subscriptionClientTasks = new List<Task>();
+            _commandClientTasks = new List<Task>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
 
         }
@@ -98,37 +139,199 @@ namespace IFramework.MessageQueue.MSKafka
 
         public void Publish(IMessageContext messageContext, string topic)
         {
-            throw new NotImplementedException();
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
+            var topicClient = GetTopicClient(topic);
+            var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
+            var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
+            var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(topic, message);
+
+            try
+            {
+                topicClient.Send(producerData);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"send message failed: {jsonValue}.", ex);
+            }
         }
 
         public void Send(IMessageContext messageContext, string queue)
         {
-            throw new NotImplementedException();
+            queue = Configuration.Instance.FormatMessageQueueName(queue);
+            var queueClient = GetQueueClient(queue);
+
+            var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
+            var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
+            var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(queue, message);
+
+            try
+            {
+                queueClient.Send(producerData);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"send message failed: {jsonValue}.", ex);
+            }
         }
 
         public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
         {
-            throw new NotImplementedException();
+            commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
+            var commandQueueClient = CreateQueueClient(commandQueueName);
+            var cancellationSource = new CancellationTokenSource();
+            var task = Task.Factory.StartNew((cs) => ReceiveQueueMessages(cs as CancellationTokenSource,
+                                                                          onMessageReceived,
+                                                                          commandQueueClient),
+                                                     cancellationSource,
+                                                     cancellationSource.Token,
+                                                     TaskCreationOptions.LongRunning,
+                                                     TaskScheduler.Default);
+            _commandClientTasks.Add(task);
         }
 
         public void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
         {
-            throw new NotImplementedException();
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
+            subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
+            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName);
+            var cancellationSource = new CancellationTokenSource();
+
+            var task = Task.Factory.StartNew((cs) => ReceiveTopicMessages(cs as CancellationTokenSource,
+                                                                   onMessageReceived,
+                                                                   () => subscriptionClient.ReceiveMessages(cancellationSource.Token)),
+                                             cancellationSource,
+                                             cancellationSource.Token,
+                                             TaskCreationOptions.LongRunning,
+                                             TaskScheduler.Default);
+            _subscriptionClientTasks.Add(task);
+        }
+
+        private void ReceiveTopicMessages(CancellationTokenSource cancellationSource, Action<IMessageContext> onMessageReceived, Func<IEnumerable<Kafka.Client.Messages.Message>> receiveMessages)
+        {
+            while (!cancellationSource.IsCancellationRequested)
+            {
+                try
+                {
+                    IEnumerable<Kafka.Client.Messages.Message> messages = receiveMessages();
+                    messages.ForEach(message =>
+                    {
+                        var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
+
+                        var eventContext = new MessageContext(kafkaMessage);
+                        onMessageReceived(eventContext);
+                        eventContext.Complete();
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Thread.Sleep(1000);
+                    _logger.Error(ex.GetBaseException().Message, ex);
+                }
+            }
         }
 
         public void StopQueueClients()
         {
-            throw new NotImplementedException();
+            _commandClientTasks.ForEach(task =>
+            {
+                CancellationTokenSource cancellationSource = task.AsyncState as CancellationTokenSource;
+                cancellationSource.Cancel(true);
+            }
+          );
+            Task.WaitAll(_commandClientTasks.ToArray());
         }
 
         public void StopSubscriptionClients()
         {
-            throw new NotImplementedException();
+            _subscriptionClientTasks.ForEach(subscriptionClientTask =>
+              {
+                  CancellationTokenSource cancellationSource = subscriptionClientTask.AsyncState as CancellationTokenSource;
+                  cancellationSource.Cancel(true);
+              }
+              );
+            Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null)
         {
-            throw new NotImplementedException();
+            var messageContext = new MessageContext(message, messageId);
+            if (!string.IsNullOrEmpty(correlationId))
+            {
+                messageContext.CorrelationID = correlationId;
+            }
+            if (!string.IsNullOrEmpty(topic))
+            {
+                messageContext.Topic = topic;
+            }
+            if (!string.IsNullOrEmpty(key))
+            {
+                messageContext.Key = key;
+            }
+            if (!string.IsNullOrEmpty(replyEndPoint))
+            {
+                messageContext.ReplyToEndPoint = replyEndPoint;
+            }
+            return messageContext;
+        }
+
+
+        private void CompleteMessage(QueueClient queueClient, long offset)
+        {
+            try
+            {
+                queueClient.CommitOffset(offset);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.GetBaseException().Message, ex);
+            }
+
+        }
+
+        private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, Action<IMessageContext> onMessageReceived, QueueClient queueClient)
+        {
+            IEnumerable<Kafka.Client.Messages.Message> kafkaMessages = null;
+
+            #region peek messages that not been consumed since last time
+            while (!cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    kafkaMessages = queueClient.PeekBatch(cancellationTokenSource.Token);
+                    if (kafkaMessages == null || kafkaMessages.Count() == 0)
+                    {
+                        break;
+                    }
+                    foreach (var kafkaMessage in kafkaMessages)
+                    {
+                        var message = Encoding.UTF8.GetString(kafkaMessage.Payload).ToJsonObject<KafkaMessage>();
+                        onMessageReceived(new MessageContext(message,
+                                                            () => CompleteMessage(queueClient, kafkaMessage.Offset)));
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Thread.Sleep(1000);
+                    _logger.Error(ex.GetBaseException().Message, ex);
+                }
+            }
+            #endregion
         }
     }
 }
