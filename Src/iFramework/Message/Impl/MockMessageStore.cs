@@ -43,7 +43,7 @@ namespace IFramework.Message.Impl
         }
 
 
-        public void SaveEvent(IMessageContext eventContext, string subscriptionName, 
+        public void HandleEvent(IMessageContext eventContext, string subscriptionName, 
                               IEnumerable<IMessageContext> commandContexts, 
                               IEnumerable<IMessageContext> messageContexts)
         {
@@ -72,6 +72,11 @@ namespace IFramework.Message.Impl
 
         public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e, params IMessageContext[] messageContexts)
         {
+        }
+
+        public void SaveEvent(IMessageContext eventContext)
+        {
+            throw new NotImplementedException();
         }
     }
 }

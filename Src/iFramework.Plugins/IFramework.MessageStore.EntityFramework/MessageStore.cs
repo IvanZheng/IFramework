@@ -24,6 +24,8 @@ namespace IFramework.MessageStoring
         public DbSet<UnSentCommand> UnSentCommands { get; set; }
         public DbSet<UnPublishedEvent> UnPublishedEvents { get; set; }
 
+        static object EventLock = new object();
+
         public MessageStore(string connectionString = null)
             : base(connectionString ?? "MessageStore")
         {
@@ -102,42 +104,54 @@ namespace IFramework.MessageStoring
                         Events.Add(BuildEvent(eventContext));
                         UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
                     });
-
                 }
                 SaveChanges();
             }
         }
 
-        // if not subscribe the sampe event message by topic's mulitple subscriptions
+
+        public void SaveEvent(IMessageContext eventContext)
+        {
+            lock (EventLock)
+            {
+                try
+                {
+                    var @event = Events.Find(eventContext.MessageID);
+                    if (@event == null)
+                    {
+                        @event = BuildEvent(eventContext);
+                        Events.Add(@event);
+                        SaveChanges();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // only multiple subscribers consuming the same topic message will case the Event Saving conflict.
+                    _logger.Error($"SaveEvent failed. Event: {eventContext.Message.ToJson()}", ex);
+                }
+            }
+        }
+
+        // if not subscribe the same event message by topic's mulitple subscriptions
         // we don't need EventLock to assure Events.Add(@event) having no conflict.
-        //static object EventLock = new object();
-        public void SaveEvent(IMessageContext eventContext, string subscriptionName,
+        public void HandleEvent(IMessageContext eventContext, string subscriptionName,
                               IEnumerable<IMessageContext> commandContexts,
                               IEnumerable<IMessageContext> messageContexts)
         {
-            //lock (EventLock)
+            HandledEvents.Add(new HandledEvent(eventContext.MessageID, subscriptionName, DateTime.Now));
+            commandContexts.ForEach(commandContext =>
             {
-                var @event = Events.Find(eventContext.MessageID);
-                if (@event == null)
-                {
-                    @event = BuildEvent(eventContext);
-                    Events.Add(@event);
-                }
-                HandledEvents.Add(new HandledEvent(@event.ID, subscriptionName, DateTime.Now));
-                commandContexts.ForEach(commandContext =>
-                {
-                    commandContext.CorrelationID = eventContext.MessageID;
+                commandContext.CorrelationID = eventContext.MessageID;
                     // don't save command here like event that would be published to other bounded context
                     UnSentCommands.Add(new UnSentCommand(commandContext));
-                });
-                messageContexts.ForEach(messageContext =>
-                {
-                    messageContext.CorrelationID = eventContext.MessageID;
-                    Events.Add(BuildEvent(messageContext));
-                    UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
-                });
-                SaveChanges();
-            }
+            });
+            messageContexts.ForEach(messageContext =>
+            {
+                messageContext.CorrelationID = eventContext.MessageID;
+                Events.Add(BuildEvent(messageContext));
+                UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
+            });
+            SaveChanges();
         }
 
         public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e, params IMessageContext[] messageContexts)

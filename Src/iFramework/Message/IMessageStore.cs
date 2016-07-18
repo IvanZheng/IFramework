@@ -9,10 +9,10 @@ namespace IFramework.Message
     {
         bool HasCommandHandled(string commandId);
         bool HasEventHandled(string eventId, string subscriptionName);
-        void SaveEvent(IMessageContext eventContext, string subscriptionName, 
+        void HandleEvent(IMessageContext eventContext, string subscriptionName, 
                        IEnumerable<IMessageContext> commandContexts,
                        IEnumerable<IMessageContext> messageContexts);
-
+        void SaveEvent(IMessageContext eventContext);
         void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e, params IMessageContext[] messageContexts);
         /// <summary>
         /// return event IMessageContext

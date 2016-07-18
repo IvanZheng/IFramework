@@ -37,6 +37,16 @@ namespace IFramework.Event.Impl
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
+
+        protected void SaveEvent(IMessageContext eventContext)
+        {
+            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+            using (var messageStore = scope.Resolve<IMessageStore>())
+            {
+                messageStore.SaveEvent(eventContext);
+            }
+        }
+
         protected void ConsumeMessage(IMessageContext eventContext)
         {
             var message = eventContext.Message;
@@ -46,6 +56,9 @@ namespace IFramework.Event.Impl
             {
                 return;
             }
+
+            SaveEvent(eventContext);
+
 
             messageHandlerTypes.ForEach(messageHandlerType =>
             {
@@ -76,7 +89,7 @@ namespace IFramework.Event.Impl
                                 //get events to be published
                                 eventBus.GetEvents().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg))));
 
-                                messageStore.SaveEvent(eventContext, 
+                                messageStore.HandleEvent(eventContext, 
                                                        subscriptionName,
                                                        commandMessageStates.Select(s => s.MessageContext), 
                                                        eventMessageStates.Select(s => s.MessageContext));
