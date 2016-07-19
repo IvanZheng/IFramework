@@ -17,6 +17,7 @@ namespace IFramework.MessageQueue.MSKafka
         string _topic;
         string _subscription;
         string _zkConnectionString;
+        ZookeeperConsumerConnector _zkConsumerConnector;
         KafkaMessageStream<Kafka.Client.Messages.Message> _stream;
 
         public SubscriptionClient(string topic, string subscription, string zkConnectionString)
@@ -36,19 +37,24 @@ namespace IFramework.MessageQueue.MSKafka
                 ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 1000)
             };
 
-            var zkConsumerConnector = new ZookeeperConsumerConnector(consumerConfiguration, true);
+            _zkConsumerConnector = new ZookeeperConsumerConnector(consumerConfiguration, true);
             // grab streams for desired topics 
             var topicCount = new Dictionary<string, int>
                              {
                                 { topic, 1}
                              };
-            var streams = zkConsumerConnector.CreateMessageStreams(topicCount, new DefaultDecoder());
+            var streams = _zkConsumerConnector.CreateMessageStreams(topicCount, new DefaultDecoder());
             _stream = streams[topic][0];
         }
 
         internal IEnumerable<Kafka.Client.Messages.Message> ReceiveMessages(CancellationToken token)
         {
             return _stream.GetCancellable(token);
+        }
+
+        internal void CommitOffset(long offset)
+        {
+            _zkConsumerConnector.CommitOffset(_topic, 0, offset);
         }
     }
 }

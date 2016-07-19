@@ -71,6 +71,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DAL", "DAL", "{78358E57-4F4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.MSKafka", "iFramework.Plugins\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj", "{C52B89CF-D3A6-48FC-BA3B-0DAFF977FA6E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSKafka.Test", "iFramework.Plugins\MSKafka.Test\MSKafka.Test.csproj", "{E25B1872-A666-4995-A7C3-C517DBE3E5C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -185,6 +187,10 @@ Global
 		{C52B89CF-D3A6-48FC-BA3B-0DAFF977FA6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C52B89CF-D3A6-48FC-BA3B-0DAFF977FA6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C52B89CF-D3A6-48FC-BA3B-0DAFF977FA6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E25B1872-A666-4995-A7C3-C517DBE3E5C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E25B1872-A666-4995-A7C3-C517DBE3E5C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E25B1872-A666-4995-A7C3-C517DBE3E5C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E25B1872-A666-4995-A7C3-C517DBE3E5C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -221,6 +227,7 @@ Global
 		{0AECD7C5-8232-41F2-ADFA-78CA30C56690} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 		{78358E57-4F47-4581-A094-995B4FE9A24B} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 		{C52B89CF-D3A6-48FC-BA3B-0DAFF977FA6E} = {9C513800-FD27-4334-85AF-97352A71A829}
+		{E25B1872-A666-4995-A7C3-C517DBE3E5C8} = {9C513800-FD27-4334-85AF-97352A71A829}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35

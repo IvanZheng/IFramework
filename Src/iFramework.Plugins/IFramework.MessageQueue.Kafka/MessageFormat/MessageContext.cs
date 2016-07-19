@@ -10,10 +10,11 @@ using IFramework.MessageQueue.MSKafka.MessageFormat;
 
 namespace IFramework.MessageQueue.MSKafka.MessageFormat
 {
-    class MessageContext : IMessageContext
+    public class MessageContext : IMessageContext
     {
         public KafkaMessage KafkaMessage { get; protected set; }
         public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
+        [JsonIgnore]
         public Action Complete { get; protected set; }
         public MessageContext(KafkaMessage kafkaMessage, Action complete = null)
         {

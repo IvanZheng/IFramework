@@ -59,7 +59,6 @@ namespace IFramework.Command.Impl
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
                     _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
-                    
                 }
                 _consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
                                                                 _cancellationTokenSource.Token,
