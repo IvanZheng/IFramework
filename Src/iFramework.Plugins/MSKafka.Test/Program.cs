@@ -19,18 +19,22 @@ namespace MSKafka.Test
         static void Main(string[] args)
         {
             Configuration.Instance.UseUnityContainer()
-                                  .UseLog4Net();
+                                  .UseLog4Net("log4net.config");
             string zkConnectionString = "192.168.99.60:2181";
             var client = new KafkaClient(zkConnectionString);
-        
+
+            //var queueClient = client.GetQueueClient(commandQueue);
+            //queueClient.CommitOffset(560);
 
             client.StartQueueClient(commandQueue, messageContext => {
-                var command = ((Command)messageContext.Message);
+                var kafakMessageContext = messageContext as MessageContext;
+                var command = messageContext.Message as Command;
 
-                total += int.Parse(command.Body);
-
-                Console.WriteLine($"handle command {command.ID} message: {command.Body}");
-                (messageContext as MessageContext).Complete();
+                var val = 0;
+                int.TryParse(command.Body, out val);
+                total += val;
+                Console.WriteLine($"handle command {command.ID} message: {command.Body} offset:{kafakMessageContext.Offset}");
+                kafakMessageContext.Complete();
                 //  publish reply
                 var reply = $"cmd {command.Body} reply";
                 var messageReply = client.WrapMessage(reply, messageContext.MessageID, messageContext.ReplyToEndPoint);
@@ -41,16 +45,19 @@ namespace MSKafka.Test
                 client.Publish(new MessageContext(@event), eventTopic);
             });
 
-            client.StartSubscriptionClient(replyTopic, subscription, messageContext => {
+            client.StartSubscriptionClient(replyTopic, subscription, messageContext =>
+            {
+                var kafakMessageContext = messageContext as MessageContext;
                 var reply = messageContext.Message;
-                Console.WriteLine($"reply receive {reply}");
-               
+                Console.WriteLine($"reply receive {reply} offset:{kafakMessageContext.Offset}");
+
             });
 
             client.StartSubscriptionClient(eventTopic, subscription, messageContext =>
             {
+                var kafakMessageContext = messageContext as MessageContext;
                 var @event = messageContext.Message as DomainEvent;
-                Console.WriteLine($"subscription receive {@event.Body}");
+                Console.WriteLine($"subscription receive {@event.Body} offset:{kafakMessageContext.Offset}");
             });
 
 

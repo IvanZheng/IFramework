@@ -1,10 +1,14 @@
-﻿using Kafka.Client.Cfg;
+﻿using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
+using Kafka.Client.Cfg;
 using Kafka.Client.Consumers;
+using Kafka.Client.Helper;
 using Kafka.Client.Producers;
 using Kafka.Client.Requests;
 using Kafka.Client.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -15,9 +19,10 @@ namespace IFramework.MessageQueue.MSKafka
     public class QueueClient
     {
         ZookeeperConsumerConnector _zkConsumerConnector;
-        Producer _producer;
+        Producer<string, Kafka.Client.Messages.Message> _producer;
         string _queue;
         KafkaMessageStream<Kafka.Client.Messages.Message> _stream;
+        ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(QueueClient).Name);
 
         public QueueClient(string queue, string zkConnectionString)
         {
@@ -42,6 +47,7 @@ namespace IFramework.MessageQueue.MSKafka
 
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
+                RequiredAcks = 1,
                 ZooKeeper = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 3000)
             };
             _producer = new Producer(producerConfiguration);
@@ -49,7 +55,10 @@ namespace IFramework.MessageQueue.MSKafka
 
         public void Send(ProducerData<string, Kafka.Client.Messages.Message> data)
         {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
             _producer.Send(data);
+            _logger.Debug($"{_queue} send data cost: {watch.Elapsed.TotalMilliseconds} ");
         }
 
         public IEnumerable<Kafka.Client.Messages.Message> PeekBatch(CancellationToken cancellationToken)
@@ -57,9 +66,9 @@ namespace IFramework.MessageQueue.MSKafka
             return _stream.GetCancellable(cancellationToken);
         }
 
-        internal void CommitOffset(long offset)
+        public void CommitOffset(long offset)
         {
-            _zkConsumerConnector.CommitOffset(_queue, 0, offset + 1);
+            _zkConsumerConnector.CommitOffset(_queue, 0, offset, false);
         }
     }
 }

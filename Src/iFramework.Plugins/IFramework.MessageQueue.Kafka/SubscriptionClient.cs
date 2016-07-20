@@ -54,7 +54,7 @@ namespace IFramework.MessageQueue.MSKafka
 
         internal void CommitOffset(long offset)
         {
-            _zkConsumerConnector.CommitOffset(_topic, 0, offset);
+            _zkConsumerConnector.CommitOffset(_topic, 0, offset, false);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace IFramework.MessageQueue.MSKafka
         protected ILogger _logger = null;
 
         #region private methods
-        TopicClient GetTopicClient(string topic)
+        public TopicClient GetTopicClient(string topic)
         {
             TopicClient topicClient = null;
             _topicClients.TryGetValue(topic, out topicClient);
@@ -41,7 +41,7 @@ namespace IFramework.MessageQueue.MSKafka
             return topicClient;
         }
 
-        QueueClient GetQueueClient(string queue)
+        public QueueClient GetQueueClient(string queue)
         {
             QueueClient queueClient = _queueClients.TryGetValue(queue);
             if (queueClient == null)
@@ -78,18 +78,21 @@ namespace IFramework.MessageQueue.MSKafka
         {
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
+                RequiredAcks = 1,
                 ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 3000)
             };
-            Producer producer = new Producer(producerConfiguration);
-            try
+            using (Producer producer = new Producer(producerConfiguration))
             {
-                var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty, new Kafka.Client.Messages.Message(new byte[0]));
-                producer.Send(data);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Create topic {topic} failed", ex);
-            }
+                try
+                {
+                    var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty, new Kafka.Client.Messages.Message(new byte[0]));
+                    producer.Send(data);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Create topic {topic} failed", ex);
+                }
+            } 
         }
 
         void CreateTopicIfNotExists(string topic)
@@ -123,7 +126,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             try
             {
-                subscriptionClient.CommitOffset(offset + 1);
+                subscriptionClient.CommitOffset(offset);
             }
             catch (Exception ex)
             {
@@ -135,7 +138,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             try
             {
-                queueClient.CommitOffset(offset + 1);
+                queueClient.CommitOffset(offset);
             }
             catch (Exception ex)
             {
@@ -156,7 +159,7 @@ namespace IFramework.MessageQueue.MSKafka
                         {
                             var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
 
-                            var eventContext = new MessageContext(kafkaMessage);
+                            var eventContext = new MessageContext(kafkaMessage, message.Offset);
                             onMessageReceived(eventContext);
                         }
                         catch (OperationCanceledException)
@@ -173,7 +176,10 @@ namespace IFramework.MessageQueue.MSKafka
                         }
                         finally
                         {
-                            CompleteTopicMessage(subscriptionClient, message.Offset);
+                            if (message.Payload != null)
+                            {
+                                CompleteTopicMessage(subscriptionClient, message.Offset);
+                            }
                         }
                     });
                 }
@@ -209,9 +215,29 @@ namespace IFramework.MessageQueue.MSKafka
                     //}
                     foreach (var kafkaMessage in kafkaMessages)
                     {
-                        var message = Encoding.UTF8.GetString(kafkaMessage.Payload).ToJsonObject<KafkaMessage>();
-                        onMessageReceived(new MessageContext(message,
-                                                            () => CompleteQueueMessage(queueClient, kafkaMessage.Offset)));
+                        try
+                        {
+                            var message = Encoding.UTF8.GetString(kafkaMessage.Payload).ToJsonObject<KafkaMessage>();
+                            onMessageReceived(new MessageContext(message,
+                                                                 kafkaMessage.Offset,
+                                                                () => CompleteQueueMessage(queueClient, kafkaMessage.Offset)));
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            return;
+                        }
+                        catch (ThreadAbortException)
+                        {
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (kafkaMessage.Offset > 0)
+                            {
+                                CompleteQueueMessage(queueClient, kafkaMessage.Offset);
+                            }
+                            _logger.Error(ex.GetBaseException().Message, ex);
+                        }
                     }
                 }
                 catch (OperationCanceledException)
@@ -240,13 +266,14 @@ namespace IFramework.MessageQueue.MSKafka
             _topicClients = new ConcurrentDictionary<string, TopicClient>();
             _subscriptionClientTasks = new List<Task>();
             _commandClientTasks = new List<Task>();
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
 
         }
 
         public void CompleteMessage(IMessageContext messageContext)
         {
             (messageContext as MessageContext).Complete();
+            _logger.Debug($"complete message {messageContext.Message.ToJson()}");
         }
 
         public void Publish(IMessageContext messageContext, string topic)
@@ -289,7 +316,7 @@ namespace IFramework.MessageQueue.MSKafka
         public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
-            var commandQueueClient = CreateQueueClient(commandQueueName);
+            var commandQueueClient = GetQueueClient(commandQueueName);
             var cancellationSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew((cs) => ReceiveQueueMessages(cs as CancellationTokenSource,
                                                                           onMessageReceived,

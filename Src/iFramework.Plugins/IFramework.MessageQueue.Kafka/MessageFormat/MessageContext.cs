@@ -13,12 +13,14 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
     public class MessageContext : IMessageContext
     {
         public KafkaMessage KafkaMessage { get; protected set; }
+        public long Offset { get; protected set; }
         public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
         [JsonIgnore]
         public Action Complete { get; protected set; }
-        public MessageContext(KafkaMessage kafkaMessage, Action complete = null)
+        public MessageContext(KafkaMessage kafkaMessage, long offset, Action complete = null)
         {
             KafkaMessage = kafkaMessage;
+            Offset = offset;
             SentTime = DateTime.Now;
             Complete = complete;
             ToBeSentMessageContexts = new List<IMessageContext>();
