@@ -55,7 +55,7 @@ namespace Sample.CommandService.Tests
             //Task.WaitAll(tasks.ToArray());
         }
 
-        int batchCount = 1000;
+        int batchCount = 1;
         int productCount = 2;
 
         [TestMethod()]
@@ -73,7 +73,8 @@ namespace Sample.CommandService.Tests
                         ProductId = _createProducts[j].ProductId,
                         ReduceCount = 1
                     };
-                    tasks.Add(_commandBus.SendAsync(reduceProduct).Result.Reply);
+                    var t = _commandBus.SendAsync(reduceProduct).Result;
+                    tasks.Add(t.Reply);
                 }
             }
             Task.WaitAll(tasks.ToArray());
