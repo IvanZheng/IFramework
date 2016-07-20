@@ -23,8 +23,9 @@ namespace IFramework.Config
                 {
                     unityContainer.LoadConfiguration();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine(ex.GetBaseException().Message);
                 }
             }
             IoCFactory.SetContainer(new ObjectContainer(unityContainer));

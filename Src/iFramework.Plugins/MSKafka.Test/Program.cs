@@ -6,6 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using IFramework.MessageQueue.MSKafka.MessageFormat;
 using IFramework.Config;
+using Sample.Command;
+using IFramework.Command;
+using IFramework.IoC;
+using Sample.DTO;
+using IFramework.Infrastructure;
 
 namespace MSKafka.Test
 {
@@ -21,6 +26,10 @@ namespace MSKafka.Test
             Configuration.Instance.UseUnityContainer()
                                   .MessageQueueUseMachineNameFormat(false)
                                   .UseLog4Net("log4net.config");
+
+            ServiceTest();
+            return;
+
             string zkConnectionString = "192.168.99.60:2181";
             var client = new KafkaClient(zkConnectionString);
 
@@ -94,6 +103,31 @@ namespace MSKafka.Test
             var command = new Command(body);
             client.Send(new MessageContext(command), commandQueue);
             Console.WriteLine($"Send {command.ID} successfully cmd: {command.Body}");
+        }
+
+
+        static void ServiceTest()
+        {
+            ReduceProduct reduceProduct = new ReduceProduct
+            {
+                ProductId = new Guid("2B6FDE83-A319-433B-9FA5-399D382D0CD3"),
+                ReduceCount = 1
+            };
+
+            var _commandBus = IoCFactory.Resolve<ICommandBus>();
+            _commandBus.Start();
+
+            var t = _commandBus.SendAsync(reduceProduct).Result;
+            Console.WriteLine(t.Reply.Result);
+
+          
+            var products = _commandBus.SendAsync(new GetProducts
+            {
+                ProductIds = new List<Guid> { reduceProduct.ProductId }
+            }).Result.ReadAsAsync<List<Project>>().Result;
+
+            Console.WriteLine(products.ToJson());
+            Console.ReadLine();
         }
     }
 }

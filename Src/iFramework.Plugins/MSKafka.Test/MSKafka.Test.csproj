@@ -87,6 +87,18 @@
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
       <Name>IFramework4.5</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Sample\Sample.Command\Sample.Command.csproj">
+      <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
+      <Name>Sample.Command</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sample\Sample.DTO\Sample.DTO.csproj">
+      <Project>{279B5EE0-22CA-4672-BE92-9B6658DCDAE3}</Project>
+      <Name>Sample.DTO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sample\Sample.Persistence\Sample.Persistence.csproj">
+      <Project>{07b18368-3d3f-4c12-b2f1-e38fc709226a}</Project>
+      <Name>Sample.Persistence</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IFramework.Log4Net\IFramework.Log4Net4.5.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
       <Name>IFramework.Log4Net4.5</Name>
@@ -94,6 +106,10 @@
     <ProjectReference Include="..\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj">
       <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>
       <Name>IFramework.MessageQueue.MSKafka</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.5.csproj">
+      <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
+      <Name>IFramework.MessageStoring.EntityFramework4.5</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

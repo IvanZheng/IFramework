@@ -56,7 +56,37 @@ namespace Sample.CommandService.Tests
         }
 
         int batchCount = 1;
-        int productCount = 2;
+        int productCount = 1;
+
+        [TestMethod()]
+        public void CommandBusReduceProductTest()
+        {
+            var startTime = DateTime.Now;
+            ReduceProduct reduceProduct = new ReduceProduct
+            {
+                ProductId = _createProducts[0].ProductId,
+                ReduceCount = 1
+            };
+            var t = _commandBus.SendAsync(reduceProduct).Result;
+            Console.WriteLine(t.Reply.Result);
+
+            var costTime = (DateTime.Now - startTime).TotalMilliseconds;
+            _logger.ErrorFormat("cost time : {0} ms", costTime);
+
+            var products = _commandBus.SendAsync(new GetProducts
+            {
+                ProductIds = _createProducts.Select(p => p.ProductId).ToList()
+            }).Result.ReadAsAsync<List<Project>>().Result;
+
+            for (int i = 0; i < _createProducts.Count; i++)
+            {
+                Assert.AreEqual(products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
+                                        .Count,
+                                _createProducts[i].Count - batchCount);
+
+            }
+        }
+
 
         [TestMethod()]
         public void CommandBusPressureTest()
@@ -64,9 +94,9 @@ namespace Sample.CommandService.Tests
             var startTime = DateTime.Now;
 
             var tasks = new List<Task>();
-            for (int i = 0; i < batchCount; i ++)
+            for (int i = 0; i < batchCount; i++)
             {
-                for (int j = 0; j < _createProducts.Count; j ++)
+                for (int j = 0; j < _createProducts.Count; j++)
                 {
                     ReduceProduct reduceProduct = new ReduceProduct
                     {
