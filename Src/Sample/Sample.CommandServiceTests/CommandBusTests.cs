@@ -28,6 +28,7 @@ namespace Sample.CommandService.Tests
         [TestInitialize]
         public void Initialize()
         {
+            Configuration.Instance.UseUnityContainer();
             Configuration.Instance.UseLog4Net()
                                   .MessageQueueUseMachineNameFormat(false);
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(CommandBusTests));

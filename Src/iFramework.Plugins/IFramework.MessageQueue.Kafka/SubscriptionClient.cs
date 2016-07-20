@@ -29,7 +29,7 @@ namespace IFramework.MessageQueue.MSKafka
             {
                 AutoCommit = false,
                 GroupId = subscription,
-                //ConsumerId = subscription,
+                ConsumerId = subscription,
                 MaxFetchBufferLength = KafkaSimpleManagerConfiguration.DefaultBufferSize,
                 FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
                 AutoOffsetReset = OffsetRequest.LargestTime,

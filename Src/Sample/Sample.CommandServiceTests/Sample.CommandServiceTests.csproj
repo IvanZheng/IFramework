@@ -96,9 +96,9 @@
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
       <Name>IFramework.Log4Net4.5</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.ServiceBus\IFramework.MessageQueue.ServiceBus4.5.csproj">
-      <Project>{081bb2eb-cc5d-4512-b61e-917cd7aa795d}</Project>
-      <Name>IFramework.MessageQueue.ServiceBus4.5</Name>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj">
+      <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>
+      <Name>IFramework.MessageQueue.MSKafka</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.5.csproj">
       <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
@@ -107,6 +107,10 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.WebApi\IFramework.AspNet.csproj">
       <Project>{bafca280-6b58-44e8-b0e7-ed6f51c0eaec}</Project>
       <Name>IFramework.AspNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\IFramework.Unity\IFramework.Unity.csproj">
+      <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
+      <Name>IFramework.Unity</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework\IFramework4.5.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
@@ -134,6 +138,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="log4netv1.2.10.0\log4net.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>

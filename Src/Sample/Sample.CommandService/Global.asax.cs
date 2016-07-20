@@ -45,7 +45,7 @@ namespace Sample.CommandService
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
 
                 Configuration.Instance
-                             .MessageQueueUseMachineNameFormat()
+                             .MessageQueueUseMachineNameFormat(false)
                              .CommandHandlerProviderBuild(null, "CommandHandlers");
 
                 #region EventPublisher init
@@ -69,7 +69,7 @@ namespace Sample.CommandService
                 #endregion
 
                 #region Command Consuemrs init
-                _CommandConsumer1 = new CommandConsumer(_MessagePublisher, "commandqueue1");
+                _CommandConsumer1 = new CommandConsumer(_MessagePublisher, "commandqueueC");
                 //_CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
                 //_CommandConsumer3 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue3");
 

@@ -153,7 +153,7 @@ namespace IFramework.MessageQueue.MSKafka
                 try
                 {
                     IEnumerable<Kafka.Client.Messages.Message> messages = subscriptionClient.ReceiveMessages(cancellationSource.Token);
-                    messages.ForEach(message =>
+                    foreach(var message in messages)
                     {
                         try
                         {
@@ -181,7 +181,7 @@ namespace IFramework.MessageQueue.MSKafka
                                 CompleteTopicMessage(subscriptionClient, message.Offset);
                             }
                         }
-                    });
+                    }
                 }
                 catch (OperationCanceledException)
                 {

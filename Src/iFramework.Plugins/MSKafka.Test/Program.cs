@@ -11,7 +11,7 @@ namespace MSKafka.Test
 {
     class Program
     {
-        static string commandQueue = "commandqueue";
+        static string commandQueue = "commandqueueA";
         static string replyTopic = "replyTopic";
         static string eventTopic = "eventTopic";
         static string subscription = "testSubscription";
@@ -19,12 +19,13 @@ namespace MSKafka.Test
         static void Main(string[] args)
         {
             Configuration.Instance.UseUnityContainer()
+                                  .MessageQueueUseMachineNameFormat(false)
                                   .UseLog4Net("log4net.config");
             string zkConnectionString = "192.168.99.60:2181";
             var client = new KafkaClient(zkConnectionString);
 
-            //var queueClient = client.GetQueueClient(commandQueue);
-            //queueClient.CommitOffset(560);
+            //var queueClient = client.GetQueueClient(Configuration.Instance.FormatMessageQueueName(commandQueue));
+            //queueClient.CommitOffset(4);
 
             client.StartQueueClient(commandQueue, messageContext => {
                 var kafakMessageContext = messageContext as MessageContext;

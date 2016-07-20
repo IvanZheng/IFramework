@@ -31,7 +31,7 @@ namespace IFramework.MessageQueue.MSKafka
             {
                 AutoCommit = false,
                 GroupId = queue,
-                //ConsumerId = uniqueConsumerId,
+                ConsumerId = queue,
                 MaxFetchBufferLength = KafkaSimpleManagerConfiguration.DefaultBufferSize,
                 FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
                 AutoOffsetReset = OffsetRequest.LargestTime,
