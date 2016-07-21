@@ -36,14 +36,17 @@ namespace Sample.CommandService
         static IMessageConsumer _DomainEventConsumer;
         static IMessageConsumer _ApplicationEventConsumer;
 
-        static WebApiApplication()
+
+        public static void Bootstrap()
         {
             try
             {
                 Configuration.Instance
                              .UseLog4Net();
-                _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication));
+                _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);
 
+
+                _Logger.Debug($"App Started");
                 Configuration.Instance
                              .MessageQueueUseMachineNameFormat(false)
                              .CommandHandlerProviderBuild(null, "CommandHandlers");
@@ -77,18 +80,17 @@ namespace Sample.CommandService
                 //_CommandConsumer2.Start();
                 //_CommandConsumer3.Start();
                 #endregion
-
             }
             catch (Exception ex)
             {
                 _Logger.Error(ex.GetBaseException().Message, ex);
             }
-
         }
 
         // ZeroMQ Application_Start
         protected void Application_Start()
         {
+            Bootstrap();
             AreaRegistration.RegisterAllAreas();
             WebApiConfig.Register(GlobalConfiguration.Configuration);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
@@ -114,7 +116,7 @@ namespace Sample.CommandService
             {
                 _Logger.Error(ex.GetBaseException().Message, ex);
             }
-
+            _Logger.Debug($"App Ended");
         }
         // EQueue Application_Start
         /*

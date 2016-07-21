@@ -29,6 +29,11 @@ namespace IFramework.IoC
 
         static IContainer _CurrentContainer;
 
+        public static bool IsInit()
+        {
+            return _CurrentContainer != null;
+        }
+
         /// <summary>
         /// Get current configured IContainer
         /// <remarks>

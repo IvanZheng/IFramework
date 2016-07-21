@@ -37,17 +37,17 @@ namespace IFramework.MessageStoring
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<HandledEvent>().HasKey(e => new { e.Id, e.SubscriptionName });
 
-            modelBuilder.Entity<Message>()
-                .Map<Command>(map =>
-                {
-                    map.ToTable("Commands");
-                    map.MapInheritedProperties();
-                })
-                .Map<Event>(map =>
-                {
-                    map.ToTable("Events");
-                    map.MapInheritedProperties();
-                });
+            //modelBuilder.Entity<Message>()
+            //    .Map<Command>(map =>
+            //    {
+            //        map.ToTable("Commands");
+            //        map.MapInheritedProperties();
+            //    })
+            //    .Map<Event>(map =>
+            //    {
+            //        map.ToTable("Events");
+            //        map.MapInheritedProperties();
+            //    });
 
             modelBuilder.Entity<UnSentMessage>()
                 .Map<UnSentCommand>(map =>

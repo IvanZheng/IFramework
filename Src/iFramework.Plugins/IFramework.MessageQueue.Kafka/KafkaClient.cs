@@ -23,6 +23,8 @@ namespace IFramework.MessageQueue.MSKafka
     {
         protected ConcurrentDictionary<string, QueueClient> _queueClients;
         protected ConcurrentDictionary<string, TopicClient> _topicClients;
+        protected List<SubscriptionClient> _subscriptionClients;
+
         protected List<Task> _subscriptionClientTasks;
         protected List<Task> _commandClientTasks;
         protected string _zkConnectionString;
@@ -71,7 +73,7 @@ namespace IFramework.MessageQueue.MSKafka
             {
                 return false;
             }
-           
+
         }
 
         void CreateTopic(string topic)
@@ -92,7 +94,7 @@ namespace IFramework.MessageQueue.MSKafka
                 {
                     _logger.Error($"Create topic {topic} failed", ex);
                 }
-            } 
+            }
         }
 
         void CreateTopicIfNotExists(string topic)
@@ -153,7 +155,7 @@ namespace IFramework.MessageQueue.MSKafka
                 try
                 {
                     IEnumerable<Kafka.Client.Messages.Message> messages = subscriptionClient.ReceiveMessages(cancellationSource.Token);
-                    foreach(var message in messages)
+                    foreach (var message in messages)
                     {
                         try
                         {
@@ -201,26 +203,26 @@ namespace IFramework.MessageQueue.MSKafka
 
         void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, Action<IMessageContext> onMessageReceived, QueueClient queueClient)
         {
-            IEnumerable<Kafka.Client.Messages.Message> kafkaMessages = null;
+            IEnumerable<Kafka.Client.Messages.Message> messages = null;
 
             #region peek messages that not been consumed since last time
             while (!cancellationTokenSource.IsCancellationRequested)
             {
                 try
                 {
-                    kafkaMessages = queueClient.PeekBatch(cancellationTokenSource.Token);
+                    messages = queueClient.PeekBatch(cancellationTokenSource.Token);
                     //if (kafkaMessages == null || kafkaMessages.Count() == 0)
                     //{
                     //    break;
                     //}
-                    foreach (var kafkaMessage in kafkaMessages)
+                    foreach (var message in messages)
                     {
                         try
                         {
-                            var message = Encoding.UTF8.GetString(kafkaMessage.Payload).ToJsonObject<KafkaMessage>();
-                            onMessageReceived(new MessageContext(message,
-                                                                 kafkaMessage.Offset,
-                                                                () => CompleteQueueMessage(queueClient, kafkaMessage.Offset)));
+                            var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
+                            onMessageReceived(new MessageContext(kafkaMessage,
+                                                                 message.Offset,
+                                                                () => CompleteQueueMessage(queueClient, message.Offset)));
                         }
                         catch (OperationCanceledException)
                         {
@@ -232,9 +234,9 @@ namespace IFramework.MessageQueue.MSKafka
                         }
                         catch (Exception ex)
                         {
-                            if (kafkaMessage.Offset > 0)
+                            if (message.Payload != null)
                             {
-                                CompleteQueueMessage(queueClient, kafkaMessage.Offset);
+                                CompleteQueueMessage(queueClient, message.Offset);
                             }
                             _logger.Error(ex.GetBaseException().Message, ex);
                         }
@@ -264,6 +266,7 @@ namespace IFramework.MessageQueue.MSKafka
             _zkConnectionString = zkConnectionString;
             _queueClients = new ConcurrentDictionary<string, QueueClient>();
             _topicClients = new ConcurrentDictionary<string, TopicClient>();
+            _subscriptionClients = new List<SubscriptionClient>();
             _subscriptionClientTasks = new List<Task>();
             _commandClientTasks = new List<Task>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
@@ -333,6 +336,7 @@ namespace IFramework.MessageQueue.MSKafka
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName);
+            _subscriptionClients.Add(subscriptionClient);
             var cancellationSource = new CancellationTokenSource();
 
             var task = Task.Factory.StartNew((cs) => ReceiveTopicMessages(cs as CancellationTokenSource,
@@ -352,8 +356,12 @@ namespace IFramework.MessageQueue.MSKafka
                 CancellationTokenSource cancellationSource = task.AsyncState as CancellationTokenSource;
                 cancellationSource.Cancel(true);
             }
-          );
+            );
             Task.WaitAll(_commandClientTasks.ToArray());
+            _queueClients.Values.ForEach(queueClient =>
+            {
+                queueClient.Stop();
+            });
         }
 
         public void StopSubscriptionClients()
@@ -365,6 +373,10 @@ namespace IFramework.MessageQueue.MSKafka
               }
               );
             Task.WaitAll(_subscriptionClientTasks.ToArray());
+            _subscriptionClients.ForEach(subscriptionClient =>
+            {
+                subscriptionClient.Stop();
+            });
         }
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null)

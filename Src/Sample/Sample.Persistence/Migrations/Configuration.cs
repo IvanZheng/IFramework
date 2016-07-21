@@ -6,14 +6,14 @@ namespace Sample.Persistence.Migrations
     using System.Linq;
     using IFramework.Config;
     using System.Configuration;
-    using Microsoft.Practices.Unity.Configuration;
-    using Microsoft.Practices.Unity;
 
     internal sealed class Configuration : DbMigrationsConfiguration<Sample.Persistence.SampleModelContext>
     {
         public Configuration()
         {
-            IFramework.Config.Configuration.Instance.UseLog4Net();
+            IFramework.Config.Configuration.Instance
+                .UseUnityContainer()
+                .UseLog4Net();
             AutomaticMigrationsEnabled = true;
         }
 

@@ -31,9 +31,9 @@ namespace IFramework.MessageStoring
         public string Name { get; set; }
         public string Type { get; set; }
 
-        [ForeignKey("CorrelationID")]
-        public virtual Message ParentMessage { get; set; }
-        [InverseProperty("ParentMessage")]
-        public virtual ICollection<Message> ChildrenMessage { get; set; }
+        //[ForeignKey("CorrelationID")]
+        //public virtual Message ParentMessage { get; set; }
+        //[InverseProperty("ParentMessage")]
+        //public virtual ICollection<Message> ChildrenMessage { get; set; }
     }
 }

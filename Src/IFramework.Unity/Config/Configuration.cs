@@ -16,6 +16,10 @@ namespace IFramework.Config
         /// <returns></returns>
         public static Configuration UseUnityContainer(this Configuration configuration, IUnityContainer unityContainer = null)
         {
+            if (IoCFactory.IsInit())
+            {
+                return configuration;
+            }
             if (unityContainer == null)
             {
                 unityContainer = new UnityContainer();

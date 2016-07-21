@@ -25,36 +25,59 @@ namespace IFramework.MessageQueue.MSKafka
             _topic = topic;
             _subscription = subscription;
             _zkConnectionString = zkConnectionString;
-            ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration
-            {
-                AutoCommit = false,
-                GroupId = subscription,
-                ConsumerId = subscription,
-                MaxFetchBufferLength = KafkaSimpleManagerConfiguration.DefaultBufferSize,
-                FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
-                AutoOffsetReset = OffsetRequest.LargestTime,
-                NumberOfTries = 3,
-                ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 1000)
-            };
-
-            _zkConsumerConnector = new ZookeeperConsumerConnector(consumerConfiguration, true);
-            // grab streams for desired topics 
-            var topicCount = new Dictionary<string, int>
-                             {
-                                { topic, 1}
-                             };
-            var streams = _zkConsumerConnector.CreateMessageStreams(topicCount, new DefaultDecoder());
-            _stream = streams[topic][0];
+           
         }
+
+        KafkaMessageStream<Kafka.Client.Messages.Message> Stream
+        {
+            get
+            {
+                if (_stream == null)
+                {
+                    ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration
+                    {
+                        AutoCommit = false,
+                        GroupId = _subscription,
+                        ConsumerId = _subscription,
+                        MaxFetchBufferLength = KafkaSimpleManagerConfiguration.DefaultBufferSize,
+                        FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
+                        AutoOffsetReset = OffsetRequest.LargestTime,
+                        NumberOfTries = 3,
+                        ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 1000)
+                    };
+
+                    _zkConsumerConnector = new ZookeeperConsumerConnector(consumerConfiguration, true);
+                    // grab streams for desired topics 
+                    var topicCount = new Dictionary<string, int>
+                             {
+                                { _topic, 1}
+                             };
+                    var streams = _zkConsumerConnector.CreateMessageStreams(topicCount, new DefaultDecoder());
+                    _stream = streams[_topic][0];
+                }
+                return _stream;
+            }
+        }
+
 
         internal IEnumerable<Kafka.Client.Messages.Message> ReceiveMessages(CancellationToken token)
         {
-            return _stream.GetCancellable(token);
+            return Stream.GetCancellable(token);
         }
 
         internal void CommitOffset(long offset)
         {
             _zkConsumerConnector.CommitOffset(_topic, 0, offset, false);
+        }
+
+        internal void Stop()
+        {
+            if (_zkConsumerConnector != null)
+            {
+                _zkConsumerConnector.Dispose();
+                _zkConsumerConnector = null;
+                _stream = null;
+            }
         }
     }
 }

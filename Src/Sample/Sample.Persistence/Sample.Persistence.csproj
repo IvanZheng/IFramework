@@ -94,6 +94,10 @@
     <Compile Include="Migrations\201603131106064_AddProjectVersion.Designer.cs">
       <DependentUpon>201603131106064_AddProjectVersion.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201607210609551_RemoveRelationBetweenCommandEvent.cs" />
+    <Compile Include="Migrations\201607210609551_RemoveRelationBetweenCommandEvent.Designer.cs">
+      <DependentUpon>201607210609551_RemoveRelationBetweenCommandEvent.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repositories\CommunityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -115,6 +119,10 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.5.csproj">
       <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
       <Name>IFramework.MessageStoring.EntityFramework4.5</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\IFramework.Unity\IFramework.Unity.csproj">
+      <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
+      <Name>IFramework.Unity</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework\IFramework4.5.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
@@ -140,6 +148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201603131106064_AddProjectVersion.resx">
       <DependentUpon>201603131106064_AddProjectVersion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607210609551_RemoveRelationBetweenCommandEvent.resx">
+      <DependentUpon>201607210609551_RemoveRelationBetweenCommandEvent.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

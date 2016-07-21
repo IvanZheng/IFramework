@@ -20,6 +20,7 @@ namespace IFramework.MessageQueue.MSKafka
     {
         ZookeeperConsumerConnector _zkConsumerConnector;
         Producer<string, Kafka.Client.Messages.Message> _producer;
+        string _zkConnectionString;
         string _queue;
         KafkaMessageStream<Kafka.Client.Messages.Message> _stream;
         ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(QueueClient).Name);
@@ -27,30 +28,40 @@ namespace IFramework.MessageQueue.MSKafka
         public QueueClient(string queue, string zkConnectionString)
         {
             _queue = queue;
-            ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration
-            {
-                AutoCommit = false,
-                GroupId = queue,
-                ConsumerId = queue,
-                MaxFetchBufferLength = KafkaSimpleManagerConfiguration.DefaultBufferSize,
-                FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
-                AutoOffsetReset = OffsetRequest.LargestTime,
-                NumberOfTries = 3,
-                ZooKeeper = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 1000)
-            };
-            _zkConsumerConnector = new ZookeeperConsumerConnector(consumerConfiguration, true);
-            var topicCount = new Dictionary<string, int> {
-                                    { _queue, 1}
-                                 };
-            var streams = _zkConsumerConnector.CreateMessageStreams(topicCount, new DefaultDecoder());
-            _stream = streams[_queue][0];
-
+            _zkConnectionString = zkConnectionString;
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 RequiredAcks = 1,
                 ZooKeeper = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 3000)
             };
             _producer = new Producer(producerConfiguration);
+        }
+
+        public void Stop()
+        {
+            try
+            {
+                if (_producer != null)
+                {
+                    _producer.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"{_queue} producer dispose failed", ex);
+            }
+
+            try
+            {
+                if (_zkConsumerConnector != null)
+                {
+                    _zkConsumerConnector.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"{_queue} zkConsumerConnector dispose failed", ex);
+            }
         }
 
         public void Send(ProducerData<string, Kafka.Client.Messages.Message> data)
@@ -63,12 +74,51 @@ namespace IFramework.MessageQueue.MSKafka
 
         public IEnumerable<Kafka.Client.Messages.Message> PeekBatch(CancellationToken cancellationToken)
         {
-            return _stream.GetCancellable(cancellationToken);
+            return Stream.GetCancellable(cancellationToken);
         }
 
         public void CommitOffset(long offset)
         {
-            _zkConsumerConnector.CommitOffset(_queue, 0, offset, false);
+            ZkConsumerConnector.CommitOffset(_queue, 0, offset, false);
+        }
+
+        ZookeeperConsumerConnector ZkConsumerConnector
+        {
+            get
+            {
+                if (_zkConsumerConnector == null)
+                {
+                    ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration
+                    {
+                        AutoCommit = false,
+                        GroupId = _queue,
+                        ConsumerId = _queue,
+                        MaxFetchBufferLength = KafkaSimpleManagerConfiguration.DefaultBufferSize,
+                        FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
+                        AutoOffsetReset = OffsetRequest.LargestTime,
+                        NumberOfTries = 3,
+                        ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 1000)
+                    };
+                    _zkConsumerConnector = new ZookeeperConsumerConnector(consumerConfiguration, true);
+                }
+                return _zkConsumerConnector;
+            }
+        }
+
+        KafkaMessageStream<Kafka.Client.Messages.Message> Stream
+        {
+            get
+            {
+                if (_stream == null)
+                {
+                    var topicCount = new Dictionary<string, int> {
+                                    { _queue, 1}
+                                 };
+                    var streams = ZkConsumerConnector.CreateMessageStreams(topicCount, new DefaultDecoder());
+                    _stream = streams[_queue][0];
+                }
+                return _stream;
+            }
         }
     }
 }

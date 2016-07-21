@@ -55,8 +55,8 @@ namespace Sample.CommandService.Tests
             //Task.WaitAll(tasks.ToArray());
         }
 
-        int batchCount = 1;
-        int productCount = 1;
+        int batchCount = 2;
+        int productCount = 5;
 
         [TestMethod()]
         public void CommandBusReduceProductTest()
@@ -77,14 +77,16 @@ namespace Sample.CommandService.Tests
             {
                 ProductIds = _createProducts.Select(p => p.ProductId).ToList()
             }).Result.ReadAsAsync<List<Project>>().Result;
-
+            var success = true;
+            Console.WriteLine(products.ToJson());
             for (int i = 0; i < _createProducts.Count; i++)
             {
-                Assert.AreEqual(products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
-                                        .Count,
-                                _createProducts[i].Count - batchCount);
+                success = success && products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
+                                             .Count ==
+                                     _createProducts[i].Count - batchCount;
 
             }
+            Console.WriteLine($"test success {success}");
         }
 
 
@@ -109,20 +111,30 @@ namespace Sample.CommandService.Tests
             }
             Task.WaitAll(tasks.ToArray());
             var costTime = (DateTime.Now - startTime).TotalMilliseconds;
-            _logger.ErrorFormat("cost time : {0} ms", costTime);
+            Console.WriteLine("cost time : {0} ms", costTime);
 
             var products = _commandBus.SendAsync(new GetProducts
             {
                 ProductIds = _createProducts.Select(p => p.ProductId).ToList()
             }).Result.ReadAsAsync<List<Project>>().Result;
+            var success = true;
 
             for (int i = 0; i < _createProducts.Count; i++)
             {
-                Assert.AreEqual(products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
-                                        .Count,
-                                _createProducts[i].Count - batchCount);
+                success = success && products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
+                                             .Count ==
+                                     _createProducts[i].Count - batchCount;
 
             }
+            Console.WriteLine($"test success {success}");
+            Assert.IsTrue(success);
+            Stop();
+        }
+
+       
+        public void Stop()
+        {
+            _commandBus.Stop();
         }
     }
 }

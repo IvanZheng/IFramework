@@ -26,20 +26,20 @@ namespace IFramework.MessageStoring
             }
         }
 
-        public Message Parent
-        {
-            get
-            {
-                return ParentMessage;
-            }
-        }
+        //public Message Parent
+        //{
+        //    get
+        //    {
+        //        return ParentMessage;
+        //    }
+        //}
 
-        public IEnumerable<Message> Children
-        {
-            get
-            {
-                return ChildrenMessage;
-            }
-        }
+        //public IEnumerable<Message> Children
+        //{
+        //    get
+        //    {
+        //        return ChildrenMessage;
+        //    }
+        //}
     }
 }

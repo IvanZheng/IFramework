@@ -22,20 +22,20 @@ namespace IFramework.MessageStoring
             }
         }
 
-        public Event Parent
-        {
-            get
-            {
-                return ParentMessage as Event;
-            }
-        }
+        //public Event Parent
+        //{
+        //    get
+        //    {
+        //        return ParentMessage as Event;
+        //    }
+        //}
 
-        public IEnumerable<Event> Children
-        {
-            get
-            {
-                return ChildrenMessage.Cast<Event>();
-            }
-        }
+        //public IEnumerable<Event> Children
+        //{
+        //    get
+        //    {
+        //        return ChildrenMessage.Cast<Event>();
+        //    }
+        //}
     }
 }
