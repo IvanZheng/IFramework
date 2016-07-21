@@ -15,11 +15,12 @@ namespace IFramework.MessageQueue
                                     string topic = null, string key = null, 
                                     string replyEndPoint = null, string messageId = null);
         void CompleteMessage(IMessageContext messageContext);
+
         void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived);
 
         void StopSubscriptionClients();
 
-        void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived);
+        Action<long> StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived);
 
         void StopQueueClients();
     }

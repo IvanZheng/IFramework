@@ -31,7 +31,7 @@ namespace IFramework.MessageQueue.MSKafka
         protected ILogger _logger = null;
 
         #region private methods
-        public TopicClient GetTopicClient(string topic)
+        TopicClient GetTopicClient(string topic)
         {
             TopicClient topicClient = null;
             _topicClients.TryGetValue(topic, out topicClient);
@@ -43,7 +43,7 @@ namespace IFramework.MessageQueue.MSKafka
             return topicClient;
         }
 
-        public QueueClient GetQueueClient(string queue)
+        QueueClient GetQueueClient(string queue)
         {
             QueueClient queueClient = _queueClients.TryGetValue(queue);
             if (queueClient == null)
@@ -270,14 +270,16 @@ namespace IFramework.MessageQueue.MSKafka
             _subscriptionClientTasks = new List<Task>();
             _commandClientTasks = new List<Task>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
-
         }
+
+
 
         public void CompleteMessage(IMessageContext messageContext)
         {
             (messageContext as MessageContext).Complete();
             _logger.Debug($"complete message {messageContext.Message.ToJson()}");
         }
+        
 
         public void Publish(IMessageContext messageContext, string topic)
         {
@@ -316,7 +318,7 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var commandQueueClient = GetQueueClient(commandQueueName);
@@ -329,6 +331,7 @@ namespace IFramework.MessageQueue.MSKafka
                                                      TaskCreationOptions.LongRunning,
                                                      TaskScheduler.Default);
             _commandClientTasks.Add(task);
+            return commandQueueClient.CommitOffset;
         }
 
         public void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)

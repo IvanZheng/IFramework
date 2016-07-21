@@ -30,6 +30,12 @@ namespace IFramework.Command.Impl
         protected CancellationTokenSource _cancellationTokenSource;
         protected Task _consumeMessageTask;
         protected MessageProcessor _messageProcessor;
+        protected SortedSet<long> _offsets;
+
+        protected long _consumedOffset = -1L;
+        protected long _lastOffset = -1L;
+        protected long _lastCommittedOffset = -1L;
+        protected Action<long> _CommitOffset;
         public CommandConsumer(IMessagePublisher messagePublisher,
                                string commandQueueName,
                                IHandlerProvider handlerProvider = null)
@@ -37,6 +43,7 @@ namespace IFramework.Command.Impl
             _commandQueueName = commandQueueName;
             _handlerProvider = handlerProvider?? IoCFactory.Resolve<ICommandHandlerProvider>();
             _messagePublisher = messagePublisher;
+            _offsets = new SortedSet<long>();
             _cancellationTokenSource = new CancellationTokenSource();
             _commandContexts = new BlockingCollection<IMessageContext>();
             _messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
@@ -58,7 +65,7 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
-                    _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
+                    _CommitOffset = _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
                 }
                 _consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
                                                                 _cancellationTokenSource.Token,
@@ -106,13 +113,18 @@ namespace IFramework.Command.Impl
             }
         }
 
-        public void PostMessage(IMessageContext messageContext)
-        {
-            _commandContexts.Add(messageContext);
-        }
+        //public void PostMessage(IMessageContext messageContext)
+        //{
+        //    _commandContexts.Add(messageContext);
+        //}
 
         protected void OnMessageReceived(IMessageContext messageContext)
         {
+            lock (_removeOffsetLock)
+            {
+                _offsets.Add(messageContext.Offset);
+                _lastOffset = messageContext.Offset;
+            }
             _commandContexts.Add(messageContext);
             //ConsumeMessage(messageContext);
             //MessageCount++;
@@ -223,7 +235,31 @@ namespace IFramework.Command.Impl
                 {
                     _messagePublisher.Send(eventMessageStates.ToArray());
                 }
-                _messageQueueClient.CompleteMessage(commandContext);
+                RemoveMessage(commandContext);
+            }
+        }
+
+        object _removeOffsetLock = new object();
+        private void RemoveMessage(IMessageContext commandContext)
+        {
+            lock (_removeOffsetLock)
+            {
+                if (_offsets.Remove(commandContext.Offset))
+                {
+                    if (_offsets.Count > 0)
+                    {
+                        _consumedOffset = _offsets.First() - 1;
+                    }
+                    else
+                    {
+                        _consumedOffset = _lastOffset;
+                    }
+                }
+                if (_consumedOffset > _lastCommittedOffset)
+                {
+                    _CommitOffset(_consumedOffset);
+                    _lastCommittedOffset = _consumedOffset;
+                }
             }
         }
     }

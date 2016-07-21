@@ -161,7 +161,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             return messageContext;
         }
-        public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var commandQueueClient = CreateQueueClient(commandQueueName);
@@ -174,6 +174,7 @@ namespace IFramework.MessageQueue.ServiceBus
                                                      TaskCreationOptions.LongRunning,
                                                      TaskScheduler.Default);
             _commandClientTasks.Add(task);
+            return (offset) => CompleteMessage(commandQueueClient, offset);
         }
 
         public void StopQueueClients()
@@ -274,8 +275,7 @@ namespace IFramework.MessageQueue.ServiceBus
                             needPeek = false;
                             break;
                         }
-                        onMessageReceived(new MessageContext(message,
-                                                            () => CompleteMessage(queueClient, message.SequenceNumber)));
+                        onMessageReceived(new MessageContext(message));
                         sequenceNumber = message.SequenceNumber + 1;
                     }
                 }
@@ -304,8 +304,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     foreach (var message in brokeredMessages)
                     {
                         message.Defer();
-                        onMessageReceived(new MessageContext(message,
-                                                            () => CompleteMessage(queueClient, message.SequenceNumber)));
+                        onMessageReceived(new MessageContext(message));
                     }
                 }
                 catch (OperationCanceledException)

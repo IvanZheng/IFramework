@@ -47,5 +47,10 @@ namespace IFramework.MessageQueue.ZeroMQ
         {
             throw new NotImplementedException();
         }
+
+        Action<long> IMessageQueueClient.StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

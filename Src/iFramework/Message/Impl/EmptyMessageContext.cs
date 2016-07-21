@@ -18,6 +18,9 @@ namespace IFramework.Message.Impl
             Message = message;
             MessageID = message.ID;
         }
+
+        public long Offset { get; set; }
+
         public IDictionary<string, object> Headers
         {
             get { return null; }

@@ -142,5 +142,13 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
             get;
             set;
         }
+
+        public long Offset
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

@@ -14,6 +14,7 @@ namespace Sample.CommandServiceTests
             get; set;
         }
 
+        public long Offset { get; set; }
         public IDictionary<string, object> Headers
         {
             get; set;
