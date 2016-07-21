@@ -1,6 +1,7 @@
 ﻿using Sample.CommandService.Tests;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,8 +24,6 @@ namespace Sample.CommandServiceTests
             {
                 Console.WriteLine(ex.GetBaseException().Message);
             }
-            Console.WriteLine("exit!");
-
         }
     }
 }

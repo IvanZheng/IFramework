@@ -56,7 +56,7 @@ namespace Sample.CommandService.Tests
         }
 
         int batchCount = 2;
-        int productCount = 5;
+        int productCount = 50;
 
         [TestMethod()]
         public void CommandBusReduceProductTest()
