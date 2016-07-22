@@ -39,8 +39,12 @@ namespace Sample.DomainEvents
             : this()
         {
             AggregateRootID = aggregateRootID;
+            Key = aggregateRootID.ToString();
         }
-
         
+        public virtual string Key
+        {
+            get;set;
+        }
     }
 }

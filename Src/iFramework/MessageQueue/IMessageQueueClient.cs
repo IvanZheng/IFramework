@@ -16,7 +16,7 @@ namespace IFramework.MessageQueue
                                     string replyEndPoint = null, string messageId = null);
         void CompleteMessage(IMessageContext messageContext);
 
-        void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived);
+        Action<long> StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived);
 
         void StopSubscriptionClients();
 

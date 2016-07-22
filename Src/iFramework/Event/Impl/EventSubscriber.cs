@@ -9,31 +9,37 @@ using System.Transactions;
 using IFramework.SysExceptions;
 using IFramework.Command;
 using IFramework.IoC;
+using IFramework.Infrastructure.Mailboxes.Impl;
+using IFramework.Message.Impl;
 
 namespace IFramework.Event.Impl
 {
     public class EventSubscriber : IMessageConsumer
     {
-        readonly string[] _topics;
+        readonly string _topic;
         protected IMessageQueueClient _MessageQueueClient;
         protected ICommandBus _commandBus;
         protected IMessagePublisher _messagePublisher;
         protected IHandlerProvider _handlerProvider;
         protected string _subscriptionName;
+        protected MessageProcessor _messageProcessor;
         protected ILogger _logger;
+        protected ISlidingDoor _slidingDoor;
+
         public EventSubscriber(IMessageQueueClient messageQueueClient,
                                IHandlerProvider handlerProvider,
                                ICommandBus commandBus,
                                IMessagePublisher messagePublisher,
                                string subscriptionName,
-                               params string[] topics)
+                               string topic)
         {
             _MessageQueueClient = messageQueueClient;
             _handlerProvider = handlerProvider;
-            _topics = topics;
+            _topic = topic;
             _subscriptionName = subscriptionName;
             _messagePublisher = messagePublisher;
             _commandBus = commandBus;
+            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
@@ -58,8 +64,6 @@ namespace IFramework.Event.Impl
             }
 
             SaveEvent(eventContext);
-
-
             messageHandlerTypes.ForEach(messageHandlerType =>
             {
                 using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
@@ -76,7 +80,8 @@ namespace IFramework.Event.Impl
                         {
                             var messageHandler = scope.Resolve(messageHandlerType);
                             using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                               new TransactionOptions {
+                                                                               new TransactionOptions
+                                                                               {
                                                                                    IsolationLevel = IsolationLevel.ReadUncommitted
                                                                                }))
                             {
@@ -87,11 +92,11 @@ namespace IFramework.Event.Impl
                                    commandMessageStates.Add(new MessageState(_commandBus.WrapCommand(cmd)))
                                );
                                 //get events to be published
-                                eventBus.GetEvents().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg))));
+                                eventBus.GetEvents().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, key: msg.Key))));
 
-                                messageStore.HandleEvent(eventContext, 
+                                messageStore.HandleEvent(eventContext,
                                                        subscriptionName,
-                                                       commandMessageStates.Select(s => s.MessageContext), 
+                                                       commandMessageStates.Select(s => s.MessageContext),
                                                        eventMessageStates.Select(s => s.MessageContext));
 
                                 transactionScope.Complete();
@@ -117,7 +122,7 @@ namespace IFramework.Event.Impl
                                 _logger.Error(message.ToJson(), e);
                             }
                             messageStore.Rollback();
-                            eventBus.GetToPublishAnywayMessages().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg))));
+                            eventBus.GetToPublishAnywayMessages().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, key: msg.Key))));
                             messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
                             if (eventMessageStates.Count > 0)
                             {
@@ -127,34 +132,37 @@ namespace IFramework.Event.Impl
                     }
                 }
             });
+            _slidingDoor.RemoveOffset(eventContext.Offset);
         }
         public void Start()
         {
-            _topics.ForEach(topic =>
+            try
             {
-                try
+                if (!string.IsNullOrWhiteSpace(_topic))
                 {
-                    if (!string.IsNullOrWhiteSpace(topic))
-                    {
-                        _MessageQueueClient.StartSubscriptionClient(topic, _subscriptionName, OnMessageReceived);
-                    }
+                    var _CommitOffset = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, OnMessageReceived);
+                    _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100);
                 }
-                catch (Exception e)
-                {
-                    _logger.Error(e.GetBaseException().Message, e);
-                }
-            });
+                _messageProcessor.Start();
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e.GetBaseException().Message, e);
+            }
         }
 
         public void Stop()
         {
             _MessageQueueClient.StopSubscriptionClients();
+            _messageProcessor.Stop();
         }
 
         protected void OnMessageReceived(IMessageContext messageContext)
         {
-            ConsumeMessage(messageContext);
+            _slidingDoor.AddOffset(messageContext.Offset);
+            _messageProcessor.Process(messageContext, ConsumeMessage);
             MessageCount++;
+            _slidingDoor.BlockIfFullLoad();
         }
 
         public string GetStatus()

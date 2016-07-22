@@ -26,5 +26,10 @@ namespace Sample.Command
             get;
             set;
         }
+
+        public string Key
+        {
+            get;set;
+        }
     }
 }

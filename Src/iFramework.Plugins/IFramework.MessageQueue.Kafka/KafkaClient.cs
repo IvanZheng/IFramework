@@ -161,7 +161,9 @@ namespace IFramework.MessageQueue.MSKafka
                         {
                             var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
 
-                            var eventContext = new MessageContext(kafkaMessage, message.Offset);
+                            var eventContext = new MessageContext(kafkaMessage, 
+                                                                  message.Offset, 
+                                                                  () => CompleteTopicMessage(subscriptionClient, message.Offset));
                             onMessageReceived(eventContext);
                         }
                         catch (OperationCanceledException)
@@ -174,14 +176,11 @@ namespace IFramework.MessageQueue.MSKafka
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(ex.GetBaseException().Message, ex);
-                        }
-                        finally
-                        {
                             if (message.Payload != null)
                             {
                                 CompleteTopicMessage(subscriptionClient, message.Offset);
                             }
+                            _logger.Error(ex.GetBaseException().Message, ex);
                         }
                     }
                 }
@@ -334,7 +333,7 @@ namespace IFramework.MessageQueue.MSKafka
             return commandQueueClient.CommitOffset;
         }
 
-        public void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -350,6 +349,7 @@ namespace IFramework.MessageQueue.MSKafka
                                              TaskCreationOptions.LongRunning,
                                              TaskScheduler.Default);
             _subscriptionClientTasks.Add(task);
+            return subscriptionClient.CommitOffset;
         }
 
         public void StopQueueClients()

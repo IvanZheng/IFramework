@@ -17,6 +17,8 @@ namespace MSKafka.Test
             private set;
         }
 
+        public virtual string Key { get; set; }
+
         public string AggregateRootName
         {
             get;
@@ -48,6 +50,7 @@ namespace MSKafka.Test
             : this(body)
         {
             AggregateRootID = aggregateRootID;
+            Key = aggregateRootID.ToString();
         }
 
         

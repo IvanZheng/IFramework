@@ -10,7 +10,7 @@ namespace Sample.Command
     public abstract class CommandBase : ICommand
     {
         public bool NeedRetry { get; set; }
-       
+        
         public CommandBase()
         {
             NeedRetry = false;
@@ -22,6 +22,8 @@ namespace Sample.Command
             get;
             set;
         }
+
+        public string Key { get; set; }
     }
 
     public abstract class LinearCommandBase : CommandBase, ILinearCommand

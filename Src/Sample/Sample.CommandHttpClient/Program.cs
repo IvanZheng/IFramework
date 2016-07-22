@@ -37,7 +37,7 @@ namespace Sample.CommandHttpClient
         public string Name { get; set; }
         public int Type { get; set; }
         public string Remark { get; set; }
-
+        public string Key { get; set; }
         public bool NeedRetry
         {
             get; set;
@@ -48,7 +48,8 @@ namespace Sample.CommandHttpClient
             get; set;
         }
 
-        public ModifyCooperatorBasic() { }
+        public ModifyCooperatorBasic() {
+        }
 
     }
     class Program

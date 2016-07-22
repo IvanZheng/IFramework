@@ -52,5 +52,10 @@ namespace IFramework.MessageQueue.ZeroMQ
         {
             throw new NotImplementedException();
         }
+
+        Action<long> IMessageQueueClient.StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

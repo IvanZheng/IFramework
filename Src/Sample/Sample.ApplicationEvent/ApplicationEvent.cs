@@ -17,6 +17,8 @@ namespace Sample.ApplicationEvent
             set;
         }
 
+        public string Key { get; set; }
+
         public ApplicationEvent()
         {
             ID = ObjectId.GenerateNewId().ToString();

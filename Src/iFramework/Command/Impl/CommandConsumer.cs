@@ -4,6 +4,7 @@ using IFramework.Infrastructure.Logging;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.IoC;
 using IFramework.Message;
+using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using IFramework.SysExceptions;
 using IFramework.UnitOfWork;
@@ -28,14 +29,10 @@ namespace IFramework.Command.Impl
         protected string _commandQueueName;
         protected BlockingCollection<IMessageContext> _commandContexts;
         protected CancellationTokenSource _cancellationTokenSource;
-        protected Task _consumeMessageTask;
+        //protected Task _consumeMessageTask;
         protected MessageProcessor _messageProcessor;
-        protected SortedSet<long> _offsets;
+        protected ISlidingDoor _slidingDoor;
 
-        protected long _consumedOffset = -1L;
-        protected long _lastOffset = -1L;
-        protected long _lastCommittedOffset = -1L;
-        protected Action<long> _CommitOffset;
         public CommandConsumer(IMessagePublisher messagePublisher,
                                string commandQueueName,
                                IHandlerProvider handlerProvider = null)
@@ -43,9 +40,8 @@ namespace IFramework.Command.Impl
             _commandQueueName = commandQueueName;
             _handlerProvider = handlerProvider?? IoCFactory.Resolve<ICommandHandlerProvider>();
             _messagePublisher = messagePublisher;
-            _offsets = new SortedSet<long>();
             _cancellationTokenSource = new CancellationTokenSource();
-            _commandContexts = new BlockingCollection<IMessageContext>();
+           // _commandContexts = new BlockingCollection<IMessageContext>();
             _messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
@@ -65,12 +61,13 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
-                    _CommitOffset = _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
+                    var _CommitOffset = _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
+                    _slidingDoor = new SlidingDoor(_CommitOffset,  1000, 100);
                 }
-                _consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
-                                                                _cancellationTokenSource.Token,
-                                                                TaskCreationOptions.LongRunning,
-                                                                TaskScheduler.Default);
+                //_consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
+                //                                                _cancellationTokenSource.Token,
+                //                                                TaskCreationOptions.LongRunning,
+                //                                                TaskScheduler.Default);
                 _messageProcessor.Start();
             }
             catch (Exception e)
@@ -89,29 +86,29 @@ namespace IFramework.Command.Impl
             //}
         }
 
-        void ConsumeMessages()
-        {
-            while (!_cancellationTokenSource.IsCancellationRequested)
-            {
-                try
-                {
-                    var commandContext = _commandContexts.Take(_cancellationTokenSource.Token);
-                    _messageProcessor.Process(commandContext, ConsumeMessage);
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex.GetBaseException().Message, ex);
-                }
-            }
-        }
+        //void ConsumeMessages()
+        //{
+        //    while (!_cancellationTokenSource.IsCancellationRequested)
+        //    {
+        //        try
+        //        {
+        //            var commandContext = _commandContexts.Take(_cancellationTokenSource.Token);
+        //            _messageProcessor.Process(commandContext, ConsumeMessage);
+        //        }
+        //        catch (OperationCanceledException)
+        //        {
+        //            return;
+        //        }
+        //        catch (ThreadAbortException)
+        //        {
+        //            return;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _logger.Error(ex.GetBaseException().Message, ex);
+        //        }
+        //    }
+        //}
 
         //public void PostMessage(IMessageContext messageContext)
         //{
@@ -120,19 +117,16 @@ namespace IFramework.Command.Impl
 
         protected void OnMessageReceived(IMessageContext messageContext)
         {
-            lock (_removeOffsetLock)
-            {
-                _offsets.Add(messageContext.Offset);
-                _lastOffset = messageContext.Offset;
-            }
-            _commandContexts.Add(messageContext);
-            //ConsumeMessage(messageContext);
-            //MessageCount++;
+            _slidingDoor.AddOffset(messageContext.Offset);
+            _messageProcessor.Process(messageContext, ConsumeMessage);
+            MessageCount++;
+            _slidingDoor.BlockIfFullLoad();
         }
 
         public void Stop()
         {
             _messageQueueClient.StopQueueClients();
+            _messageProcessor.Stop();
         }
 
         public string GetStatus()
@@ -189,7 +183,7 @@ namespace IFramework.Command.Impl
                                     eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetEvents().ForEach(@event =>
                                     {
-                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, key:@event.Key);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
 
@@ -212,7 +206,7 @@ namespace IFramework.Command.Impl
                                     eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetToPublishAnywayMessages().ForEach(@event =>
                                     {
-                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID);
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, key: @event.Key);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
 
@@ -235,32 +229,11 @@ namespace IFramework.Command.Impl
                 {
                     _messagePublisher.Send(eventMessageStates.ToArray());
                 }
-                RemoveMessage(commandContext);
+                _slidingDoor.RemoveOffset(commandContext.Offset);
             }
         }
 
-        object _removeOffsetLock = new object();
-        private void RemoveMessage(IMessageContext commandContext)
-        {
-            lock (_removeOffsetLock)
-            {
-                if (_offsets.Remove(commandContext.Offset))
-                {
-                    if (_offsets.Count > 0)
-                    {
-                        _consumedOffset = _offsets.First() - 1;
-                    }
-                    else
-                    {
-                        _consumedOffset = _lastOffset;
-                    }
-                }
-                if (_consumedOffset > _lastCommittedOffset)
-                {
-                    _CommitOffset(_consumedOffset);
-                    _lastCommittedOffset = _consumedOffset;
-                }
-            }
-        }
+     
+        
     }
 }

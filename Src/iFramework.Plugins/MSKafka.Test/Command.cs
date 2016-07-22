@@ -11,6 +11,7 @@ namespace MSKafka.Test
     {
         public bool NeedRetry { get; set; }
         public string Body { get; set; }
+        public string Key { get; set; }
         public Command(string body)
         {
             Body = body;
