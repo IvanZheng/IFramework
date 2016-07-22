@@ -23,12 +23,12 @@ namespace IFramework.MessageQueue.ZeroMQ
             throw new NotImplementedException();
         }
 
-        public void StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartQueueClient(string commandQueueName, OnMessagesReceived onMessagesReceived)
         {
             throw new NotImplementedException();
         }
 
-        public void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartSubscriptionClient(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived)
         {
             throw new NotImplementedException();
         }
@@ -48,14 +48,6 @@ namespace IFramework.MessageQueue.ZeroMQ
             throw new NotImplementedException();
         }
 
-        Action<long> IMessageQueueClient.StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
-        {
-            throw new NotImplementedException();
-        }
-
-        Action<long> IMessageQueueClient.StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
-        {
-            throw new NotImplementedException();
-        }
+   
     }
 }

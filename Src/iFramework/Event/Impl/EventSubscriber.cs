@@ -140,7 +140,7 @@ namespace IFramework.Event.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_topic))
                 {
-                    var _CommitOffset = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, OnMessageReceived);
+                    var _CommitOffset = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, OnMessagesReceived);
                     _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100);
                 }
                 _messageProcessor.Start();
@@ -157,11 +157,14 @@ namespace IFramework.Event.Impl
             _messageProcessor.Stop();
         }
 
-        protected void OnMessageReceived(IMessageContext messageContext)
+        protected void OnMessagesReceived(params IMessageContext[] messageContexts)
         {
-            _slidingDoor.AddOffset(messageContext.Offset);
-            _messageProcessor.Process(messageContext, ConsumeMessage);
-            MessageCount++;
+            messageContexts.ForEach(messageContext =>
+            {
+                _slidingDoor.AddOffset(messageContext.Offset);
+                _messageProcessor.Process(messageContext, ConsumeMessage);
+                MessageCount++;
+            });
             _slidingDoor.BlockIfFullLoad();
         }
 

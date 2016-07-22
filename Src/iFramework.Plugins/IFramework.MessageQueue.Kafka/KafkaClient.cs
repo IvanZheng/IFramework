@@ -148,7 +148,7 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        void ReceiveTopicMessages(CancellationTokenSource cancellationSource, Action<IMessageContext> onMessageReceived, SubscriptionClient subscriptionClient)
+        void ReceiveTopicMessages(CancellationTokenSource cancellationSource, OnMessagesReceived onMessagesReceived, SubscriptionClient subscriptionClient)
         {
             while (!cancellationSource.IsCancellationRequested)
             {
@@ -164,7 +164,7 @@ namespace IFramework.MessageQueue.MSKafka
                             var eventContext = new MessageContext(kafkaMessage, 
                                                                   message.Offset, 
                                                                   () => CompleteTopicMessage(subscriptionClient, message.Offset));
-                            onMessageReceived(eventContext);
+                            onMessagesReceived(eventContext);
                         }
                         catch (OperationCanceledException)
                         {
@@ -200,7 +200,7 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, Action<IMessageContext> onMessageReceived, QueueClient queueClient)
+        void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived, QueueClient queueClient)
         {
             IEnumerable<Kafka.Client.Messages.Message> messages = null;
 
@@ -219,9 +219,10 @@ namespace IFramework.MessageQueue.MSKafka
                         try
                         {
                             var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
-                            onMessageReceived(new MessageContext(kafkaMessage,
+                            var messageContext = new MessageContext(kafkaMessage,
                                                                  message.Offset,
-                                                                () => CompleteQueueMessage(queueClient, message.Offset)));
+                                                                () => CompleteQueueMessage(queueClient, message.Offset));
+                            onMessagesReceived(messageContext);
                         }
                         catch (OperationCanceledException)
                         {
@@ -317,13 +318,13 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        public Action<long> StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartQueueClient(string commandQueueName, OnMessagesReceived onMessagesReceived)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var commandQueueClient = GetQueueClient(commandQueueName);
             var cancellationSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew((cs) => ReceiveQueueMessages(cs as CancellationTokenSource,
-                                                                          onMessageReceived,
+                                                                          onMessagesReceived,
                                                                           commandQueueClient),
                                                      cancellationSource,
                                                      cancellationSource.Token,
@@ -333,7 +334,7 @@ namespace IFramework.MessageQueue.MSKafka
             return commandQueueClient.CommitOffset;
         }
 
-        public Action<long> StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartSubscriptionClient(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -342,7 +343,7 @@ namespace IFramework.MessageQueue.MSKafka
             var cancellationSource = new CancellationTokenSource();
 
             var task = Task.Factory.StartNew((cs) => ReceiveTopicMessages(cs as CancellationTokenSource,
-                                                                   onMessageReceived,
+                                                                   onMessagesReceived,
                                                                    subscriptionClient),
                                              cancellationSource,
                                              cancellationSource.Token,

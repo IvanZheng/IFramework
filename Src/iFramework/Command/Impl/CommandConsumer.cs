@@ -115,11 +115,13 @@ namespace IFramework.Command.Impl
         //    _commandContexts.Add(messageContext);
         //}
 
-        protected void OnMessageReceived(IMessageContext messageContext)
+        protected void OnMessageReceived(params IMessageContext[] messageContexts)
         {
-            _slidingDoor.AddOffset(messageContext.Offset);
-            _messageProcessor.Process(messageContext, ConsumeMessage);
-            MessageCount++;
+            messageContexts.ForEach(messageContext => {
+                _slidingDoor.AddOffset(messageContext.Offset);
+                _messageProcessor.Process(messageContext, ConsumeMessage);
+                MessageCount++;
+            });
             _slidingDoor.BlockIfFullLoad();
         }
 

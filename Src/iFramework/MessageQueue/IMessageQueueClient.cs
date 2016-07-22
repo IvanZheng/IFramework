@@ -6,6 +6,7 @@ using System.Text;
 
 namespace IFramework.MessageQueue
 {
+    public delegate void OnMessagesReceived(params IMessageContext[] messageContext);
     public interface IMessageQueueClient
     {
         void Send(IMessageContext messageContext, string queue);
@@ -16,11 +17,11 @@ namespace IFramework.MessageQueue
                                     string replyEndPoint = null, string messageId = null);
         void CompleteMessage(IMessageContext messageContext);
 
-        Action<long> StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived);
+        Action<long> StartSubscriptionClient(string topic, string subscriptionName, OnMessagesReceived onMessageReceived);
 
         void StopSubscriptionClients();
 
-        Action<long> StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived);
+        Action<long> StartQueueClient(string commandQueueName, OnMessagesReceived onMessageReceived);
 
         void StopQueueClients();
     }

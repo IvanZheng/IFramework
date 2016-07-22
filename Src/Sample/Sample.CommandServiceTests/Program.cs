@@ -17,7 +17,6 @@ namespace Sample.CommandServiceTests
                 var test = new CommandBusTests();
                 test.Initialize();
                 test.CommandBusPressureTest();
-                Console.ReadLine();
                 //test.Stop();
             }
             catch (Exception ex)

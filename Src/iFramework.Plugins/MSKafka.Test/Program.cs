@@ -36,38 +36,46 @@ namespace MSKafka.Test
             //var queueClient = client.GetQueueClient(Configuration.Instance.FormatMessageQueueName(commandQueue));
             //queueClient.CommitOffset(4);
 
-            client.StartQueueClient(commandQueue, messageContext => {
-                var kafakMessageContext = messageContext as MessageContext;
-                var command = messageContext.Message as Command;
-
-                var val = 0;
-                int.TryParse(command.Body, out val);
-                total += val;
-                Console.WriteLine($"handle command {command.ID} message: {command.Body} offset:{kafakMessageContext.Offset}");
-                kafakMessageContext.Complete();
-                //  publish reply
-                var reply = $"cmd {command.Body} reply";
-                var messageReply = client.WrapMessage(reply, messageContext.MessageID, messageContext.ReplyToEndPoint);
-                client.Publish(messageReply, replyTopic);
-
-                // publish event
-                var @event = new DomainEvent($"handled event {command.Body}");
-                client.Publish(new MessageContext(@event), eventTopic);
-            });
-
-            client.StartSubscriptionClient(replyTopic, subscription, messageContext =>
+            client.StartQueueClient(commandQueue, messageContexts =>
             {
-                var kafakMessageContext = messageContext as MessageContext;
-                var reply = messageContext.Message;
-                Console.WriteLine($"reply receive {reply} offset:{kafakMessageContext.Offset}");
+                messageContexts.ForEach(messageContext =>
+                {
+                    var kafakMessageContext = messageContext as MessageContext;
+                    var command = messageContext.Message as Command;
+
+                    var val = 0;
+                    int.TryParse(command.Body, out val);
+                    total += val;
+                    Console.WriteLine($"handle command {command.ID} message: {command.Body} offset:{kafakMessageContext.Offset}");
+                    kafakMessageContext.Complete();
+                    //  publish reply
+                    var reply = $"cmd {command.Body} reply";
+                    var messageReply = client.WrapMessage(reply, messageContext.MessageID, messageContext.ReplyToEndPoint);
+                    client.Publish(messageReply, replyTopic);
+
+                    // publish event
+                    var @event = new DomainEvent($"handled event {command.Body}");
+                    client.Publish(new MessageContext(@event), eventTopic);
+                });
 
             });
 
-            client.StartSubscriptionClient(eventTopic, subscription, messageContext =>
+            client.StartSubscriptionClient(replyTopic, subscription, messageContexts =>
             {
-                var kafakMessageContext = messageContext as MessageContext;
-                var @event = messageContext.Message as DomainEvent;
-                Console.WriteLine($"subscription receive {@event.Body} offset:{kafakMessageContext.Offset}");
+                messageContexts.ForEach(messageContext => {
+                    var kafakMessageContext = messageContext as MessageContext;
+                    var reply = messageContext.Message;
+                    Console.WriteLine($"reply receive {reply} offset:{kafakMessageContext.Offset}");
+                });
+            });
+
+            client.StartSubscriptionClient(eventTopic, subscription, messageContexts =>
+            {
+                messageContexts.ForEach(messageContext => {
+                    var kafakMessageContext = messageContext as MessageContext;
+                    var @event = messageContext.Message as DomainEvent;
+                    Console.WriteLine($"subscription receive {@event.Body} offset:{kafakMessageContext.Offset}");
+                });
             });
 
 
@@ -120,7 +128,7 @@ namespace MSKafka.Test
             var t = _commandBus.SendAsync(reduceProduct).Result;
             Console.WriteLine(t.Reply.Result);
 
-          
+
             var products = _commandBus.SendAsync(new GetProducts
             {
                 ProductIds = new List<Guid> { reduceProduct.ProductId }

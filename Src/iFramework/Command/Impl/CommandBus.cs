@@ -15,6 +15,7 @@ using IFramework.MessageQueue;
 using System.Collections.Concurrent;
 using IFramework.SysExceptions;
 using IFramework.IoC;
+using IFramework.Infrastructure.Mailboxes.Impl;
 
 namespace IFramework.Command.Impl
 {
@@ -29,6 +30,13 @@ namespace IFramework.Command.Impl
         /// </summary>
         protected ConcurrentDictionary<string, MessageState> _commandStateQueues;
         protected bool _needMessageStore;
+        /// <summary>
+        /// use slidingdoor to control the process of consuming message
+        /// </summary>
+        protected ISlidingDoor _slidingDoor;
+        protected MessageProcessor _messageProcessor;
+
+
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
                           string[] commandQueueNames,
@@ -43,6 +51,7 @@ namespace IFramework.Command.Impl
             _replySubscriptionName = replySubscriptionName;
             _commandQueueNames = commandQueueNames;
             _needMessageStore = needMessageStore;
+            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
         }
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {
@@ -94,7 +103,8 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_replyTopicName))
                 {
-                    _messageQueueClient.StartSubscriptionClient(_replyTopicName, _replySubscriptionName, OnMessageReceived);
+                    var commitOffsetAction = _messageQueueClient.StartSubscriptionClient(_replyTopicName, _replySubscriptionName, OnMessagesReceived);
+                    _slidingDoor = new SlidingDoor(commitOffsetAction, 1000, 100);
                 }
             }
             catch (Exception e)
@@ -102,15 +112,27 @@ namespace IFramework.Command.Impl
                 _logger.Error(e.GetBaseException().Message, e);
             }
             #endregion
+            _messageProcessor.Start();
         }
 
         public override void Stop()
         {
             base.Stop();
             _messageQueueClient.StopSubscriptionClients();
+            _messageProcessor.Stop();
         }
 
-        protected void OnMessageReceived(IMessageContext reply)
+        protected void OnMessagesReceived(params IMessageContext[] replies)
+        {
+            replies.ForEach(reply =>
+            {
+                _slidingDoor.AddOffset(reply.Offset);
+                _messageProcessor.Process(reply, ConsumeReply);
+            });
+            _slidingDoor.BlockIfFullLoad();
+        }
+
+        protected void ConsumeReply(IMessageContext reply)
         {
             _logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
             var messageState = _commandStateQueues.TryGetValue(reply.CorrelationID);
@@ -126,6 +148,7 @@ namespace IFramework.Command.Impl
                     messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
                 }
             }
+            _slidingDoor.RemoveOffset(reply.Offset);
         }
 
         protected MessageState BuildCommandState(IMessageContext commandContext, CancellationToken sendCancellationToken, TimeSpan timeout, CancellationToken replyCancellationToken, bool needReply)
@@ -136,7 +159,7 @@ namespace IFramework.Command.Impl
                 var timeoutCancellationTokenSource = new CancellationTokenSource(timeout);
                 timeoutCancellationTokenSource.Token.Register(OnSendTimeout, sendTaskCompletionSource);
             }
-           
+
             if (sendCancellationToken != CancellationToken.None)
             {
                 sendCancellationToken.Register(OnSendCancel, sendTaskCompletionSource);
@@ -204,7 +227,7 @@ namespace IFramework.Command.Impl
                                                              replyEndPoint: needReply ? _replyTopicName : null);
             return commandContext;
         }
- 
+
         protected void OnSendTimeout(object state)
         {
             var sendTaskCompletionSource = state as TaskCompletionSource<MessageResponse>;

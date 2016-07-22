@@ -161,20 +161,20 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             return messageContext;
         }
-        public Action<long> StartQueueClient(string commandQueueName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartQueueClient(string commandQueueName, OnMessagesReceived onMessagesReceived)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var commandQueueClient = CreateQueueClient(commandQueueName);
             var cancellationSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew((cs) => ReceiveQueueMessages(cs as CancellationTokenSource,
-                                                                          onMessageReceived,
+                                                                          onMessagesReceived,
                                                                           commandQueueClient),
                                                      cancellationSource,
                                                      cancellationSource.Token,
                                                      TaskCreationOptions.LongRunning,
                                                      TaskScheduler.Default);
             _commandClientTasks.Add(task);
-            return (offset) => CompleteMessage(commandQueueClient, offset);
+            return (offset) => CommitOffset(commandQueueClient, offset);
         }
 
         public void StopQueueClients()
@@ -188,7 +188,7 @@ namespace IFramework.MessageQueue.ServiceBus
             Task.WaitAll(_commandClientTasks.ToArray());
         }
 
-        public void StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
+        public Action<long> StartSubscriptionClient(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -196,13 +196,14 @@ namespace IFramework.MessageQueue.ServiceBus
             var cancellationSource = new CancellationTokenSource();
 
             var task = Task.Factory.StartNew((cs) => ReceiveTopicMessages(cs as CancellationTokenSource,
-                                                                   onMessageReceived,
+                                                                   onMessagesReceived,
                                                                    () => subscriptionClient.Receive(Configuration.Instance.GetMessageQueueReceiveMessageTimeout())),
                                              cancellationSource,
                                              cancellationSource.Token,
                                              TaskCreationOptions.LongRunning,
                                              TaskScheduler.Default);
             _subscriptionClientTasks.Add(task);
+            return (offset) => CommitOffset(subscriptionClient, offset);
         }
 
         public void CompleteMessage(IMessageContext messageContext)
@@ -221,7 +222,7 @@ namespace IFramework.MessageQueue.ServiceBus
             Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
 
-        private void ReceiveTopicMessages(CancellationTokenSource cancellationSource, Action<IMessageContext> onMessageReceived, Func<BrokeredMessage> receiveMessage)
+        private void ReceiveTopicMessages(CancellationTokenSource cancellationSource, OnMessagesReceived onMessagesReceived, Func<BrokeredMessage> receiveMessage)
         {
             while (!cancellationSource.IsCancellationRequested)
             {
@@ -232,7 +233,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     if (brokeredMessage != null)
                     {
                         var eventContext = new MessageContext(brokeredMessage);
-                        onMessageReceived(eventContext);
+                        onMessagesReceived(eventContext);
                         brokeredMessage.Complete();
                     }
                 }
@@ -252,7 +253,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-        private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, Action<IMessageContext> onMessageReceived, QueueClient queueClient)
+        private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived, QueueClient queueClient)
         {
             bool needPeek = true;
             long sequenceNumber = 0;
@@ -268,6 +269,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     {
                         break;
                     }
+                    List<IMessageContext> messageContexts = new List<IMessageContext>();
                     foreach (var message in brokeredMessages)
                     {
                         if (message.State != Microsoft.ServiceBus.Messaging.MessageState.Deferred)
@@ -275,9 +277,10 @@ namespace IFramework.MessageQueue.ServiceBus
                             needPeek = false;
                             break;
                         }
-                        onMessageReceived(new MessageContext(message));
+                        messageContexts.Add(new MessageContext(message));
                         sequenceNumber = message.SequenceNumber + 1;
                     }
+                    onMessagesReceived(messageContexts.ToArray());
                 }
                 catch (OperationCanceledException)
                 {
@@ -304,7 +307,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     foreach (var message in brokeredMessages)
                     {
                         message.Defer();
-                        onMessageReceived(new MessageContext(message));
+                        onMessagesReceived(new MessageContext(message));
                     }
                 }
                 catch (OperationCanceledException)
@@ -324,7 +327,20 @@ namespace IFramework.MessageQueue.ServiceBus
             #endregion
         }
 
-        private void CompleteMessage(QueueClient queueClient, long sequenceNumber)
+        private void CommitOffset(SubscriptionClient subscriptionClient, long sequenceNumber)
+        {
+            try
+            {
+                var toCompleteMessage = subscriptionClient.Receive(sequenceNumber);
+                toCompleteMessage.Complete();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.GetBaseException().Message, ex);
+            }
+        }
+
+        private void CommitOffset(QueueClient queueClient, long sequenceNumber)
         {
             try
             {
@@ -335,12 +351,6 @@ namespace IFramework.MessageQueue.ServiceBus
             {
                 _logger.Error(ex.GetBaseException().Message, ex);
             }
-
-        }
-
-        Action<long> IMessageQueueClient.StartSubscriptionClient(string topic, string subscriptionName, Action<IMessageContext> onMessageReceived)
-        {
-            throw new NotImplementedException();
         }
     }
 }
