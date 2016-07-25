@@ -206,7 +206,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
             var task = Task.Factory.StartNew((cs) => ReceiveTopicMessages(cs as CancellationTokenSource,
                                                                    onMessagesReceived,
-                                                                   () => subscriptionClient.Receive(Configuration.Instance.GetMessageQueueReceiveMessageTimeout())),
+                                                                   subscriptionClient),
                                              cancellationSource,
                                              cancellationSource.Token,
                                              TaskCreationOptions.LongRunning,
@@ -231,18 +231,61 @@ namespace IFramework.MessageQueue.ServiceBus
             Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
 
-        private void ReceiveTopicMessages(CancellationTokenSource cancellationSource, OnMessagesReceived onMessagesReceived, Func<BrokeredMessage> receiveMessage)
+        private void ReceiveTopicMessages(CancellationTokenSource cancellationSource, OnMessagesReceived onMessagesReceived, SubscriptionClient subscriptionClient)
         {
+            bool needPeek = true;
+            long sequenceNumber = 0;
+            IEnumerable<BrokeredMessage> brokeredMessages = null;
+
+            #region peek messages that not been consumed since last time
+            while (!cancellationSource.IsCancellationRequested && needPeek)
+            {
+                try
+                {
+                    brokeredMessages = subscriptionClient.PeekBatch(sequenceNumber, 50);
+                    if (brokeredMessages == null || brokeredMessages.Count() == 0)
+                    {
+                        break;
+                    }
+                    List<IMessageContext> messageContexts = new List<IMessageContext>();
+                    foreach (var message in brokeredMessages)
+                    {
+                        if (message.State != Microsoft.ServiceBus.Messaging.MessageState.Deferred)
+                        {
+                            needPeek = false;
+                            break;
+                        }
+                        messageContexts.Add(new MessageContext(message));
+                        sequenceNumber = message.SequenceNumber + 1;
+                    }
+                    onMessagesReceived(messageContexts.ToArray());
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Thread.Sleep(1000);
+                    _logger.Error($"subscriptionClient.ReceiveBatch {subscriptionClient.Name} failed", ex);
+                }
+            }
+            #endregion
+
+            #region receive messages to enqueue consuming queue
             while (!cancellationSource.IsCancellationRequested)
             {
                 try
                 {
-                    BrokeredMessage brokeredMessage = null;
-                    brokeredMessage = receiveMessage();
-                    if (brokeredMessage != null)
+                    brokeredMessages = subscriptionClient.ReceiveBatch(50, Configuration.Instance.GetMessageQueueReceiveMessageTimeout());
+                    foreach (var message in brokeredMessages)
                     {
-                        var eventContext = new MessageContext(brokeredMessage);
-                        onMessagesReceived(eventContext);
+                        message.Defer();
+                        onMessagesReceived(new MessageContext(message));
                     }
                 }
                 catch (OperationCanceledException)
@@ -256,9 +299,10 @@ namespace IFramework.MessageQueue.ServiceBus
                 catch (Exception ex)
                 {
                     Thread.Sleep(1000);
-                    _logger.Error(ex.GetBaseException().Message, ex);
+                    _logger.Error($"subscriptionClient.ReceiveBatch {subscriptionClient.Name} failed", ex);
                 }
             }
+            #endregion
         }
 
         private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived, QueueClient queueClient)
@@ -301,7 +345,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 catch (Exception ex)
                 {
                     Thread.Sleep(1000);
-                    _logger.Error(ex.GetBaseException().Message, ex);
+                    _logger.Error($" queueClient.PeekBatch {queueClient.Path} failed", ex);
                 }
             }
             #endregion
@@ -329,7 +373,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 catch (Exception ex)
                 {
                     Thread.Sleep(1000);
-                    _logger.Error(ex.GetBaseException().Message, ex);
+                    _logger.Error($" queueClient.PeekBatch {queueClient.Path} failed", ex);
                 }
             }
             #endregion

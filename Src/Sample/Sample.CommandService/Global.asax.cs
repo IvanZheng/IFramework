@@ -48,7 +48,7 @@ namespace Sample.CommandService
 
                 _Logger.Debug($"App Started");
                 Configuration.Instance
-                             .SetCommitPerMessage(true)//for servicebus !!!
+                            // .SetCommitPerMessage(true)//for servicebus !!!
                              .MessageQueueUseMachineNameFormat(false)
                              .CommandHandlerProviderBuild(null, "CommandHandlers");
 
@@ -58,13 +58,13 @@ namespace Sample.CommandService
                 #endregion
 
                 #region event subscriber init
-                //_DomainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventSubscriber");
-                //_DomainEventConsumer.Start();
+                _DomainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventSubscriber");
+                _DomainEventConsumer.Start();
                 #endregion
 
                 #region application event subscriber init
-                //_ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
-                //_ApplicationEventConsumer.Start();
+                _ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
+                _ApplicationEventConsumer.Start();
                 #endregion
 
                 #region CommandBus init

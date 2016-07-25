@@ -30,7 +30,7 @@ namespace Sample.CommandService.Tests
         {
             Configuration.Instance.UseUnityContainer();
             Configuration.Instance.UseLog4Net()
-                                  .SetCommitPerMessage(true)//for servicebus !!!
+                              //    .SetCommitPerMessage(true)//for servicebus !!!
                                   .MessageQueueUseMachineNameFormat(false);
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(CommandBusTests));
 
