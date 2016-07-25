@@ -19,20 +19,22 @@ namespace IFramework.Message.Impl
         protected long _fullLoadThreshold;
         protected Action<long> _CommitOffset;
         protected int _waitInterval;
+        protected bool _commitPerMessage;
         ILogger _logger;
 
-        public SlidingDoor(Action<long> commitOffset, int fullLoadThreshold, int waitInterval)
+        public SlidingDoor(Action<long> commitOffset, int fullLoadThreshold, int waitInterval, bool commitPerMessage = false)
         {
             _offsets = new SortedSet<long>();
             _CommitOffset = commitOffset;
             _fullLoadThreshold = fullLoadThreshold;
             _waitInterval = waitInterval;
+            _commitPerMessage = commitPerMessage;
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
         }
 
         public void AddOffset(long offset)
         {
-            lock(_removeOffsetLock)
+            lock (_removeOffsetLock)
             {
                 _offsets.Add(offset);
                 _lastOffset = offset;
@@ -50,23 +52,34 @@ namespace IFramework.Message.Impl
 
         public void RemoveOffset(long offset)
         {
-            lock (_removeOffsetLock)
+            if (_commitPerMessage)
             {
-                if (_offsets.Remove(offset))
+                _CommitOffset(offset);
+                lock (_removeOffsetLock)
                 {
-                    if (_offsets.Count > 0)
-                    {
-                        _consumedOffset = _offsets.First() - 1;
-                    }
-                    else
-                    {
-                        _consumedOffset = _lastOffset;
-                    }
+                    _offsets.Remove(offset);
                 }
-                if (_consumedOffset > _lastCommittedOffset)
+            }
+            else
+            {
+                lock (_removeOffsetLock)
                 {
-                    _CommitOffset(_consumedOffset);
-                    _lastCommittedOffset = _consumedOffset;
+                    if (_offsets.Remove(offset))
+                    {
+                        if (_offsets.Count > 0)
+                        {
+                            _consumedOffset = _offsets.First() - 1;
+                        }
+                        else
+                        {
+                            _consumedOffset = _lastOffset;
+                        }
+                    }
+                    if (_consumedOffset > _lastCommittedOffset)
+                    {
+                        _CommitOffset(_consumedOffset);
+                        _lastCommittedOffset = _consumedOffset;
+                    }
                 }
             }
         }

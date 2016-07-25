@@ -1,4 +1,5 @@
-﻿using IFramework.Event;
+﻿using IFramework.Config;
+using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Infrastructure.Mailboxes.Impl;
@@ -62,7 +63,7 @@ namespace IFramework.Command.Impl
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
                     var _CommitOffset = _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
-                    _slidingDoor = new SlidingDoor(_CommitOffset,  1000, 100);
+                    _slidingDoor = new SlidingDoor(_CommitOffset,  1000, 100, Configuration.Instance.GetCommitPerMessage());
                 }
                 //_consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
                 //                                                _cancellationTokenSource.Token,

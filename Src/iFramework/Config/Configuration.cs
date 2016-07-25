@@ -29,6 +29,18 @@ namespace IFramework.Config
         {
         }
 
+
+        bool CommitPerMessage { get; set; }
+        public bool GetCommitPerMessage()
+        {
+            return CommitPerMessage;
+        }
+        public Configuration SetCommitPerMessage(bool commitPerMessage = false)
+        {
+            CommitPerMessage = commitPerMessage;
+            return this;
+        }
+
         public static CompilationSection GetCompliationSection()
         {
             return ConfigurationManager.GetSection("system.web/compilation") as CompilationSection;

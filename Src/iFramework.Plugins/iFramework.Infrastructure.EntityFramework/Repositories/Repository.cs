@@ -27,6 +27,7 @@ namespace IFramework.EntityFramework.Repositories
             {
                 throw new Exception("repository could not work without dbContext");
             }
+            // dbContext.Configuration.AutoDetectChangesEnabled = false;
             if (_UnitOfWork != null)
             {
                 _UnitOfWork.RegisterDbContext(dbContext);

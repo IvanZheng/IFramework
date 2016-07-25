@@ -104,6 +104,10 @@
       <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>
       <Name>IFramework.MessageQueue.MSKafka</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.ServiceBus\IFramework.MessageQueue.ServiceBus4.5.csproj">
+      <Project>{081bb2eb-cc5d-4512-b61e-917cd7aa795d}</Project>
+      <Name>IFramework.MessageQueue.ServiceBus4.5</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.5.csproj">
       <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
       <Name>IFramework.MessageStoring.EntityFramework4.5</Name>

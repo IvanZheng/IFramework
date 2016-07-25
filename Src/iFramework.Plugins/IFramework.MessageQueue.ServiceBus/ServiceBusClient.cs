@@ -215,10 +215,10 @@ namespace IFramework.MessageQueue.ServiceBus
             return (offset) => CommitOffset(subscriptionClient, offset);
         }
 
-        public void CompleteMessage(IMessageContext messageContext)
-        {
-            (messageContext as MessageContext).Complete();
-        }
+        //public void CompleteMessage(IMessageContext messageContext)
+        //{
+        //    (messageContext as MessageContext).Complete();
+        //}
 
         public void StopSubscriptionClients()
         {
@@ -243,7 +243,6 @@ namespace IFramework.MessageQueue.ServiceBus
                     {
                         var eventContext = new MessageContext(brokeredMessage);
                         onMessagesReceived(eventContext);
-                        brokeredMessage.Complete();
                     }
                 }
                 catch (OperationCanceledException)
@@ -345,7 +344,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.GetBaseException().Message, ex);
+                _logger.Error($"subscriptionClient commit offset {sequenceNumber} failed", ex);
             }
         }
 
@@ -358,7 +357,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.GetBaseException().Message, ex);
+                _logger.Error($"queueClient commit offset {sequenceNumber} failed", ex);
             }
         }
     }

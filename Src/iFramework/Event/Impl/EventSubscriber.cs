@@ -11,6 +11,7 @@ using IFramework.Command;
 using IFramework.IoC;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Message.Impl;
+using IFramework.Config;
 
 namespace IFramework.Event.Impl
 {
@@ -141,7 +142,7 @@ namespace IFramework.Event.Impl
                 if (!string.IsNullOrWhiteSpace(_topic))
                 {
                     var _CommitOffset = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, OnMessagesReceived);
-                    _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100);
+                    _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100, Configuration.Instance.GetCommitPerMessage());
                 }
                 _messageProcessor.Start();
             }

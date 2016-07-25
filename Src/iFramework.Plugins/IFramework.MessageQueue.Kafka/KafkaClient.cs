@@ -274,11 +274,11 @@ namespace IFramework.MessageQueue.MSKafka
 
 
 
-        public void CompleteMessage(IMessageContext messageContext)
-        {
-            (messageContext as MessageContext).Complete();
-            _logger.Debug($"complete message {messageContext.Message.ToJson()}");
-        }
+        //public void CompleteMessage(IMessageContext messageContext)
+        //{
+        //    (messageContext as MessageContext).Complete();
+        //    _logger.Debug($"complete message {messageContext.Message.ToJson()}");
+        //}
         
 
         public void Publish(IMessageContext messageContext, string topic)
