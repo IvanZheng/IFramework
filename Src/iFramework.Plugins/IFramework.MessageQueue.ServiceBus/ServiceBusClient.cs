@@ -120,7 +120,16 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public void Send(IMessageContext messageContext, string queue)
         {
+            var commandKey = messageContext.Key;
             queue = Configuration.Instance.FormatMessageQueueName(queue);
+
+            var queuePartionCount = Configuration.Instance.GetQueuePartionCount(queue);
+            if (queuePartionCount > 1)
+            {
+                int keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey) ?
+                               commandKey.GetUniqueCode() : messageContext.MessageID.GetUniqueCode();
+                queue = $"{queue}.{Math.Abs(keyUniqueCode % queuePartionCount)}";
+            }
             var queueClient = GetQueueClient(queue);
             var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;
             while (true)

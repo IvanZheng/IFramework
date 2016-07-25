@@ -191,6 +191,7 @@
     <Compile Include="Specifications\SemanticsAttribute.cs" />
     <Compile Include="Specifications\Specification.cs" />
     <Compile Include="Specifications\SpecificationUtility.cs" />
+    <Compile Include="SysExceptions\NoCommandTopic.cs" />
     <Compile Include="SysExceptions\NoHandlerExists.cs" />
     <Compile Include="SysExceptions\SysException.cs" />
     <Compile Include="UnitOfWork\BaseUnitOfWork.cs" />

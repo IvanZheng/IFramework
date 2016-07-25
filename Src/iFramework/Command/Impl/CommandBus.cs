@@ -23,7 +23,7 @@ namespace IFramework.Command.Impl
     {
         protected string _replyTopicName;
         protected string _replySubscriptionName;
-        protected string[] _commandQueueNames;
+        //protected string[] _commandQueueNames;
         protected ILinearCommandManager _linearCommandManager;
         /// <summary>
         /// cache command states for command reply. When reply comes, make replyTaskCompletionSouce completed
@@ -39,7 +39,7 @@ namespace IFramework.Command.Impl
 
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
-                          string[] commandQueueNames,
+                          //string[] commandQueueNames,
                           string replyTopicName,
                           string replySubscriptionName,
                           bool needMessageStore = true)
@@ -49,7 +49,7 @@ namespace IFramework.Command.Impl
             _linearCommandManager = linearCommandManager;
             _replyTopicName = replyTopicName;
             _replySubscriptionName = replySubscriptionName;
-            _commandQueueNames = commandQueueNames;
+           // _commandQueueNames = commandQueueNames;
             _needMessageStore = needMessageStore;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
         }
@@ -218,13 +218,19 @@ namespace IFramework.Command.Impl
             }
             IMessageContext commandContext = null;
             #region pickup a queue to send command
-            int keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey) ?
-                commandKey.GetUniqueCode() : command.ID.GetUniqueCode();
-            var queue = _commandQueueNames[Math.Abs(keyUniqueCode % _commandQueueNames.Length)];
+            // move this logic into  concrete messagequeueClient. kafka sdk already implement it. 
+            // service bus client still need it.
+            //int keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey) ?
+            //    commandKey.GetUniqueCode() : command.ID.GetUniqueCode();
+            //var queue = _commandQueueNames[Math.Abs(keyUniqueCode % _commandQueueNames.Length)];
             #endregion
-            commandContext = _messageQueueClient.WrapMessage(command, topic: queue,
+            commandContext = _messageQueueClient.WrapMessage(command,
                                                              key: commandKey,
                                                              replyEndPoint: needReply ? _replyTopicName : null);
+            if (string.IsNullOrEmpty(commandContext.Topic))
+            {
+                throw new NoCommandTopic();
+            }
             return commandContext;
         }
 
