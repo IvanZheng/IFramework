@@ -287,7 +287,7 @@ namespace IFramework.MessageQueue.MSKafka
             var topicClient = GetTopicClient(topic);
             var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
             var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
-            var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(topic, message);
+            var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(topic, messageContext.Key, message);
 
             try
             {
@@ -306,7 +306,7 @@ namespace IFramework.MessageQueue.MSKafka
 
             var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
             var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
-            var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(queue, message);
+            var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(queue, messageContext.Key, message);
 
             try
             {

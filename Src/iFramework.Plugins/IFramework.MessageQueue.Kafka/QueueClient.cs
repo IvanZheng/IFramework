@@ -18,21 +18,21 @@ namespace IFramework.MessageQueue.MSKafka
 {
     public class QueueClient
     {
-        ZookeeperConsumerConnector _zkConsumerConnector;
         Producer<string, Kafka.Client.Messages.Message> _producer;
-        string _zkConnectionString;
         string _queue;
         KafkaMessageStream<Kafka.Client.Messages.Message> _stream;
+        ZooKeeperConfiguration _zooKeeperConfiguration;
+        ZookeeperConsumerConnector _zkConsumerConnector;
         ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(QueueClient).Name);
 
         public QueueClient(string queue, string zkConnectionString)
         {
             _queue = queue;
-            _zkConnectionString = zkConnectionString;
+            _zooKeeperConfiguration = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 3000);
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 RequiredAcks = 1,
-                ZooKeeper = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 3000)
+                ZooKeeper = _zooKeeperConfiguration
             };
             _producer = new Producer(producerConfiguration);
         }
@@ -66,10 +66,7 @@ namespace IFramework.MessageQueue.MSKafka
 
         public void Send(ProducerData<string, Kafka.Client.Messages.Message> data)
         {
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
             _producer.Send(data);
-            _logger.Debug($"{_queue} send data cost: {watch.Elapsed.TotalMilliseconds} ");
         }
 
         public IEnumerable<Kafka.Client.Messages.Message> PeekBatch(CancellationToken cancellationToken)
@@ -97,7 +94,7 @@ namespace IFramework.MessageQueue.MSKafka
                         FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
                         AutoOffsetReset = OffsetRequest.LargestTime,
                         NumberOfTries = 3,
-                        ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 1000)
+                        ZooKeeper = _zooKeeperConfiguration
                     };
                     _zkConsumerConnector = new ZookeeperConsumerConnector(consumerConfiguration, true);
                 }

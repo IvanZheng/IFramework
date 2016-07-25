@@ -43,7 +43,7 @@ namespace IFramework.MessageQueue.MSKafka
                         FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
                         AutoOffsetReset = OffsetRequest.LargestTime,
                         NumberOfTries = 3,
-                        ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 1000)
+                        ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 1000)                      
                     };
 
                     _zkConsumerConnector = new ZookeeperConsumerConnector(consumerConfiguration, true);
