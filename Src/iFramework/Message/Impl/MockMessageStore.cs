@@ -51,12 +51,12 @@ namespace IFramework.Message.Impl
         
 
 
-        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, object, string, string, IMessageContext> wrapMessage)
+        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, object, string, string, IMessageContext> wrapMessage)
+        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
         {
             throw new NotImplementedException();
         }

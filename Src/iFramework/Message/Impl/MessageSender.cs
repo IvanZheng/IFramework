@@ -55,7 +55,7 @@ namespace IFramework.Message.Impl
 
         public void Send(params IMessage[] messages)
         {
-            messages.ForEach(message => _messageStateQueue.Add(new MessageState(_messageQueueClient.WrapMessage(message))));
+            messages.ForEach(message => _messageStateQueue.Add(new MessageState(_messageQueueClient.WrapMessage(message, key: message.Key))));
         }
 
         public void Send(params MessageState[] messageStates)

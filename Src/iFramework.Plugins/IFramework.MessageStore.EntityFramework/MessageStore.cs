@@ -202,17 +202,17 @@ namespace IFramework.MessageStoring
         }
 
 
-        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, object, string, string, IMessageContext> wrapMessage)
+        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
         {
             return GetAllUnSentMessages<UnSentCommand>(wrapMessage);
         }
 
-        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, object, string, string, IMessageContext> wrapMessage)
+        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
         {
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
 
-        IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>(Func<string, object, string, string, IMessageContext> wrapMessage)
+        IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
             where TMessage : UnSentMessage
         {
             var messageContexts = new List<IMessageContext>();
@@ -220,7 +220,7 @@ namespace IFramework.MessageStoring
             {
                 try
                 {
-                    var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type));
+                    var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type)) as IMessage;
                     if (rawMessage != null)
                     {
                         messageContexts.Add(wrapMessage(message.ID, rawMessage, message.Topic, message.CorrelationID));

@@ -61,7 +61,7 @@ namespace IFramework.Command.Impl
                 using (var messageStore = scope.Resolve<IMessageStore>())
                 {
                     return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId) =>
-                                                              _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationId));
+                                                              _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic, messageId: messageId, correlationId: correlationId));
                 }
             }
             return null;

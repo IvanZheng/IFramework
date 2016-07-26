@@ -23,8 +23,8 @@ namespace IFramework.Message
         void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, params IMessageContext[] eventContexts);
         void RemoveSentCommand(string commandId);
         void RemovePublishedEvent(string eventId);
-        IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, object, string, string, IMessageContext> wrapMessage);
-        IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, object, string, string, IMessageContext> wrapMessage);
+        IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, IMessage, string, string, IMessageContext> wrapMessage);
+        IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, IMessage, string, string, IMessageContext> wrapMessage);
         void Rollback();
     }
 }

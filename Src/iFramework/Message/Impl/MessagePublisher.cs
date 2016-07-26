@@ -30,7 +30,7 @@ namespace IFramework.Message.Impl
             using (var messageStore = scope.Resolve<IMessageStore>())
             {
                 return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationID) =>
-                                        _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationID));
+                                        _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationID, key: message.Key));
             }
         }
 
