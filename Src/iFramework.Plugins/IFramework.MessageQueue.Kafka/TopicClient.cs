@@ -19,7 +19,7 @@ namespace IFramework.MessageQueue.MSKafka
             _zkConnectionString = zkConnectionString;
             var producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
-                RequiredAcks = 1,
+                RequiredAcks = -1,
                 ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 3000)
             };
 

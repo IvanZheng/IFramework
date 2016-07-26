@@ -80,7 +80,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
-                RequiredAcks = 1,
+                RequiredAcks = -1,
                 ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 3000)
             };
             using (Producer producer = new Producer(producerConfiguration))

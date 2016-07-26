@@ -31,7 +31,7 @@ namespace IFramework.MessageQueue.MSKafka
             _zooKeeperConfiguration = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 3000);
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
-                RequiredAcks = 1,
+                RequiredAcks = -1,
                 ZooKeeper = _zooKeeperConfiguration
             };
             _producer = new Producer(producerConfiguration);

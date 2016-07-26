@@ -48,7 +48,7 @@ namespace Sample.CommandService
 
                 _Logger.Debug($"App Started");
                 Configuration.Instance
-                            // .SetCommitPerMessage(true)//for servicebus !!!
+                             //.SetCommitPerMessage(true)//for servicebus !!!
                              .MessageQueueUseMachineNameFormat(false)
                              .CommandHandlerProviderBuild(null, "CommandHandlers");
 
