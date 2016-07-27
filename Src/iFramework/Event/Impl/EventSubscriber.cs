@@ -79,7 +79,7 @@ namespace IFramework.Event.Impl
                         var eventBus = scope.Resolve<IEventBus>();
                         try
                         {
-                            var messageHandler = scope.Resolve(messageHandlerType);
+                            var messageHandler = scope.Resolve(messageHandlerType, new Parameter("container", scope));
                             using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
                                                                                new TransactionOptions
                                                                                {
