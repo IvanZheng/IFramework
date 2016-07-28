@@ -106,13 +106,13 @@
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IFramework.Log4Net\IFramework.Log4Net4.5.csproj">
+    <ProjectReference Include="..\IFramework.Log4Net\IFramework.Log4Net4.6.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
-      <Name>IFramework.Log4Net4.5</Name>
+      <Name>IFramework.Log4Net4.6</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework4.5.csproj">
+    <ProjectReference Include="..\..\iFramework\IFramework4.6.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework4.5</Name>
+      <Name>IFramework4.6</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -48,9 +48,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework\IFramework4.5.csproj">
+    <ProjectReference Include="..\..\iFramework\IFramework4.6.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework4.5</Name>
+      <Name>IFramework4.6</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sample.Command\Sample.Command.csproj">
       <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
