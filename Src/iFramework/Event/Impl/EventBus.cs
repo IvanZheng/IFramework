@@ -14,10 +14,10 @@ namespace IFramework.Event.Impl
         protected List<ICommand> CommandQueue;
         protected List<IEvent> EventQueue;
         protected List<IEvent> ToPublishAnywayEventQueue;
-        protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
-        public EventBus(IEventSubscriberProvider provider)
+       // protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
+        public EventBus(/*IEventSubscriberProvider provider*/)
         {
-            EventSubscriberProvider = provider;
+            //EventSubscriberProvider = provider;
             EventQueue = new List<IEvent>();
             CommandQueue = new List<ICommand>();
             ToPublishAnywayEventQueue = new List<IEvent>();
@@ -26,15 +26,15 @@ namespace IFramework.Event.Impl
         public void Publish<TEvent>(TEvent @event) where TEvent : IEvent
         {
             EventQueue.Add(@event);
-            if (EventSubscriberProvider != null)
-            {
-                var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
-                eventSubscriberTypes.ForEach(eventSubscriberType =>
-                {
-                    var eventSubscriber = IoCFactory.Resolve(eventSubscriberType);
-                    ((dynamic)eventSubscriber).Handle((dynamic)@event);
-                });
-            }
+            //if (EventSubscriberProvider != null)
+            //{
+            //    var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
+            //    eventSubscriberTypes.ForEach(eventSubscriberType =>
+            //    {
+            //        var eventSubscriber = IoCFactory.Resolve(eventSubscriberType);
+            //        ((dynamic)eventSubscriber).Handle((dynamic)@event);
+            //    });
+            //}
         }
 
         public void Publish<TEvent>(IEnumerable<TEvent> events) where TEvent : IEvent
