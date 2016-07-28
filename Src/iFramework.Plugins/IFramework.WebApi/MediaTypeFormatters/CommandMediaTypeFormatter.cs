@@ -1,4 +1,5 @@
-﻿using IFramework.Config;
+﻿using Newtonsoft.Json.Serialization;
+using IFramework.Config;
 using IFramework.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -15,11 +16,17 @@ namespace IFramework.AspNet.MediaTypeFormatters
     public class CommandMediaTypeFormatter : JsonMediaTypeFormatter
     {
         static readonly string CommandTypeTemplate = Configuration.GetAppConfig("CommandTypeTemplate");
-        public CommandMediaTypeFormatter()
+        bool _useCamelCase;
+        public CommandMediaTypeFormatter(bool useCamelCase = true)
         {
             this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/command"));
             this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/command+form"));
             this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/x-www-form-urlencoded"));
+            _useCamelCase = useCamelCase;
+            if (_useCamelCase)
+            {
+                this.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            }
         }
         public override bool CanReadType(Type type)
         {
@@ -70,7 +77,7 @@ namespace IFramework.AspNet.MediaTypeFormatters
             }
             if (command == null)
             {
-                command = part.ToJsonObject(commandType);
+                command = part.ToJsonObject(commandType, useCamelCase: _useCamelCase);
             }
             return command;
         }

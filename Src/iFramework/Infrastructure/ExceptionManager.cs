@@ -13,37 +13,37 @@ namespace IFramework.Infrastructure
 {
     public class ApiResult
     {
-        public bool success { get; set; }
-        public object errorCode { get; set; }
-        public string message { get; set; }
+        public bool Success { get; set; }
+        public object ErrorCode { get; set; }
+        public string Message { get; set; }
 
         public ApiResult()
         {
-            success = true;
-            errorCode = 0;
+            Success = true;
+            ErrorCode = 0;
         }
 
         public ApiResult(object errorCode, string message = null)
         {
-            this.errorCode = errorCode;
-            this.message = message;
-            success = false;
+            this.ErrorCode = errorCode;
+            this.Message = message;
+            Success = false;
         }
 
     }
 
     public class ApiResult<TResult> : ApiResult
     {
-        public TResult result { get; set; }
+        public TResult Result { get; set; }
 
         public ApiResult()
         {
-            success = true;
+            Success = true;
         }
         public ApiResult(TResult result)
             : this()
         {
-            this.result = result;
+            this.Result = result;
         }
 
         public ApiResult(object errorCode, string message = null)
@@ -69,7 +69,7 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex.GetBaseException() is OptimisticConcurrencyException) || !needRetry)
+                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
                         if (baseException is SysException)
@@ -145,7 +145,7 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex.GetBaseException() is OptimisticConcurrencyException) || !needRetry)
+                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
                         if (baseException is SysException)
@@ -235,7 +235,7 @@ namespace IFramework.Infrastructure
                     }
                 }
             }
-            while (needRetry && retryCount -- > 0);
+            while (needRetry && retryCount-- > 0);
             return apiResult;
         }
 
@@ -276,7 +276,7 @@ namespace IFramework.Infrastructure
                     }
                 }
             }
-            while (needRetry && retryCount -- > 0);
+            while (needRetry && retryCount-- > 0);
             return apiResult;
         }
     }

@@ -10,6 +10,7 @@ using IFramework.Event;
 using IFramework.Message;
 using IFramework.Config;
 using System.Transactions;
+using System.Threading.Tasks;
 
 namespace IFramework.UnitOfWork
 {
@@ -34,10 +35,10 @@ namespace IFramework.UnitOfWork
         //}
 
         //public BaseUnitOfWork(IEventBus domainEventBus, IMessageStore messageStore)
-       // {
-            //EventBus = domainEventBus;
-            //MessageStore = messageStore;
-       // }
+        // {
+        //EventBus = domainEventBus;
+        //MessageStore = messageStore;
+        // }
         #region IUnitOfWork Members
 
         //protected IEventBus EventBus
@@ -48,6 +49,7 @@ namespace IFramework.UnitOfWork
 
         public abstract void Commit();
 
+        public abstract Task CommitAsync();
         #endregion
 
         public virtual void Dispose()

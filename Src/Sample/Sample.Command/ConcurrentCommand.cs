@@ -1,5 +1,6 @@
 ﻿using IFramework.Command;
 using IFramework.Infrastructure;
+using IFramework.Message;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Text;
 
 namespace Sample.Command
 {
+    [Topic("commandqueueC")]
     public class ConcurrentCommand : ICommand
     {
         public bool NeedRetry

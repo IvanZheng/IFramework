@@ -78,7 +78,7 @@ namespace IFramework.Infrastructure
             }
         }
 
-        public static JsonSerializerSettings GetCustomJsonSerializerSettings(bool serializeNonPulibc, bool loopSerialize)
+        public static JsonSerializerSettings GetCustomJsonSerializerSettings(bool serializeNonPulibc, bool loopSerialize, bool useCamelCase)
         {
             JsonSerializerSettings customSettings = null;
             if (serializeNonPulibc && loopSerialize)
@@ -93,16 +93,19 @@ namespace IFramework.Infrastructure
             {
                 customSettings = LoopSerializeSerializerSettings;
             }
-
+            else if (useCamelCase)
+            {
+                customSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            }
             return customSettings;
         }
 
-        public static string ToJson(this object obj, bool serializeNonPublic = false, bool loopSerialize = false)
+        public static string ToJson(this object obj, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(obj, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize));
+            return Newtonsoft.Json.JsonConvert.SerializeObject(obj, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
         }
 
-        public static object ToJsonObject(this string json, bool serializeNonPublic = true, bool loopSerialize = false)
+        public static object ToJsonObject(this string json, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
         {
             try
             {
@@ -110,7 +113,7 @@ namespace IFramework.Infrastructure
                 {
                     return null;
                 }
-                return Newtonsoft.Json.JsonConvert.DeserializeObject(json, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize));
+                return Newtonsoft.Json.JsonConvert.DeserializeObject(json, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
             }
             catch (System.Exception)
             {
@@ -119,7 +122,7 @@ namespace IFramework.Infrastructure
 
         }
 
-        public static object ToJsonObject(this string json, Type jsonType, bool serializeNonPublic = true, bool loopSerialize = false)
+        public static object ToJsonObject(this string json, Type jsonType, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -129,15 +132,15 @@ namespace IFramework.Infrastructure
             {
                 if (jsonType == typeof(List<dynamic>))
                 {
-                    return (object)(json.ToDynamicObjects(serializeNonPublic, loopSerialize));
+                    return (object)(json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase));
                 }
                 else if (jsonType == typeof(object))
                 {
-                    return json.ToDynamicObject(serializeNonPublic, loopSerialize);
+                    return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
                 }
                 else
                 {
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject(json, jsonType, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize));
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject(json, jsonType, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
                 }
             }
             catch (System.Exception)
@@ -147,7 +150,7 @@ namespace IFramework.Infrastructure
 
         }
 
-        public static T ToJsonObject<T>(this string json, bool serializeNonPublic = true, bool loopSerialize = false)
+        public static T ToJsonObject<T>(this string json, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -157,15 +160,15 @@ namespace IFramework.Infrastructure
             {
                 if (typeof(T) == typeof(List<dynamic>))
                 {
-                    return (T)(object)(json.ToDynamicObjects(serializeNonPublic, loopSerialize));
+                    return (T)(object)(json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase));
                 }
                 else if (typeof(T) == typeof(object))
                 {
-                    return json.ToDynamicObject(serializeNonPublic, loopSerialize);
+                    return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
                 }
                 else
                 {
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize));
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
                 }
             }
             catch (System.Exception)
@@ -175,7 +178,7 @@ namespace IFramework.Infrastructure
 
         }
 
-        public static dynamic ToDynamicObject(this string json, bool serializeNonPublic = true, bool loopSerialize = false)
+        public static dynamic ToDynamicObject(this string json, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
         {
             dynamic dj = null;
             var jsonObj = json.ToJsonObject<JObject>(serializeNonPublic, loopSerialize);
@@ -186,7 +189,7 @@ namespace IFramework.Infrastructure
             return dj;
         }
 
-        public static List<dynamic> ToDynamicObjects(this string json, bool serializeNonPublic = true, bool loopSerialize = false)
+        public static List<dynamic> ToDynamicObjects(this string json, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
         {
             List<dynamic> djs = null;
             var jsonObj = json.ToJsonObject<JArray>(serializeNonPublic, loopSerialize);

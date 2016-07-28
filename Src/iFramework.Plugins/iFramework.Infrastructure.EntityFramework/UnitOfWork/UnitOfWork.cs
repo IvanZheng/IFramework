@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using IFramework.UnitOfWork;
-using IFramework.Bus;
 using System.Data.Entity;
 using System.Transactions;
+using IFramework.UnitOfWork;
+using IFramework.Bus;
 using IFramework.Infrastructure;
 using IFramework.Config;
 using IFramework.Repositories;
 using IFramework.Domain;
 using IFramework.Event;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Core;
 using IFramework.Message;
+using System.Data.Entity.Infrastructure;
+using System.Threading.Tasks;
 
 namespace IFramework.EntityFramework
 {
@@ -34,7 +34,7 @@ namespace IFramework.EntityFramework
         public void Commit()
         {
             using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
-                                                             new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
+                                                             new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }, TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
@@ -58,6 +58,38 @@ namespace IFramework.EntityFramework
                 }
             }
         }
+
+        public async Task CommitAsync()
+        {
+            using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
+                                                             new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted },
+                                                             TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    foreach (var dbContext in _dbContexts)
+                    {
+                        await dbContext.SaveChangesAsync();
+                        dbContext.ChangeTracker.Entries().ForEach(e =>
+                        {
+                            if (e.Entity is AggregateRoot)
+                            {
+                                _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
+                            }
+                        });
+                    }
+                    scope.Complete();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    Rollback();
+                    throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
+                }
+            }
+        }
+
+
+
 
         internal void RegisterDbContext(MSDbContext dbContext)
         {

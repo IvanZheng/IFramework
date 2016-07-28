@@ -39,10 +39,10 @@ namespace IFramework.Command.Impl
                                IHandlerProvider handlerProvider = null)
         {
             _commandQueueName = commandQueueName;
-            _handlerProvider = handlerProvider?? IoCFactory.Resolve<ICommandHandlerProvider>();
+            _handlerProvider = handlerProvider ?? IoCFactory.Resolve<ICommandHandlerProvider>();
             _messagePublisher = messagePublisher;
             _cancellationTokenSource = new CancellationTokenSource();
-           // _commandContexts = new BlockingCollection<IMessageContext>();
+            // _commandContexts = new BlockingCollection<IMessageContext>();
             _messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
@@ -63,7 +63,7 @@ namespace IFramework.Command.Impl
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
                     var _CommitOffset = _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
-                    _slidingDoor = new SlidingDoor(_CommitOffset,  1000, 100, Configuration.Instance.GetCommitPerMessage());
+                    _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100, Configuration.Instance.GetCommitPerMessage());
                 }
                 //_consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
                 //                                                _cancellationTokenSource.Token,
@@ -118,7 +118,8 @@ namespace IFramework.Command.Impl
 
         protected void OnMessageReceived(params IMessageContext[] messageContexts)
         {
-            messageContexts.ForEach(messageContext => {
+            messageContexts.ForEach(messageContext =>
+            {
                 _slidingDoor.AddOffset(messageContext.Offset);
                 _messageProcessor.Process(messageContext, ConsumeMessage);
                 MessageCount++;
@@ -179,14 +180,15 @@ namespace IFramework.Command.Impl
                             try
                             {
                                 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                   new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
+                                                                   new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted },
+                                                                   TransactionScopeAsyncFlowOption.Enabled))
                                 {
                                     ((dynamic)messageHandler).Handle((dynamic)command);
                                     messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
                                     eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetEvents().ForEach(@event =>
                                     {
-                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, key:@event.Key);
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, key: @event.Key);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
 
@@ -236,7 +238,7 @@ namespace IFramework.Command.Impl
             }
         }
 
-     
-        
+
+
     }
 }

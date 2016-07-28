@@ -1,5 +1,4 @@
-﻿using IFramework.Command;
-using Sample.Command;
+﻿using Sample.Command;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Net.Http.Headers;
+using IFramework.Command;
 using IFramework.AspNet;
 using IFramework.Infrastructure;
 
@@ -15,7 +15,7 @@ namespace Sample.CommandService.Controllers
 {
     public class CommandController : ApiController
     {
-       ICommandBus _CommandBus { get; set; }
+        ICommandBus _CommandBus { get; set; }
 
         public CommandController(ICommandBus commandBus)
         {
@@ -35,11 +35,11 @@ namespace Sample.CommandService.Controllers
             }
             else
             {
-                return 
+                return
                     new ApiResult
                     {
-                        errorCode = DTO.ErrorCode.CommandInvalid,
-                        message = string.Join(",", ModelState.Values
+                        ErrorCode = DTO.ErrorCode.CommandInvalid,
+                        Message = string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
                     };
@@ -52,8 +52,8 @@ namespace Sample.CommandService.Controllers
             if (ModelState.IsValid)
             {
                 HttpClient client = new HttpClient();
-                client.BaseAddress = new Uri(string.Format("{0}://{1}/api/command", 
-                    Request.RequestUri.Scheme, 
+                client.BaseAddress = new Uri(string.Format("{0}://{1}/api/command",
+                    Request.RequestUri.Scheme,
                     Request.RequestUri.Authority));
                 return client.DoCommand<ApiResult>(command, null);
             }
@@ -62,8 +62,8 @@ namespace Sample.CommandService.Controllers
                 return Task.Factory.StartNew<ApiResult>(() =>
                     new ApiResult
                     {
-                        errorCode = DTO.ErrorCode.CommandInvalid,
-                        message = string.Join(",", ModelState.Values
+                        ErrorCode = DTO.ErrorCode.CommandInvalid,
+                        Message = string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
                     });

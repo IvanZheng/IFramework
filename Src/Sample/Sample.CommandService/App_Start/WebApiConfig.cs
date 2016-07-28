@@ -1,4 +1,5 @@
 ﻿
+using Newtonsoft.Json.Serialization;
 using IFramework.AspNet.MediaTypeFormatters;
 using System;
 using System.Collections.Generic;
@@ -12,14 +13,15 @@ namespace Sample.CommandService
     {
         public static void Register(HttpConfiguration config)
         {
-            config.Formatters.JsonFormatter
-                            .MediaTypeMappings
-                            .Add(new QueryStringMapping("json", "true", "application/json"));
-
-            config.Formatters.XmlFormatter
-                .MediaTypeMappings
-                .Add(new QueryStringMapping("xml", "true", "application/xml"));
-
+            //传输以JSON格式
+            //config.Formatters.Clear();
+            //config.Formatters.Add(new JsonFormatter());
+            config.Formatters.Remove(config.Formatters.XmlFormatter);
+            //config.Formatters.Add(new JsonFormatter());
+            //config.Formatters.Add(new StackTextJsonMediaTypeFormatter());
+            //config.Formatters.Add(config.Formatters.JsonFormatter);
+            config.Formatters.JsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            config.Formatters.JsonFormatter.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
 
             config.Formatters.Insert(0, new MultipartMediaTypeFormatter());
             config.Formatters.Insert(0, new CommandMediaTypeFormatter());

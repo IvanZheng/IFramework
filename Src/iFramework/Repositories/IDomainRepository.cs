@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using IFramework.UnitOfWork;
 using System.Linq;
 using IFramework.Domain;
+using System.Threading.Tasks;
 
 namespace IFramework.Repositories
 {
@@ -27,12 +28,16 @@ namespace IFramework.Repositories
         /// <returns>The instance of the entity.</returns>
         TAggregateRoot GetByKey<TAggregateRoot>(params object[] keyValues) where TAggregateRoot : class, IAggregateRoot;
 
+        Task<TAggregateRoot> GetByKeyAsync<TAggregateRoot>(params object[] keyValues) where TAggregateRoot : class, IAggregateRoot;
 
 
         long Count<TAggregateRoot>(ISpecification<TAggregateRoot> specification) where TAggregateRoot : class, IAggregateRoot;
-        long Count<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification) where TAggregateRoot : class, IAggregateRoot;
+        Task<long> CountAsync<TAggregateRoot>(ISpecification<TAggregateRoot> specification) where TAggregateRoot : class, IAggregateRoot;
 
-  
+        long Count<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification) where TAggregateRoot : class, IAggregateRoot;
+        Task<long> CountAsync<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification) where TAggregateRoot : class, IAggregateRoot;
+
+
         /// <summary>
         /// Finds all the aggregate roots from repository, sorting by using the provided sort predicate
         /// and the specified sort order.
@@ -41,7 +46,7 @@ namespace IFramework.Repositories
         /// <param name="sortOrder">The <see cref="Framework.Enumerations.SortOrder"/> enum which specifies the sort order.</param>
         /// <returns>All the aggregate roots got from the repository, with the aggregate roots being sorted by
         /// using the provided sort predicate and the sort order.</returns>
-         IQueryable<TAggregateRoot> FindAll<TAggregateRoot>(params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
+        IQueryable<TAggregateRoot> FindAll<TAggregateRoot>(params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
         /// <summary>
         /// <summary>
         /// Finds all the aggregate roots that match the given specification, and sorts the aggregate roots
@@ -51,23 +56,30 @@ namespace IFramework.Repositories
         /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
         /// <param name="sortOrder">The <see cref="Framework.Enumerations.SortOrder"/> enum which specifies the sort order.</param>
         /// <returns>All the aggregate roots that match the given specification and were sorted by using the given sort predicate and the sort order.</returns>
-         IQueryable<TAggregateRoot> FindAll<TAggregateRoot>(ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
-         IQueryable<TAggregateRoot> FindAll<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
-      
+        IQueryable<TAggregateRoot> FindAll<TAggregateRoot>(ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
+        IQueryable<TAggregateRoot> FindAll<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
+
         /// <summary>
         /// Finds a single aggregate root that matches the given specification.
         /// </summary>
         /// <param name="specification">The specification with which the aggregate root should match.</param>
         /// <returns>The instance of the aggregate root.</returns>
         TAggregateRoot Find<TAggregateRoot>(ISpecification<TAggregateRoot> specification) where TAggregateRoot : class, IAggregateRoot;
+        Task<TAggregateRoot> FindAsync<TAggregateRoot>(ISpecification<TAggregateRoot> specification) where TAggregateRoot : class, IAggregateRoot;
         TAggregateRoot Find<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification) where TAggregateRoot : class, IAggregateRoot;
+
+        Task<TAggregateRoot> FindAsync<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification) where TAggregateRoot : class, IAggregateRoot;
         /// <summary>
         /// Checkes whether the aggregate root which matches the given specification exists.
         /// </summary>
         /// <param name="specification">The specification with which the aggregate root should match.</param>
         /// <returns>True if the aggregate root exists, otherwise false.</returns>
         bool Exists<TAggregateRoot>(ISpecification<TAggregateRoot> specification) where TAggregateRoot : class, IAggregateRoot;
+        Task<bool> ExistsAsync<TAggregateRoot>(ISpecification<TAggregateRoot> specification) where TAggregateRoot : class, IAggregateRoot;
+
         bool Exists<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification) where TAggregateRoot : class, IAggregateRoot;
+        Task<bool> ExistsAsync<TAggregateRoot>(Expression<Func<TAggregateRoot, bool>> specification) where TAggregateRoot : class, IAggregateRoot;
+
         /// <summary>
         /// Removes the entity from the repository.
         /// </summary>
@@ -82,7 +94,9 @@ namespace IFramework.Repositories
 
         IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex, int pageSize, Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
         IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex, int pageSize, Expression<Func<TAggregateRoot, bool>> specification, ref long totalCount, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
+        Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync<TAggregateRoot>(int pageIndex, int pageSize, Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
         IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, ref long totalCount, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
+        Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync<TAggregateRoot>(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
         IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions) where TAggregateRoot : class, IAggregateRoot;
     }
 }

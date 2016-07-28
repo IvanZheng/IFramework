@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using IFramework.UnitOfWork;
 using System.Linq;
 using IFramework.Domain;
+using System.Threading.Tasks;
 
 namespace IFramework.Repositories
 {
@@ -32,11 +33,15 @@ namespace IFramework.Repositories
         /// <returns>The instance of the entity.</returns>
         TAggregateRoot GetByKey(params object[] keyValues);
 
+        Task<TAggregateRoot> GetByKeyAsync(params object[] keyValues);
 
 
         long Count(ISpecification<TAggregateRoot> specification);
+        Task<long> CountAsync(ISpecification<TAggregateRoot> specification);
+
         long Count(Expression<Func<TAggregateRoot, bool>> specification);
-      
+        Task<long> CountAsync(Expression<Func<TAggregateRoot, bool>> specification);
+
 
         /// <summary>
         /// Finds all the aggregate roots from repository, sorting by using the provided sort predicate
@@ -62,16 +67,24 @@ namespace IFramework.Repositories
         /// </summary>
         /// <param name="specification">The specification with which the aggregate root should match.</param>
         /// <returns>The instance of the aggregate root.</returns>
-      
+
         TAggregateRoot Find(ISpecification<TAggregateRoot> specification);
+        Task<TAggregateRoot> FindAsync(ISpecification<TAggregateRoot> specification);
+
         TAggregateRoot Find(Expression<Func<TAggregateRoot, bool>> specification);
+        Task<TAggregateRoot> FindAsync(Expression<Func<TAggregateRoot, bool>> specification);
+
         /// <summary>
         /// Checkes whether the aggregate root which matches the given specification exists.
         /// </summary>
         /// <param name="specification">The specification with which the aggregate root should match.</param>
         /// <returns>True if the aggregate root exists, otherwise false.</returns>
         bool Exists(ISpecification<TAggregateRoot> specification);
+        Task<bool> ExistsAsync(ISpecification<TAggregateRoot> specification);
+
         bool Exists(Expression<Func<TAggregateRoot, bool>> specification);
+        Task<bool> ExistsAsync(Expression<Func<TAggregateRoot, bool>> specification);
+
         /// <summary>
         /// Removes the entity from the repository.
         /// </summary>
@@ -86,7 +99,11 @@ namespace IFramework.Repositories
 
         IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderByExpressions);
         IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, Expression<Func<TAggregateRoot, bool>> specification, ref long totalCount, params OrderExpression[] orderByExpressions);
+
+        Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize, Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderByExpressions);
+
         IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderByExpressions);
         IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, ref long totalCount, params OrderExpression[] orderByExpressions);
+        Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderByExpressions);
     }
 }

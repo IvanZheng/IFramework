@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace IFramework.UnitOfWork
 {
@@ -19,6 +20,11 @@ namespace IFramework.UnitOfWork
 
         public void Rollback()
         {
+        }
+
+        public Task CommitAsync()
+        {
+            return null;
         }
     }
 }

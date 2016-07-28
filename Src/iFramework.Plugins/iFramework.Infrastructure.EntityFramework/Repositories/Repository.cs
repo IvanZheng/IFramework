@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Data.Entity;
 using IFramework.Specifications;
 using System.Linq.Expressions;
 using IFramework.Infrastructure;
 using IFramework.UnitOfWork;
-using System.Reflection;
-using IFramework.Domain;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using IFramework.Repositories;
+using System.Threading.Tasks;
 
 namespace IFramework.EntityFramework.Repositories
 {
@@ -57,16 +54,28 @@ namespace IFramework.EntityFramework.Repositories
         {
             return Count(specification.GetExpression()) > 0;
         }
-
+        protected async override Task<bool> DoExistsAsync(ISpecification<TEntity> specification)
+        {
+            return await CountAsync(specification.GetExpression()) > 0;
+        }
         protected override TEntity DoFind(ISpecification<TEntity> specification)
         {
             return DbSet.Where(specification.GetExpression()).FirstOrDefault();
         }
-      
+
+        protected async override Task<TEntity> DoFindAsync(ISpecification<TEntity> specification)
+        {
+            return await DbSet.Where(specification.GetExpression()).FirstOrDefaultAsync();
+        }
 
         protected override TEntity DoGetByKey(params object[] keyValues)
         {
             return DbSet.Find(keyValues);
+        }
+
+        protected async override Task<TEntity> DoGetByKeyAsync(params object[] keyValues)
+        {
+            return await DbSet.FindAsync(keyValues);
         }
 
         protected override void DoRemove(TEntity entity)
@@ -118,6 +127,13 @@ namespace IFramework.EntityFramework.Repositories
             return query;
         }
 
+        protected async override Task<Tuple<IQueryable<TEntity>, long>> DoPageFindAsync(int pageIndex, int pageSize, ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
+        {
+            var query = DoPageFind(pageIndex, pageSize, specification, orderExpressions);
+            var totalCount = await CountAsync(specification.GetExpression());
+            return new Tuple<IQueryable<TEntity>, long>(query, totalCount);
+        }
+
         protected override void DoAdd(IQueryable<TEntity> entities)
         {
             foreach (var entity in entities)
@@ -131,11 +147,21 @@ namespace IFramework.EntityFramework.Repositories
             return DbSet.LongCount(specification.GetExpression());
         }
 
+        protected async override Task<long> DoCountAsync(ISpecification<TEntity> specification)
+        {
+            return await DbSet.LongCountAsync(specification.GetExpression());
+        }
+
         protected override long DoCount(Expression<Func<TEntity, bool>> specification)
         {
             return DbSet.LongCount(specification);
         }
-        
+
+        protected async override Task<long> DoCountAsync(Expression<Func<TEntity, bool>> specification)
+        {
+            return await DbSet.LongCountAsync(specification);
+        }
+
         public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class
         {
             ObjectContext objectContext = ((IObjectContextAdapter)_Container).ObjectContext;

@@ -14,7 +14,7 @@ namespace IFramework.Event.Impl
         protected List<ICommand> CommandQueue;
         protected List<IEvent> EventQueue;
         protected List<IEvent> ToPublishAnywayEventQueue;
-       // protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
+        //protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
         public EventBus(/*IEventSubscriberProvider provider*/)
         {
             //EventSubscriberProvider = provider;
@@ -51,7 +51,7 @@ namespace IFramework.Event.Impl
         {
             return EventQueue;
         }
-        
+
         public void ClearMessages()
         {
             EventQueue.Clear();

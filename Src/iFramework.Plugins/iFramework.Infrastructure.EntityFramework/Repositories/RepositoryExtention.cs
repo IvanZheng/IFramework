@@ -1,8 +1,12 @@
 ﻿using IFramework.Repositories;
+using IFramework.Specifications;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace IFramework.EntityFramework.Repositories
 {
@@ -19,6 +23,11 @@ namespace IFramework.EntityFramework.Repositories
             where TEntity : class
         {
             (repository as DomainRepository).GetRepository<TEntity>().AddWithSaveChanges(entity);
+        }
+
+        public static Task<List<TEntity>> ToListAsync<TEntity>(this IQueryable<TEntity> query) where TEntity : class
+        {
+            return QueryableExtensions.ToListAsync(query);
         }
     }
 }

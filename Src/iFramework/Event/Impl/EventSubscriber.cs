@@ -1,11 +1,11 @@
-﻿using IFramework.Message;
-using IFramework.MessageQueue;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Transactions;
+using IFramework.Message;
+using IFramework.MessageQueue;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
-using System.Transactions;
 using IFramework.SysExceptions;
 using IFramework.Command;
 using IFramework.IoC;
@@ -84,7 +84,8 @@ namespace IFramework.Event.Impl
                                                                                new TransactionOptions
                                                                                {
                                                                                    IsolationLevel = IsolationLevel.ReadUncommitted
-                                                                               }))
+                                                                               },
+                                                                               TransactionScopeAsyncFlowOption.Enabled))
                             {
                                 ((dynamic)messageHandler).Handle((dynamic)message);
 

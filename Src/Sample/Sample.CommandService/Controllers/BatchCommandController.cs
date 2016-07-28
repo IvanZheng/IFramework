@@ -1,16 +1,16 @@
-﻿using IFramework.Command;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
-using IFramework.Infrastructure;
 using System.Threading.Tasks;
 using System.Threading;
-using IFramework.Message;
 using Sample.Command;
 using Sample.Persistence;
 using Sample.ApplicationEvent;
+using IFramework.Infrastructure;
+using IFramework.Message;
+using IFramework.Command;
 using IFramework.IoC;
 
 namespace Sample.CommandService.Controllers
@@ -75,8 +75,8 @@ namespace Sample.CommandService.Controllers
                 return
                     new ApiResult
                     {
-                        errorCode = DTO.ErrorCode.CommandInvalid,
-                        message = string.Join(",", ModelState.Values
+                        ErrorCode = DTO.ErrorCode.CommandInvalid,
+                        Message = string.Join(",", ModelState.Values
                                                        .SelectMany(v => v.Errors
                                                                          .Select(e => e.ErrorMessage)))
                     };
