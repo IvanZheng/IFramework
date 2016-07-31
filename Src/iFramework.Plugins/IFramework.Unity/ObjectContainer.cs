@@ -198,7 +198,7 @@ namespace IFramework.Unity
                 if (injection is ConstructInjection)
                 {
                     var constructInjection = injection as ConstructInjection;
-                    injectionMembers.Add(new InjectionConstructor(constructInjection.Parameters.Select(p => p.ParameterValue)));
+                    injectionMembers.Add(new InjectionConstructor(constructInjection.Parameters.Select(p => p.ParameterValue).ToArray()));
                 }
                 else if (injection is ParameterInjection)
                 {

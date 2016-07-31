@@ -58,7 +58,7 @@ namespace IFramework.Autofac
             builder.RegisterInstance(instance)
                 .As(t)
                 .InstanceLifetime(lifetime);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -68,7 +68,7 @@ namespace IFramework.Autofac
             builder.RegisterInstance(instance)
                 .Named(name, t)
                 .InstanceLifetime(lifetime);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -78,7 +78,7 @@ namespace IFramework.Autofac
             var builder = new ContainerBuilder();
             builder.RegisterInstance(instance)
                 .InstanceLifetime(lifetime);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -89,7 +89,7 @@ namespace IFramework.Autofac
             builder.RegisterInstance(instance)
                 .Named<TInterface>(name)
                 .InstanceLifetime(lifetime);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -110,7 +110,7 @@ namespace IFramework.Autofac
                     .WithParameters(injectionMembers);
 
             }
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -122,7 +122,7 @@ namespace IFramework.Autofac
                 .As(from)
                 .WithParameters(injectionMembers)
                 .InstanceLifetime(lifetime);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -134,7 +134,7 @@ namespace IFramework.Autofac
                 .Named(name, from)
                 .InstanceLifetime(lifetime)
                 .WithParameters(injectionMembers);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -146,7 +146,7 @@ namespace IFramework.Autofac
                 .As(typeof(TFrom))
                 .InstanceLifetime(lifetime)
                 .WithParameters(injectionMembers);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
         public IoC.IContainer RegisterType<TFrom, TTo>(params IoC.Injection[] injections) where TTo : TFrom
@@ -156,7 +156,7 @@ namespace IFramework.Autofac
             builder.RegisterType(typeof(TTo))
                 .As(typeof(TFrom))
                 .WithParameters(injectionMembers);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -167,7 +167,7 @@ namespace IFramework.Autofac
             builder.RegisterType(typeof(TTo))
                 .Named(name, typeof(TFrom))
                 .WithParameters(injectionMembers);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -179,7 +179,7 @@ namespace IFramework.Autofac
                    .Named(name, typeof(TFrom))
                    .InstanceLifetime(lifetime)
                    .WithParameters(injectionMembers);
-            builder.Update(_container as IContainer);
+            builder.Update(_container.ComponentRegistry);
             return this;
         }
 
@@ -240,6 +240,6 @@ namespace IFramework.Autofac
             });
             return injectionMembers;
         }
-       
+
     }
 }

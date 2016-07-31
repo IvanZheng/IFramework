@@ -3,12 +3,26 @@ using System;
 using IFramework.Autofac;
 using Autofac;
 using Autofac.Configuration;
+using System.Linq;
+using System.Reflection;
 
 namespace IFramework.Config
 {
     public static class IFrameworkConfigurationExtension
     {
-        /// <summary>Use Log4Net as the logger for the enode framework.
+        public static Configuration RegisterAssemblyTypes(this Configuration configuration, params string[] assemblyNames)
+        {
+            if (assemblyNames != null && assemblyNames.Length > 0)
+            {
+                var builder = new ContainerBuilder();
+                var assemblies = assemblyNames.Select(name => Assembly.Load(name));
+                builder.RegisterAssemblyTypes(assemblies.ToArray());
+                builder.Update(IoC.IoCFactory.Instance.CurrentContainer.GetAutofacContainer().ComponentRegistry);
+            }
+            return configuration;
+        }
+
+        /// <summary>
         /// </summary>
         /// <returns></returns>
         public static Configuration UseAutofacContainer(this Configuration configuration, IContainer container = null)
@@ -17,9 +31,9 @@ namespace IFramework.Config
             {
                 return configuration;
             }
+            var builder = new ContainerBuilder();
             if (container == null)
             {
-                var builder = new ContainerBuilder();
                 try
                 {
                     builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
@@ -30,7 +44,6 @@ namespace IFramework.Config
                 }
                 container = builder.Build();
             }
-              
             IoC.IoCFactory.SetContainer(new ObjectContainer(container));
             return configuration;
         }
