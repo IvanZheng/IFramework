@@ -1,4 +1,5 @@
-﻿using Autofac.Builder;
+﻿using Autofac;
+using Autofac.Builder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +15,16 @@ namespace IFramework.Autofac
         {
             switch(lifetime)
             {
-
+                case IoC.Lifetime.PerRequest:
+                    builder.InstancePerRequest();
+                    break;
+                case IoC.Lifetime.Singleton:
+                    builder.SingleInstance();
+                    break;
+                case IoC.Lifetime.Hierarchical:
+                    builder.InstancePerLifetimeScope();
+                    break;
             }
-            //InstancePerRequest()
-            //    .InstancePerDependency()
-            //    .InstancePerLifetimeScope()
-            //    .InstancePerMatchingLifetimeScope()
-            //    .InstancePerOwned()
-            //    .SingleInstance
             return builder;
         }
     }

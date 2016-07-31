@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\FrameworkConfigurationExtension.cs" />
     <Compile Include="KafkaClient.cs" />
     <Compile Include="MessageFormat\KafkaPayload.cs" />
     <Compile Include="MessageFormat\MessageContext.cs" />

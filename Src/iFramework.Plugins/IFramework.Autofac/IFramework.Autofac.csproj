@@ -30,12 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=3.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Autofac.3.3.1\lib\net40\Autofac.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Autofac.Configuration, Version=3.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AutofacOfConfiguration.3.3.0\lib\net40\Autofac.Configuration.dll</HintPath>
+    <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -49,6 +45,37 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Autofac.Configuration.Core\ConfigurationModule.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ComponentElement.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ComponentElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ConfigurationElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\DictionaryElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\FileElement.cs" />
+    <Compile Include="Autofac.Configuration.Elements\FileElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ListElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ListItemElement.cs" />
+    <Compile Include="Autofac.Configuration.Elements\MetadataElement.cs" />
+    <Compile Include="Autofac.Configuration.Elements\MetadataElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ModuleElement.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ModuleElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\NamedConfigurationElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ParameterElement.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ParameterElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\PropertyElement.cs" />
+    <Compile Include="Autofac.Configuration.Elements\PropertyElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ServiceElement.cs" />
+    <Compile Include="Autofac.Configuration.Elements\ServiceElementCollection.cs" />
+    <Compile Include="Autofac.Configuration.Util\Enforce.cs" />
+    <Compile Include="Autofac.Configuration.Util\ReflectionExtensions.cs" />
+    <Compile Include="Autofac.Configuration.Util\TypeManipulation.cs" />
+    <Compile Include="Autofac.Configuration\AppSettingsModule.cs" />
+    <Compile Include="Autofac.Configuration\AssemblyNameConverter.cs" />
+    <Compile Include="Autofac.Configuration\ConfigurationRegistrar.cs" />
+    <Compile Include="Autofac.Configuration\ConfigurationSettingsReader.cs" />
+    <Compile Include="Autofac.Configuration\ConfigurationSettingsReaderResources.cs" />
+    <Compile Include="Autofac.Configuration\IConfigurationRegistrar.cs" />
+    <Compile Include="Autofac.Configuration\SectionHandler.cs" />
+    <Compile Include="Autofac.Configuration\XmlFileReader.cs" />
     <Compile Include="AutofacContainerExtension.cs" />
     <Compile Include="Config\Configuration.cs" />
     <Compile Include="ObjectContainer.cs" />
@@ -63,6 +90,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Autofac.Configuration\ConfigurationSettingsReaderResources.resources" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
