@@ -80,10 +80,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\IFramework.Unity\IFramework.Unity.csproj">
-      <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
-      <Name>IFramework.Unity</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\iFramework\IFramework4.5.1.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
       <Name>IFramework4.5.1</Name>
@@ -111,6 +107,10 @@
     <ProjectReference Include="..\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.6.csproj">
       <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
       <Name>IFramework.MessageStoring.EntityFramework4.6</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\IFramework.Unity\IFramework.Unity.csproj">
+      <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
+      <Name>IFramework.Unity</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

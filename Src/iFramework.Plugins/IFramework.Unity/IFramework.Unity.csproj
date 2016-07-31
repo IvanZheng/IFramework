@@ -99,7 +99,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\iFramework\IFramework4.5.1.csproj">
+    <ProjectReference Include="..\..\iFramework\IFramework4.5.1.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
       <Name>IFramework4.5.1</Name>
     </ProjectReference>

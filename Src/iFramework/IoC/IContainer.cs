@@ -86,8 +86,8 @@ namespace IFramework.IoC
         //     the user creates the instance ahead of type and adds that instance to the container.
         IContainer RegisterInstance(Type t, string name, object instance, Lifetime lifetime = Lifetime.Singleton);
         IContainer RegisterInstance(Type t, object instance, Lifetime lifetime = Lifetime.Singleton);
-        IContainer RegisterInstance<TInterface>(TInterface instance, Lifetime lifetime = Lifetime.Singleton);
-        IContainer RegisterInstance<TInterface>(string name, TInterface instance, Lifetime lifetime = Lifetime.Singleton);
+        IContainer RegisterInstance<TInterface>(TInterface instance, Lifetime lifetime = Lifetime.Singleton) where TInterface : class;
+        IContainer RegisterInstance<TInterface>(string name, TInterface instance, Lifetime lifetime = Lifetime.Singleton) where TInterface : class;
 
         //
         // Summary:

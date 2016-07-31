@@ -13,28 +13,28 @@ namespace IFramework.IoC
 
     public class ConstructInjection : Injection
     {
-        public object[] Objects { get; set; }
+        public ParameterInjection[] Parameters { get; set; }
 
-        public ConstructInjection(params object[] objects)
+        public ConstructInjection(params ParameterInjection[] parameters)
         {
-            Objects = objects;
+            Parameters = parameters;
         }
     }
 
-    public class PropertyInjection : Injection
+    public class ParameterInjection : Injection
     {
-        public string PropertyName { get; private set; }
-        public object PropertyValue { get; private set; }
+        public string ParameterName { get; private set; }
+        public object ParameterValue { get; private set; }
 
-        public PropertyInjection(string propertyName)
+        public ParameterInjection(string propertyName)
         {
-            PropertyName = propertyName;
+            ParameterName = propertyName;
         }
 
-        public PropertyInjection(string propertyName, object propertyValue)
+        public ParameterInjection(string propertyName, object propertyValue)
             : this(propertyName)
         {
-            PropertyValue = propertyValue;
+            ParameterValue = propertyValue;
         }
     }
 }

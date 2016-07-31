@@ -64,12 +64,14 @@ namespace IFramework.Unity
         }
 
         public IContainer RegisterInstance<TInterface>(TInterface instance, Lifetime life = Lifetime.Singleton)
+             where TInterface : class
         {
             _unityContainer.RegisterInstance(instance, GetLifeTimeManager(life));
             return this;
         }
 
         public IContainer RegisterInstance<TInterface>(string name, TInterface instance, Lifetime life = Lifetime.Singleton)
+             where TInterface : class
         {
             _unityContainer.RegisterInstance<TInterface>(name, instance, GetLifeTimeManager(life));
             return this;
@@ -196,12 +198,12 @@ namespace IFramework.Unity
                 if (injection is ConstructInjection)
                 {
                     var constructInjection = injection as ConstructInjection;
-                    injectionMembers.Add(new InjectionConstructor(constructInjection.Objects));
+                    injectionMembers.Add(new InjectionConstructor(constructInjection.Parameters.Select(p => p.ParameterValue)));
                 }
-                else if (injection is PropertyInjection)
+                else if (injection is ParameterInjection)
                 {
-                    var propertyInjection = injection as PropertyInjection;
-                    injectionMembers.Add(new InjectionProperty(propertyInjection.PropertyName, propertyInjection.PropertyValue));
+                    var propertyInjection = injection as ParameterInjection;
+                    injectionMembers.Add(new InjectionProperty(propertyInjection.ParameterName, propertyInjection.ParameterValue));
                 }
             });
             return injectionMembers.ToArray();

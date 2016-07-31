@@ -120,7 +120,7 @@
       <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
       <Name>IFramework.MessageStoring.EntityFramework4.6</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\IFramework.Unity\IFramework.Unity.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Unity\IFramework.Unity.csproj">
       <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
       <Name>IFramework.Unity</Name>
     </ProjectReference>
