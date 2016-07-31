@@ -25,7 +25,7 @@ namespace IFramework.Config
         /// <summary>
         /// </summary>
         /// <returns></returns>
-        public static Configuration UseAutofacContainer(this Configuration configuration, IContainer container = null)
+        public static Configuration UseAutofacContainer(this Configuration configuration, IContainer container = null, string configurationSector = "autofac")
         {
             if (IoC.IoCFactory.IsInit())
             {
@@ -36,7 +36,7 @@ namespace IFramework.Config
             {
                 try
                 {
-                    builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
+                    builder.RegisterModule(new ConfigurationSettingsReader(configurationSector));
                 }
                 catch (Exception ex)
                 {
