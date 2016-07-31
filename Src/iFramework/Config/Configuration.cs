@@ -118,41 +118,32 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration CommandHandlerProviderBuild(ICommandHandlerProvider provider, params string[] assemblies)
+        public Configuration CommandHandlerProviderBuild(params string[] assemblies)
         {
-            if (provider == null)
-            {
-                provider = IoCFactory.Resolve<ICommandHandlerProvider>(new Parameter("assemblies", assemblies));
-            }
-            else
-            {
-                IoCFactory.Instance.CurrentContainer
-                         .RegisterInstance(typeof(ICommandHandlerProvider)
-                                           , provider);
-            }
+             IoCFactory.Resolve<ICommandHandlerProvider>(new Parameter("assemblies", assemblies));
             return this;
         }
 
 
-        public Configuration EventSubscriberProviderBuild(IEventSubscriberProvider provider, params string[] assemblies)
-        {
-            if (provider == null)
-            {
-                provider = IoCFactory.Resolve<IEventSubscriberProvider>(new Parameter("assemblies", assemblies));
-            }
-            else
-            {
-                IoCFactory.Instance.CurrentContainer
-                         .RegisterInstance(typeof(IEventSubscriberProvider)
-                                           , provider);
-            }
-            return this;
-        }
+        //public Configuration EventSubscriberProviderBuild(IEventSubscriberProvider provider, params string[] assemblies)
+        //{
+        //    if (provider == null)
+        //    {
+        //        provider = IoCFactory.Resolve<IEventSubscriberProvider>(new Parameter("assemblies", assemblies));
+        //    }
+        //    else
+        //    {
+        //        IoCFactory.Instance.CurrentContainer
+        //                 .RegisterInstance(typeof(IEventSubscriberProvider)
+        //                                   , provider);
+        //    }
+        //    return this;
+        //}
 
-        public Configuration EventBusBuild(params string[] subscriberAssemblies)
-        {
-            EventSubscriberProviderBuild(null, subscriberAssemblies);
-            return this;
-        }
+        //public Configuration EventBusBuild(params string[] subscriberAssemblies)
+        //{
+        //    EventSubscriberProviderBuild(null, subscriberAssemblies);
+        //    return this;
+        //}
     }
 }

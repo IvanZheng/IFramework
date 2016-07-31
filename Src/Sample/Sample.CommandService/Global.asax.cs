@@ -73,7 +73,9 @@ namespace Sample.CommandService
                 #endregion
 
                 #region Command Consuemrs init
-                _CommandConsumer1 = new CommandConsumer(_MessagePublisher, "commandqueueC");
+                _CommandConsumer1 = IoCFactory.Resolve<CommandConsumer>(new Parameter("commandQueueName", "commandqueueC"),
+                                                                        new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")));
+
                 //_CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
                 //_CommandConsumer3 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue3");
 

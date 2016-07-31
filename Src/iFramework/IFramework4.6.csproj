@@ -60,6 +60,7 @@
     <Compile Include="Bus\IBus.cs" />
     <Compile Include="Command\CommandBusExtension.cs" />
     <Compile Include="IoC\IContainer.cs" />
+    <Compile Include="IoC\Injection.cs" />
     <Compile Include="IoC\Lifetime.cs" />
     <Compile Include="IoC\Parameter.cs" />
     <Compile Include="MessageQueue\Configuration.cs" />

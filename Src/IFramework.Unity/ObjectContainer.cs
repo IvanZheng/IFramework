@@ -51,71 +51,83 @@ namespace IFramework.Unity
             _unityContainer.Dispose();
         }
 
-        public IContainer RegisterInstance(Type t, object instance)
+        public IContainer RegisterInstance(Type t, object instance, Lifetime life = Lifetime.Singleton)
         {
-            _unityContainer.RegisterInstance(t, instance);
+            _unityContainer.RegisterInstance(t, instance, GetLifeTimeManager(life));
             return this;
         }
 
-        public IContainer RegisterInstance(Type t, string name, object instance)
+        public IContainer RegisterInstance(Type t, string name, object instance, Lifetime life = Lifetime.Singleton)
         {
-            _unityContainer.RegisterInstance(t, name, instance);
+            _unityContainer.RegisterInstance(t, name, instance, GetLifeTimeManager(life));
             return this;
         }
 
-        public IContainer RegisterInstance<TInterface>(TInterface instance)
+        public IContainer RegisterInstance<TInterface>(TInterface instance, Lifetime life = Lifetime.Singleton)
         {
-            _unityContainer.RegisterInstance(instance);
+            _unityContainer.RegisterInstance(instance, GetLifeTimeManager(life));
             return this;
         }
 
-        public IContainer RegisterInstance<TInterface>(string name, TInterface instance)
+        public IContainer RegisterInstance<TInterface>(string name, TInterface instance, Lifetime life = Lifetime.Singleton)
         {
-            _unityContainer.RegisterInstance<TInterface>(name, instance);
+            _unityContainer.RegisterInstance<TInterface>(name, instance, GetLifeTimeManager(life));
             return this;
         }
-     
 
-        public IContainer RegisterType(Type from, Type to, string name = null)
+
+        public IContainer RegisterType(Type from, Type to, string name = null, params Injection[] injections)
         {
+            var injectionMembers = GetInjectionParameters(injections);
             if (string.IsNullOrEmpty(name))
             {
-                _unityContainer.RegisterType(from, to);
+                _unityContainer.RegisterType(from, to, injectionMembers);
             }
             else
             {
-                _unityContainer.RegisterType(from, to, name);
+                _unityContainer.RegisterType(from, to, name, injectionMembers);
             }
             return this;
         }
 
-        public IContainer RegisterType(Type from, Type to, Lifetime lifetime)
+        public IContainer RegisterType(Type from, Type to, Lifetime lifetime, params Injection[] injections)
         {
-            _unityContainer.RegisterType(from, to, GetLifeTimeManager(lifetime));
+            var injectionMembers = GetInjectionParameters(injections);
+            _unityContainer.RegisterType(from, to, GetLifeTimeManager(lifetime), injectionMembers);
             return this;
         }
 
-        public IContainer RegisterType(Type from, Type to, string name, Lifetime lifetime)
+        public IContainer RegisterType(Type from, Type to, string name, Lifetime lifetime, params Injection[] injections)
         {
-            _unityContainer.RegisterType(from, to, name, GetLifeTimeManager(lifetime));
+            var injectionMembers = GetInjectionParameters(injections);
+            _unityContainer.RegisterType(from, to, name, GetLifeTimeManager(lifetime), injectionMembers);
             return this;
         }
 
-        public IContainer RegisterType<TFrom, TTo>(Lifetime lifetime) where TTo : TFrom
+        public IContainer RegisterType<TFrom, TTo>(Lifetime lifetime, params Injection[] injections) where TTo : TFrom
         {
-            _unityContainer.RegisterType<TFrom, TTo>(GetLifeTimeManager(lifetime));
+            var injectionMembers = GetInjectionParameters(injections);
+            _unityContainer.RegisterType<TFrom, TTo>(GetLifeTimeManager(lifetime), injectionMembers);
+            return this;
+        }
+        public IContainer RegisterType<TFrom, TTo>(params Injection[] injections) where TTo : TFrom
+        {
+            var injectionMembers = GetInjectionParameters(injections);
+            _unityContainer.RegisterType<TFrom, TTo>(injectionMembers);
             return this;
         }
 
-        public IContainer RegisterType<TFrom, TTo>(string name = null) where TTo : TFrom
+        public IContainer RegisterType<TFrom, TTo>(string name, params Injection[] injections) where TTo : TFrom
         {
-            _unityContainer.RegisterType<TFrom, TTo>(name);
+            var injectionMembers = GetInjectionParameters(injections);
+            _unityContainer.RegisterType<TFrom, TTo>(name, injectionMembers);
             return this;
         }
 
-        public IContainer RegisterType<TFrom, TTo>(string name, Lifetime lifetime) where TTo : TFrom
+        public IContainer RegisterType<TFrom, TTo>(string name, Lifetime lifetime, params Injection[] injections) where TTo : TFrom
         {
-            _unityContainer.RegisterType<TFrom, TTo>(name, GetLifeTimeManager(lifetime));
+            var injectionMembers = GetInjectionParameters(injections);
+            _unityContainer.RegisterType<TFrom, TTo>(name, GetLifeTimeManager(lifetime), injectionMembers);
             return this;
         }
 
@@ -176,11 +188,32 @@ namespace IFramework.Unity
             return lifetimeManager;
         }
 
-        ResolverOverride[] GetResolverOverrides(Parameter[]  parameters)
+        InjectionMember[] GetInjectionParameters(Injection[] injections)
+        {
+            var injectionMembers = new List<InjectionMember>();
+            injections.ForEach(injection =>
+            {
+                if (injection is ConstructInjection)
+                {
+                    var constructInjection = injection as ConstructInjection;
+                    injectionMembers.Add(new InjectionConstructor(constructInjection.Objects));
+                }
+                else if (injection is PropertyInjection)
+                {
+                    var propertyInjection = injection as PropertyInjection;
+                    injectionMembers.Add(new InjectionProperty(propertyInjection.PropertyName, propertyInjection.PropertyValue));
+                }
+            });
+            return injectionMembers.ToArray();
+        }
+
+
+        ResolverOverride[] GetResolverOverrides(Parameter[] parameters)
         {
             List<ResolverOverride> resolverOverrides = new List<ResolverOverride>();
-            parameters.ForEach(parameter => {
-            resolverOverrides.Add(new ParameterOverride(parameter.Name, parameter.Value));
+            parameters.ForEach(parameter =>
+            {
+                resolverOverrides.Add(new ParameterOverride(parameter.Name, parameter.Value));
             });
             return resolverOverrides.ToArray();
         }

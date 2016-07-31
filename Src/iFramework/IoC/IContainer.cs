@@ -49,12 +49,13 @@ namespace IFramework.IoC
         // Returns:
         //     The Container object that this method was called
         //     on (this in C#, Me in Visual Basic).
-        IContainer RegisterType(Type from, Type to, string name, Lifetime lifetime);
-        IContainer RegisterType(Type from, Type to, Lifetime lifetime);
-        IContainer RegisterType(Type from, Type to, string name = null);
-        IContainer RegisterType<TFrom, TTo>(string name, Lifetime lifetime) where TTo : TFrom;
-        IContainer RegisterType<TFrom, TTo>(string name = null) where TTo : TFrom;
-        IContainer RegisterType<TFrom, TTo>(Lifetime lifetime) where TTo : TFrom;
+        IContainer RegisterType(Type from, Type to, string name, Lifetime lifetime, params Injection[] injections);
+        IContainer RegisterType(Type from, Type to, Lifetime lifetime, params Injection[] injections);
+        IContainer RegisterType(Type from, Type to, string name = null, params Injection[] injections);
+        IContainer RegisterType<TFrom, TTo>(string name, Lifetime lifetime, params Injection[] injections) where TTo : TFrom;
+        IContainer RegisterType<TFrom, TTo>(params Injection[] injections) where TTo : TFrom;
+        IContainer RegisterType<TFrom, TTo>(string name, params Injection[] injections) where TTo : TFrom;
+        IContainer RegisterType<TFrom, TTo>(Lifetime lifetime, params Injection[] injections) where TTo : TFrom;
 
         //
         // Summary:
@@ -83,10 +84,10 @@ namespace IFramework.IoC
         //     Instance registration is much like setting a type as a singleton, except that
         //     instead of the container creating the instance the first time it is requested,
         //     the user creates the instance ahead of type and adds that instance to the container.
-        IContainer RegisterInstance(Type t, string name, object instance);
-        IContainer RegisterInstance(Type t, object instance);
-        IContainer RegisterInstance<TInterface>(TInterface instance);
-        IContainer RegisterInstance<TInterface>(string name, TInterface instance);
+        IContainer RegisterInstance(Type t, string name, object instance, Lifetime lifetime = Lifetime.Singleton);
+        IContainer RegisterInstance(Type t, object instance, Lifetime lifetime = Lifetime.Singleton);
+        IContainer RegisterInstance<TInterface>(TInterface instance, Lifetime lifetime = Lifetime.Singleton);
+        IContainer RegisterInstance<TInterface>(string name, TInterface instance, Lifetime lifetime = Lifetime.Singleton);
 
         //
         // Summary:
