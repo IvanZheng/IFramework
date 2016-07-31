@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Sample.CommandHandler</RootNamespace>
     <AssemblyName>Sample.CommandHandler</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -72,9 +72,9 @@
       <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
       <Name>IFramework.EntityFramework4.6</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework4.6.csproj">
+    <ProjectReference Include="..\..\iFramework\IFramework4.5.1.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework4.6</Name>
+      <Name>IFramework4.5.1</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj">
       <Project>{7c17f97f-3515-4a1b-aead-01689d087de0}</Project>

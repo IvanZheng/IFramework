@@ -100,6 +100,7 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public void Publish(IMessageContext messageContext, string topic)
         {
+            topic = Configuration.Instance.FormatTopicName(topic);
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
             var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;

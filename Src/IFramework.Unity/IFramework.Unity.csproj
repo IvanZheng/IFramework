@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>IFramework.Unity</RootNamespace>
     <AssemblyName>IFramework.Unity</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -99,9 +99,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\iFramework\IFramework4.6.csproj">
+    <ProjectReference Include="..\iFramework\IFramework4.5.1.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework4.6</Name>
+      <Name>IFramework4.5.1</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

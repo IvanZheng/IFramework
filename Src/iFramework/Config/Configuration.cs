@@ -118,11 +118,11 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration CommandHandlerProviderBuild(params string[] assemblies)
-        {
-             IoCFactory.Resolve<ICommandHandlerProvider>(new Parameter("assemblies", assemblies));
-            return this;
-        }
+        //public Configuration CommandHandlerProviderBuild(params string[] assemblies)
+        //{
+        //     IoCFactory.Resolve<ICommandHandlerProvider>(new Parameter("assemblies", assemblies));
+        //    return this;
+        //}
 
 
         //public Configuration EventSubscriberProviderBuild(IEventSubscriberProvider provider, params string[] assemblies)

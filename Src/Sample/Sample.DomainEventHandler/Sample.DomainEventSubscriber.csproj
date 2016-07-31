@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Sample.DomainEventSubscriber</RootNamespace>
     <AssemblyName>Sample.DomainEventSubscriber</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -64,9 +64,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework\IFramework4.6.csproj">
+    <ProjectReference Include="..\..\iFramework\IFramework4.5.1.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework4.6</Name>
+      <Name>IFramework4.5.1</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj">
       <Project>{af5512aa-caf1-4066-90bd-efb9b951fe18}</Project>
