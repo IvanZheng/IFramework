@@ -36,10 +36,10 @@ namespace IFramework.Command.Impl
 
         public CommandConsumer(IMessagePublisher messagePublisher,
                                string commandQueueName,
-                               IHandlerProvider handlerProvider = null)
+                               IHandlerProvider handlerProvider)
         {
             _commandQueueName = commandQueueName;
-            _handlerProvider = handlerProvider ?? IoCFactory.Resolve<ICommandHandlerProvider>();
+            _handlerProvider = handlerProvider;
             _messagePublisher = messagePublisher;
             _cancellationTokenSource = new CancellationTokenSource();
             // _commandContexts = new BlockingCollection<IMessageContext>();
