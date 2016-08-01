@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Web.Mvc;
 using Microsoft.Practices.Unity.Mvc;
+using IFramework.Unity;
 
 [assembly: WebActivatorEx.PreApplicationStartMethod(typeof(Sample.CommandService.App_Start.UnityWebActivator), "Start")]
 [assembly: WebActivatorEx.ApplicationShutdownMethod(typeof(Sample.CommandService.App_Start.UnityWebActivator), "Shutdown")]
@@ -16,9 +17,9 @@ namespace Sample.CommandService.App_Start
             var container = UnityConfig.GetConfiguredContainer();
 
             FilterProviders.Providers.Remove(FilterProviders.Providers.OfType<FilterAttributeFilterProvider>().First());
-            FilterProviders.Providers.Add(new UnityFilterAttributeFilterProvider(container));
+            FilterProviders.Providers.Add(new UnityFilterAttributeFilterProvider(container.GetUnityContainer()));
 
-            DependencyResolver.SetResolver(new UnityDependencyResolver(container));
+            DependencyResolver.SetResolver(new IFramework.Unity.Mvc.UnityDependencyResolver(container));
 
             // TODO: Uncomment if you want to use PerRequestLifetimeManager
             Microsoft.Web.Infrastructure.DynamicModuleHelper.DynamicModuleUtility.RegisterModule(typeof(UnityPerRequestHttpModule));

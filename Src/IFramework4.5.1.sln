@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageStoring.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.AspNet", "iFramework.Plugins\IFramework.WebApi\IFramework.AspNet.csproj", "{BAFCA280-6B58-44E8-B0E7-ED6F51C0EAEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EntityFramework4.6", "iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.6.csproj", "{C00B8AD6-47C2-4642-877E-2C759D05DCFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EntityFramework4.5.1", "iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.5.1.csproj", "{C00B8AD6-47C2-4642-877E-2C759D05DCFE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.ServiceBus4.6", "iFramework.Plugins\IFramework.MessageQueue.ServiceBus\IFramework.MessageQueue.ServiceBus4.6.csproj", "{081BB2EB-CC5D-4512-B61E-917CD7AA795D}"
 EndProject
@@ -76,6 +76,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Autofac", "iFramework.Plugins\IFramework.Autofac\IFramework.Autofac.csproj", "{85AF5F30-37AC-4B1E-BC74-C84EE031ECC4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Unity", "iFramework.Plugins\IFramework.Unity\IFramework.Unity.csproj", "{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Unity.Mvc", "iFramework.Plugins\IFramework.Unity.Mvc\IFramework.Unity.Mvc.csproj", "{4BA12353-086C-41CE-A13E-CD217D40F66E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.IoC.WebApi", "iFramework.Plugins\IFramework.Unity.WebApi\IFramework.IoC.WebApi.csproj", "{A884C005-0DB4-4325-99DA-C828066F1F09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -199,6 +203,14 @@ Global
 		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BA12353-086C-41CE-A13E-CD217D40F66E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BA12353-086C-41CE-A13E-CD217D40F66E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BA12353-086C-41CE-A13E-CD217D40F66E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BA12353-086C-41CE-A13E-CD217D40F66E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A884C005-0DB4-4325-99DA-C828066F1F09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A884C005-0DB4-4325-99DA-C828066F1F09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A884C005-0DB4-4325-99DA-C828066F1F09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A884C005-0DB4-4325-99DA-C828066F1F09}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -238,6 +250,8 @@ Global
 		{C1B3A80A-26A9-4775-9ADB-2414845CCE48} = {9C513800-FD27-4334-85AF-97352A71A829}
 		{85AF5F30-37AC-4B1E-BC74-C84EE031ECC4} = {0AECD7C5-8232-41F2-ADFA-78CA30C56690}
 		{57F61E21-4D31-4CE0-9DFB-7BE6A113654A} = {0AECD7C5-8232-41F2-ADFA-78CA30C56690}
+		{4BA12353-086C-41CE-A13E-CD217D40F66E} = {0AECD7C5-8232-41F2-ADFA-78CA30C56690}
+		{A884C005-0DB4-4325-99DA-C828066F1F09} = {0AECD7C5-8232-41F2-ADFA-78CA30C56690}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35

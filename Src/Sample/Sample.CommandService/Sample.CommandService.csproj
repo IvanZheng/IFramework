@@ -223,7 +223,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\UnityMvcActivator.cs" />
-    <Compile Include="App_Start\UnityWebApiActivator.cs" />
+    <Compile Include="App_Start\IoCWebApiActivator.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\CommandController.cs" />
     <Compile Include="Controllers\BatchCommandController.cs" />
@@ -294,9 +294,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.6.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.5.1.csproj">
       <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
-      <Name>IFramework.EntityFramework4.6</Name>
+      <Name>IFramework.EntityFramework4.5.1</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net4.5.1.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
@@ -317,6 +317,14 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.SingleSignOn\IFramework.SingleSignOn.csproj">
       <Project>{6554cd55-20a4-4200-9c70-e14d61f2b30a}</Project>
       <Name>IFramework.SingleSignOn</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Unity.Mvc\IFramework.Unity.Mvc.csproj">
+      <Project>{4ba12353-086c-41ce-a13e-cd217d40f66e}</Project>
+      <Name>IFramework.Unity.Mvc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Unity.WebApi\IFramework.IoC.WebApi.csproj">
+      <Project>{a884c005-0db4-4325-99da-c828066f1f09}</Project>
+      <Name>IFramework.IoC.WebApi</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Unity\IFramework.Unity.csproj">
       <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>

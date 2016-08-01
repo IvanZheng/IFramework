@@ -1,4 +1,5 @@
-﻿using IFramework.Infrastructure;
+﻿using IFramework.Config;
+using IFramework.Infrastructure;
 using IFramework.IoC;
 using Microsoft.Practices.Unity;
 using System;
@@ -167,22 +168,7 @@ namespace IFramework.Unity
         LifetimeManager GetLifeTimeManager(Lifetime lifetime)
         {
             LifetimeManager lifetimeManager = null;
-            switch (lifetime)
-            {
-                case Lifetime.Singleton:
-                    lifetimeManager = new ContainerControlledLifetimeManager();
-                    break;
-                case Lifetime.Hierarchical:
-                    lifetimeManager = new HierarchicalLifetimeManager();
-                    break;
-                case Lifetime.PerRequest:
-                    lifetimeManager = new PerRequestLifetimeManager();
-                    break;
-                case Lifetime.Transient:
-                    lifetimeManager = new TransientLifetimeManager();
-                    break;
-            }
-
+            lifetimeManager = Resolve<LifetimeManager>(Configuration.Instance.GetLifetimeManagerKey(lifetime));
             if (lifetimeManager == null)
             {
                 throw new Exception($"{lifetime.ToString()} is not supported.");
