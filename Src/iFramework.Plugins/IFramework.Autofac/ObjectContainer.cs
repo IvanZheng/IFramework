@@ -217,6 +217,7 @@ namespace IFramework.Autofac
         IEnumerable<Parameter> GetResolvedParameters(IoC.Parameter[] resolvedParameters)
         {
             var parameters = new List<Parameter>();
+            parameters.Add(new NamedParameter("container", this));
             parameters.AddRange(resolvedParameters.Select(p => new NamedParameter(p.Name, p.Value)));
             return parameters;
         }

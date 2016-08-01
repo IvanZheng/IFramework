@@ -1,6 +1,7 @@
 ﻿using IFramework.Command;
 using IFramework.Event;
 using IFramework.Infrastructure;
+using IFramework.IoC;
 using IFramework.Message;
 using IFramework.Repositories;
 using IFramework.SysExceptions;
@@ -24,15 +25,18 @@ namespace Sample.CommandHandler.Community
         IMessageContext _CommandContext;
         CommunityRepository _DomainRepository;
         IUnitOfWork _UnitOfWork;
+        IContainer _container;
         public CommunityCommandHandler(IUnitOfWork unitOfWork, 
                                        CommunityRepository domainRepository,
                                        IEventBus eventBus,
-                                       IMessageContext commandContext)
+                                       IMessageContext commandContext,
+                                       IContainer container)
         {
             _UnitOfWork = unitOfWork;
             _DomainRepository = domainRepository;
             _CommandContext = commandContext;
             _EventBus = eventBus;
+            _container = container;
         }
 
         /// <summary>

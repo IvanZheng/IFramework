@@ -213,6 +213,7 @@ namespace IFramework.Unity
         ResolverOverride[] GetResolverOverrides(Parameter[] parameters)
         {
             List<ResolverOverride> resolverOverrides = new List<ResolverOverride>();
+            resolverOverrides.Add(new ParameterOverride("container", this));
             parameters.ForEach(parameter =>
             {
                 resolverOverrides.Add(new ParameterOverride(parameter.Name, parameter.Value));

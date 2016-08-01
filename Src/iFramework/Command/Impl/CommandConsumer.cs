@@ -174,7 +174,7 @@ namespace IFramework.Command.Impl
                     }
                     else
                     {
-                        var messageHandler = scope.Resolve(messageHandlerType, new Parameter("container", scope));
+                        var messageHandler = scope.Resolve(messageHandlerType);
                         do
                         {
                             try
