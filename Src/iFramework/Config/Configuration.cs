@@ -103,20 +103,20 @@ namespace IFramework.Config
 
 
 
-        public Configuration RegisterCommandConsumer(IMessageConsumer commandConsumer, string name)
-        {
-            if (commandConsumer == null)
-            {
-                IoCFactory.Resolve<IMessageConsumer>(name);
-            }
-            else
-            {
-                IoCFactory.Instance.CurrentContainer
-                         .RegisterInstance<IMessageConsumer>(name
-                                           , commandConsumer);
-            }
-            return this;
-        }
+        //public Configuration RegisterCommandConsumer(IMessageConsumer commandConsumer, string name)
+        //{
+        //    if (commandConsumer == null)
+        //    {
+        //        IoCFactory.Resolve<IMessageConsumer>(name);
+        //    }
+        //    else
+        //    {
+        //        IoCFactory.Instance.CurrentContainer
+        //                 .RegisterInstance<IMessageConsumer>(name
+        //                                   , commandConsumer);
+        //    }
+        //    return this;
+        //}
 
         //public Configuration CommandHandlerProviderBuild(params string[] assemblies)
         //{

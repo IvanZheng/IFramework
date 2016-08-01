@@ -1,4 +1,5 @@
 ﻿using IFramework.EntityFramework.Repositories;
+using IFramework.IoC;
 using IFramework.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -9,8 +10,8 @@ namespace Sample.Persistence.Repositories
 {
     public class CommunityRepository : DomainRepository
     {
-        public CommunityRepository(SampleModelContext context, IUnitOfWork unitOfWork)
-            : base(context, unitOfWork)
+        public CommunityRepository(SampleModelContext context, IUnitOfWork unitOfWork, IContainer container)
+            : base(context, unitOfWork, container)
         {
 
         }

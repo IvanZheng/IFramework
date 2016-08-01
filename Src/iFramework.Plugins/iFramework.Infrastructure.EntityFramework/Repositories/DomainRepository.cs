@@ -23,15 +23,17 @@ namespace IFramework.EntityFramework.Repositories
         DbContext _DbContext;
         IUnitOfWork _UnitOfWork;
         Dictionary<Type, IRepository> _Repositories;
+        IContainer _container;
         #region Construct
         /// <summary>
         /// Initializes a new instance of DomainRepository.
         /// </summary>
         /// <param name="context">The repository context being used by the repository.</param>
-        public DomainRepository(DbContext dbContext, IUnitOfWork unitOfWork)
+        public DomainRepository(DbContext dbContext, IUnitOfWork unitOfWork, IContainer container)
         {
             _DbContext = dbContext;
             _UnitOfWork = unitOfWork;
+            _container = container;
             _Repositories = new Dictionary<Type, IRepository>();
         }
         #endregion
@@ -43,7 +45,7 @@ namespace IFramework.EntityFramework.Repositories
             IRepository repository;
             if (!_Repositories.TryGetValue(typeof(IRepository<TAggregateRoot>), out repository))
             {
-                repository = IoCFactory.Resolve<IRepository<TAggregateRoot>>(new Parameter("dbContext", _DbContext),
+                repository = _container.Resolve<IRepository<TAggregateRoot>>(new Parameter("dbContext", _DbContext),
                                                                              new Parameter("unitOfWork", _UnitOfWork));
                 _Repositories.Add(typeof(IRepository<TAggregateRoot>), repository);
             }

@@ -34,7 +34,8 @@ namespace IFramework.Command.Impl
         protected MessageProcessor _messageProcessor;
         protected ISlidingDoor _slidingDoor;
 
-        public CommandConsumer(IMessagePublisher messagePublisher,
+        public CommandConsumer(IMessageQueueClient messageQueueClient, 
+                               IMessagePublisher messagePublisher,
                                string commandQueueName,
                                IHandlerProvider handlerProvider)
         {
@@ -43,7 +44,7 @@ namespace IFramework.Command.Impl
             _messagePublisher = messagePublisher;
             _cancellationTokenSource = new CancellationTokenSource();
             // _commandContexts = new BlockingCollection<IMessageContext>();
-            _messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
+            _messageQueueClient = messageQueueClient;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }

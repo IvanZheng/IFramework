@@ -11,7 +11,7 @@ namespace IFramework.Infrastructure
 {
     public class LockUtility
     {
-        protected static readonly ILogger _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(LockUtility));
+        //protected static readonly ILogger _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(LockUtility));
 
         class LockObject
         {
