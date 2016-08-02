@@ -11,7 +11,7 @@ namespace Sample.CommandService.App_Start
     /// <summary>
     /// Specifies the Unity configuration for the main container.
     /// </summary>
-    public class UnityConfig
+    public class IoCConfig
     {
         #region Unity Container
         private static Lazy<IContainer> container = new Lazy<IContainer>(() =>

@@ -14,9 +14,19 @@ namespace IFramework.Config
         {
             if (assemblyNames != null && assemblyNames.Length > 0)
             {
+
+                var assemblies = assemblyNames.Select(name => Assembly.Load(name)).ToArray();
+                configuration.RegisterAssemblyTypes(assemblies);
+            }
+            return configuration;
+        }
+
+        public static Configuration RegisterAssemblyTypes(this Configuration configuration, params Assembly[] assemblies)
+        {
+            if (assemblies != null && assemblies.Length > 0)
+            {
                 var builder = new ContainerBuilder();
-                var assemblies = assemblyNames.Select(name => Assembly.Load(name));
-                builder.RegisterAssemblyTypes(assemblies.ToArray());
+                builder.RegisterAssemblyTypes(assemblies);
                 builder.Update(IoC.IoCFactory.Instance.CurrentContainer.GetAutofacContainer().ComponentRegistry);
             }
             return configuration;
@@ -36,7 +46,11 @@ namespace IFramework.Config
             {
                 try
                 {
-                    builder.RegisterModule(new ConfigurationSettingsReader(configurationSector));
+                    var settingsReader = new ConfigurationSettingsReader(configurationSector);
+                    if (settingsReader != null)
+                    {
+                        builder.RegisterModule(settingsReader);
+                    }
                 }
                 catch (Exception ex)
                 {

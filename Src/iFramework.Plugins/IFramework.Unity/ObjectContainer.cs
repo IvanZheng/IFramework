@@ -24,6 +24,7 @@ namespace IFramework.Unity
         public ObjectContainer(IUnityContainer unityContainer)
         {
             _unityContainer = unityContainer;
+            RegisterInstance<IContainer>(this);
         }
 
         public object ContainerInstanse
@@ -47,9 +48,14 @@ namespace IFramework.Unity
             return new ObjectContainer(_unityContainer.CreateChildContainer());
         }
 
+        bool _disposed;
         public void Dispose()
         {
-            _unityContainer.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                _unityContainer.Dispose();
+            }
         }
 
         public IContainer RegisterInstance(Type t, object instance, Lifetime life = Lifetime.Singleton)
@@ -199,7 +205,7 @@ namespace IFramework.Unity
         ResolverOverride[] GetResolverOverrides(Parameter[] parameters)
         {
             List<ResolverOverride> resolverOverrides = new List<ResolverOverride>();
-            resolverOverrides.Add(new ParameterOverride("container", this));
+            //resolverOverrides.Add(new ParameterOverride("container", this));
             parameters.ForEach(parameter =>
             {
                 resolverOverrides.Add(new ParameterOverride(parameter.Name, parameter.Value));

@@ -9,7 +9,7 @@ using System;
 
 namespace IFramework.Config
 {
-    public static class IFrameworkConfigurationExtension
+    public static class FrameworkConfigurationExtension
     {
         static readonly string LifetimeManagerKeyFormat = "IoC.{0}";
         public static string GetLifetimeManagerKey(this Configuration configuration, Lifetime lifetime)
@@ -37,14 +37,14 @@ namespace IFramework.Config
                     Console.WriteLine(ex.GetBaseException().Message);
                 }
             }
-            var container = new ObjectContainer(unityContainer);
 
             #region register lifetimemanager
-            container.RegisterType<LifetimeManager, ContainerControlledLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Singleton));
-            container.RegisterType<LifetimeManager, HierarchicalLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Hierarchical));
-            container.RegisterType<LifetimeManager, TransientLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Transient));
+            unityContainer.RegisterType<LifetimeManager, ContainerControlledLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Singleton));
+            unityContainer.RegisterType<LifetimeManager, HierarchicalLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Hierarchical));
+            unityContainer.RegisterType<LifetimeManager, TransientLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Transient));
             #endregion
 
+            var container = new ObjectContainer(unityContainer);
             IoCFactory.SetContainer(container);
             return configuration;
         }

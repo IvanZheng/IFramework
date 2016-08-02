@@ -14,7 +14,7 @@ namespace Sample.CommandService.App_Start
         /// <summary>Integrates Unity when the application starts.</summary>
         public static void Start()
         {
-            var container = UnityConfig.GetConfiguredContainer();
+            var container = IoCConfig.GetConfiguredContainer();
 
             FilterProviders.Providers.Remove(FilterProviders.Providers.OfType<FilterAttributeFilterProvider>().First());
             FilterProviders.Providers.Add(new UnityFilterAttributeFilterProvider(container.GetUnityContainer()));
@@ -28,7 +28,7 @@ namespace Sample.CommandService.App_Start
         /// <summary>Disposes the Unity container when the application is shut down.</summary>
         public static void Shutdown()
         {
-            var container = UnityConfig.GetConfiguredContainer();
+            var container = IoCConfig.GetConfiguredContainer();
             container.Dispose();
         }
     }
