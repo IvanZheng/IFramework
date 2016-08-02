@@ -52,22 +52,45 @@ namespace IFramework.Message.Impl
                 Task.WaitAll(_sendMessageTask);
             }
         }
-
-        public void Send(params IMessage[] messages)
+        public Task<MessageResponse[]> SendAsync(params IMessage[] messages)
         {
-            messages.ForEach(message => _messageStateQueue.Add(new MessageState(_messageQueueClient.WrapMessage(message, key: message.Key))));
+            return SendAsync(CancellationToken.None, messages);
         }
 
-        public void Send(params MessageState[] messageStates)
+        public Task<MessageResponse[]> SendAsync(CancellationToken sendCancellationToken, params IMessage[] messages)
+        {
+            var sendTaskCompletionSource = new TaskCompletionSource<MessageResponse>();
+            if (sendCancellationToken != CancellationToken.None)
+            {
+                sendCancellationToken.Register(OnSendCancel, sendTaskCompletionSource);
+            }
+            var messageStates = messages.Select(message => new MessageState(_messageQueueClient.WrapMessage(message, key: message.Key),
+                                                                            sendTaskCompletionSource,
+                                                                            false))
+                                        .ToArray();
+            return SendAsync(messageStates);
+        }
+
+
+
+        public Task<MessageResponse[]> SendAsync(params MessageState[] messageStates)
         {
             messageStates.ForEach(messageState =>
             {
-                var messageContext = messageState.MessageContext;
-                if (!string.IsNullOrEmpty(messageContext.Topic))
-                {
-                    _messageStateQueue.Add(messageState);
-                }
+                _messageStateQueue.Add(messageState);
             });
+            return Task.WhenAll(messageStates.Select(s => s.SendTaskCompletionSource.Task)
+                                             .ToArray());
+        }
+
+
+        protected virtual void OnSendCancel(object state)
+        {
+            var sendTaskCompletionSource = state as TaskCompletionSource<MessageResponse>;
+            if (sendTaskCompletionSource != null)
+            {
+                sendTaskCompletionSource.TrySetCanceled();
+            }
         }
 
         void SendMessages(CancellationTokenSource cancellationTokenSource)
@@ -92,7 +115,7 @@ namespace IFramework.Message.Impl
                         }
                     }
                 }
-                catch(OperationCanceledException)
+                catch (OperationCanceledException)
                 {
                     return;
                 }

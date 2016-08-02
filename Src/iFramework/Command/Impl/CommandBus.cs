@@ -49,7 +49,7 @@ namespace IFramework.Command.Impl
             _linearCommandManager = linearCommandManager;
             _replyTopicName = replyTopicName;
             _replySubscriptionName = replySubscriptionName;
-           // _commandQueueNames = commandQueueNames;
+            // _commandQueueNames = commandQueueNames;
             _needMessageStore = needMessageStore;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
         }
@@ -74,13 +74,10 @@ namespace IFramework.Command.Impl
 
         protected override void CompleteSendingMessage(MessageState messageState)
         {
-            if (messageState != null && messageState.SendTaskCompletionSource != null)
-            {
-                messageState.SendTaskCompletionSource
-                            .TrySetResult(new MessageResponse(messageState.MessageContext,
-                                          messageState.ReplyTaskCompletionSource?.Task,
-                                          messageState.NeedReply));
-            }
+            messageState?.SendTaskCompletionSource?
+                         .TrySetResult(new MessageResponse(messageState.MessageContext,
+                                                           messageState.ReplyTaskCompletionSource?.Task,
+                                                           messageState.NeedReply));
 
             if (_needMessageStore)
             {
@@ -201,7 +198,7 @@ namespace IFramework.Command.Impl
             {
                 _commandStateQueues.GetOrAdd(commandState.MessageID, commandState);
             }
-            Send(commandState);
+            SendAsync(commandState);
             return commandState.SendTaskCompletionSource.Task;
         }
 
@@ -243,14 +240,7 @@ namespace IFramework.Command.Impl
             }
         }
 
-        protected void OnSendCancel(object state)
-        {
-            var sendTaskCompletionSource = state as TaskCompletionSource<MessageResponse>;
-            if (sendTaskCompletionSource != null)
-            {
-                sendTaskCompletionSource.TrySetCanceled();
-            }
-        }
+
 
         protected void OnReplyCancel(object state)
         {
@@ -264,55 +254,7 @@ namespace IFramework.Command.Impl
 
         public void SendMessageStates(IEnumerable<MessageState> commandStates)
         {
-            commandStates.ForEach(commandState => Send(commandState));
+            SendAsync(commandStates.ToArray());
         }
-        //public void Add(ICommand command)
-        //{
-        //    var currentMessageContext = PerMessageContextLifetimeManager.CurrentMessageContext;
-        //    if (currentMessageContext == null)
-        //    {
-        //        throw new CurrentMessageContextIsNull();
-        //    }
-        //    string commandKey = null;
-        //    if (command is ILinearCommand)
-        //    {
-        //        var linearKey = _linearCommandManager.GetLinearKey(command as ILinearCommand);
-        //        if (linearKey != null)
-        //        {
-        //            commandKey = linearKey.ToString();
-        //        }
-        //    }
-        //    #region pickup a queue to send command
-        //    int keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey) ?
-        //        commandKey.GetUniqueCode() : command.ID.GetUniqueCode();
-        //    var queue = _commandQueueNames[Math.Abs(keyUniqueCode % _commandQueueNames.Length)];
-        //    #endregion
-        //    var commandContext = _messageQueueClient.WrapMessage(command, topic: queue,
-        //                                                     key: commandKey,
-        //                                                     replyEndPoint: _replyTopicName);
-        //    currentMessageContext.ToBeSentMessageContexts.Add(commandContext);
-        //}
-
-        //public Task<TResult> Send<TResult>(ICommand command)
-        //{
-        //    return Send<TResult>(command, CancellationToken.None);
-        //}
-
-        //public Task<TResult> Send<TResult>(ICommand command, CancellationToken cancellationToken)
-        //{
-        //    return Send(command).ContinueWith<TResult>(t =>
-        //    {
-        //        if (t.IsFaulted)
-        //        {
-        //            throw t.Exception;
-        //        }
-        //        else
-        //        {
-        //            return (TResult)(t as Task<object>).Result;
-        //        }
-        //    });
-        //}
-
     }
-
 }

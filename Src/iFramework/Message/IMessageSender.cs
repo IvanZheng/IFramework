@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IFramework.Message
 {
@@ -9,7 +11,8 @@ namespace IFramework.Message
     {
         void Start();
         void Stop();
-        void Send(params IMessage[] events);
-        void Send(params MessageState[] messageStates);
+        Task<MessageResponse[]> SendAsync(CancellationToken sendCancellationToken, params IMessage[] events);
+        Task<MessageResponse[]> SendAsync(params IMessage[] events);
+        Task<MessageResponse[]> SendAsync(params MessageState[] messageStates);
     }
 }

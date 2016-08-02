@@ -30,7 +30,7 @@ namespace IFramework.Message.Impl
             using (var messageStore = scope.Resolve<IMessageStore>())
             {
                 return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationID) =>
-                                        _messageQueueClient.WrapMessage(message, topic: topic, messageId: messageId, correlationId: correlationID, key: message.Key));
+                                        _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic, messageId: messageId, correlationId: correlationID));
             }
         }
 
@@ -41,6 +41,10 @@ namespace IFramework.Message.Impl
 
         protected override void CompleteSendingMessage(MessageState messageState)
         {
+            messageState.SendTaskCompletionSource?
+                        .TrySetResult(new MessageResponse(messageState.MessageContext,
+                                         null,
+                                         false));
             Task.Run(() =>
             {
                 using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())

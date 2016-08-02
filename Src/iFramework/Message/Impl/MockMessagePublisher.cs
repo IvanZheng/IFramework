@@ -3,29 +3,36 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IFramework.Message.Impl
 {
-    class MockMessagePublisher : IMessagePublisher
+    public class MockMessagePublisher : IMessagePublisher
     {
-        public void Send(params MessageState[] messageStates)
+        public Task<MessageResponse[]> SendAsync(params MessageState[] messageStates)
         {
-            
+            return null;
         }
 
-        public void Send(params IMessage[] events)
+        public Task<MessageResponse[]> SendAsync(params IMessage[] events)
         {
-            
+            return null;
+        }
+
+        public Task<MessageResponse[]> SendAsync(CancellationToken sendCancellationToken, params IMessage[] events)
+        {
+            return null;
         }
 
         public void Start()
         {
-            
+
         }
 
         public void Stop()
         {
-           
+
         }
     }
 }

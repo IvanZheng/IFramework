@@ -34,8 +34,7 @@ namespace IFramework.Command.Impl
         protected MessageProcessor _messageProcessor;
         protected ISlidingDoor _slidingDoor;
 
-        public CommandConsumer(IMessageQueueClient messageQueueClient, 
-                               IMessagePublisher messagePublisher,
+        public CommandConsumer(IMessageQueueClient messageQueueClient, IMessagePublisher messagePublisher,
                                string commandQueueName,
                                IHandlerProvider handlerProvider)
         {
@@ -233,7 +232,7 @@ namespace IFramework.Command.Impl
                 }
                 if (_messagePublisher != null && eventMessageStates.Count > 0)
                 {
-                    _messagePublisher.Send(eventMessageStates.ToArray());
+                    _messagePublisher.SendAsync(eventMessageStates.ToArray());
                 }
                 _slidingDoor.RemoveOffset(commandContext.Offset);
             }

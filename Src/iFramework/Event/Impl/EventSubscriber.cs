@@ -91,7 +91,7 @@ namespace IFramework.Event.Impl
 
                                 //get commands to be sent
                                 eventBus.GetCommands().ForEach(cmd =>
-                                   commandMessageStates.Add(new MessageState(_commandBus.WrapCommand(cmd)))
+                                   commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd)))
                                );
                                 //get events to be published
                                 eventBus.GetEvents().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, key: msg.Key))));
@@ -105,11 +105,11 @@ namespace IFramework.Event.Impl
                             }
                             if (commandMessageStates.Count > 0)
                             {
-                                _commandBus.SendMessageStates(commandMessageStates);
+                                _commandBus?.SendMessageStates(commandMessageStates);
                             }
                             if (eventMessageStates.Count > 0)
                             {
-                                _messagePublisher.Send(eventMessageStates.ToArray());
+                                _messagePublisher?.SendAsync(eventMessageStates.ToArray());
                             }
                         }
                         catch (Exception e)
@@ -128,7 +128,7 @@ namespace IFramework.Event.Impl
                             messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
                             if (eventMessageStates.Count > 0)
                             {
-                                _messagePublisher.Send(eventMessageStates.ToArray());
+                                _messagePublisher?.SendAsync(eventMessageStates.ToArray());
                             }
                         }
                     }
