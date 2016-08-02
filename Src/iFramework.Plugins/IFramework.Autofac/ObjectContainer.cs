@@ -24,6 +24,7 @@ namespace IFramework.Autofac
         public ObjectContainer(ILifetimeScope container)
         {
             _container = container;
+            RegisterInstance<IoC.IContainer>(this);
         }
 
         public object ContainerInstanse
@@ -44,12 +45,19 @@ namespace IFramework.Autofac
 
         public IoC.IContainer CreateChildContainer()
         {
-            return new ObjectContainer(_container.BeginLifetimeScope());
+            var scope = _container.BeginLifetimeScope();
+            var container = new ObjectContainer(scope);
+            return container;
         }
 
+        bool _disposed;
         public void Dispose()
         {
-            _container.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                _container.Dispose();
+            }
         }
 
         public IoC.IContainer RegisterInstance(Type t, object instance, IoC.Lifetime lifetime = IoC.Lifetime.Singleton)
@@ -101,14 +109,29 @@ namespace IFramework.Autofac
 
             if (string.IsNullOrEmpty(name))
             {
-                builder.RegisterType(to).As(from);
+                if (to.IsGenericType)
+                {
+                    builder.RegisterGeneric(to).As(from);
+                }
+                else
+                {
+                    builder.RegisterType(to).As(from);
+                }
             }
             else
             {
-                builder.RegisterType(to)
-                    .Named(name, from)
-                    .WithParameters(injectionMembers);
-
+                if (to.IsGenericType)
+                {
+                    builder.RegisterGeneric(to)
+                   .Named(name, from)
+                   .WithParameters(injectionMembers);
+                }
+                else
+                {
+                    builder.RegisterType(to)
+                   .Named(name, from)
+                   .WithParameters(injectionMembers);
+                }
             }
             builder.Update(_container.ComponentRegistry);
             return this;
@@ -118,10 +141,21 @@ namespace IFramework.Autofac
         {
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
-            builder.RegisterType(to)
-                .As(from)
-                .WithParameters(injectionMembers)
-                .InstanceLifetime(lifetime);
+            if (to.IsGenericType)
+            {
+                builder.RegisterGeneric(to)
+                       .As(from)
+                       .WithParameters(injectionMembers)
+                       .InstanceLifetime(lifetime);
+            }
+            else
+            {
+                builder.RegisterType(to)
+                       .As(from)
+                       .WithParameters(injectionMembers)
+                       .InstanceLifetime(lifetime);
+            }
+
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -130,10 +164,21 @@ namespace IFramework.Autofac
         {
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
-            builder.RegisterType(to)
-                .Named(name, from)
+
+            if (to.IsGenericType)
+            {
+                builder.RegisterGeneric(to)
+                    .Named(name, from)
                 .InstanceLifetime(lifetime)
                 .WithParameters(injectionMembers);
+            }
+            else
+            {
+                builder.RegisterType(to)
+                    .Named(name, from)
+                .InstanceLifetime(lifetime)
+                .WithParameters(injectionMembers);
+            }
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -142,10 +187,20 @@ namespace IFramework.Autofac
         {
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
-            builder.RegisterType(typeof(TTo))
-                .As(typeof(TFrom))
-                .InstanceLifetime(lifetime)
-                .WithParameters(injectionMembers);
+            if (typeof(TTo).IsGenericType)
+            {
+                builder.RegisterGeneric(typeof(TTo))
+                       .As(typeof(TFrom))
+                       .InstanceLifetime(lifetime)
+                       .WithParameters(injectionMembers);
+            }
+            else
+            {
+                builder.RegisterType(typeof(TTo))
+                       .As(typeof(TFrom))
+                       .InstanceLifetime(lifetime)
+                       .WithParameters(injectionMembers);
+            }
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -153,9 +208,18 @@ namespace IFramework.Autofac
         {
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
-            builder.RegisterType(typeof(TTo))
-                .As(typeof(TFrom))
-                .WithParameters(injectionMembers);
+            if (typeof(TTo).IsGenericType)
+            {
+                builder.RegisterGeneric(typeof(TTo))
+                       .As(typeof(TFrom))
+                       .WithParameters(injectionMembers);
+            }
+            else
+            {
+                builder.RegisterType(typeof(TTo))
+                       .As(typeof(TFrom))
+                       .WithParameters(injectionMembers);
+            }
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -164,9 +228,19 @@ namespace IFramework.Autofac
         {
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
-            builder.RegisterType(typeof(TTo))
+            if (typeof(TTo).IsGenericType)
+            {
+                builder.RegisterGeneric(typeof(TTo))
                 .Named(name, typeof(TFrom))
                 .WithParameters(injectionMembers);
+            }
+            else
+            {
+                builder.RegisterType(typeof(TTo))
+                .Named(name, typeof(TFrom))
+                .WithParameters(injectionMembers);
+            }
+
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -175,10 +249,21 @@ namespace IFramework.Autofac
         {
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
-            builder.RegisterType(typeof(TTo))
-                   .Named(name, typeof(TFrom))
-                   .InstanceLifetime(lifetime)
-                   .WithParameters(injectionMembers);
+            if (typeof(TTo).IsGenericType)
+            {
+                builder.RegisterGeneric(typeof(TTo))
+                  .Named(name, typeof(TFrom))
+                  .InstanceLifetime(lifetime)
+                  .WithParameters(injectionMembers);
+            }
+            else
+            {
+                builder.RegisterType(typeof(TTo))
+                  .Named(name, typeof(TFrom))
+                  .InstanceLifetime(lifetime)
+                  .WithParameters(injectionMembers);
+            }
+
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -205,19 +290,20 @@ namespace IFramework.Autofac
 
         public IEnumerable<object> ResolveAll(Type type, params IoC.Parameter[] parameters)
         {
-            throw new NotSupportedException(AutofacNotSupportedException);
+            var typeToResolve = typeof(IEnumerable<>).MakeGenericType(type);
+            return _container.Resolve(typeToResolve, GetResolvedParameters(parameters)) as IEnumerable<object>;
         }
 
         public IEnumerable<T> ResolveAll<T>(params IoC.Parameter[] parameters)
         {
-            throw new NotSupportedException(AutofacNotSupportedException);
+            return _container.Resolve<IEnumerable<T>>(GetResolvedParameters(parameters));
         }
 
 
         IEnumerable<Parameter> GetResolvedParameters(IoC.Parameter[] resolvedParameters)
         {
             var parameters = new List<Parameter>();
-            parameters.Add(new NamedParameter("container", this));
+            //parameters.Add(new NamedParameter("container",  this));
             parameters.AddRange(resolvedParameters.Select(p => new NamedParameter(p.Name, p.Value)));
             return parameters;
         }

@@ -12,14 +12,22 @@ namespace Sample.CommandService.App_Start
         /// <summary>Integrates Unity when the application starts.</summary>
         public static void Start() 
         {
-            var resolver = new HierarchicalDependencyResolver(UnityConfig.GetConfiguredContainer());
+            var resolver = new HierarchicalDependencyResolver(IoCConfig.GetConfiguredContainer());
+            //resolver.RegisterComponents(container =>
+            //    Configuration.Instance
+            //                 .RegisterEntityFrameworkComponents(container,
+            //                                                    Lifetime.Hierarchical,
+            //                                                    typeof(SampleModelContext),
+            //                                                    typeof(CommunityRepository)
+            //                                                    )
+            //    );
             GlobalConfiguration.Configuration.DependencyResolver = resolver;
         }
 
         /// <summary>Disposes the Unity container when the application is shut down.</summary>
         public static void Shutdown()
         {
-            var container = UnityConfig.GetConfiguredContainer();
+            var container = IoCConfig.GetConfiguredContainer();
             container.Dispose();
         }
     }

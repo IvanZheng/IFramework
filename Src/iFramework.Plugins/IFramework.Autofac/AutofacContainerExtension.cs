@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Builder;
+using IFramework.IoC;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,19 +11,22 @@ namespace IFramework.Autofac
 {
     internal static class AutofacContainerExtension
     {
-        public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> 
-            InstanceLifetime<TLimit, TActivatorData, TRegistrationStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> builder, IoC.Lifetime lifetime)
+        public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle>
+            InstanceLifetime<TLimit, TActivatorData, TRegistrationStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> builder, Lifetime lifetime)
         {
-            switch(lifetime)
+            switch (lifetime)
             {
-                case IoC.Lifetime.PerRequest:
+                case Lifetime.PerRequest:
                     builder.InstancePerRequest();
                     break;
-                case IoC.Lifetime.Singleton:
+                case Lifetime.Singleton:
                     builder.SingleInstance();
                     break;
-                case IoC.Lifetime.Hierarchical:
+                case Lifetime.Hierarchical:
                     builder.InstancePerLifetimeScope();
+                    break;
+                case Lifetime.Transient:
+                    builder.InstancePerDependency();
                     break;
             }
             return builder;
