@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Sample.Command
 {
-    [Topic("commandqueueC")]
+    [Topic("commandqueue")]
     public abstract class CommandBase : ICommand
     {
         public bool NeedRetry { get; set; }

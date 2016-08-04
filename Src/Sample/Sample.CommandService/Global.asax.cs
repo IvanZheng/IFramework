@@ -49,7 +49,7 @@ namespace Sample.CommandService
                 _Logger.Debug($"App Started");
                 Configuration.Instance
                              //.SetCommitPerMessage(true)//for servicebus !!!
-                             .MessageQueueUseMachineNameFormat(false);
+                             .MessageQueueUseMachineNameFormat();
 
                 #region EventPublisher init
                 _MessagePublisher = IoCFactory.Resolve<IMessagePublisher>();
@@ -72,7 +72,7 @@ namespace Sample.CommandService
                 #endregion
 
                 #region Command Consuemrs init
-                _CommandConsumer1 = IoCFactory.Resolve<CommandConsumer>(new Parameter("commandQueueName", "commandqueueC"),
+                _CommandConsumer1 = IoCFactory.Resolve<CommandConsumer>(new Parameter("commandQueueName", "commandqueue"),
                                                                         new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")));
 
                 //_CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
