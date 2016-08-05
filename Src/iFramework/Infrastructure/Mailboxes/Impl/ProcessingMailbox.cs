@@ -67,7 +67,6 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                     Interlocked.Add(ref _processedCount, 1);
                 }
                 ExitHandlingMessage();
-              
             }
         }
 

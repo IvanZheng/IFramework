@@ -124,12 +124,16 @@ namespace IFramework.MessageQueue.ServiceBus
             var commandKey = messageContext.Key;
             queue = Configuration.Instance.FormatMessageQueueName(queue);
 
-            var queuePartionCount = Configuration.Instance.GetQueuePartionCount(queue);
-            if (queuePartionCount > 1)
+            var queuePartitionCount = Configuration.Instance.GetQueuePartitionCount(queue);
+            if (queuePartitionCount > 1)
             {
                 int keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey) ?
                                commandKey.GetUniqueCode() : messageContext.MessageID.GetUniqueCode();
-                queue = $"{queue}.{Math.Abs(keyUniqueCode % queuePartionCount)}";
+                queue = $"{queue}.{Math.Abs(keyUniqueCode % queuePartitionCount)}";
+            }
+            else
+            {
+                queue = $"{queue}.0";
             }
             var queueClient = GetQueueClient(queue);
             var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;
@@ -171,8 +175,9 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             return messageContext;
         }
-        public Action<long> StartQueueClient(string commandQueueName, OnMessagesReceived onMessagesReceived)
+        public Action<long> StartQueueClient(string commandQueueName, int partition, OnMessagesReceived onMessagesReceived)
         {
+            commandQueueName = $"{commandQueueName}.{partition}";
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var commandQueueClient = CreateQueueClient(commandQueueName);
             var cancellationSource = new CancellationTokenSource();
@@ -198,7 +203,7 @@ namespace IFramework.MessageQueue.ServiceBus
             Task.WaitAll(_commandClientTasks.ToArray());
         }
 
-        public Action<long> StartSubscriptionClient(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived)
+        public Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName,  OnMessagesReceived onMessagesReceived)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -224,10 +229,10 @@ namespace IFramework.MessageQueue.ServiceBus
         public void StopSubscriptionClients()
         {
             _subscriptionClientTasks.ForEach(subscriptionClientTask =>
-                {
-                    CancellationTokenSource cancellationSource = subscriptionClientTask.AsyncState as CancellationTokenSource;
-                    cancellationSource.Cancel(true);
-                }
+            {
+                CancellationTokenSource cancellationSource = subscriptionClientTask.AsyncState as CancellationTokenSource;
+                cancellationSource.Cancel(true);
+            }
             );
             Task.WaitAll(_subscriptionClientTasks.ToArray());
         }

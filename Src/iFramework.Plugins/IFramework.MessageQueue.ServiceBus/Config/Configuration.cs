@@ -6,30 +6,30 @@ using System.Collections.Generic;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
-    public static class IFrameworkConfigurationExtension
+    public static class FrameworkConfigurationExtension
     {
-        static IDictionary<string, int> QueuePartions
+        static IDictionary<string, int> QueuePartitions
         {
             get; set;
         }
 
-        public static int GetQueuePartionCount(this Configuration configuration, string queue)
+        public static int GetQueuePartitionCount(this Configuration configuration, string queue)
         {
-            int partionCount = 0;
-            if (QueuePartions != null)
+            int partitionCount = 0;
+            if (QueuePartitions != null)
             {
-                partionCount = QueuePartions.TryGetValue(queue, 0);
+                partitionCount = QueuePartitions.TryGetValue(queue, 0);
             }
-            return partionCount;
+            return partitionCount;
         }
 
 
         /// <summary>Use Log4Net as the logger for the enode framework.
         /// </summary>
         /// <returns></returns>
-        public static Configuration SetQueuePartions(this Configuration configuration, IDictionary<string, int> queuePartions)
+        public static Configuration SetQueuePartitions(this Configuration configuration, IDictionary<string, int> queuePartitions)
         {
-            QueuePartions = queuePartions;
+            QueuePartitions = queuePartitions;
             return configuration;
         }
     }

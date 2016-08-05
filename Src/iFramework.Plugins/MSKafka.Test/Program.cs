@@ -36,7 +36,7 @@ namespace MSKafka.Test
             //var queueClient = client.GetQueueClient(Configuration.Instance.FormatMessageQueueName(commandQueue));
             //queueClient.CommitOffset(4);
 
-            client.StartQueueClient(commandQueue, messageContexts =>
+            client.StartQueueClient(commandQueue, 0, messageContexts =>
             {
                 messageContexts.ForEach(messageContext =>
                 {
@@ -60,7 +60,7 @@ namespace MSKafka.Test
 
             });
 
-            client.StartSubscriptionClient(replyTopic, subscription, messageContexts =>
+            client.StartSubscriptionClient(replyTopic, 0, subscription, messageContexts =>
             {
                 messageContexts.ForEach(messageContext => {
                     var kafakMessageContext = messageContext as MessageContext;
@@ -69,7 +69,7 @@ namespace MSKafka.Test
                 });
             });
 
-            client.StartSubscriptionClient(eventTopic, subscription, messageContexts =>
+            client.StartSubscriptionClient(eventTopic, 0, subscription, messageContexts =>
             {
                 messageContexts.ForEach(messageContext => {
                     var kafakMessageContext = messageContext as MessageContext;

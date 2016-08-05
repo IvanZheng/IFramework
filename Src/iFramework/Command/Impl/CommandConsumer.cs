@@ -8,15 +8,12 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using IFramework.SysExceptions;
-using IFramework.UnitOfWork;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Transactions;
 
 namespace IFramework.Command.Impl
@@ -28,33 +25,28 @@ namespace IFramework.Command.Impl
         protected IMessageQueueClient _messageQueueClient;
         protected IMessagePublisher _messagePublisher;
         protected string _commandQueueName;
+        protected int _partition;
         protected BlockingCollection<IMessageContext> _commandContexts;
         protected CancellationTokenSource _cancellationTokenSource;
         //protected Task _consumeMessageTask;
         protected MessageProcessor _messageProcessor;
         protected ISlidingDoor _slidingDoor;
 
-        public CommandConsumer(IMessageQueueClient messageQueueClient, IMessagePublisher messagePublisher,
+        public CommandConsumer(IMessageQueueClient messageQueueClient,
+                               IMessagePublisher messagePublisher,
+                               IHandlerProvider handlerProvider,
                                string commandQueueName,
-                               IHandlerProvider handlerProvider)
+                               int partition = 0)
         {
             _commandQueueName = commandQueueName;
             _handlerProvider = handlerProvider;
             _messagePublisher = messagePublisher;
+            _partition = partition;
             _cancellationTokenSource = new CancellationTokenSource();
-            // _commandContexts = new BlockingCollection<IMessageContext>();
             _messageQueueClient = messageQueueClient;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
-
-        //protected virtual void OnMessageHandled(IMessageContext reply)
-        //{
-        //    if (_messagePublisher != null && !string.IsNullOrWhiteSpace(reply.Topic) && reply != null)
-        //    {
-        //        _messagePublisher.Send(reply);
-        //    }
-        //}
 
         public void Start()
         {
@@ -62,59 +54,16 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
-                    var _CommitOffset = _messageQueueClient.StartQueueClient(_commandQueueName, OnMessageReceived);
+                    var _CommitOffset = _messageQueueClient.StartQueueClient(_commandQueueName, _partition, OnMessageReceived);
                     _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100, Configuration.Instance.GetCommitPerMessage());
                 }
-                //_consumeMessageTask = Task.Factory.StartNew(ConsumeMessages,
-                //                                                _cancellationTokenSource.Token,
-                //                                                TaskCreationOptions.LongRunning,
-                //                                                TaskScheduler.Default);
                 _messageProcessor.Start();
             }
             catch (Exception e)
             {
                 _logger.Error(e.GetBaseException().Message, e);
             }
-            //try
-            //{
-            //    _commandQueueClient = _serviceBusClient.CreateQueueClient(_commandQueueName);
-            //    _commandConsumerTask = Task.Factory.StartNew(ConsumeMessages, TaskCreationOptions.LongRunning);
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.Error(ex.GetBaseException().Message, ex);
-            //}
         }
-
-        //void ConsumeMessages()
-        //{
-        //    while (!_cancellationTokenSource.IsCancellationRequested)
-        //    {
-        //        try
-        //        {
-        //            var commandContext = _commandContexts.Take(_cancellationTokenSource.Token);
-        //            _messageProcessor.Process(commandContext, ConsumeMessage);
-        //        }
-        //        catch (OperationCanceledException)
-        //        {
-        //            return;
-        //        }
-        //        catch (ThreadAbortException)
-        //        {
-        //            return;
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            _logger.Error(ex.GetBaseException().Message, ex);
-        //        }
-        //    }
-        //}
-
-        //public void PostMessage(IMessageContext messageContext)
-        //{
-        //    _commandContexts.Add(messageContext);
-        //}
 
         protected void OnMessageReceived(params IMessageContext[] messageContexts)
         {
@@ -230,9 +179,16 @@ namespace IFramework.Command.Impl
                         } while (needRetry);
                     }
                 }
-                if (_messagePublisher != null && eventMessageStates.Count > 0)
+                try
                 {
-                    _messagePublisher.SendAsync(eventMessageStates.ToArray());
+                    if (_messagePublisher != null && eventMessageStates.Count > 0)
+                    {
+                        _messagePublisher.SendAsync(eventMessageStates.ToArray());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"_messagePublisher SendAsync error", ex);
                 }
                 _slidingDoor.RemoveOffset(commandContext.Offset);
             }

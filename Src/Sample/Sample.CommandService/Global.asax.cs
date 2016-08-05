@@ -30,9 +30,8 @@ namespace Sample.CommandService
         static IMessagePublisher _MessagePublisher;
         static ICommandBus _CommandBus;
         static IMessageConsumer _CommandConsumer1;
-        //static IMessageConsumer _CommandConsumer2;
-        //static IMessageConsumer _CommandConsumer3;
-        //static IMessageConsumer _CommandDistributor;
+        static IMessageConsumer _CommandConsumer2;
+        static IMessageConsumer _CommandConsumer3;
         static IMessageConsumer _DomainEventConsumer;
         static IMessageConsumer _ApplicationEventConsumer;
 
@@ -72,15 +71,24 @@ namespace Sample.CommandService
                 #endregion
 
                 #region Command Consuemrs init
-                _CommandConsumer1 = IoCFactory.Resolve<CommandConsumer>(new Parameter("commandQueueName", "commandqueue"),
-                                                                        new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")));
+                _CommandConsumer1 = IoCFactory.Resolve<CommandConsumer>(
+                                                new Parameter("commandQueueName", "commandqueue"),
+                                                new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
+                                                new Parameter("partition", 0));
 
-                //_CommandConsumer2 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue2");
-                //_CommandConsumer3 = new CommandConsumer(commandHandlerProvider, _MessagePublisher, "commandqueue3");
+                _CommandConsumer2 = IoCFactory.Resolve<CommandConsumer>(
+                                              new Parameter("commandQueueName", "commandqueue"),
+                                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
+                                              new Parameter("partition", 1));
+
+                _CommandConsumer3 = IoCFactory.Resolve<CommandConsumer>(
+                                              new Parameter("commandQueueName", "commandqueue"),
+                                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
+                                              new Parameter("partition", 2));
 
                 _CommandConsumer1.Start();
-                //_CommandConsumer2.Start();
-                //_CommandConsumer3.Start();
+                _CommandConsumer2.Start();
+                _CommandConsumer3.Start();
                 #endregion
             }
             catch (Exception ex)

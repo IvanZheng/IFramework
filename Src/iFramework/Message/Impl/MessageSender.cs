@@ -79,7 +79,8 @@ namespace IFramework.Message.Impl
             {
                 _messageStateQueue.Add(messageState);
             });
-            return Task.WhenAll(messageStates.Select(s => s.SendTaskCompletionSource.Task)
+            return Task.WhenAll(messageStates.Where(s => s.SendTaskCompletionSource != null)
+                                             .Select(s => s.SendTaskCompletionSource.Task)
                                              .ToArray());
         }
 
@@ -131,3 +132,4 @@ namespace IFramework.Message.Impl
         }
     }
 }
+

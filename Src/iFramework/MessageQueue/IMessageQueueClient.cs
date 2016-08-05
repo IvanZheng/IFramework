@@ -13,14 +13,14 @@ namespace IFramework.MessageQueue
         void Publish(IMessageContext messageContext, string topic);
 
         IMessageContext WrapMessage(object message, string correlationId = null,
-                                    string topic = null, string key = null, 
+                                    string topic = null, string key = null,
                                     string replyEndPoint = null, string messageId = null);
 
-        Action<long> StartSubscriptionClient(string topic, string subscriptionName, OnMessagesReceived onMessageReceived);
+        Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName,  OnMessagesReceived onMessageReceived);
 
         void StopSubscriptionClients();
 
-        Action<long> StartQueueClient(string commandQueueName, OnMessagesReceived onMessageReceived);
+        Action<long> StartQueueClient(string commandQueueName, int partition, OnMessagesReceived onMessageReceived);
 
         void StopQueueClients();
     }

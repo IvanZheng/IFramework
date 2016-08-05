@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Sample.ApplicationEvent
 {
-    [Topic("AppEventTopic")]
+    [Topic("AppEvent")]
     public class ApplicationEvent : IApplicationEvent
     {
         public string ID

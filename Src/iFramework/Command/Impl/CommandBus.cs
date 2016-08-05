@@ -100,7 +100,7 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_replyTopicName))
                 {
-                    var commitOffsetAction = _messageQueueClient.StartSubscriptionClient(_replyTopicName, _replySubscriptionName, OnMessagesReceived);
+                    var commitOffsetAction = _messageQueueClient.StartSubscriptionClient(_replyTopicName, 0, _replySubscriptionName, OnMessagesReceived);
                     _slidingDoor = new SlidingDoor(commitOffsetAction, 1000, 100, Configuration.Instance.GetCommitPerMessage());
                 }
             }

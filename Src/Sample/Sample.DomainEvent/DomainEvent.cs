@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Sample.DomainEvents
 {
-    [Topic("DomainEventTopic")]
+    [Topic("DomainEvent")]
     public class DomainEvent : IDomainEvent
     {
         public int Version { get; set; }

@@ -13,7 +13,10 @@
     @Scripts.Render("~/Scripts/jquery.json-2.2.min.js")
     @Scripts.Render("~/Scripts/jquery.cookie.min.js")
     <script>
-
+        var showResult = function(result)
+        {
+            $("#result").prepend(result + "<br>");
+        }
 
         var doCommand = function (commandName, command) {
             $.ajax({
@@ -24,10 +27,10 @@
                 data: command,
                 success: function (data) {
                     if (data.errorCode == 0) {
-                        alert($.toJSON(data));
+                        showResult($.toJSON(data));
                     }
                     else {
-                        alert(data.errorCode + " " + data.message);
+                        showResult(data.errorCode + " " + data.message);
                     }
                 }
             });
@@ -42,10 +45,10 @@
                 data: command,
                 success: function (data) {
                     if (data.ErrorCode == 0) {
-                        alert(data);
+                        showResult(data);
                     }
                     else {
-                        alert(data.Message);
+                        showResult(data.Message);
                     }
                 }
 
@@ -86,7 +89,7 @@
                 doCommand("Register", registerCommand);
             });
 
-            
+
             $("#loginCommand").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
@@ -108,7 +111,7 @@
                 $("#commandDistributorStatus").html(result);
             });
         };
-       
+
     </script>
 </head>
 <body>
@@ -120,14 +123,14 @@
     </div>
     <br />
 
-    <input type="text" value="1000" id="batchCount"/>
+    <input type="text" value="1000" id="batchCount" />
     <input type="text" value="ivan" id="username" />
     <input type="password" value="123456" id="password" />
 
     <input id="registerCommand" type="button" value="RegisterCommand" />
     <input id="loginCommand" type="button" value="LoginCommand" />
 
-   
+
 
     <div>
         <input id="batchRegisterCommand" type="button" value="BatchRegisterCommand" />
@@ -138,5 +141,9 @@
         <input type="text" value="email" id="email" />
         <input id="modifyCommand" type="button" value="ModifyCommand" />
     </div>
+    <div id="result">
+
+    </div>
 </body>
 </html>
+

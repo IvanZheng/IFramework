@@ -23,6 +23,7 @@ namespace IFramework.Event.Impl
         protected IMessagePublisher _messagePublisher;
         protected IHandlerProvider _handlerProvider;
         protected string _subscriptionName;
+        protected int _partition;
         protected MessageProcessor _messageProcessor;
         protected ILogger _logger;
         protected ISlidingDoor _slidingDoor;
@@ -32,11 +33,13 @@ namespace IFramework.Event.Impl
                                ICommandBus commandBus,
                                IMessagePublisher messagePublisher,
                                string subscriptionName,
-                               string topic)
+                               string topic,
+                               int partition)
         {
             _MessageQueueClient = messageQueueClient;
             _handlerProvider = handlerProvider;
             _topic = topic;
+            _partition = partition;
             _subscriptionName = subscriptionName;
             _messagePublisher = messagePublisher;
             _commandBus = commandBus;
@@ -142,7 +145,7 @@ namespace IFramework.Event.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_topic))
                 {
-                    var _CommitOffset = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, OnMessagesReceived);
+                    var _CommitOffset = _MessageQueueClient.StartSubscriptionClient(_topic, _partition, _subscriptionName, OnMessagesReceived);
                     _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100, Configuration.Instance.GetCommitPerMessage());
                 }
                 _messageProcessor.Start();
