@@ -56,7 +56,7 @@ namespace Sample.CommandService.Tests
             //Task.WaitAll(tasks.ToArray());
         }
 
-        int batchCount = 2;
+        int batchCount = 100;
         int productCount = 100;
 
         [TestMethod()]

@@ -12,12 +12,13 @@ using System.Web.Mvc;
 
 namespace Sample.ApiService.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class TestController : Controller
     {
         // GET: /Test/
         public ActionResult Index()
         {
+            GC.Collect();
             return View();
         }
 

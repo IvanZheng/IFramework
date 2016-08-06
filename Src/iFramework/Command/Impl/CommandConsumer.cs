@@ -26,7 +26,6 @@ namespace IFramework.Command.Impl
         protected IMessagePublisher _messagePublisher;
         protected string _commandQueueName;
         protected int _partition;
-        protected BlockingCollection<IMessageContext> _commandContexts;
         protected CancellationTokenSource _cancellationTokenSource;
         //protected Task _consumeMessageTask;
         protected MessageProcessor _messageProcessor;
