@@ -135,7 +135,7 @@ namespace IFramework.Command.Impl
             var messageState = _commandStateQueues.TryGetValue(reply.CorrelationID);
             if (messageState != null)
             {
-                _commandStateQueues.TryRemove(reply.MessageID);
+                _commandStateQueues.TryRemove(reply.CorrelationID);
                 if (reply.Message is Exception)
                 {
                     messageState.ReplyTaskCompletionSource.TrySetException(reply.Message as Exception);
