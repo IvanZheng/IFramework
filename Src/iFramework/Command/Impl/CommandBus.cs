@@ -29,7 +29,6 @@ namespace IFramework.Command.Impl
         /// cache command states for command reply. When reply comes, make replyTaskCompletionSouce completed
         /// </summary>
         protected ConcurrentDictionary<string, MessageState> _commandStateQueues;
-        protected bool _needMessageStore;
         /// <summary>
         /// use slidingdoor to control the process of consuming message
         /// </summary>
@@ -43,7 +42,7 @@ namespace IFramework.Command.Impl
                           string replyTopicName,
                           string replySubscriptionName,
                           bool needMessageStore = true)
-            : base(messageQueueClient)
+            : base(messageQueueClient, needMessageStore: needMessageStore)
         {
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();
             _linearCommandManager = linearCommandManager;
@@ -55,16 +54,12 @@ namespace IFramework.Command.Impl
         }
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {
-            if (_needMessageStore)
+            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+            using (var messageStore = scope.Resolve<IMessageStore>())
             {
-                using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-                using (var messageStore = scope.Resolve<IMessageStore>())
-                {
-                    return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId) =>
-                                                              _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic, messageId: messageId, correlationId: correlationId));
-                }
+                return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId) =>
+                                                          _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic, messageId: messageId, correlationId: correlationId));
             }
-            return null;
         }
 
         protected override void Send(IMessageContext messageContext, string queue)

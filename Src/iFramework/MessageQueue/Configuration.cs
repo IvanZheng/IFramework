@@ -46,16 +46,16 @@ namespace IFramework.Config
             return configuration;
         }
 
-        public static Configuration UseMockMessagePublisher(this Configuration configuration, string defaultTopic = null)
+        public static Configuration UseMockMessagePublisher(this Configuration configuration)
         {
             IoCFactory.Instance.CurrentContainer.RegisterType<IMessagePublisher, MockMessagePublisher>(Lifetime.Singleton);
             return configuration;
         }
-        public static Configuration UseMessagePublisher(this Configuration configuration, string defaultTopic)
+        public static Configuration UseMessagePublisher(this Configuration configuration, string defaultTopic, bool needMessageStore = false)
         {
             var container = IoCFactory.Instance.CurrentContainer;
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);
+            var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic, needMessageStore);
             container.RegisterInstance<IMessagePublisher>(messagePublisher);
             return configuration;
         }

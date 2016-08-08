@@ -15,8 +15,8 @@ namespace IFramework.Message.Impl
 {
     public class MessagePublisher : MessageSender, IMessagePublisher
     {
-        public MessagePublisher(IMessageQueueClient messageQueueClient, string defaultTopic)
-            : base(messageQueueClient, defaultTopic)
+        public MessagePublisher(IMessageQueueClient messageQueueClient, string defaultTopic, bool needMessageStore)
+            : base(messageQueueClient, defaultTopic, needMessageStore)
         {
             if (string.IsNullOrEmpty(defaultTopic))
             {
@@ -45,14 +45,18 @@ namespace IFramework.Message.Impl
                         .TrySetResult(new MessageResponse(messageState.MessageContext,
                                          null,
                                          false));
-            Task.Run(() =>
+            if (_needMessageStore)
             {
-                using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-                using (var messageStore = scope.Resolve<IMessageStore>())
-                {
-                    messageStore.RemovePublishedEvent(messageState.MessageID);
-                }
-            });
+                Task.Run(() =>
+                           {
+                               using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+                               using (var messageStore = scope.Resolve<IMessageStore>())
+                               {
+                                   messageStore.RemovePublishedEvent(messageState.MessageID);
+                               }
+                           });
+            }
+           
         }
     }
 }

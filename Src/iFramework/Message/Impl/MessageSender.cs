@@ -17,13 +17,15 @@ namespace IFramework.Message.Impl
         protected BlockingCollection<MessageState> _messageStateQueue { get; set; }
         protected string _defaultTopic;
         protected Task _sendMessageTask;
+        protected bool _needMessageStore;
         protected IMessageQueueClient _messageQueueClient;
         protected ILogger _logger;
 
-        public MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null)
+        public MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null, bool needMessageStore = false)
         {
             _messageQueueClient = messageQueueClient;
             _defaultTopic = defaultTopic;
+            _needMessageStore = needMessageStore;
             _messageStateQueue = new BlockingCollection<MessageState>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
@@ -34,7 +36,10 @@ namespace IFramework.Message.Impl
 
         public virtual void Start()
         {
-            GetAllUnSentMessages().ForEach(eventContext => _messageStateQueue.Add(new MessageState(eventContext)));
+            if (_needMessageStore)
+            {
+                GetAllUnSentMessages().ForEach(eventContext => _messageStateQueue.Add(new MessageState(eventContext)));
+            }
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             _sendMessageTask = Task.Factory.StartNew((cs) => SendMessages(cs as CancellationTokenSource),
                 cancellationTokenSource,
