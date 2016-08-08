@@ -66,7 +66,7 @@ namespace Sample.CommandService.Controllers
             {
                 return await ExceptionManager.ProcessAsync(async () =>
                 {
-                    var messageResponse = await _CommandBus.SendAsync(command);
+                    var messageResponse = await _CommandBus.SendAsync(command, true);
                     return await messageResponse.ReadAsAsync<ApiResult>();
                 });
             }

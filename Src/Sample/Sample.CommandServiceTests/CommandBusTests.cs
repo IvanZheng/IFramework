@@ -68,7 +68,7 @@ namespace Sample.CommandService.Tests
                 ProductId = _createProducts[0].ProductId,
                 ReduceCount = 1
             };
-            var t = _commandBus.SendAsync(reduceProduct).Result;
+            var t = _commandBus.SendAsync(reduceProduct, true).Result;
             Console.WriteLine(t.Reply.Result);
 
             var costTime = (DateTime.Now - startTime).TotalMilliseconds;
@@ -77,7 +77,7 @@ namespace Sample.CommandService.Tests
             var products = _commandBus.SendAsync(new GetProducts
             {
                 ProductIds = _createProducts.Select(p => p.ProductId).ToList()
-            }).Result.ReadAsAsync<List<Project>>().Result;
+            }, true).Result.ReadAsAsync<List<Project>>().Result;
             var success = true;
             Console.WriteLine(products.ToJson());
             for (int i = 0; i < _createProducts.Count; i++)
@@ -106,7 +106,7 @@ namespace Sample.CommandService.Tests
                         ProductId = _createProducts[j].ProductId,
                         ReduceCount = 1
                     };
-                    var t = _commandBus.SendAsync(reduceProduct).Result;
+                    var t = _commandBus.SendAsync(reduceProduct, true).Result;
                     tasks.Add(t.Reply);
                 }
             }
@@ -117,7 +117,7 @@ namespace Sample.CommandService.Tests
             var products = _commandBus.SendAsync(new GetProducts
             {
                 ProductIds = _createProducts.Select(p => p.ProductId).ToList()
-            }).Result.ReadAsAsync<List<Project>>().Result;
+            }, true).Result.ReadAsAsync<List<Project>>().Result;
             var success = true;
 
             for (int i = 0; i < _createProducts.Count; i++)

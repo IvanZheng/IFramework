@@ -125,14 +125,14 @@ namespace MSKafka.Test
             var _commandBus = IoCFactory.Resolve<ICommandBus>();
             _commandBus.Start();
 
-            var t = _commandBus.SendAsync(reduceProduct).Result;
+            var t = _commandBus.SendAsync(reduceProduct, true).Result;
             Console.WriteLine(t.Reply.Result);
 
 
             var products = _commandBus.SendAsync(new GetProducts
             {
                 ProductIds = new List<Guid> { reduceProduct.ProductId }
-            }).Result.ReadAsAsync<List<Project>>().Result;
+            }, true).Result.ReadAsAsync<List<Project>>().Result;
 
             Console.WriteLine(products.ToJson());
             Console.ReadLine();

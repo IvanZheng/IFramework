@@ -9,29 +9,30 @@ namespace IFramework.Command
 {
     public static class CommandBusExtension
     {
-        public async static Task<object> Execute(this ICommandBus commandBus, ICommand command, bool needReply = true)
+        public async static Task<object> ExecuteAsync(this ICommandBus commandBus, ICommand command)
         {
-            var messageResponse = await commandBus.SendAsync(command).ConfigureAwait(false);
+            var messageResponse = await commandBus.SendAsync(command, true).ConfigureAwait(false);
             return await messageResponse.Reply.ConfigureAwait(false);
         }
 
-        public async static Task<object> Execute(this ICommandBus commandBus, ICommand command, TimeSpan timeout, bool needReply = true)
+        public async static Task<object> ExecuteAsync(this ICommandBus commandBus, ICommand command, TimeSpan timeout)
         {
-            return await commandBus.Execute(command, needReply).Timeout(timeout).ConfigureAwait(false);
+            return await commandBus.ExecuteAsync(command).Timeout(timeout).ConfigureAwait(false);
         }
 
-        public async static Task<TResult> Send<TResult>(this ICommandBus commandBus, ICommand command, bool needReply = true)
+        public async static Task<TResult> ExecuteAsync<TResult>(this ICommandBus commandBus, ICommand command)
         {
-            var messageResponse = await commandBus.SendAsync(command).ConfigureAwait(false);
-            return await messageResponse.ReadAsAsync<TResult>().ConfigureAwait(false);
+            var messageResponse = await commandBus.SendAsync(command, true)
+                                                 .ConfigureAwait(false);
+            return await messageResponse.ReadAsAsync<TResult>()
+                                        .ConfigureAwait(false);
         }
 
-
-        public async static Task<TResult> Send<TResult>(this ICommandBus commandBus, ICommand command, TimeSpan timeout, bool needReply = true)
+        public async static Task<TResult> ExecuteAsync<TResult>(this ICommandBus commandBus, ICommand command, TimeSpan timeout)
         {
-            return await commandBus.Send<TResult>(command, needReply).Timeout(timeout).ConfigureAwait(false);
+            return await commandBus.ExecuteAsync<TResult>(command)
+                                   .Timeout(timeout)
+                                   .ConfigureAwait(false);
         }
-
-
     }
 }

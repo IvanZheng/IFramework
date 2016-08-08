@@ -110,7 +110,7 @@ namespace IFramework.Event.Impl
 
                                 //get commands to be sent
                                 eventBus.GetCommands().ForEach(cmd =>
-                                   commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd)))
+                                   commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd, false)))
                                );
                                 //get events to be published
                                 eventBus.GetEvents().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, key: msg.Key))));

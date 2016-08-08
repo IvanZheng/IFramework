@@ -202,7 +202,7 @@ namespace IFramework.Command.Impl
             return commandState.SendTaskCompletionSource.Task;
         }
 
-        public IMessageContext WrapCommand(ICommand command, bool needReply = true)
+        public IMessageContext WrapCommand(ICommand command, bool needReply = false)
         {
             string commandKey = null;
             if (command is ILinearCommand)

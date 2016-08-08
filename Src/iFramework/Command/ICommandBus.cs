@@ -13,10 +13,12 @@ namespace IFramework.Command
     {
         void Start();
         void Stop();
-        Task<MessageResponse> SendAsync(ICommand command, bool needReply = true);
-        Task<MessageResponse> SendAsync(ICommand command, TimeSpan timeout, bool needReply = true);
-        Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken, TimeSpan sendTimeout, CancellationToken replyCancellationToken, bool needReply = true);
+        Task<MessageResponse> SendAsync(ICommand command, bool needReply = false);
+        Task<MessageResponse> SendAsync(ICommand command, TimeSpan timeout, bool needReply = false);
+        Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken, 
+                                        TimeSpan sendTimeout, CancellationToken replyCancellationToken, 
+                                        bool needReply = false);
+        IMessageContext WrapCommand(ICommand command, bool needReply = false);
         void SendMessageStates(IEnumerable<MessageState> messageStates);
-        IMessageContext WrapCommand(ICommand command, bool needReply = true);
     }
 }
