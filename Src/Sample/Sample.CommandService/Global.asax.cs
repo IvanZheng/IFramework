@@ -78,17 +78,17 @@ namespace Sample.CommandService
                 _CommandConsumer1.Start();
 
 
-                //_CommandConsumer2 = IoCFactory.Resolve<CommandConsumer>(
-                //                              new Parameter("commandQueueName", "commandqueue"),
-                //                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
-                //                              new Parameter("partition", 1));
-                //_CommandConsumer2.Start();
+                _CommandConsumer2 = IoCFactory.Resolve<CommandConsumer>(
+                                              new Parameter("commandQueueName", "commandqueue"),
+                                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
+                                              new Parameter("partition", 1));
+                _CommandConsumer2.Start();
 
-                //_CommandConsumer3 = IoCFactory.Resolve<CommandConsumer>(
-                //                              new Parameter("commandQueueName", "commandqueue"),
-                //                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
-                //                              new Parameter("partition", 2));
-                //_CommandConsumer3.Start();
+                _CommandConsumer3 = IoCFactory.Resolve<CommandConsumer>(
+                                              new Parameter("commandQueueName", "commandqueue"),
+                                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
+                                              new Parameter("partition", 2));
+                _CommandConsumer3.Start();
                 #endregion
             }
             catch (Exception ex)
