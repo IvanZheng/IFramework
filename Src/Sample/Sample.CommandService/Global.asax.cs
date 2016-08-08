@@ -75,20 +75,20 @@ namespace Sample.CommandService
                                                 new Parameter("commandQueueName", "commandqueue"),
                                                 new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
                                                 new Parameter("partition", 0));
-
-                _CommandConsumer2 = IoCFactory.Resolve<CommandConsumer>(
-                                              new Parameter("commandQueueName", "commandqueue"),
-                                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
-                                              new Parameter("partition", 1));
-
-                _CommandConsumer3 = IoCFactory.Resolve<CommandConsumer>(
-                                              new Parameter("commandQueueName", "commandqueue"),
-                                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
-                                              new Parameter("partition", 2));
-
                 _CommandConsumer1.Start();
-                _CommandConsumer2.Start();
-                _CommandConsumer3.Start();
+
+
+                //_CommandConsumer2 = IoCFactory.Resolve<CommandConsumer>(
+                //                              new Parameter("commandQueueName", "commandqueue"),
+                //                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
+                //                              new Parameter("partition", 1));
+                //_CommandConsumer2.Start();
+
+                //_CommandConsumer3 = IoCFactory.Resolve<CommandConsumer>(
+                //                              new Parameter("commandQueueName", "commandqueue"),
+                //                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
+                //                              new Parameter("partition", 2));
+                //_CommandConsumer3.Start();
                 #endregion
             }
             catch (Exception ex)
@@ -114,8 +114,8 @@ namespace Sample.CommandService
             {
                 Task.WaitAll(
                     Task.Factory.StartNew(() => _CommandConsumer1.Stop()),
-                    Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
-                    Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
+                    //Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
+                    //Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
                     Task.Factory.StartNew(() => _CommandBus.Stop()),
                     Task.Factory.StartNew(() => _MessagePublisher.Stop()),
                     Task.Factory.StartNew(() => _DomainEventConsumer.Stop()),

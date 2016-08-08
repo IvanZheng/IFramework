@@ -3,6 +3,7 @@ using IFramework.Infrastructure;
 using IFramework.IoC;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using System.Threading.Tasks;
 
 namespace Sample.CommandServiceTests
 {
@@ -22,15 +23,14 @@ namespace Sample.CommandServiceTests
             }
         }
 
-        public object ExecuteCommand(IMessageContext commandContext)
+        public async Task ExecuteCommand(IMessageContext commandContext)
         {
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
             {
                 scope.RegisterInstance(typeof(IMessageContext), commandContext);
                 var commandHandler = scope.Resolve<TCommandHanlder>();
-                ((dynamic)commandHandler).Handle((dynamic)commandContext.Message);
+                await Task.Run(((dynamic)commandHandler).Handle((dynamic)commandContext.Message));
                 var result = commandContext.Reply;
-                return result;
             }
         }
     }

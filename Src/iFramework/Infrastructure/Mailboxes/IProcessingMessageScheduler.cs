@@ -11,6 +11,6 @@ namespace IFramework.Infrastructure.Mailboxes
         where TMessage : class
     {
         Task ScheduleMailbox(ProcessingMailbox<TMessage> mailbox);
-        Task SchedulProcessing(Action processing);
+        Task SchedulProcessing(Func<Task> processing);
     }
 }

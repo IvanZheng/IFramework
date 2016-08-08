@@ -13,7 +13,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
     {
         readonly IProcessingMessageScheduler<TMessage> _scheduler;
         internal ConcurrentQueue<TMessage> MessageQueue { get; private set; }
-        Action<TMessage> _processMessage;
+        Func<TMessage, Task> _processMessage;
         Action<ProcessingMailbox<TMessage>> _handleMailboxEmpty;
         public string Key { get; private set; }
         private volatile int _isHandlingMessage;
@@ -27,8 +27,8 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         }
 
         public ProcessingMailbox(string key, 
-            IProcessingMessageScheduler<TMessage> scheduler, 
-            Action<TMessage> processingMessage,
+            IProcessingMessageScheduler<TMessage> scheduler,
+            Func<TMessage, Task> processingMessage,
             Action<ProcessingMailbox<TMessage>> handleMailboxEmpty)
         {
             _scheduler = scheduler;
@@ -50,14 +50,14 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             return Interlocked.CompareExchange(ref _isHandlingMessage, 1, 0) == 0;
         }
 
-        internal void Run()
+        internal async Task Run()
         {
             TMessage processingMessage = null;
             try
             {
                 if (MessageQueue.TryDequeue(out processingMessage))
                 {
-                    _processMessage(processingMessage);
+                    await _processMessage(processingMessage);
                 }
             }
             finally

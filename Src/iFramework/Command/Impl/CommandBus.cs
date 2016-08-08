@@ -129,7 +129,7 @@ namespace IFramework.Command.Impl
             _slidingDoor.BlockIfFullLoad();
         }
 
-        protected void ConsumeReply(IMessageContext reply)
+        protected async Task ConsumeReply(IMessageContext reply)
         {
             _logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
             var messageState = _commandStateQueues.TryGetValue(reply.CorrelationID);

@@ -10,25 +10,17 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
     public class DefaultProcessingMessageScheduler<TMessage> : IProcessingMessageScheduler<TMessage>
         where TMessage : class
     {
-        public Task ScheduleMailbox(ProcessingMailbox<TMessage> mailbox)
+        public async Task ScheduleMailbox(ProcessingMailbox<TMessage> mailbox)
         {
-            Task task = null;
             if (mailbox.EnterHandlingMessage())
             {
-                task = Task.Factory.StartNew(() => mailbox.Run(),
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                TaskScheduler.Default);
+                await mailbox.Run().ConfigureAwait(false);
             }
-            return task;
         }
 
-        public Task SchedulProcessing(Action processing)
+        public async Task SchedulProcessing(Func<Task> processing)
         {
-            return Task.Factory.StartNew(processing,
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                TaskScheduler.Default);
+            await processing().ConfigureAwait(false);
         }
     }
 }

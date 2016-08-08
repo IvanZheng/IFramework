@@ -56,7 +56,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
         }
 
-        public void Process(IMessageContext messageContext, Action<IMessageContext> process)
+        public void Process(IMessageContext messageContext, Func<IMessageContext, Task> process)
         {
             _mailboxProcessorCommands.Add(new ProcessMessageCommand<IMessageContext>(messageContext, process));
         }
@@ -111,21 +111,21 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         private void ExecuteProcessCommand(ProcessMessageCommand<IMessageContext> command)
         {
             var messageContext = command.Message;
-            var processingMessage = command.ProcessingMessageAction;
+            var processingMessageFunc = command.ProcessingMessageFunc;
             var key = messageContext.Key;
 
             if (!string.IsNullOrWhiteSpace(key))
             {
                 var mailbox = _mailboxDict.GetOrAdd(key, x =>
                 {
-                    return new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler, processingMessage, HandleMailboxEmpty);
+                    return new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler, processingMessageFunc, HandleMailboxEmpty);
                 });
                 mailbox.EnqueueMessage(messageContext);
                 _processingMessageScheduler.ScheduleMailbox(mailbox);
             }
             else
             {
-                _processingMessageScheduler.SchedulProcessing(() => processingMessage(messageContext));
+                _processingMessageScheduler.SchedulProcessing(() => processingMessageFunc(messageContext));
             }
         }
     }

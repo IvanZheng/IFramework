@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Sample.CommandHandler.Products
 {
     public class ProdutCommandHandler : ICommandHandler<CreateProduct>,
-        ICommandHandler<ReduceProduct>,
+        ICommandAsyncHandler<ReduceProduct>,
         ICommandHandler<GetProducts>
     {
      //   IEventBus _EventBus;
@@ -39,11 +39,13 @@ namespace Sample.CommandHandler.Products
             _CommandContext.Reply = products;
         }
 
-        public void Handle(ReduceProduct command)
+        public async Task Handle(ReduceProduct command)
         {
-            var product = _DomainRepository.GetByKey<Product>(command.ProductId);
+            var product = await _DomainRepository.GetByKeyAsync<Product>(command.ProductId)
+                                                 .ConfigureAwait(false);
             product.ReduceCount(command.ReduceCount);
-            _UnitOfWork.Commit();
+            await _UnitOfWork.CommitAsync()
+                             .ConfigureAwait(false);
             _CommandContext.Reply = product.Count;
         }
 

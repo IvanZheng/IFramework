@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 
 namespace IFramework.Command.Impl
@@ -88,7 +89,7 @@ namespace IFramework.Command.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected virtual void ConsumeMessage(IMessageContext commandContext)
+        protected async virtual Task ConsumeMessage(IMessageContext commandContext)
         {
             var command = commandContext.Message as ICommand;
             IMessageContext messageReply = null;
@@ -122,7 +123,7 @@ namespace IFramework.Command.Impl
                     }
                     else
                     {
-                        var messageHandler = scope.Resolve(messageHandlerType);
+                        var messageHandler = scope.Resolve(messageHandlerType.Type);
                         do
                         {
                             try
@@ -131,7 +132,20 @@ namespace IFramework.Command.Impl
                                                                    new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted },
                                                                    TransactionScopeAsyncFlowOption.Enabled))
                                 {
-                                    ((dynamic)messageHandler).Handle((dynamic)command);
+                                    if (messageHandlerType.IsAsync)
+                                    {
+
+                                        await ((dynamic)messageHandler).Handle((dynamic)command)
+                                                                       .ConfigureAwait(false);
+                                    }
+                                    else
+                                    {
+                                        await Task.Run(() =>
+                                        {
+                                            ((dynamic)messageHandler).Handle((dynamic)command);
+                                        }).ConfigureAwait(false);
+                                    }
+
                                     messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
                                     eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetEvents().ForEach(@event =>

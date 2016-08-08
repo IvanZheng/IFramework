@@ -12,6 +12,7 @@ using IFramework.IoC;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Message.Impl;
 using IFramework.Config;
+using System.Threading.Tasks;
 
 namespace IFramework.Event.Impl
 {
@@ -57,7 +58,7 @@ namespace IFramework.Event.Impl
             }
         }
 
-        protected void ConsumeMessage(IMessageContext eventContext)
+        protected async Task ConsumeMessage(IMessageContext eventContext)
         {
             var message = eventContext.Message;
             var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
@@ -68,13 +69,14 @@ namespace IFramework.Event.Impl
             }
 
             SaveEvent(eventContext);
-            messageHandlerTypes.ForEach(messageHandlerType =>
+            //messageHandlerTypes.ForEach(messageHandlerType =>
+            foreach (var messageHandlerType in messageHandlerTypes)
             {
                 using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                 {
                     scope.RegisterInstance(typeof(IMessageContext), eventContext);
                     var messageStore = scope.Resolve<IMessageStore>();
-                    var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.FullName);
+                    var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.Type.FullName);
                     if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                     {
                         var eventMessageStates = new List<MessageState>();
@@ -82,7 +84,7 @@ namespace IFramework.Event.Impl
                         var eventBus = scope.Resolve<IEventBus>();
                         try
                         {
-                            var messageHandler = scope.Resolve(messageHandlerType);
+                            var messageHandler = scope.Resolve(messageHandlerType.Type);
                             using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
                                                                                new TransactionOptions
                                                                                {
@@ -90,7 +92,21 @@ namespace IFramework.Event.Impl
                                                                                },
                                                                                TransactionScopeAsyncFlowOption.Enabled))
                             {
-                                ((dynamic)messageHandler).Handle((dynamic)message);
+                                if (messageHandlerType.IsAsync)
+                                {
+                                    await ((dynamic)messageHandler).Handle((dynamic)message);
+                                }
+                                else
+                                {
+                                    await Task.Run(() =>
+                                    {
+                                        ((dynamic)messageHandler).Handle((dynamic)message);
+                                    }).ConfigureAwait(false);
+                                }
+                                await Task.Run(() =>
+                                {
+                                    ((dynamic)messageHandler).Handle((dynamic)message);
+                                }).ConfigureAwait(false);
 
                                 //get commands to be sent
                                 eventBus.GetCommands().ForEach(cmd =>
@@ -136,7 +152,7 @@ namespace IFramework.Event.Impl
                         }
                     }
                 }
-            });
+            }
             _slidingDoor.RemoveOffset(eventContext.Offset);
         }
         public void Start()

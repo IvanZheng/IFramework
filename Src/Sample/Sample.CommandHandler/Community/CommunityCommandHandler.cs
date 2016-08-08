@@ -14,10 +14,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Sample.CommandHandler.Community
 {
-    public class CommunityCommandHandler : ICommandHandler<Login>,
+    public class CommunityCommandHandler : ICommandAsyncHandler<Login>,
                                            ICommandHandler<Register>,       
                                            ICommandHandler<Modify>
     {
@@ -45,17 +46,19 @@ namespace Sample.CommandHandler.Community
         /// and no need to enter the domain layer!
         /// </summary>
         /// <param name="command"></param>
-        public void Handle(Login command)
+        public async Task Handle(Login command)
         {
-            var account = _DomainRepository.Find<Account>(a => a.UserName.Equals(command.UserName)
-                                                            && a.Password.Equals(command.Password));
+            var account = await _DomainRepository.FindAsync<Account>(a => a.UserName.Equals(command.UserName)
+                                                            && a.Password.Equals(command.Password))
+                                                 .ConfigureAwait(false);
             if (account == null)
             {
                 throw new SysException(DTO.ErrorCode.WrongUsernameOrPassword);
             }
 
             _EventBus.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });
-            _UnitOfWork.Commit();
+            await _UnitOfWork.CommitAsync()
+                             .ConfigureAwait(false);
             _CommandContext.Reply = account.ID;
         }
 

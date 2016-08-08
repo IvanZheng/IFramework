@@ -57,7 +57,7 @@ namespace IFramework4._5Tests
             Assert.AreEqual(processor.MailboxDictionary.Count, 0);
         }
 
-        void ProcessingMessage(IMessageContext messageContext)
+        async Task ProcessingMessage(IMessageContext messageContext)
         {
             _logger.DebugFormat("order: {1} process: {0}", messageContext.MessageID, _totalProcessed);
             Interlocked.Add(ref _totalProcessed, 1);

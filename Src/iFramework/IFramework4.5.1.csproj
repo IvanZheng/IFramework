@@ -59,12 +59,16 @@
   <ItemGroup>
     <Compile Include="Bus\IBus.cs" />
     <Compile Include="Command\CommandBusExtension.cs" />
+    <Compile Include="Command\ICommandAsyncHandler.cs" />
+    <Compile Include="Event\IEventAsyncSubscriber.cs" />
     <Compile Include="IoC\IContainer.cs" />
     <Compile Include="IoC\Injection.cs" />
     <Compile Include="IoC\Lifetime.cs" />
     <Compile Include="IoC\Parameter.cs" />
     <Compile Include="MessageQueue\Configuration.cs" />
     <Compile Include="MessageQueue\MessageQueueFactory.cs" />
+    <Compile Include="Message\IMessageAsyncHandler.cs" />
+    <Compile Include="Message\Impl\HandlerTypeInfo.cs" />
     <Compile Include="Message\Impl\SlidingDoor.cs" />
     <Compile Include="Message\ISlidingDoor.cs" />
     <Compile Include="Message\MessageResponse.cs" />

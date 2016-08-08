@@ -16,12 +16,12 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         where TMessage : class
     {
         public TMessage Message { get; private set; }
-        public Action<TMessage> ProcessingMessageAction { get; private set; }
+        public Func<TMessage, Task> ProcessingMessageFunc { get; private set; }
 
-        public ProcessMessageCommand(TMessage message, Action<TMessage> processingMessageAction)
+        public ProcessMessageCommand(TMessage message, Func<TMessage, Task> processingMessageFunc)
         {
             Message = message;
-            ProcessingMessageAction = processingMessageAction;
+            ProcessingMessageFunc = processingMessageFunc;
         }
 
     }

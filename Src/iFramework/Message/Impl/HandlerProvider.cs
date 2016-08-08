@@ -8,23 +8,25 @@ using IFramework.Infrastructure;
 using IFramework.Config;
 using System.Collections.Concurrent;
 using IFramework.IoC;
+using System.Threading.Tasks;
 
 namespace IFramework.Message.Impl
 {
-    public abstract class HandlerProvider<IHandler> : IHandlerProvider where IHandler : class
+    public abstract class HandlerProvider : IHandlerProvider
     {
         //protected abstract Type HandlerType { get; }
 
         private string[] Assemblies { get; set; }
-        private readonly ConcurrentDictionary<Type, List<Type>> _HandlerTypes;
+        private readonly ConcurrentDictionary<Type, List<HandlerTypeInfo>> _HandlerTypes;
         private readonly HashSet<Type> discardKeyTypes;
-        private readonly Dictionary<Type, ParameterInfo[]> _HandlerConstuctParametersInfo;
+        //private readonly Dictionary<Type, ParameterInfo[]> _HandlerConstuctParametersInfo;
+        protected abstract Type[] HandlerGenericTypes { get;}
 
         public HandlerProvider(params string[] assemblies)
         {
             Assemblies = assemblies;
-            _HandlerTypes = new ConcurrentDictionary<Type, List<Type>>();
-            _HandlerConstuctParametersInfo = new Dictionary<Type, ParameterInfo[]>();
+            _HandlerTypes = new ConcurrentDictionary<Type, List<HandlerTypeInfo>>();
+           // _HandlerConstuctParametersInfo = new Dictionary<Type, ParameterInfo[]>();
             discardKeyTypes = new HashSet<Type>();
 
             RegisterHandlers();
@@ -92,7 +94,7 @@ namespace IFramework.Message.Impl
                                         .Where(x => x.IsInterface == false && x.IsAbstract == false
                                                 && x.GetInterfaces()
                                                     .Any(y => y.IsGenericType
-                                                        && y.GetGenericTypeDefinition() == typeof(IHandler).GetGenericTypeDefinition()));
+                                                        && HandlerGenericTypes.Contains(y.GetGenericTypeDefinition())));
             foreach (var type in exportedTypes)
             {
                 RegisterHandlerFromType(type);
@@ -102,7 +104,7 @@ namespace IFramework.Message.Impl
         protected void RegisterHandlerFromType(Type handlerType)
         {
             var ihandlerTypes = handlerType.GetInterfaces().Where(x => x.IsGenericType
-                                                                    && x.GetGenericTypeDefinition() == typeof(IHandler).GetGenericTypeDefinition());
+                                                                    && HandlerGenericTypes.Contains(x.GetGenericTypeDefinition()));
             foreach (var ihandlerType in ihandlerTypes)
             {
                 var messageType = ihandlerType.GetGenericArguments().Single();
@@ -116,41 +118,44 @@ namespace IFramework.Message.Impl
 
         public void Register(Type messageType, Type handlerType)
         {
+            bool isAsync = false;
+            var handleMethod = handlerType.GetMethods().Where(m => m.GetParameters().Any(p => p.ParameterType == messageType)).FirstOrDefault();
+            isAsync = typeof(Task).IsAssignableFrom(handleMethod.ReturnType);
             if (_HandlerTypes.ContainsKey(messageType))
             {
                 var registeredDispatcherHandlerTypes = _HandlerTypes[messageType];
                 if (registeredDispatcherHandlerTypes != null)
                 {
-                    if (!registeredDispatcherHandlerTypes.Contains(handlerType))
-                        registeredDispatcherHandlerTypes.Add(handlerType);
+                    if (!registeredDispatcherHandlerTypes.Exists(ht => ht.Type == handlerType && ht.IsAsync == isAsync))
+                        registeredDispatcherHandlerTypes.Add(new HandlerTypeInfo(handlerType, isAsync));
                 }
                 else
                 {
-                    registeredDispatcherHandlerTypes = new List<Type>();
+                    registeredDispatcherHandlerTypes = new List<HandlerTypeInfo>();
                     _HandlerTypes[messageType] = registeredDispatcherHandlerTypes;
-                    registeredDispatcherHandlerTypes.Add(handlerType);
+                    registeredDispatcherHandlerTypes.Add(new HandlerTypeInfo(handlerType, isAsync));
                 }
             }
             else
             {
-                var registeredDispatcherHandlerTypes = new List<Type>();
-                registeredDispatcherHandlerTypes.Add(handlerType);
+                var registeredDispatcherHandlerTypes = new List<HandlerTypeInfo>();
+                registeredDispatcherHandlerTypes.Add(new HandlerTypeInfo(handlerType, isAsync));
                 _HandlerTypes.TryAdd(messageType, registeredDispatcherHandlerTypes);
             }
-            var parameterInfoes = handlerType.GetConstructors()
-                                               .OrderByDescending(c => c.GetParameters().Length)
-                                               .FirstOrDefault().GetParameters();
-            _HandlerConstuctParametersInfo[handlerType] = parameterInfoes;
+            //var parameterInfoes = handlerType.GetConstructors()
+            //                                   .OrderByDescending(c => c.GetParameters().Length)
+            //                                   .FirstOrDefault().GetParameters();
+            //_HandlerConstuctParametersInfo[handlerType] = parameterInfoes;
         }
 
-        public Type GetHandlerType(Type messageType)
+        public HandlerTypeInfo GetHandlerType(Type messageType)
         {
             return GetHandlerTypes(messageType).FirstOrDefault();
         }
 
-        public IList<Type> GetHandlerTypes(Type messageType)
+        public IList<HandlerTypeInfo> GetHandlerTypes(Type messageType)
         {
-            var avaliableHandlerTypes = new List<Type>();
+            var avaliableHandlerTypes = new List<HandlerTypeInfo>();
             if (_HandlerTypes.ContainsKey(messageType))
             {
                 var handlerTypes = _HandlerTypes[messageType];
@@ -191,7 +196,7 @@ namespace IFramework.Message.Impl
             var handlerType = GetHandlerType(messageType);
             if (handlerType != null)
             {
-                handler = IoCFactory.Resolve(handlerType);
+                handler = IoCFactory.Resolve(handlerType.Type);
             }
             return handler;
         }
