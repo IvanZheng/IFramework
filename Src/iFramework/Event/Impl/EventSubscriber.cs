@@ -94,7 +94,8 @@ namespace IFramework.Event.Impl
                             {
                                 if (messageHandlerType.IsAsync)
                                 {
-                                    await ((dynamic)messageHandler).Handle((dynamic)message);
+                                    await ((dynamic)messageHandler).Handle((dynamic)message)
+                                                                   .ConfigureAwait(false);
                                 }
                                 else
                                 {
@@ -103,10 +104,6 @@ namespace IFramework.Event.Impl
                                         ((dynamic)messageHandler).Handle((dynamic)message);
                                     }).ConfigureAwait(false);
                                 }
-                                await Task.Run(() =>
-                                {
-                                    ((dynamic)messageHandler).Handle((dynamic)message);
-                                }).ConfigureAwait(false);
 
                                 //get commands to be sent
                                 eventBus.GetCommands().ForEach(cmd =>
