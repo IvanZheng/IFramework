@@ -199,6 +199,7 @@
     <Compile Include="Specifications\SpecificationUtility.cs" />
     <Compile Include="SysExceptions\NoCommandTopic.cs" />
     <Compile Include="SysExceptions\NoHandlerExists.cs" />
+    <Compile Include="SysExceptions\NoMessageId.cs" />
     <Compile Include="SysExceptions\SysException.cs" />
     <Compile Include="UnitOfWork\BaseUnitOfWork.cs" />
     <Compile Include="UnitOfWork\IUnitOfWork.cs" />

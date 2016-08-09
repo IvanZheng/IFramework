@@ -13,14 +13,14 @@ namespace IFramework.Config
     public static class FrameworkConfigurationExtension
     {
         static string _MessageQueueNameFormat = string.Empty;
-        static string _topicNameFormat = string.Empty;
+        static string _appNameFormat = string.Empty;
         static TimeSpan _ReceiveMessageTimeout = new TimeSpan(0, 0, 10);
         public static string AppName { get; private set; }
         public static Configuration UseMessageQueue(this Configuration configuration, string appName = null)
         {
             AppName = appName;
-            var topicNameFormat = string.IsNullOrEmpty(appName) ? "{0}" : appName + ".{0}";
-            configuration.SetTopicNameFormat(topicNameFormat)
+            var appNameFormat = string.IsNullOrEmpty(appName) ? "{0}" : appName + ".{0}";
+            configuration.SetAppNameFormat(appNameFormat)
                          .UseDefaultEventBus()
                          .UseMockCommandBus()
                          .UseMockMessageStore()
@@ -89,9 +89,9 @@ namespace IFramework.Config
             return configuration;
         }
 
-        public static Configuration SetTopicNameFormat(this Configuration configuration, string format)
+        public static Configuration SetAppNameFormat(this Configuration configuration, string format)
         {
-            _topicNameFormat = format;
+            _appNameFormat = format;
             return configuration;
         }
 
@@ -111,11 +111,11 @@ namespace IFramework.Config
             return configuration;
         }
 
-        public static string FormatTopicName(this Configuration configuration, string topic)
+        public static string FormatAppName(this Configuration configuration, string topic)
         {
-            return string.IsNullOrEmpty(_topicNameFormat) ?
+            return string.IsNullOrEmpty(_appNameFormat) ?
                           topic :
-                          string.Format(_topicNameFormat, topic);
+                          string.Format(_appNameFormat, topic);
         }
 
         public static string FormatMessageQueueName(this Configuration configuration, string name)

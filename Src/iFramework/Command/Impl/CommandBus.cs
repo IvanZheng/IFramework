@@ -47,9 +47,8 @@ namespace IFramework.Command.Impl
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();
             _linearCommandManager = linearCommandManager;
             _replyTopicName = replyTopicName;
-            _replySubscriptionName = replySubscriptionName;
+            _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
             // _commandQueueNames = commandQueueNames;
-            _needMessageStore = needMessageStore;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
         }
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
@@ -95,7 +94,8 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_replyTopicName))
                 {
-                    var commitOffsetAction = _messageQueueClient.StartSubscriptionClient(_replyTopicName, 0, _replySubscriptionName, OnMessagesReceived);
+                    var replyTopicName = Configuration.Instance.FormatAppName(_replyTopicName);
+                    var commitOffsetAction = _messageQueueClient.StartSubscriptionClient(replyTopicName, 0, _replySubscriptionName, OnMessagesReceived);
                     _slidingDoor = new SlidingDoor(commitOffsetAction, 1000, 100, Configuration.Instance.GetCommitPerMessage());
                 }
             }
@@ -175,17 +175,17 @@ namespace IFramework.Command.Impl
             return commandState;
         }
 
-        public Task<MessageResponse> SendAsync(ICommand command, bool needReply = true)
+        public Task<MessageResponse> SendAsync(ICommand command, bool needReply = false)
         {
             return SendAsync(command, CancellationToken.None, TimerTaskFactory.Infinite, CancellationToken.None, needReply);
         }
 
-        public Task<MessageResponse> SendAsync(ICommand command, TimeSpan timeout, bool needReply = true)
+        public Task<MessageResponse> SendAsync(ICommand command, TimeSpan timeout, bool needReply = false)
         {
             return SendAsync(command, CancellationToken.None, timeout, CancellationToken.None, needReply);
         }
 
-        public Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken, TimeSpan timeout, CancellationToken replyCancellationToken, bool needReply = true)
+        public Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken, TimeSpan timeout, CancellationToken replyCancellationToken, bool needReply = false)
         {
             var commandContext = WrapCommand(command, needReply);
             var commandState = BuildCommandState(commandContext, sendCancellationToken, timeout, replyCancellationToken, needReply);
@@ -199,6 +199,11 @@ namespace IFramework.Command.Impl
 
         public IMessageContext WrapCommand(ICommand command, bool needReply = false)
         {
+            if (string.IsNullOrEmpty(command.ID))
+            {
+                _logger.Error(new NoMessageId());
+                throw new NoMessageId();
+            }
             string commandKey = null;
             if (command is ILinearCommand)
             {
@@ -252,4 +257,5 @@ namespace IFramework.Command.Impl
             SendAsync(commandStates.ToArray());
         }
     }
+
 }
