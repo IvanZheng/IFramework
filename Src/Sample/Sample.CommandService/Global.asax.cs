@@ -114,8 +114,8 @@ namespace Sample.CommandService
             {
                 Task.WaitAll(
                     Task.Factory.StartNew(() => _CommandConsumer1.Stop()),
-                    //Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
-                    //Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
+                    Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
+                    Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
                     Task.Factory.StartNew(() => _CommandBus.Stop()),
                     Task.Factory.StartNew(() => _MessagePublisher.Stop()),
                     Task.Factory.StartNew(() => _DomainEventConsumer.Stop()),
