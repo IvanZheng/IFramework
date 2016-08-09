@@ -78,7 +78,7 @@ namespace IFramework.Command.Impl
 
         public void Stop()
         {
-            _messageQueueClient.StopQueueClients();
+            _messageQueueClient.Dispose();
             _messageProcessor.Stop();
         }
 
@@ -132,6 +132,7 @@ namespace IFramework.Command.Impl
                                 {
                                     messageHandler = scope.Resolve(messageHandlerType.Type);
                                 }
+
                                 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
                                                                    new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted },
                                                                    TransactionScopeAsyncFlowOption.Enabled))

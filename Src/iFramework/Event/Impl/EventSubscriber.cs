@@ -107,7 +107,7 @@ namespace IFramework.Event.Impl
 
                                 //get commands to be sent
                                 eventBus.GetCommands().ForEach(cmd =>
-                                   commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd, false)))
+                                   commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd)))
                                );
                                 //get events to be published
                                 eventBus.GetEvents().ForEach(msg => eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, key: msg.Key))));
@@ -171,7 +171,7 @@ namespace IFramework.Event.Impl
 
         public void Stop()
         {
-            _MessageQueueClient.StopSubscriptionClients();
+            _MessageQueueClient.Dispose();
             _messageProcessor.Stop();
         }
 

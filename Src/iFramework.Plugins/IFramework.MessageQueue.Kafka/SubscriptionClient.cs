@@ -3,7 +3,7 @@
     public class SubscriptionClient : KafkaConsumer
     {
         public SubscriptionClient(string topic, int partition, string subscription, string zkConnectionString)
-            : base(zkConnectionString, topic, partition, subscription)
+            : base(zkConnectionString, topic, partition, $"{subscription}.{partition}")
         {
 
         }

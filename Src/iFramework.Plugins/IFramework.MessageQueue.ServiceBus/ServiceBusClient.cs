@@ -192,7 +192,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return (offset) => CommitOffset(commandQueueClient, offset);
         }
 
-        public void StopQueueClients()
+        void StopQueueClients()
         {
             _commandClientTasks.ForEach(task =>
             {
@@ -203,7 +203,7 @@ namespace IFramework.MessageQueue.ServiceBus
             Task.WaitAll(_commandClientTasks.ToArray());
         }
 
-        public Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName,  OnMessagesReceived onMessagesReceived)
+        public Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName, OnMessagesReceived onMessagesReceived)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -226,7 +226,7 @@ namespace IFramework.MessageQueue.ServiceBus
         //    (messageContext as MessageContext).Complete();
         //}
 
-        public void StopSubscriptionClients()
+        void StopSubscriptionClients()
         {
             _subscriptionClientTasks.ForEach(subscriptionClientTask =>
             {
@@ -409,6 +409,14 @@ namespace IFramework.MessageQueue.ServiceBus
             {
                 _logger.Error($"queueClient commit offset {sequenceNumber} failed", ex);
             }
+        }
+
+        public void Dispose()
+        {
+            StopQueueClients();
+            StopSubscriptionClients();
+            _topicClients.Values.ForEach(client => client.Close());
+            _queueClients.Values.ForEach(client => client.Close());
         }
     }
 }

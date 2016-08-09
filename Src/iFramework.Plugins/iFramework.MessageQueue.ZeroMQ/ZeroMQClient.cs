@@ -8,6 +8,11 @@ namespace IFramework.MessageQueue.ZeroMQ
 {
     public class ZeroMQClient : IMessageQueueClient
     {
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Publish(IMessageContext messageContext, string topic)
         {
             throw new NotImplementedException();

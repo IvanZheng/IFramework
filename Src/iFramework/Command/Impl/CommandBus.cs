@@ -110,7 +110,6 @@ namespace IFramework.Command.Impl
         public override void Stop()
         {
             base.Stop();
-            _messageQueueClient.StopSubscriptionClients();
             _messageProcessor.Stop();
         }
 
@@ -257,5 +256,4 @@ namespace IFramework.Command.Impl
             SendAsync(commandStates.ToArray());
         }
     }
-
 }

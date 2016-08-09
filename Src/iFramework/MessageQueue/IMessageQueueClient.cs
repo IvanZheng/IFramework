@@ -7,7 +7,7 @@ using System.Text;
 namespace IFramework.MessageQueue
 {
     public delegate void OnMessagesReceived(params IMessageContext[] messageContext);
-    public interface IMessageQueueClient
+    public interface IMessageQueueClient : IDisposable
     {
         void Send(IMessageContext messageContext, string queue);
         void Publish(IMessageContext messageContext, string topic);
@@ -16,12 +16,12 @@ namespace IFramework.MessageQueue
                                     string topic = null, string key = null,
                                     string replyEndPoint = null, string messageId = null);
 
-        Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName,  OnMessagesReceived onMessageReceived);
+        Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName, OnMessagesReceived onMessageReceived);
 
-        void StopSubscriptionClients();
+        //void StopSubscriptionClients();
 
         Action<long> StartQueueClient(string commandQueueName, int partition, OnMessagesReceived onMessageReceived);
 
-        void StopQueueClients();
+        //void StopQueueClients();
     }
 }

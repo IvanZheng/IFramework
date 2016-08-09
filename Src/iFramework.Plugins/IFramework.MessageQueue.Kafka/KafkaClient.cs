@@ -75,7 +75,7 @@ namespace IFramework.MessageQueue.MSKafka
 
         }
 
-        void CreateTopic(string topic)
+        public void CreateTopic(string topic)
         {
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
@@ -278,7 +278,7 @@ namespace IFramework.MessageQueue.MSKafka
             return queueConsumer.CommitOffset;
         }
 
-        public Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName,  OnMessagesReceived onMessagesReceived)
+        public Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName, OnMessagesReceived onMessagesReceived)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -296,7 +296,7 @@ namespace IFramework.MessageQueue.MSKafka
             return subscriptionClient.CommitOffset;
         }
 
-        public void StopQueueClients()
+        void StopQueueClients()
         {
             _commandClientTasks.ForEach(task =>
             {
@@ -305,13 +305,9 @@ namespace IFramework.MessageQueue.MSKafka
             }
             );
             Task.WaitAll(_commandClientTasks.ToArray());
-            _queueClients.Values.ForEach(queueClient =>
-            {
-                queueClient.Stop();
-            });
         }
 
-        public void StopSubscriptionClients()
+        void StopSubscriptionClients()
         {
             _subscriptionClientTasks.ForEach(subscriptionClientTask =>
             {
@@ -344,5 +340,12 @@ namespace IFramework.MessageQueue.MSKafka
             return messageContext;
         }
 
+        public void Dispose()
+        {
+            StopQueueClients();
+            StopSubscriptionClients();
+            _topicClients.Values.ForEach(client => client.Stop());
+            _queueClients.Values.ForEach(client => client.Stop());
+        }
     }
 }

@@ -17,8 +17,8 @@ namespace IFramework.Message.Impl
         protected BlockingCollection<MessageState> _messageStateQueue { get; set; }
         protected string _defaultTopic;
         protected Task _sendMessageTask;
-        protected bool _needMessageStore;
         protected IMessageQueueClient _messageQueueClient;
+        protected bool _needMessageStore;
         protected ILogger _logger;
 
         public MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null, bool needMessageStore = false)
@@ -56,6 +56,7 @@ namespace IFramework.Message.Impl
                 cancellationSource.Cancel(true);
                 Task.WaitAll(_sendMessageTask);
             }
+            _messageQueueClient.Dispose();
         }
         public Task<MessageResponse[]> SendAsync(params IMessage[] messages)
         {

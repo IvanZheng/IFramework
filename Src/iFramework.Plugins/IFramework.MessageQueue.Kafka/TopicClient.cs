@@ -30,5 +30,10 @@ namespace IFramework.MessageQueue.MSKafka
         {
             _producer.Send(data);
         }
+
+        public void Stop()
+        {
+            _producer?.Dispose();
+        }
     }
 }
