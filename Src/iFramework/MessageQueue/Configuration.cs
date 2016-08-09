@@ -34,6 +34,13 @@ namespace IFramework.Config
             return configuration;
         }
 
+        public static Configuration UseMessageStore<TMessageStore>(this Configuration configuration, Lifetime lifetime = Lifetime.Hierarchical)
+               where TMessageStore : IMessageStore
+        {
+            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageStore, TMessageStore>(lifetime);
+            return configuration;
+        }
+
         public static Configuration UseMockMessageStore(this Configuration configuration)
         {
             IoCFactory.Instance.CurrentContainer.RegisterType<IMessageStore, MockMessageStore>(Lifetime.Singleton);
