@@ -123,11 +123,15 @@ namespace IFramework.Command.Impl
                     }
                     else
                     {
-                        var messageHandler = scope.Resolve(messageHandlerType.Type);
+                        object messageHandler = null;
                         do
                         {
                             try
                             {
+                                if (messageHandler == null)
+                                {
+                                    messageHandler = scope.Resolve(messageHandlerType.Type);
+                                }
                                 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
                                                                    new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted },
                                                                    TransactionScopeAsyncFlowOption.Enabled))
