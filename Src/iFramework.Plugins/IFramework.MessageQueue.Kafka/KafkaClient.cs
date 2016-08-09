@@ -23,6 +23,8 @@ namespace IFramework.MessageQueue.MSKafka
     {
         protected ConcurrentDictionary<string, QueueClient> _queueClients;
         protected ConcurrentDictionary<string, TopicClient> _topicClients;
+        protected List<SubscriptionClient> _subscriptionClients;
+        protected List<QueueConsumer> _queueConsumers;
 
         protected List<Task> _subscriptionClientTasks;
         protected List<Task> _commandClientTasks;
@@ -165,12 +167,10 @@ namespace IFramework.MessageQueue.MSKafka
                         }
                         catch (OperationCanceledException)
                         {
-                            kafkaConsumer.Stop();
                             return;
                         }
                         catch (ThreadAbortException)
                         {
-                            kafkaConsumer.Stop();
                             return;
                         }
                         catch (Exception ex)
@@ -185,21 +185,21 @@ namespace IFramework.MessageQueue.MSKafka
                 }
                 catch (OperationCanceledException)
                 {
-                    kafkaConsumer.Stop();
                     return;
                 }
                 catch (ThreadAbortException)
                 {
-                    kafkaConsumer.Stop();
                     return;
                 }
                 catch (Exception ex)
                 {
-                    Thread.Sleep(1000);
-                    _logger.Error(ex.GetBaseException().Message, ex);
+                    if (!cancellationTokenSource.IsCancellationRequested)
+                    {
+                        Thread.Sleep(1000);
+                        _logger.Error(ex.GetBaseException().Message, ex);
+                    }
                 }
             }
-            kafkaConsumer.Stop();
             #endregion
         }
         #endregion
@@ -212,6 +212,8 @@ namespace IFramework.MessageQueue.MSKafka
             _topicClients = new ConcurrentDictionary<string, TopicClient>();
             _subscriptionClientTasks = new List<Task>();
             _commandClientTasks = new List<Task>();
+            _subscriptionClients = new List<SubscriptionClient>();
+            _queueConsumers = new List<QueueConsumer>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
         }
 
@@ -275,6 +277,7 @@ namespace IFramework.MessageQueue.MSKafka
                                                      TaskCreationOptions.LongRunning,
                                                      TaskScheduler.Default);
             _commandClientTasks.Add(task);
+            _queueConsumers.Add(queueConsumer);
             return queueConsumer.CommitOffset;
         }
 
@@ -293,6 +296,7 @@ namespace IFramework.MessageQueue.MSKafka
                                              TaskCreationOptions.LongRunning,
                                              TaskScheduler.Default);
             _subscriptionClientTasks.Add(task);
+            _subscriptionClients.Add(subscriptionClient);
             return subscriptionClient.CommitOffset;
         }
 
@@ -304,6 +308,7 @@ namespace IFramework.MessageQueue.MSKafka
                 cancellationSource.Cancel(true);
             }
             );
+            _queueConsumers.ForEach(client => client.Stop());
             Task.WaitAll(_commandClientTasks.ToArray());
         }
 
@@ -315,6 +320,7 @@ namespace IFramework.MessageQueue.MSKafka
                 cancellationSource.Cancel(true);
             }
               );
+            _subscriptionClients.ForEach(client => client.Stop());
             Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
 

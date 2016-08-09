@@ -80,7 +80,7 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
         internal IEnumerable<KafkaMessages.Message> PeekBatch(int fetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
-                                                int maxWaitTime = 2000, int minBytes = 1)
+                                                int maxWaitTime = 5000, int minBytes = 1)
         {
             //var fetchRequest = new FetchRequest(0, ConsumerId, maxWaitTime, minBytes, new Dictionary<string, List<PartitionFetchInfo>> {
             //    { Topic, new List<PartitionFetchInfo> { new PartitionFetchInfo(Partition, FetchedOffset, fetchSize)}  }
