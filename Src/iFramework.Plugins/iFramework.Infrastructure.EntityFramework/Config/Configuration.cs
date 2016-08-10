@@ -13,28 +13,27 @@ namespace IFramework.EntityFramework.Config
 {
     public static class ConfigurationExtension
     {
-        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.PerRequest, params Type[] dbContextTypes)
+        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.PerRequest)
         {
             container = container ?? IoCFactory.Instance.CurrentContainer;
             return configuration.RegisterUnitOfWork(container, lifetime)
-                                .RegisterRepositories(container, lifetime)
-                                .RegisterDbContext(container, lifetime, dbContextTypes);
+                                .RegisterRepositories(container, lifetime);
         }
 
-        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration, Lifetime lifetime = Lifetime.PerRequest, params Type[] dbContextTypes)
+        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration, Lifetime lifetime = Lifetime.PerRequest)
         {
-            return configuration.RegisterEntityFrameworkComponents(null, lifetime, dbContextTypes);
+            return configuration.RegisterEntityFrameworkComponents(null, lifetime);
         }
 
-        public static Configuration RegisterDbContext(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.PerRequest, params Type[] dbContextTypes)
-        {
-            container = container ?? IoCFactory.Instance.CurrentContainer;
-            dbContextTypes.ForEach(type =>
-            {
-                container.RegisterType(type, type, lifetime);
-            });
-            return configuration;
-        }
+        //public static Configuration RegisterDbContext(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.PerRequest, params Type[] dbContextTypes)
+        //{
+        //    container = container ?? IoCFactory.Instance.CurrentContainer;
+        //    dbContextTypes.ForEach(type =>
+        //    {
+        //        container.RegisterType(type, type, lifetime);
+        //    });
+        //    return configuration;
+        //}
 
         public static Configuration RegisterUnitOfWork(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.PerRequest)
         {
