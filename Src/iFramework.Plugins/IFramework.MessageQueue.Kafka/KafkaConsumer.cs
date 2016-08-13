@@ -91,14 +91,14 @@ namespace IFramework.MessageQueue.MSKafka
             slidingDoor.AddOffset(message.Offset);
         }
 
-        internal void RemoveMessage(KafkaMessages.Message message)
+        internal void RemoveMessage(int partition, long offset)
         {
-            var slidingDoor = SlidingDoors.TryGetValue(message.PartitionId.Value);
+            var slidingDoor = SlidingDoors.TryGetValue(partition);
             if (slidingDoor == null)
             {
                 throw new System.Exception("partition slidingDoor not exists");
             }
-            slidingDoor.RemoveOffset(message.Offset);
+            slidingDoor.RemoveOffset(offset);
         }
 
         internal IEnumerable<KafkaMessages.Message> GetMessages(CancellationToken cancellationToken)
@@ -109,7 +109,7 @@ namespace IFramework.MessageQueue.MSKafka
         internal void CommitOffset(IMessageContext messageContext)
         {
             var message = (messageContext as MessageContext);
-            CommitOffset(message.Partition, message.Offset);
+            RemoveMessage(message.Partition, message.Offset);
         }
 
         internal void CommitOffset(int partition, long offset)

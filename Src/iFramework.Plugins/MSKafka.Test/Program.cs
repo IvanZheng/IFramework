@@ -55,7 +55,7 @@ namespace MSKafka.Test
 
                     // publish event
                     var @event = new DomainEvent($"handled event {command.Body}");
-                    client.Publish(new MessageContext(@event), eventTopic);
+                    //client.Publish(new MessageContext(@event), eventTopic);
                 });
 
             });
@@ -109,7 +109,7 @@ namespace MSKafka.Test
         static void SendCommand(KafkaClient client, string body)
         {
             var command = new Command(body);
-            client.Send(new MessageContext(command), commandQueue);
+           // client.Send(new MessageContext(command), commandQueue);
             Console.WriteLine($"Send {command.ID} successfully cmd: {command.Body}");
         }
 

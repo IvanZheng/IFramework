@@ -147,8 +147,8 @@ namespace IFramework.MessageQueue.MSKafka
                     {
                         try
                         {
-                            var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
-                            var messageContext = new MessageContext(kafkaMessage, message.PartitionId.Value, message.Offset);
+                            //var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
+                            var messageContext = new MessageContext(message);
                             kafkaConsumer.AddMessage(message);
                             onMessagesReceived(messageContext);
                             kafkaConsumer.BlockIfFullLoad();
@@ -165,7 +165,7 @@ namespace IFramework.MessageQueue.MSKafka
                         {
                             if (message.Payload != null)
                             {
-                                kafkaConsumer.RemoveMessage(message);
+                                kafkaConsumer.RemoveMessage(message.PartitionId.Value, message.Offset);
                             }
                             _logger.Error(ex.GetBaseException().Message, ex);
                         }
