@@ -49,7 +49,7 @@ namespace Sample.CommandService
                             .UseMessageQueue()
                             .UseMessageStore<SampleModelContext>()
                             .UseKafka("192.168.99.60:2181")
-                            .UseCommandBus(Environment.MachineName, needMessageStore:true)
+                            .UseCommandBus(Environment.MachineName, needMessageStore:true, linerCommandManager: new Sample.Command.LinearCommandManager())
                             .UseMessagePublisher("eventTopic", true);
 
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);
@@ -82,11 +82,11 @@ namespace Sample.CommandService
                 _CommandConsumer1 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", "CommandHandlers");
                 _CommandConsumer1.Start();
 
-                //_CommandConsumer2 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", "CommandHandlers");
-                //_CommandConsumer2.Start();
+                _CommandConsumer2 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", "CommandHandlers");
+                _CommandConsumer2.Start();
 
-                //_CommandConsumer3 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, Environment.MachineName, "CommandHandlers");
-                //_CommandConsumer3.Start();
+                _CommandConsumer3 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", "CommandHandlers");
+                _CommandConsumer3.Start();
                 #endregion
             }
             catch (Exception ex)
