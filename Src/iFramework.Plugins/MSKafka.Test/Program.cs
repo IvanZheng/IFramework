@@ -36,7 +36,7 @@ namespace MSKafka.Test
             //var queueClient = client.GetQueueClient(Configuration.Instance.FormatMessageQueueName(commandQueue));
             //queueClient.CommitOffset(4);
 
-            client.StartQueueClient(commandQueue, 0, messageContexts =>
+            client.StartQueueClient(commandQueue, "0", messageContexts =>
             {
                 messageContexts.ForEach(messageContext =>
                 {
@@ -47,7 +47,7 @@ namespace MSKafka.Test
                     int.TryParse(command.Body, out val);
                     total += val;
                     Console.WriteLine($"handle command {command.ID} message: {command.Body} offset:{kafakMessageContext.Offset}");
-                    kafakMessageContext.Complete();
+                    //kafakMessageContext.CommitOffset();
                     //  publish reply
                     var reply = $"cmd {command.Body} reply";
                     var messageReply = client.WrapMessage(reply, messageContext.MessageID, messageContext.ReplyToEndPoint);
@@ -60,7 +60,7 @@ namespace MSKafka.Test
 
             });
 
-            client.StartSubscriptionClient(replyTopic, 0, subscription, messageContexts =>
+            client.StartSubscriptionClient(replyTopic, subscription, "0", messageContexts =>
             {
                 messageContexts.ForEach(messageContext => {
                     var kafakMessageContext = messageContext as MessageContext;
@@ -69,7 +69,7 @@ namespace MSKafka.Test
                 });
             });
 
-            client.StartSubscriptionClient(eventTopic, 0, subscription, messageContexts =>
+            client.StartSubscriptionClient(eventTopic, subscription, "0", messageContexts =>
             {
                 messageContexts.ForEach(messageContext => {
                     var kafakMessageContext = messageContext as MessageContext;

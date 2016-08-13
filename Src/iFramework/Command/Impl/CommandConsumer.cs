@@ -26,22 +26,27 @@ namespace IFramework.Command.Impl
         protected IMessageQueueClient _messageQueueClient;
         protected IMessagePublisher _messagePublisher;
         protected string _commandQueueName;
-        protected int _partition;
+        protected string _consuemrId;
         protected CancellationTokenSource _cancellationTokenSource;
         //protected Task _consumeMessageTask;
         protected MessageProcessor _messageProcessor;
-        protected ISlidingDoor _slidingDoor;
-
+        protected int _fullLoadThreshold;
+        protected int _waitInterval;
+        protected Action<IMessageContext> _removeMessageContext;
         public CommandConsumer(IMessageQueueClient messageQueueClient,
                                IMessagePublisher messagePublisher,
                                IHandlerProvider handlerProvider,
                                string commandQueueName,
-                               int partition = 0)
+                               string consumerId,
+                               int fullLoadThreshold = 1000,
+                               int waitInterval = 1000)
         {
+            _fullLoadThreshold = fullLoadThreshold;
+            _waitInterval = waitInterval;
             _commandQueueName = commandQueueName;
             _handlerProvider = handlerProvider;
             _messagePublisher = messagePublisher;
-            _partition = partition;
+            _consuemrId = consumerId;
             _cancellationTokenSource = new CancellationTokenSource();
             _messageQueueClient = messageQueueClient;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
@@ -54,8 +59,7 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
-                    var _CommitOffset = _messageQueueClient.StartQueueClient(_commandQueueName, _partition, OnMessageReceived);
-                    _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100, Configuration.Instance.GetCommitPerMessage());
+                    _removeMessageContext = _messageQueueClient.StartQueueClient(_commandQueueName, _consuemrId, OnMessageReceived, _fullLoadThreshold, _waitInterval);
                 }
                 _messageProcessor.Start();
             }
@@ -69,11 +73,10 @@ namespace IFramework.Command.Impl
         {
             messageContexts.ForEach(messageContext =>
             {
-                _slidingDoor.AddOffset(messageContext.Offset);
                 _messageProcessor.Process(messageContext, ConsumeMessage);
                 MessageCount++;
             });
-            _slidingDoor.BlockIfFullLoad();
+            
         }
 
         public void Stop()
@@ -208,11 +211,8 @@ namespace IFramework.Command.Impl
                 {
                     _logger.Error($"_messagePublisher SendAsync error", ex);
                 }
-                _slidingDoor.RemoveOffset(commandContext.Offset);
+                _removeMessageContext(commandContext);
             }
         }
-
-
-
     }
 }

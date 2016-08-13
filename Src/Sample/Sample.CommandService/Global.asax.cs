@@ -18,6 +18,9 @@ using System.Threading.Tasks;
 using IFramework.Command.Impl;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using IFramework.IoC;
+using IFramework.MessageQueue.MSKafka.Config;
+using Sample.Persistence;
+using IFramework.MessageQueue;
 
 namespace Sample.CommandService
 {
@@ -41,54 +44,49 @@ namespace Sample.CommandService
             try
             {
                 Configuration.Instance
-                             .UseLog4Net();
+                            .UseLog4Net()
+                            .MessageQueueUseMachineNameFormat()
+                            .UseMessageQueue()
+                            .UseMessageStore<SampleModelContext>()
+                            .UseKafka("192.168.99.60:2181")
+                            .UseCommandBus(Environment.MachineName, needMessageStore:true)
+                            .UseMessagePublisher("eventTopic", true);
+
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);
 
 
                 _Logger.Debug($"App Started");
-                Configuration.Instance
-                             //.SetCommitPerMessage(true)//for servicebus !!!
-                             .MessageQueueUseMachineNameFormat();
 
                 #region EventPublisher init
-                _MessagePublisher = IoCFactory.Resolve<IMessagePublisher>();
+                _MessagePublisher = MessageQueueFactory.GetMessagePublisher();
                 _MessagePublisher.Start();
                 #endregion
 
                 #region event subscriber init
-                _DomainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventSubscriber");
+                _DomainEventConsumer = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber", Environment.MachineName, "DomainEventSubscriber");
                 _DomainEventConsumer.Start();
                 #endregion
 
                 #region application event subscriber init
-                _ApplicationEventConsumer = IoCFactory.Resolve<IMessageConsumer>("ApplicationEventConsumer");
+                _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber", Environment.MachineName, "ApplicationEventConsumer");
                 _ApplicationEventConsumer.Start();
                 #endregion
 
                 #region CommandBus init
-                _CommandBus = IoCFactory.Resolve<ICommandBus>();
+                _CommandBus = MessageQueueFactory.GetCommandBus();
                 _CommandBus.Start();
                 #endregion
 
-                #region Command Consuemrs init
-                _CommandConsumer1 = IoCFactory.Resolve<CommandConsumer>(
-                                                new Parameter("commandQueueName", "commandqueue"),
-                                                new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
-                                                new Parameter("partition", 0));
+                #region Command Consuemrs init'
+                var commandQueueName = "commandqueue";
+                _CommandConsumer1 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", "CommandHandlers");
                 _CommandConsumer1.Start();
 
+                //_CommandConsumer2 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", "CommandHandlers");
+                //_CommandConsumer2.Start();
 
-                _CommandConsumer2 = IoCFactory.Resolve<CommandConsumer>(
-                                              new Parameter("commandQueueName", "commandqueue"),
-                                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
-                                              new Parameter("partition", 1));
-                _CommandConsumer2.Start();
-
-                _CommandConsumer3 = IoCFactory.Resolve<CommandConsumer>(
-                                              new Parameter("commandQueueName", "commandqueue"),
-                                              new Parameter("handlerProvider", new CommandHandlerProvider("CommandHandlers")),
-                                              new Parameter("partition", 2));
-                _CommandConsumer3.Start();
+                //_CommandConsumer3 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, Environment.MachineName, "CommandHandlers");
+                //_CommandConsumer3.Start();
                 #endregion
             }
             catch (Exception ex)

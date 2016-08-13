@@ -1,4 +1,5 @@
 ﻿using IFramework.Message;
+using IFramework.MessageQueue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,11 @@ namespace IFramework.MessageQueue
                                     string topic = null, string key = null,
                                     string replyEndPoint = null, string messageId = null);
 
-        Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName, OnMessagesReceived onMessageReceived);
+        Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consuemrId, OnMessagesReceived onMessageReceived, int fullLoadThreshold = 1000, int waitInterval = 1000);
 
         //void StopSubscriptionClients();
 
-        Action<long> StartQueueClient(string commandQueueName, int partition, OnMessagesReceived onMessageReceived);
+        Action<IMessageContext> StartQueueClient(string commandQueueName, string consuemrId, OnMessagesReceived onMessageReceived, int fullLoadThreshold = 1000, int waitInterval = 1000);
 
         //void StopQueueClients();
     }

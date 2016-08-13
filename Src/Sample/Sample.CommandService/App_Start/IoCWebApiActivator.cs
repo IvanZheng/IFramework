@@ -10,17 +10,9 @@ namespace Sample.CommandService.App_Start
     public static class IoCWebApiActivator
     {
         /// <summary>Integrates Unity when the application starts.</summary>
-        public static void Start() 
+        public static void Start()
         {
             var resolver = new HierarchicalDependencyResolver(IoCConfig.GetConfiguredContainer());
-            //resolver.RegisterComponents(container =>
-            //    Configuration.Instance
-            //                 .RegisterEntityFrameworkComponents(container,
-            //                                                    Lifetime.Hierarchical,
-            //                                                    typeof(SampleModelContext),
-            //                                                    typeof(CommunityRepository)
-            //                                                    )
-            //    );
             GlobalConfiguration.Configuration.DependencyResolver = resolver;
         }
 

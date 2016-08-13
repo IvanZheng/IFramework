@@ -15,14 +15,13 @@ namespace IFramework.MessageQueue.MSKafka
         string _queue;
         ZooKeeperConfiguration _zooKeeperConfiguration;
         ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(QueueClient).Name);
-        IDictionary<int, KafkaMessageStream<Kafka.Client.Messages.Message>> _partitionStreams;
         public QueueClient(string queue, string zkConnectionString)
         {
             _queue = queue;
-            _partitionStreams = new ConcurrentDictionary<int, KafkaMessageStream<Kafka.Client.Messages.Message>>();
             _zooKeeperConfiguration = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 3000);
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
+                AckTimeout = 30000,
                 RequiredAcks = -1,
                 ZooKeeper = _zooKeeperConfiguration
             };

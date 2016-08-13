@@ -72,7 +72,7 @@ namespace IFramework.Config
             IoCFactory.Instance.CurrentContainer.RegisterType<ICommandBus, MockCommandBus>(Lifetime.Singleton);
             return configuration;
         }
-        public static Configuration UseCommandBus(this Configuration configuration, string replyTopic = "replyTopic", string replySubscription = "replySubscription", bool needMessageStore = false, ILinearCommandManager linerCommandManager = null)
+        public static Configuration UseCommandBus(this Configuration configuration, string consumerId, string replyTopic = "replyTopic", string replySubscription = "replySubscription", bool needMessageStore = false, ILinearCommandManager linerCommandManager = null)
         {
             var container = IoCFactory.Instance.CurrentContainer;
             if (linerCommandManager == null)
@@ -80,7 +80,7 @@ namespace IFramework.Config
                 linerCommandManager = new LinearCommandManager();
             }
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            var commandBus = new CommandBus(messageQueueClient, linerCommandManager, replyTopic, replySubscription, needMessageStore);
+            var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic, replySubscription, needMessageStore);
             container.RegisterInstance<ICommandBus>(commandBus);
             return configuration;
         }

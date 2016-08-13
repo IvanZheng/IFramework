@@ -25,33 +25,17 @@ namespace IFramework.MessageQueue
             return IoCFactory.Resolve<IMessagePublisher>();
         }
 
-        public static IMessageConsumer CreateCommandConsumer(string commandQueue, params string[] handlerProvierNames)
-        {
-            return CreateCommandConsumer(commandQueue, 0, handlerProvierNames);
-        }
-
-        public static IMessageConsumer CreateCommandConsumer(string commandQueue, int partition, params string[] handlerProvierNames)
+        public static IMessageConsumer CreateCommandConsumer(string commandQueue, string consumerId, params string[] handlerProvierNames)
         {
             var container = IoCFactory.Instance.CurrentContainer;
             var messagePublisher = container.Resolve<IMessagePublisher>();
             var handlerProvider = new CommandHandlerProvider(handlerProvierNames);
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            var commandConsumer = new CommandConsumer(messageQueueClient, messagePublisher, handlerProvider, commandQueue, partition);
+            var commandConsumer = new CommandConsumer(messageQueueClient, messagePublisher, handlerProvider, commandQueue, consumerId);
             return commandConsumer;
         }
 
-
-        public static IMessageConsumer CreateEventSubscriber(string topic, string subscription, params string[] handlerProviderNames)
-        {
-            return CreateEventSubscriber(topic, subscription, 0, handlerProviderNames);
-        }
-
-        public static IMessageConsumer CreateEventSubscriber(string topic, int partition, string subscription, params string[] handlerProviderNames)
-        {
-            return CreateEventSubscriber(topic, subscription, partition, handlerProviderNames);
-        }
-
-        public static IMessageConsumer CreateEventSubscriber(string topic, string subscription, int partition, params string[] handlerProviderNames)
+        public static IMessageConsumer CreateEventSubscriber(string topic, string subscription, string consumerId, params string[] handlerProviderNames)
         {
             subscription = $"{FrameworkConfigurationExtension.AppName}.{subscription}";
             var container = IoCFactory.Instance.CurrentContainer;
@@ -60,7 +44,7 @@ namespace IFramework.MessageQueue
             var messagePublisher = GetMessagePublisher();
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
 
-            var eventSubscriber = new EventSubscriber(messageQueueClient, handlerProvider, commandBus, messagePublisher, subscription, topic, partition);
+            var eventSubscriber = new EventSubscriber(messageQueueClient, handlerProvider, commandBus, messagePublisher, subscription, topic, consumerId);
             return eventSubscriber;
         }
     }

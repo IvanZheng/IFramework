@@ -10,6 +10,8 @@ using IFramework.Event;
 using IFramework.Message;
 using System.Web.Configuration;
 using IFramework.IoC;
+using IFramework.Infrastructure.Logging;
+using IFramework.Event.Impl;
 
 namespace IFramework.Config
 {
@@ -27,7 +29,35 @@ namespace IFramework.Config
 
         Configuration()
         {
+           
         }
+
+        public Configuration RegisterCommonComponents()
+        {
+            UseNoneLogger();
+            return this;
+        }
+
+        public Configuration UseNoneLogger()
+        {
+            IoCFactory.Instance.CurrentContainer
+                            .RegisterInstance(typeof(ILoggerFactory)
+                                       , new MockLoggerFactory());
+            return this;
+        }
+
+        public Configuration RegisterDefaultEventBus(Lifetime lifetime = Lifetime.Hierarchical)
+        {
+            return RegisterDefaultEventBus(null, lifetime);
+        }
+
+        public Configuration RegisterDefaultEventBus(IContainer contaienr, Lifetime lifetime = Lifetime.Hierarchical)
+        {
+            var container = contaienr ?? IoCFactory.Instance.CurrentContainer;
+            container.RegisterType<IEventBus, EventBus>(lifetime);
+            return this;
+        }
+
 
 
         bool CommitPerMessage { get; set; }

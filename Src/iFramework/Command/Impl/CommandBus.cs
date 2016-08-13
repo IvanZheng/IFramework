@@ -29,21 +29,19 @@ namespace IFramework.Command.Impl
         /// cache command states for command reply. When reply comes, make replyTaskCompletionSouce completed
         /// </summary>
         protected ConcurrentDictionary<string, MessageState> _commandStateQueues;
-        /// <summary>
-        /// use slidingdoor to control the process of consuming message
-        /// </summary>
-        protected ISlidingDoor _slidingDoor;
         protected MessageProcessor _messageProcessor;
-
-
+        protected Action<IMessageContext> _removeMessageContext;
+        protected string _consumerId;
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
+                          string consumerId,
                           //string[] commandQueueNames,
                           string replyTopicName,
                           string replySubscriptionName,
                           bool needMessageStore = true)
             : base(messageQueueClient, needMessageStore: needMessageStore)
         {
+            _consumerId = consumerId;
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();
             _linearCommandManager = linearCommandManager;
             _replyTopicName = replyTopicName;
@@ -95,8 +93,7 @@ namespace IFramework.Command.Impl
                 if (!string.IsNullOrWhiteSpace(_replyTopicName))
                 {
                     var replyTopicName = Configuration.Instance.FormatAppName(_replyTopicName);
-                    var commitOffsetAction = _messageQueueClient.StartSubscriptionClient(replyTopicName, 0, _replySubscriptionName, OnMessagesReceived);
-                    _slidingDoor = new SlidingDoor(commitOffsetAction, 1000, 100, Configuration.Instance.GetCommitPerMessage());
+                    _removeMessageContext = _messageQueueClient.StartSubscriptionClient(replyTopicName, _replySubscriptionName, _consumerId, OnMessagesReceived);
                 }
             }
             catch (Exception e)
@@ -117,10 +114,8 @@ namespace IFramework.Command.Impl
         {
             replies.ForEach(reply =>
             {
-                _slidingDoor.AddOffset(reply.Offset);
                 _messageProcessor.Process(reply, ConsumeReply);
             });
-            _slidingDoor.BlockIfFullLoad();
         }
 
         protected async Task ConsumeReply(IMessageContext reply)
@@ -139,7 +134,7 @@ namespace IFramework.Command.Impl
                     messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
                 }
             }
-            _slidingDoor.RemoveOffset(reply.Offset);
+            _removeMessageContext(reply);
         }
 
         protected MessageState BuildCommandState(IMessageContext commandContext, CancellationToken sendCancellationToken, TimeSpan timeout, CancellationToken replyCancellationToken, bool needReply)

@@ -14,13 +14,13 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
     {
         public BrokeredMessage BrokeredMessage { get; protected set; }
         public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
-        public Action Complete { get; protected set; }
+        public Action CommitOffset { get; protected set; }
         public long Offset { get; protected set; }
         public MessageContext(BrokeredMessage brokeredMessage, Action complete = null)
         {
             BrokeredMessage = brokeredMessage;
             SentTime = DateTime.Now;
-            Complete = complete;
+            CommitOffset = complete;
             Offset = brokeredMessage.SequenceNumber;
             ToBeSentMessageContexts = new List<IMessageContext>();
         }

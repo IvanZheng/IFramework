@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ICommunityRepository.cs" />
     <Compile Include="Model\Account.cs" />
     <Compile Include="Model\People.cs" />
     <Compile Include="Model\Product.cs" />

@@ -24,10 +24,10 @@ namespace IFramework.Event.Impl
         protected IMessagePublisher _messagePublisher;
         protected IHandlerProvider _handlerProvider;
         protected string _subscriptionName;
-        protected int _partition;
+        protected string _consumerId;
         protected MessageProcessor _messageProcessor;
         protected ILogger _logger;
-        protected ISlidingDoor _slidingDoor;
+        protected Action<IMessageContext> _removeMessageContext;
 
         public EventSubscriber(IMessageQueueClient messageQueueClient,
                                IHandlerProvider handlerProvider,
@@ -35,12 +35,12 @@ namespace IFramework.Event.Impl
                                IMessagePublisher messagePublisher,
                                string subscriptionName,
                                string topic,
-                               int partition)
+                               string consumerId)
         {
             _MessageQueueClient = messageQueueClient;
             _handlerProvider = handlerProvider;
             _topic = topic;
-            _partition = partition;
+            _consumerId = consumerId;
             _subscriptionName = subscriptionName;
             _messagePublisher = messagePublisher;
             _commandBus = commandBus;
@@ -150,7 +150,7 @@ namespace IFramework.Event.Impl
                     }
                 }
             }
-            _slidingDoor.RemoveOffset(eventContext.Offset);
+            _removeMessageContext(eventContext);
         }
         public void Start()
         {
@@ -158,8 +158,7 @@ namespace IFramework.Event.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_topic))
                 {
-                    var _CommitOffset = _MessageQueueClient.StartSubscriptionClient(_topic, _partition, _subscriptionName, OnMessagesReceived);
-                    _slidingDoor = new SlidingDoor(_CommitOffset, 1000, 100, Configuration.Instance.GetCommitPerMessage());
+                    _removeMessageContext = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, _consumerId, OnMessagesReceived);
                 }
                 _messageProcessor.Start();
             }
@@ -179,11 +178,9 @@ namespace IFramework.Event.Impl
         {
             messageContexts.ForEach(messageContext =>
             {
-                _slidingDoor.AddOffset(messageContext.Offset);
                 _messageProcessor.Process(messageContext, ConsumeMessage);
                 MessageCount++;
             });
-            _slidingDoor.BlockIfFullLoad();
         }
 
         public string GetStatus()

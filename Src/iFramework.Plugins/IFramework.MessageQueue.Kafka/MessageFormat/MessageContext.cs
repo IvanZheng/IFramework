@@ -14,17 +14,14 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
     {
         public KafkaMessage KafkaMessage { get; protected set; }
         public long Offset { get; protected set; }
+        public int Partition { get; protected set; }
         public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
-        [JsonIgnore]
-        public Action Complete { get; protected set; }
 
-     
-
-        public MessageContext(KafkaMessage kafkaMessage, long offset, Action complete = null)
+        public MessageContext(KafkaMessage kafkaMessage, int partition, long offset)
         {
             KafkaMessage = kafkaMessage;
             Offset = offset;
-            Complete = complete;
+            Partition = partition;
             ToBeSentMessageContexts = new List<IMessageContext>();
         }
 

@@ -175,9 +175,9 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             return messageContext;
         }
-        public Action<long> StartQueueClient(string commandQueueName, int partition, OnMessagesReceived onMessagesReceived)
+        public Action<IMessageContext> StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
-            commandQueueName = $"{commandQueueName}.{partition}";
+            commandQueueName = $"{commandQueueName}.{consumerId}";
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var commandQueueClient = CreateQueueClient(commandQueueName);
             var cancellationSource = new CancellationTokenSource();
@@ -189,8 +189,10 @@ namespace IFramework.MessageQueue.ServiceBus
                                                      TaskCreationOptions.LongRunning,
                                                      TaskScheduler.Default);
             _commandClientTasks.Add(task);
-            return (offset) => CommitOffset(commandQueueClient, offset);
+            return messageContext => CommitOffset(commandQueueClient, messageContext.Offset);
         }
+
+       
 
         void StopQueueClients()
         {
@@ -203,7 +205,7 @@ namespace IFramework.MessageQueue.ServiceBus
             Task.WaitAll(_commandClientTasks.ToArray());
         }
 
-        public Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName, OnMessagesReceived onMessagesReceived)
+        public Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -218,7 +220,7 @@ namespace IFramework.MessageQueue.ServiceBus
                                              TaskCreationOptions.LongRunning,
                                              TaskScheduler.Default);
             _subscriptionClientTasks.Add(task);
-            return (offset) => CommitOffset(subscriptionClient, offset);
+            return messageContext => CommitOffset(subscriptionClient, messageContext.Offset);
         }
 
         //public void CompleteMessage(IMessageContext messageContext)

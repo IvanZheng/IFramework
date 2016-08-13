@@ -23,22 +23,12 @@ namespace IFramework.MessageQueue.ZeroMQ
             throw new NotImplementedException();
         }
 
-        public Action<long> StartQueueClient(string commandQueueName, int partition, OnMessagesReceived onMessageReceived)
+        public Action<IMessageContext> StartQueueClient(string commandQueueName, string consuemrId, OnMessagesReceived onMessageReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             throw new NotImplementedException();
         }
 
-        public Action<long> StartSubscriptionClient(string topic, int partition, string subscriptionName, OnMessagesReceived onMessageReceived)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StopQueueClients()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StopSubscriptionClients()
+        public Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consuemrId, OnMessagesReceived onMessageReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             throw new NotImplementedException();
         }

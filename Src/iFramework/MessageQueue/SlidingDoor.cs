@@ -1,13 +1,13 @@
 ﻿using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
+using IFramework.Message;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace IFramework.Message.Impl
+namespace IFramework.MessageQueue
 {
     public class SlidingDoor : ISlidingDoor
     {
@@ -16,20 +16,26 @@ namespace IFramework.Message.Impl
         protected long _lastOffset = -1L;
         protected long _lastCommittedOffset = -1L;
         object _removeOffsetLock = new object();
-        protected long _fullLoadThreshold;
-        protected Action<long> _CommitOffset;
-        protected int _waitInterval;
+        protected int _partition;
         protected bool _commitPerMessage;
+        protected Action<int, long> _commitOffset;
         ILogger _logger;
 
-        public SlidingDoor(Action<long> commitOffset, int fullLoadThreshold, int waitInterval, bool commitPerMessage = false)
+        public SlidingDoor(Action<int, long> commitOffset, int partition, bool commitPerMessage = false)
         {
+            _commitOffset = commitOffset;
+            _partition = partition;
             _offsets = new SortedSet<long>();
-            _CommitOffset = commitOffset;
-            _fullLoadThreshold = fullLoadThreshold;
-            _waitInterval = waitInterval;
             _commitPerMessage = commitPerMessage;
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
+        }
+
+        public int MessageCount
+        {
+            get
+            {
+                return _offsets.Count;
+            }
         }
 
         public void AddOffset(long offset)
@@ -41,20 +47,11 @@ namespace IFramework.Message.Impl
             }
         }
 
-        public void BlockIfFullLoad()
-        {
-            while (_offsets.Count > _fullLoadThreshold)
-            {
-                Thread.Sleep(_waitInterval);
-                _logger.Warn($"working is full load sleep 1000 ms");
-            }
-        }
-
         public void RemoveOffset(long offset)
         {
             if (_commitPerMessage)
             {
-                _CommitOffset(offset);
+                _commitOffset(_partition, offset);
                 lock (_removeOffsetLock)
                 {
                     _offsets.Remove(offset);
@@ -77,7 +74,7 @@ namespace IFramework.Message.Impl
                     }
                     if (_consumedOffset > _lastCommittedOffset)
                     {
-                        _CommitOffset(_consumedOffset);
+                        _commitOffset(_partition, _consumedOffset);
                         _lastCommittedOffset = _consumedOffset;
                     }
                 }

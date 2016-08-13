@@ -7,6 +7,14 @@ using IFramework.Infrastructure;
 using System.Linq;
 using KafkaMessages = Kafka.Client.Messages;
 using Kafka.Client.Serialization;
+using System.Threading;
+using IFramework.Message;
+using System.Collections.Concurrent;
+using IFramework.Message.Impl;
+using IFramework.Config;
+using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
+using IFramework.MessageQueue.MSKafka.MessageFormat;
 
 namespace IFramework.MessageQueue.MSKafka
 {
@@ -14,22 +22,23 @@ namespace IFramework.MessageQueue.MSKafka
     {
         public string ZkConnectionString { get; protected set; }
         public string Topic { get; protected set; }
-        public int Partition { get; protected set; }
         public string GroupId { get; protected set; }
         public string ConsumerId { get; protected set; }
-        public long FetchedOffset { get; protected set; }
         public ZookeeperConsumerConnector ZkConsumerConnector { get; protected set; }
         public ConsumerConfiguration ConsumerConfiguration { get; protected set; }
-        public KafkaSimpleManager<int, KafkaMessages.Message> KafkaSimpleManager { get; protected set; }
-        public KafkaConsumer(string zkConnectionString, string topic, int partition, string groupId, string consumerId = null)
+        public ConcurrentDictionary<int, SlidingDoor> SlidingDoors { get; protected set; }
+        protected int _fullLoadThreshold;
+        protected int _waitInterval;
+        protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer).Name);
+        public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
-            FetchedOffset = 0;
+            _fullLoadThreshold = fullLoadThreshold;
+            _waitInterval = waitInterval;
+            SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
             ZkConnectionString = zkConnectionString;
             Topic = topic;
-            Partition = partition;
             GroupId = groupId;
             ConsumerId = consumerId ?? this.GetType().Name;
-            FetchedOffset = -1;
             ConsumerConfiguration = new ConsumerConfiguration
             {
                 AutoCommit = false,
@@ -42,81 +51,78 @@ namespace IFramework.MessageQueue.MSKafka
                 ZooKeeper = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 1000)
             };
             ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true);
-            var fetchedOffsets = ZkConsumerConnector.GetOffset(Topic);
-
-            FetchedOffset = fetchedOffsets.TryGetValue(Partition, 0);
-            if (FetchedOffset > 0)
-            {
-                FetchedOffset++;
-            }
         }
 
-        Consumer _consumer;
-        public Consumer Consumer
+        IKafkaMessageStream<KafkaMessages.Message> _stream;
+        public IKafkaMessageStream<KafkaMessages.Message> Stream
         {
             get
             {
-                if (_consumer == null)
+                if (_stream == null)
                 {
-                    // create the Consumer higher level manager
-                    var managerConfig = new KafkaSimpleManagerConfiguration()
-                    {
-                        FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
-                        BufferSize = KafkaSimpleManagerConfiguration.DefaultBufferSize,
-                        Zookeeper = ZkConnectionString
-                    };
-                    KafkaSimpleManager = new KafkaSimpleManager<int, KafkaMessages.Message>(managerConfig);
-                    // get all available partitions for a topic through the manager
-                    //var allPartitions = consumerManager.GetTopicPartitionsFromZK(Topic);
-                    // Refresh metadata and grab a consumer for desired partitions
-                    KafkaSimpleManager.RefreshMetadata(0, ConsumerId, 0, Topic, true);
-                    _consumer = KafkaSimpleManager.GetConsumer(Topic, Partition);
                     var topicDic = new Dictionary<string, int>() {
                         {Topic, 1 }
                     };
-                    ZkConsumerConnector.CreateMessageStreams(topicDic, new DefaultDecoder());
+                    var streams = ZkConsumerConnector.CreateMessageStreams(topicDic, new DefaultDecoder());
+                    _stream = streams[Topic][0];
                 }
-                return _consumer;
+                return _stream;
             }
-        }
-        internal IEnumerable<KafkaMessages.Message> PeekBatch(int fetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
-                                                int maxWaitTime = 5000, int minBytes = 1)
-        {
-            //var fetchRequest = new FetchRequest(0, ConsumerId, maxWaitTime, minBytes, new Dictionary<string, List<PartitionFetchInfo>> {
-            //    { Topic, new List<PartitionFetchInfo> { new PartitionFetchInfo(Partition, FetchedOffset, fetchSize)}  }
-            //});
-            var messages = Consumer.Fetch(ConsumerId, Topic, 0, Partition, FetchedOffset, fetchSize, maxWaitTime, minBytes)
-                                   .MessageSet(Topic, Partition)
-                                   .Select(mo => mo.Message)
-                                   .ToList();
-            if (messages.Count > 0)
-            {
-                FetchedOffset = messages.Last().Offset + 1;
-            }
-            return messages;
         }
 
-        internal void CommitOffset(long offset)
+
+        public void BlockIfFullLoad()
         {
-            ZkConsumerConnector.CommitOffset(Topic, Partition, offset, false);
+            while (SlidingDoors.Sum(d => d.Value.MessageCount) > _fullLoadThreshold)
+            {
+                Thread.Sleep(_waitInterval);
+                _logger.Warn($"working is full load sleep 1000 ms");
+            }
+        }
+
+        internal void AddMessage(KafkaMessages.Message message)
+        {
+            var slidingDoor = SlidingDoors.GetOrAdd(message.PartitionId.Value, partition =>
+            {
+                return new SlidingDoor(CommitOffset, 
+                                       partition,
+                                       Configuration.Instance.GetCommitPerMessage());
+            });
+            slidingDoor.AddOffset(message.Offset);
+        }
+
+        internal void RemoveMessage(KafkaMessages.Message message)
+        {
+            var slidingDoor = SlidingDoors.TryGetValue(message.PartitionId.Value);
+            if (slidingDoor == null)
+            {
+                throw new System.Exception("partition slidingDoor not exists");
+            }
+            slidingDoor.RemoveOffset(message.Offset);
+        }
+
+        internal IEnumerable<KafkaMessages.Message> GetMessages(CancellationToken cancellationToken)
+        {
+            return Stream.GetCancellable(cancellationToken);
+        }
+
+        internal void CommitOffset(IMessageContext messageContext)
+        {
+            var message = (messageContext as MessageContext);
+            CommitOffset(message.Partition, message.Offset);
+        }
+
+        internal void CommitOffset(int partition, long offset)
+        {
+            ZkConsumerConnector.CommitOffset(Topic, partition, offset, false);
         }
 
         internal void Stop()
         {
-            if (_consumer != null)
-            {
-                _consumer.Dispose();
-                _consumer = null;
-            }
             if (ZkConsumerConnector != null)
             {
                 ZkConsumerConnector.Dispose();
                 ZkConsumerConnector = null;
-            }
-            if (KafkaSimpleManager != null)
-            {
-                KafkaSimpleManager.Dispose();
-                KafkaSimpleManager = null;
             }
         }
     }
