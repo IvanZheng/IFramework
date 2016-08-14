@@ -18,11 +18,19 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
         public int Partition { get; protected set; }
         public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
 
-        public MessageContext(KafkaMessages.Message kafkaMessage)
+        //public MessageContext(KafkaMessages.Message kafkaMessage)
+        //{
+        //    KafkaMessage = Encoding.UTF8.GetString(kafkaMessage.Payload).ToJsonObject<KafkaMessage>();
+        //    Offset = kafkaMessage.Offset;
+        //    Partition = kafkaMessage.PartitionId.Value;
+        //    ToBeSentMessageContexts = new List<IMessageContext>();
+        //}
+
+        public MessageContext(KafkaMessage kafkaMessage, int partition, long offset)
         {
-            KafkaMessage = Encoding.UTF8.GetString(kafkaMessage.Payload).ToJsonObject<KafkaMessage>();
-            Offset = kafkaMessage.Offset;
-            Partition = kafkaMessage.PartitionId.Value;
+            KafkaMessage = kafkaMessage;
+            Offset = offset;
+            Partition = partition;
             ToBeSentMessageContexts = new List<IMessageContext>();
         }
 

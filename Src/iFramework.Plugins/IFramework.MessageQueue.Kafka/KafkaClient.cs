@@ -147,8 +147,8 @@ namespace IFramework.MessageQueue.MSKafka
                     {
                         try
                         {
-                            //var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
-                            var messageContext = new MessageContext(message);
+                            var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
+                            var messageContext = new MessageContext(kafkaMessage, message.PartitionId.Value, message.Offset);
                             kafkaConsumer.AddMessage(message);
                             onMessagesReceived(messageContext);
                             kafkaConsumer.BlockIfFullLoad();
