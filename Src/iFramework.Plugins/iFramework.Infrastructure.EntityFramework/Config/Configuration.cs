@@ -13,14 +13,14 @@ namespace IFramework.EntityFramework.Config
 {
     public static class ConfigurationExtension
     {
-        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.PerRequest)
+        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.Hierarchical)
         {
             container = container ?? IoCFactory.Instance.CurrentContainer;
             return configuration.RegisterUnitOfWork(container, lifetime)
                                 .RegisterRepositories(container, lifetime);
         }
 
-        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration, Lifetime lifetime = Lifetime.PerRequest)
+        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration, Lifetime lifetime = Lifetime.Hierarchical)
         {
             return configuration.RegisterEntityFrameworkComponents(null, lifetime);
         }
@@ -35,13 +35,13 @@ namespace IFramework.EntityFramework.Config
         //    return configuration;
         //}
 
-        public static Configuration RegisterUnitOfWork(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.PerRequest)
+        public static Configuration RegisterUnitOfWork(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.Hierarchical)
         {
             container = container ?? IoCFactory.Instance.CurrentContainer;
             container.RegisterType<IUnitOfWork, EntityFramework.UnitOfWork>(lifetime);
             return configuration;
         }
-        public static Configuration RegisterRepositories(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.PerRequest)
+        public static Configuration RegisterRepositories(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.Hierarchical)
         {
             container = container ?? IoCFactory.Instance.CurrentContainer;
             container.RegisterType(typeof(IRepository<>), typeof(EntityFramework.Repositories.Repository<>), lifetime);
