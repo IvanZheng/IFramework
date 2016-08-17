@@ -44,11 +44,11 @@ namespace IFramework.MessageQueue.MSKafka
                 AutoCommit = false,
                 GroupId = GroupId,
                 ConsumerId = ConsumerId,
-                MaxFetchBufferLength = KafkaSimpleManagerConfiguration.DefaultBufferSize,
-                FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
+                BufferSize = ConsumerConfiguration.DefaultBufferSize,
+                MaxFetchBufferLength = ConsumerConfiguration.DefaultMaxFetchBufferLength,
+                FetchSize = ConsumerConfiguration.DefaultFetchSize,
                 AutoOffsetReset = OffsetRequest.LargestTime,
-                NumberOfTries = 3,
-                ZooKeeper = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 1000)
+                ZooKeeper = KafkaClient.GetZooKeeperConfiguration(zkConnectionString)
             };
             ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true);
         }

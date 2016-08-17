@@ -18,7 +18,7 @@ namespace IFramework.MessageQueue.MSKafka
         public QueueClient(string queue, string zkConnectionString)
         {
             _queue = queue;
-            _zooKeeperConfiguration = new ZooKeeperConfiguration(zkConnectionString, 3000, 3000, 3000);
+            _zooKeeperConfiguration = KafkaClient.GetZooKeeperConfiguration(zkConnectionString);
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 AckTimeout = 30000,

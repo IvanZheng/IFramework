@@ -20,7 +20,7 @@ namespace IFramework.MessageQueue.MSKafka
             var producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 RequiredAcks = -1,
-                ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 3000)
+                ZooKeeper = KafkaClient.GetZooKeeperConfiguration(_zkConnectionString)
             };
 
             _producer = new Producer(producerConfiguration);

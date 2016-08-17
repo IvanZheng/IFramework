@@ -77,13 +77,18 @@ namespace IFramework.MessageQueue.MSKafka
 
         }
 
+        internal static ZooKeeperConfiguration GetZooKeeperConfiguration(string connectString, int sessionTimeout = 30000, int connectionTimeout = 4000, int syncTimeout = 8000)
+        {
+            return new ZooKeeperConfiguration(connectString, sessionTimeout, connectionTimeout, syncTimeout);
+        }
+
         public void CreateTopic(string topic)
         {
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 RequiredAcks = -1,
                 TotalNumPartitions = 3,
-                ZooKeeper = new ZooKeeperConfiguration(_zkConnectionString, 3000, 3000, 3000)
+                ZooKeeper = GetZooKeeperConfiguration(_zkConnectionString)
             };
             using (Producer producer = new Producer(producerConfiguration))
             {
