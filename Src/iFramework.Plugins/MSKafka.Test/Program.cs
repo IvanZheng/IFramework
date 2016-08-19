@@ -11,108 +11,91 @@ using IFramework.Command;
 using IFramework.IoC;
 using Sample.DTO;
 using IFramework.Infrastructure;
+using System.Threading;
 
 namespace MSKafka.Test
 {
     class Program
     {
-        static string commandQueue = "commandqueueA";
+        static string commandQueue = "groupcommandqueue";
         static string replyTopic = "replyTopic";
         static string eventTopic = "eventTopic";
         static string subscription = "testSubscription";
+        static string zkConnectionString = "localhost:2181";
+        
         static int total = 0;
         static void Main(string[] args)
         {
-            Configuration.Instance.UseUnityContainer()
-                                  .MessageQueueUseMachineNameFormat(false)
-                                  .UseLog4Net("log4net.config");
+            Configuration.Instance
+                         .UseUnityContainer()
+                         .UseLog4Net("log4net.config");
+            GroupConsuemrTest();
+        }
 
-            ServiceTest();
-            return;
-
-            string zkConnectionString = "192.168.99.60:2181";
-            var client = new KafkaClient(zkConnectionString);
-
-            //var queueClient = client.GetQueueClient(Configuration.Instance.FormatMessageQueueName(commandQueue));
-            //queueClient.CommitOffset(4);
-
-            client.StartQueueClient(commandQueue, "0", messageContexts =>
+        static Task CreateConsumerTask(string consumerId, CancellationTokenSource cancellationTokenSource)
+        {
+            return Task.Run(() =>
             {
-                messageContexts.ForEach(messageContext =>
-                {
-                    var kafakMessageContext = messageContext as MessageContext;
-                    var command = messageContext.Message as Command;
-
-                    var val = 0;
-                    int.TryParse(command.Body, out val);
-                    total += val;
-                    Console.WriteLine($"handle command {command.ID} message: {command.Body} offset:{kafakMessageContext.Offset}");
-                    //kafakMessageContext.CommitOffset();
-                    //  publish reply
-                    var reply = $"cmd {command.Body} reply";
-                    var messageReply = client.WrapMessage(reply, messageContext.MessageID, messageContext.ReplyToEndPoint);
-                    client.Publish(messageReply, replyTopic);
-
-                    // publish event
-                    var @event = new DomainEvent($"handled event {command.Body}");
-                    client.Publish(new MessageContext(@event), eventTopic);
-                });
-
-            });
-
-            client.StartSubscriptionClient(replyTopic, subscription, "0", messageContexts =>
-            {
-                messageContexts.ForEach(messageContext => {
-                    var kafakMessageContext = messageContext as MessageContext;
-                    var reply = messageContext.Message;
-                    Console.WriteLine($"reply receive {reply} offset:{kafakMessageContext.Offset}");
-                });
-            });
-
-            client.StartSubscriptionClient(eventTopic, subscription, "0", messageContexts =>
-            {
-                messageContexts.ForEach(messageContext => {
-                    var kafakMessageContext = messageContext as MessageContext;
-                    var @event = messageContext.Message as DomainEvent;
-                    Console.WriteLine($"subscription receive {@event.Body} offset:{kafakMessageContext.Offset}");
-                });
-            });
-
-
-            //for(int i = 0; i < 5; i ++)
-            //{
-            //    SendCommand(client, i.ToString());
-            //}
-
-            while (true)
-            {
+                var consumer = new KafkaConsumer(zkConnectionString, commandQueue, Environment.MachineName, consumerId);
                 try
                 {
-                    var body = Console.ReadLine();
-                    if (!string.IsNullOrEmpty(body))
+                    foreach (var kafkaMessage in consumer.GetMessages(cancellationTokenSource.Token))
                     {
-                        SendCommand(client, body);
+                        var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
+                        var sendTime = DateTime.Parse(message);
+                        Console.WriteLine($"consumer:{consumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                        consumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
                     }
-                    else
-                    {
-                        Console.WriteLine($"total is {total}");
-                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.GetBaseException().Message);
+                    if (!cancellationTokenSource.IsCancellationRequested)
+                    {
+                        Console.WriteLine(ex.GetBaseException().Message);
+                    }
                 }
+                finally
+                {
+                    consumer.Stop();
+                }
+            });
+        }
+
+        static void GroupConsuemrTest()
+        {
+            var cancellationTokenSource = new CancellationTokenSource();
+            var consumerTasks = new List<Task>();
+            for (int i = 0; i < 1; i ++)
+            {
+                consumerTasks.Add(CreateConsumerTask(i.ToString(), cancellationTokenSource));
+            }
+
+
+            var queueClient = new QueueClient(commandQueue, zkConnectionString);
+            while (true)
+            {
+                var message = Console.ReadLine();
+                if (message.Equals("q"))
+                {
+                    cancellationTokenSource.Cancel();
+                    Task.WaitAll(consumerTasks.ToArray());
+                    break;
+                }
+                message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff");
+                var kafkaMessage = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(message));
+                var data = new Kafka.Client.Producers.ProducerData<string, Kafka.Client.Messages.Message>(commandQueue, message, kafkaMessage);
+                queueClient.Send(data);
+                Console.WriteLine($"send message: {message}");
             }
         }
-
-
-        static void SendCommand(KafkaClient client, string body)
-        {
-            var command = new Command(body);
-            client.Send(new MessageContext(command), commandQueue);
-            Console.WriteLine($"Send {command.ID} successfully cmd: {command.Body}");
-        }
-
 
         static void ServiceTest()
         {

@@ -101,7 +101,7 @@ namespace IFramework.MessageQueue.MSKafka
             slidingDoor.RemoveOffset(offset);
         }
 
-        internal IEnumerable<KafkaMessages.Message> GetMessages(CancellationToken cancellationToken)
+        public IEnumerable<KafkaMessages.Message> GetMessages(CancellationToken cancellationToken)
         {
             return Stream.GetCancellable(cancellationToken);
         }
@@ -112,12 +112,12 @@ namespace IFramework.MessageQueue.MSKafka
             RemoveMessage(message.Partition, message.Offset);
         }
 
-        internal void CommitOffset(int partition, long offset)
+        public void CommitOffset(int partition, long offset)
         {
             ZkConsumerConnector.CommitOffset(Topic, partition, offset, false);
         }
 
-        internal void Stop()
+        public void Stop()
         {
             if (ZkConsumerConnector != null)
             {
