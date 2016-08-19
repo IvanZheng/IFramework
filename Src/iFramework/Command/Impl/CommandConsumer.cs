@@ -158,7 +158,12 @@ namespace IFramework.Command.Impl
                                     eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetEvents().ForEach(@event =>
                                     {
-                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, key: @event.Key);
+                                        var topic = @event.GetTopic();
+                                        if (!string.IsNullOrEmpty(topic))
+                                        {
+                                            topic = Configuration.Instance.FormatAppName(topic);
+                                        }
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
 
@@ -181,7 +186,12 @@ namespace IFramework.Command.Impl
                                     eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetToPublishAnywayMessages().ForEach(@event =>
                                     {
-                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, key: @event.Key);
+                                        var topic = @event.GetTopic();
+                                        if (!string.IsNullOrEmpty(topic))
+                                        {
+                                            topic = Configuration.Instance.FormatAppName(topic);
+                                        }
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
 

@@ -44,7 +44,7 @@ namespace IFramework.Command.Impl
             _consumerId = consumerId;
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();
             _linearCommandManager = linearCommandManager;
-            _replyTopicName = replyTopicName;
+            _replyTopicName = Configuration.Instance.FormatAppName(replyTopicName);
             _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
             // _commandQueueNames = commandQueueNames;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
@@ -92,8 +92,7 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_replyTopicName))
                 {
-                    var replyTopicName = Configuration.Instance.FormatAppName(_replyTopicName);
-                    _removeMessageContext = _messageQueueClient.StartSubscriptionClient(replyTopicName, _replySubscriptionName, _consumerId, OnMessagesReceived);
+                    _removeMessageContext = _messageQueueClient.StartSubscriptionClient(_replyTopicName, _replySubscriptionName, _consumerId, OnMessagesReceived);
                 }
             }
             catch (Exception e)

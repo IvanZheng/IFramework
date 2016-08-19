@@ -78,9 +78,9 @@ namespace Sample.CommandService
                 #endregion
 
                 #region Command Consuemrs init'
-                //var commandQueueName = "commandqueue";
-                //_CommandConsumer1 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", "CommandHandlers");
-                //_CommandConsumer1.Start();
+                var commandQueueName = "commandqueue";
+                _CommandConsumer1 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", "CommandHandlers");
+                _CommandConsumer1.Start();
 
                 //_CommandConsumer2 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", "CommandHandlers");
                 //_CommandConsumer2.Start();

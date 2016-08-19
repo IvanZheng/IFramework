@@ -30,7 +30,7 @@ namespace IFramework.MessageQueue.MSKafka
         protected int _fullLoadThreshold;
         protected int _waitInterval;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer).Name);
-        public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             _fullLoadThreshold = fullLoadThreshold;
             _waitInterval = waitInterval;
@@ -38,7 +38,7 @@ namespace IFramework.MessageQueue.MSKafka
             ZkConnectionString = zkConnectionString;
             Topic = topic;
             GroupId = groupId;
-            ConsumerId = consumerId ?? this.GetType().Name;
+            ConsumerId = consumerId ?? string.Empty;
             ConsumerConfiguration = new ConsumerConfiguration
             {
                 AutoCommit = false,

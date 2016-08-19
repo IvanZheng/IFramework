@@ -115,7 +115,7 @@ namespace IFramework.MessageQueue.MSKafka
         KafkaConsumer CreateQueueConsumer(string queue, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(queue);
-            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{queue}.consumer", consumerId, fullLoadThreshold, waitInterval);
+            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{consumerId}.{queue}", null, fullLoadThreshold, waitInterval);
             return queueConsumer;
         }
 
@@ -221,7 +221,6 @@ namespace IFramework.MessageQueue.MSKafka
 
         public void Publish(IMessageContext messageContext, string topic)
         {
-            topic = Configuration.Instance.FormatAppName(topic);
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
             var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
@@ -260,6 +259,7 @@ namespace IFramework.MessageQueue.MSKafka
         public Action<IMessageContext> StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
+            consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
             var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, fullLoadThreshold, waitInterval);
             var cancellationSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,

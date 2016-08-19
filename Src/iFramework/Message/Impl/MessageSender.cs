@@ -1,4 +1,5 @@
-﻿using IFramework.Infrastructure;
+﻿using IFramework.Config;
+using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using IFramework.MessageQueue;
@@ -70,9 +71,17 @@ namespace IFramework.Message.Impl
             {
                 sendCancellationToken.Register(OnSendCancel, sendTaskCompletionSource);
             }
-            var messageStates = messages.Select(message => new MessageState(_messageQueueClient.WrapMessage(message, key: message.Key),
-                                                                            sendTaskCompletionSource,
-                                                                            false))
+            var messageStates = messages.Select(message =>
+            {
+                var topic = message.GetTopic();
+                if (!string.IsNullOrEmpty(topic))
+                {
+                    topic = Configuration.Instance.FormatAppName(topic);
+                }
+                return new MessageState(_messageQueueClient.WrapMessage(message, topic: topic, key: message.Key),
+                                                                                sendTaskCompletionSource,
+                                                                                false);
+            })
                                         .ToArray();
             return SendAsync(messageStates);
         }
@@ -116,9 +125,10 @@ namespace IFramework.Message.Impl
                             CompleteSendingMessage(messageState);
                             break;
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
-                            Thread.Sleep(1000);
+                            _logger.Error(ex);
+                            Thread.Sleep(2000);
                         }
                     }
                 }

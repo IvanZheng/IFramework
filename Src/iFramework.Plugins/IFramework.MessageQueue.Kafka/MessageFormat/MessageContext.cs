@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using IFramework.Message;
 using IFramework.MessageQueue.MSKafka.MessageFormat;
 using KafkaMessages = Kafka.Client.Messages;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.MSKafka.MessageFormat
 {
@@ -52,13 +53,9 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
                 MessageID = ObjectId.GenerateNewId().ToString();
             }
             ToBeSentMessageContexts = new List<IMessageContext>();
-            if (message != null)
+            if (message != null && message is IMessage)
             {
-                var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
-                if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
-                {
-                    Topic = topicAttribute.Topic;
-                }
+                Topic = (message as IMessage).GetTopic();
             }
         }
 
