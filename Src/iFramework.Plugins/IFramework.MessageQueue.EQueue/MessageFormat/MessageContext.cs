@@ -1,117 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
-using System.Collections;
 using Newtonsoft.Json;
 using IFramework.Message;
 using EQueueProtocols = EQueue.Protocols;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.EQueue.MessageFormat
 {
     public class MessageContext : IMessageContext
     {
-        public string Topic { get; set; }
+        public EQueueMessage EqueueMessage { get; protected set; }
+        public long Offset { get; protected set; }
+        public int Partition { get; protected set; }
+        public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
 
-        EQueueProtocols.Message _EQueueMessage;
-        [JsonIgnore]
-        public EQueueProtocols.Message EQueueMessage
+        public MessageContext(EQueueMessage equeueMessage, int partition, long offset)
         {
-            get
-            {
-                if (_EQueueMessage == null)
-                {
-                    _EQueueMessage = new EQueueProtocols.Message(Topic, Encoding.UTF8.GetBytes(this.ToJson()));
-                }
-                return _EQueueMessage;
-            }
-            protected set
-            {
-                _EQueueMessage = value;
-            }
-        }
-
-        public MessageContext()
-        {
-            Headers = new Dictionary<string, object>();
-            CorrelationID = null;
-            Key = null;
-            MessageID = null;
-            CorrelationID = null;
-            ReplyToEndPoint = null;
-            Reply = null;
-            FromEndPoint = null;
-        }
-
-        public MessageContext(IMessage message)
-            : this()
-        {
-            SentTime = DateTime.Now;
-            Message = message;
-            MessageID = message.ID;
+            EqueueMessage = equeueMessage;
+            Offset = offset;
+            Partition = partition;
             ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
-        public MessageContext(string topic, IMessage message)
-            : this(message)
+        public MessageContext(object message, string id = null)
         {
-            var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
-            if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+            EqueueMessage = new EQueueMessage();
+            SentTime = DateTime.Now;
+            Message = message;
+            if (!string.IsNullOrEmpty(id))
             {
-                Topic = topicAttribute.Topic;
+                MessageID = id;
+            }
+            else if (message is IMessage)
+            {
+                MessageID = (message as IMessage).ID;
             }
             else
             {
-                Topic = topic;
+                MessageID = ObjectId.GenerateNewId().ToString();
+            }
+            ToBeSentMessageContexts = new List<IMessageContext>();
+            if (message != null && message is IMessage)
+            {
+                Topic = (message as IMessage).GetTopic();
             }
         }
 
-        public MessageContext(string topic, IMessage message, string key)
-            : this(topic, message)
+
+        public MessageContext(IMessage message, string key)
+            : this(message)
         {
             Key = key;
         }
 
-        public MessageContext(string topic, IMessage message, string replyToEndPoint, string key)
-            : this(topic, message, key)
+        public MessageContext(IMessage message, string replyToEndPoint, string key)
+            : this(message, key)
         {
             ReplyToEndPoint = replyToEndPoint;
         }
 
-        public MessageContext(string topic, IMessage message, string replyToEndPoint, string fromEndPoint, string key)
-            : this(topic, message, replyToEndPoint, key)
-        {
-            FromEndPoint = fromEndPoint;
-        }
-
         public IDictionary<string, object> Headers
         {
-            get;
-            set;
+            get { return EqueueMessage.Headers; }
         }
 
         public string Key
         {
-            get { return (string)Headers["Key"]; }
+            get { return (string)Headers.TryGetValue("Key"); }
             set { Headers["Key"] = value; }
         }
 
         public string CorrelationID
         {
-            get { return (string)Headers["CorrelationID"]; }
+            get { return (string)Headers.TryGetValue("CorrelationID"); }
             set { Headers["CorrelationID"] = value; }
         }
 
         public string MessageID
         {
-            get { return (string)Headers["MessageID"]; }
+            get { return (string)Headers.TryGetValue("MessageID"); }
             set { Headers["MessageID"] = value; }
         }
 
         public string ReplyToEndPoint
         {
-            get { return (string)Headers["ReplyToEndPoint"]; }
+            get { return (string)Headers.TryGetValue("ReplyToEndPoint"); }
             set { Headers["ReplyToEndPoint"] = value; }
         }
 
@@ -121,14 +96,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             set;
         }
 
-        public string FromEndPoint
-        {
-            get { return (string)Headers["FromEndPoint"]; }
-            set { Headers["FromEndPoint"] = value; }
-        }
-
         object _Message;
-        [JsonIgnore]
         public object Message
         {
             get
@@ -138,31 +106,35 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
                     return _Message;
                 }
                 object messageType = null;
-                object messageBody = null;
-                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null
-                   && Headers.TryGetValue("Message", out messageBody) && messageBody != null)
+                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
                 {
-                    _Message = messageBody.ToString().ToJsonObject(Type.GetType(messageType.ToString()));
+                    var jsonValue = Encoding.UTF8.GetString(EqueueMessage.Payload);
+                    _Message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
 
                 }
                 return _Message;
             }
-            set
+            protected set
             {
                 _Message = value;
-                Headers["Message"] = _Message.ToJson();
-                Headers["MessageType"] = _Message.GetType().AssemblyQualifiedName;
+                EqueueMessage.Payload = Encoding.UTF8.GetBytes(value.ToJson());
+                if (value != null)
+                {
+                    Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
+                }
             }
         }
 
-
         public DateTime SentTime
         {
-            get { return (DateTime)Headers["SentTime"]; }
+            get { return (DateTime)Headers.TryGetValue("SentTime"); }
             set { Headers["SentTime"] = value; }
         }
 
-        [JsonIgnore]
-        public List<IMessageContext> ToBeSentMessageContexts { get; set; }
+        public string Topic
+        {
+            get { return (string)Headers.TryGetValue("Topic"); }
+            set { Headers["Topic"] = value; }
+        }
     }
 }

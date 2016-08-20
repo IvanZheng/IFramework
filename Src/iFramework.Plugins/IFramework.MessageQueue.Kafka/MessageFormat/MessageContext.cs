@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
-using System.Collections;
-using Newtonsoft.Json;
 using IFramework.Message;
-using IFramework.MessageQueue.MSKafka.MessageFormat;
-using KafkaMessages = Kafka.Client.Messages;
 using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.MSKafka.MessageFormat
@@ -18,14 +13,6 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
         public long Offset { get; protected set; }
         public int Partition { get; protected set; }
         public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
-
-        //public MessageContext(KafkaMessages.Message kafkaMessage)
-        //{
-        //    KafkaMessage = Encoding.UTF8.GetString(kafkaMessage.Payload).ToJsonObject<KafkaMessage>();
-        //    Offset = kafkaMessage.Offset;
-        //    Partition = kafkaMessage.PartitionId.Value;
-        //    ToBeSentMessageContexts = new List<IMessageContext>();
-        //}
 
         public MessageContext(KafkaMessage kafkaMessage, int partition, long offset)
         {

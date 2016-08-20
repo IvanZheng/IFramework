@@ -17,11 +17,11 @@ namespace IFramework.MessageQueue
                                     string topic = null, string key = null,
                                     string replyEndPoint = null, string messageId = null);
 
-        Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consuemrId, OnMessagesReceived onMessageReceived, int fullLoadThreshold = 1000, int waitInterval = 1000);
+        Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000);
 
         //void StopSubscriptionClients();
 
-        Action<IMessageContext> StartQueueClient(string commandQueueName, string consuemrId, OnMessagesReceived onMessageReceived, int fullLoadThreshold = 1000, int waitInterval = 1000);
+        Action<IMessageContext> StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000);
 
         //void StopQueueClients();
     }
