@@ -75,7 +75,7 @@ namespace MSKafka.Test
             }
 
 
-            var queueClient = new QueueClient(commandQueue, zkConnectionString);
+            var queueClient = new KafkaProducer(commandQueue, zkConnectionString);
             while (true)
             {
                 var message = Console.ReadLine();

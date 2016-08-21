@@ -63,8 +63,7 @@
     <Compile Include="MessageFormat\KafkaMessage.cs" />
     <Compile Include="MessageFormat\MessageContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueueClient.cs" />
-    <Compile Include="TopicClient.cs" />
+    <Compile Include="KafkaProducer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

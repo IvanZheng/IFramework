@@ -9,15 +9,15 @@ using System.Collections.Generic;
 
 namespace IFramework.MessageQueue.MSKafka
 {
-    public class QueueClient
+    public class KafkaProducer
     {
         Producer<string, Kafka.Client.Messages.Message> _producer;
-        string _queue;
+        string _topic;
         ZooKeeperConfiguration _zooKeeperConfiguration;
-        ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(QueueClient).Name);
-        public QueueClient(string queue, string zkConnectionString)
+        ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaProducer).Name);
+        public KafkaProducer(string topic, string zkConnectionString)
         {
-            _queue = queue;
+            _topic = topic;
             _zooKeeperConfiguration = KafkaClient.GetZooKeeperConfiguration(zkConnectionString);
             ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
@@ -39,7 +39,7 @@ namespace IFramework.MessageQueue.MSKafka
             }
             catch (Exception ex)
             {
-                _logger.Error($"{_queue} producer dispose failed", ex);
+                _logger.Error($"{_topic} producer dispose failed", ex);
             }
         }
 

@@ -18,8 +18,8 @@ namespace IFramework.MessageQueue.MSKafka
 {
     public class KafkaClient : IMessageQueueClient
     {
-        protected ConcurrentDictionary<string, QueueClient> _queueClients;
-        protected ConcurrentDictionary<string, TopicClient> _topicClients;
+        protected ConcurrentDictionary<string, KafkaProducer> _queueClients;
+        protected ConcurrentDictionary<string, KafkaProducer> _topicClients;
         protected List<KafkaConsumer> _subscriptionClients;
         protected List<KafkaConsumer> _queueConsumers;
 
@@ -29,9 +29,9 @@ namespace IFramework.MessageQueue.MSKafka
         protected ILogger _logger = null;
 
         #region private methods
-        TopicClient GetTopicClient(string topic)
+        KafkaProducer GetTopicClient(string topic)
         {
-            TopicClient topicClient = null;
+            KafkaProducer topicClient = null;
             _topicClients.TryGetValue(topic, out topicClient);
             if (topicClient == null)
             {
@@ -41,9 +41,9 @@ namespace IFramework.MessageQueue.MSKafka
             return topicClient;
         }
 
-        QueueClient GetQueueClient(string queue)
+        KafkaProducer GetQueueClient(string queue)
         {
-            QueueClient queueClient = _queueClients.TryGetValue(queue);
+            KafkaProducer queueClient = _queueClients.TryGetValue(queue);
             if (queueClient == null)
             {
                 queueClient = CreateQueueClient(queue);
@@ -116,17 +116,17 @@ namespace IFramework.MessageQueue.MSKafka
             return queueConsumer;
         }
 
-        QueueClient CreateQueueClient(string queue)
+        KafkaProducer CreateQueueClient(string queue)
         {
             CreateTopicIfNotExists(queue);
-            var queueClient = new QueueClient(queue, _zkConnectionString);
+            var queueClient = new KafkaProducer(queue, _zkConnectionString);
             return queueClient;
         }
 
-        TopicClient CreateTopicClient(string topic)
+        KafkaProducer CreateTopicClient(string topic)
         {
             CreateTopicIfNotExists(topic);
-            return new TopicClient(topic, _zkConnectionString);
+            return new KafkaProducer(topic, _zkConnectionString);
         }
 
         KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000, int backOffIncrement = 20)
@@ -198,8 +198,8 @@ namespace IFramework.MessageQueue.MSKafka
         public KafkaClient(string zkConnectionString)
         {
             _zkConnectionString = zkConnectionString;
-            _queueClients = new ConcurrentDictionary<string, QueueClient>();
-            _topicClients = new ConcurrentDictionary<string, TopicClient>();
+            _queueClients = new ConcurrentDictionary<string, KafkaProducer>();
+            _topicClients = new ConcurrentDictionary<string, KafkaProducer>();
             _subscriptionClientTasks = new List<Task>();
             _commandClientTasks = new List<Task>();
             _subscriptionClients = new List<KafkaConsumer>();
