@@ -5,12 +5,16 @@ using ECommonConfiguration = ECommon.Configurations.Configuration;
 using System.Configuration;
 using System.Net;
 using ECommon.Socketing;
+using IFramework.IoC;
+using IFramework.MessageQueue.EQueue;
+using IFramework.MessageQueue;
 
 namespace IFramework.Config
 {
     public static class ConfigurationEQueue
     {
-        public static Configuration UseEQueue(this Configuration configuration)
+        public static Configuration UseEQueue(this Configuration configuration, string brokerAddress,
+                                            int producerPort = 5000, int consumerPort = 5001, int adminPort = 5002)
         {
             ECommonConfiguration
                  .Create()
@@ -21,6 +25,15 @@ namespace IFramework.Config
                  .RegisterUnhandledExceptionHandler()
                  .RegisterEQueueComponents()
                  .UseDeleteMessageByCountStrategy(10);
+
+
+            IoCFactory.Instance.CurrentContainer
+                     .RegisterType<IMessageQueueClient, EQueueClient>(Lifetime.Singleton,
+                       new ConstructInjection(new ParameterInjection("brokerAddress", brokerAddress),
+                       new ParameterInjection("producerPort", producerPort),
+                       new ParameterInjection("consumerPort", consumerPort),
+                       new ParameterInjection("adminPort", adminPort)));
+
             return configuration;
         }
 
@@ -38,10 +51,11 @@ namespace IFramework.Config
                messageChunkLocalCacheSize: 30 * 10000,
                queueChunkLocalCacheSize: 10000)
             {
+                AutoCreateTopic = true,
                 ProducerAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), producerPort),
                 ConsumerAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), consumerPort),
                 AdminAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), adminPort),
-                NotifyWhenMessageArrived = false,
+                NotifyWhenMessageArrived = true,
                 MessageWriteQueueThreshold = int.Parse(ConfigurationManager.AppSettings["messageWriteQueueThreshold"])
             };
             BrokerController.Create(setting).Start();

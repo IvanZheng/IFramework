@@ -48,7 +48,8 @@ namespace Sample.CommandService
                             .MessageQueueUseMachineNameFormat()
                             .UseMessageQueue()
                             .UseMessageStore<SampleModelContext>()
-                            .UseKafka("192.168.99.60:2181")
+                            //.UseKafka("192.168.99.60:2181")
+                            .UseEQueue("192.168.199.242")
                             .UseCommandBus(Environment.MachineName, needMessageStore:true, linerCommandManager: new Sample.Command.LinearCommandManager())
                             .UseMessagePublisher("eventTopic", true);
 
@@ -111,13 +112,13 @@ namespace Sample.CommandService
             try
             {
                 Task.WaitAll(
-                    Task.Factory.StartNew(() => _CommandConsumer1.Stop()),
-                    Task.Factory.StartNew(() => _CommandConsumer2.Stop()),
-                    Task.Factory.StartNew(() => _CommandConsumer3.Stop()),
-                    Task.Factory.StartNew(() => _CommandBus.Stop()),
-                    Task.Factory.StartNew(() => _MessagePublisher.Stop()),
-                    Task.Factory.StartNew(() => _DomainEventConsumer.Stop()),
-                    Task.Factory.StartNew(() => _ApplicationEventConsumer.Stop())
+                    Task.Factory.StartNew(() => _CommandConsumer1?.Stop()),
+                    Task.Factory.StartNew(() => _CommandConsumer3?.Stop()),
+                    Task.Factory.StartNew(() => _CommandConsumer2?.Stop()),
+                    Task.Factory.StartNew(() => _CommandBus?.Stop()),
+                    Task.Factory.StartNew(() => _MessagePublisher?.Stop()),
+                    Task.Factory.StartNew(() => _DomainEventConsumer?.Stop()),
+                    Task.Factory.StartNew(() => _ApplicationEventConsumer?.Stop())
                    );
             }
             catch (Exception ex)

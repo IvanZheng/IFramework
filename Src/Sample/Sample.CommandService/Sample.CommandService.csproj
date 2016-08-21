@@ -249,6 +249,9 @@
     <None Include="log4netv1.2.10.0\log4net.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="log4netv1.2.13.0\log4net.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-1.8.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
@@ -301,6 +304,10 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net4.5.1.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
       <Name>IFramework.Log4Net4.5.1</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj">
+      <Project>{02129813-b7eb-4c7e-aeba-f7c5d40071f9}</Project>
+      <Name>IFramework.MessageQueue.EQueue</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj">
       <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>

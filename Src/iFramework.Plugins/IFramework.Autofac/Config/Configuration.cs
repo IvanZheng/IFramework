@@ -54,7 +54,7 @@ namespace IFramework.Config
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.GetBaseException().Message);
+                    //Console.WriteLine(ex.GetBaseException().Message);
                 }
                 container = builder.Build();
             }

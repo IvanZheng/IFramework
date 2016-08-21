@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using EQueueMessages = EQueue.Protocols;
 using EQueueConsumers = EQueue.Clients.Consumers;
+using System.Net;
 
 namespace IFramework.MessageQueue.EQueue
 {
@@ -19,6 +20,7 @@ namespace IFramework.MessageQueue.EQueue
     {
         public string BrokerAddress { get; protected set; }
         public int ConsumerPort { get; protected set; }
+        public int AdminPort { get; protected set; }
         public string Topic { get; protected set; }
         public string GroupId { get; protected set; }
         public string ConsumerId { get; protected set; }
@@ -27,10 +29,11 @@ namespace IFramework.MessageQueue.EQueue
         protected int _fullLoadThreshold;
         protected int _waitInterval;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(EQueueConsumer).Name);
-        public EQueueConsumer(string brokerAdress, int consumerPort, string topic, string groupId, string consumerId, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public EQueueConsumer(string brokerAdress, int consumerPort, int adminPort, string topic, string groupId, string consumerId, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             BrokerAddress = brokerAdress;
             ConsumerPort = consumerPort;
+            AdminPort = adminPort;
             _fullLoadThreshold = fullLoadThreshold;
             _waitInterval = waitInterval;
             SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
@@ -41,7 +44,16 @@ namespace IFramework.MessageQueue.EQueue
 
         public void Start()
         {
-
+            var setting = new EQueueConsumers.ConsumerSetting
+            {
+                AutoPull = false,
+                ConsumeFromWhere = EQueueMessages.ConsumeFromWhere.FirstOffset,
+                BrokerAddress = new IPEndPoint(IPAddress.Parse(BrokerAddress), ConsumerPort),
+                BrokerAdminAddress = new IPEndPoint(IPAddress.Parse(BrokerAddress), AdminPort)
+            };
+            Consumer = new EQueueConsumers.Consumer(GroupId, setting)
+                                          .Subscribe(Topic)
+                                          .Start();
         }
 
         public void Stop()
@@ -78,22 +90,23 @@ namespace IFramework.MessageQueue.EQueue
             }
             slidingDoor.RemoveOffset(offset);
         }
-        
+
         internal void CommitOffset(IMessageContext messageContext)
         {
             var message = (messageContext as MessageContext);
             RemoveMessage(message.Partition, message.Offset);
         }
 
-        internal IEnumerable<EQueueMessages.QueueMessage> GetMessages(CancellationToken cancellationToken)
+        public IEnumerable<EQueueMessages.QueueMessage> PullMessages(int maxCount, int timeoutMilliseconds, CancellationToken cancellationToken)
         {
-            return null;
+            return Consumer.PullMessages(maxCount, timeoutMilliseconds, cancellationToken);
         }
 
 
-        void CommitOffset(int partition, long offset)
+        public void CommitOffset(int partition, long offset)
         {
-            
+            Consumer.CommitConsumeOffset(Topic, partition, offset);
         }
+
     }
 }

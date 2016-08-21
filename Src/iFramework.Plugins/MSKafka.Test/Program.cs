@@ -18,12 +18,8 @@ namespace MSKafka.Test
     class Program
     {
         static string commandQueue = "groupcommandqueue";
-        static string replyTopic = "replyTopic";
-        static string eventTopic = "eventTopic";
-        static string subscription = "testSubscription";
         static string zkConnectionString = "localhost:2181";
         
-        static int total = 0;
         static void Main(string[] args)
         {
             Configuration.Instance

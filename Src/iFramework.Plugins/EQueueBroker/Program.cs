@@ -13,8 +13,10 @@ namespace EQueueBroker
         {
             try
             {
+                var brokerAddress = 
                 Configuration.Instance
-                         .UseEQueue()
+                         .UseAutofacContainer()
+                         .UseEQueue("192.169.199.242")
                          .StartEqueueBroker();
             }
             catch (Exception ex)

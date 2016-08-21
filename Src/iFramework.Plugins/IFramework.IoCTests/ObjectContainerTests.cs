@@ -1,9 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SEOP.AutofacTests;
 using IFramework.Config;
 using IFramework.IoC;
 using System;
 using System.Reflection;
+using IFramework.AutofacTests;
 
 namespace IFramework.Autofac.Tests
 {

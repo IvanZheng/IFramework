@@ -13,7 +13,7 @@ using IFramework.IoC;
 
 namespace IFramework.MessageQueue.EQueue
 {
-    public class EqueueClient : IMessageQueueClient
+    public class EQueueClient : IMessageQueueClient
     {
         public string BrokerAddress { get; protected set; }
         public int ProducerPort { get; protected set; }
@@ -25,17 +25,11 @@ namespace IFramework.MessageQueue.EQueue
         protected List<Task> _commandClientTasks;
         protected ILogger _logger = null;
 
-        EQueueProducer _producer;
-        public EQueueProducer Producer
-        {
-            get
-            {
-                return _producer ?? (_producer = new EQueueProducer(BrokerAddress, ProducerPort, AdminPort));
-            }
-        }
+      
+        public EQueueProducer _producer { get; protected set; }
 
 
-        public EqueueClient(string brokerAddress, int producerPort = 5000, int consumerPort = 5001, int adminPort = 5002)
+        public EQueueClient(string brokerAddress, int producerPort = 5000, int consumerPort = 5001, int adminPort = 5002)
         {
             BrokerAddress = brokerAddress;
             ProducerPort = producerPort;
@@ -46,6 +40,8 @@ namespace IFramework.MessageQueue.EQueue
             _subscriptionClientTasks = new List<Task>();
             _commandClientTasks = new List<Task>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
+            _producer = new EQueueProducer(BrokerAddress, ProducerPort, AdminPort);
+            _producer.Start();
         }
 
         public void Dispose()
@@ -58,17 +54,17 @@ namespace IFramework.MessageQueue.EQueue
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var jsonValue = ((MessageContext)messageContext).EqueueMessage.ToJson();
-            return new EQueueMessages.Message(topic, 0, Encoding.UTF8.GetBytes(jsonValue));
+            return new EQueueMessages.Message(topic, 1, Encoding.UTF8.GetBytes(jsonValue));
         }
 
         public void Publish(IMessageContext messageContext, string topic)
         {
-            Producer.Send(GetEQueueMessage(messageContext, topic), messageContext.Key);
+            _producer.Send(GetEQueueMessage(messageContext, topic), messageContext.Key);
         }
 
         public void Send(IMessageContext messageContext, string queue)
         {
-            Producer.Send(GetEQueueMessage(messageContext, queue), messageContext.Key);
+            _producer.Send(GetEQueueMessage(messageContext, queue), messageContext.Key);
         }
 
         public Action<IMessageContext> StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
@@ -89,7 +85,7 @@ namespace IFramework.MessageQueue.EQueue
             return queueConsumer.CommitOffset;
         }
 
-       
+
 
         public Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
@@ -141,7 +137,7 @@ namespace IFramework.MessageQueue.EQueue
             {
                 try
                 {
-                    messages = equeueConsumer.GetMessages(cancellationTokenSource.Token);
+                    messages = equeueConsumer.PullMessages(100, 2000, cancellationTokenSource.Token);
                     foreach (var message in messages)
                     {
                         try
@@ -193,12 +189,16 @@ namespace IFramework.MessageQueue.EQueue
         #region private methods
         EQueueConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
-            return new EQueueConsumer(BrokerAddress, ConsumerPort, topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval);
+            var consumer = new EQueueConsumer(BrokerAddress, ConsumerPort, AdminPort, topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval);
+            consumer.Start();
+            return consumer;
         }
 
         EQueueConsumer CreateQueueConsumer(string commandQueueName, string consumerId, int fullLoadThreshold, int waitInterval)
         {
-            return new EQueueConsumer(BrokerAddress, ConsumerPort, commandQueueName, commandQueueName, consumerId, fullLoadThreshold, waitInterval);
+            var consumer = new EQueueConsumer(BrokerAddress, ConsumerPort, AdminPort, commandQueueName, commandQueueName, consumerId, fullLoadThreshold, waitInterval);
+            consumer.Start();
+            return consumer;
         }
 
         void StopQueueClients()
