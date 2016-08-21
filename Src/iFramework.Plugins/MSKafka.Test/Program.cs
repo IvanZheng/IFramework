@@ -19,7 +19,7 @@ namespace MSKafka.Test
     {
         static string commandQueue = "groupcommandqueue";
         static string zkConnectionString = "localhost:2181";
-        
+
         static void Main(string[] args)
         {
             Configuration.Instance
@@ -69,7 +69,7 @@ namespace MSKafka.Test
         {
             var cancellationTokenSource = new CancellationTokenSource();
             var consumerTasks = new List<Task>();
-            for (int i = 0; i < 1; i ++)
+            for (int i = 0; i < 3; i++)
             {
                 consumerTasks.Add(CreateConsumerTask(i.ToString(), cancellationTokenSource));
             }
@@ -88,8 +88,15 @@ namespace MSKafka.Test
                 message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff");
                 var kafkaMessage = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(message));
                 var data = new Kafka.Client.Producers.ProducerData<string, Kafka.Client.Messages.Message>(commandQueue, message, kafkaMessage);
-                queueClient.Send(data);
-                Console.WriteLine($"send message: {message}");
+                try
+                {
+                    queueClient.Send(data);
+                    Console.WriteLine($"send message: {message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.GetBaseException().Message);
+                }
             }
         }
 
