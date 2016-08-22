@@ -68,7 +68,7 @@ namespace IFramework.MessageQueue.MSKafka
                     var streams = ZkConsumerConnector.CreateMessageStreams(topicDic, new DefaultDecoder());
                     _stream = streams[Topic][0];
                 }
-                Console.WriteLine($"consumer {ConsumerId} has got Stream");
+                _logger.Debug($"consumer {ConsumerId} has got Stream");
                 return _stream;
             }
         }
