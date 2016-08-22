@@ -32,7 +32,7 @@ namespace MSKafka.Test
         {
             return Task.Run(() =>
             {
-                var consumer = new KafkaConsumer(zkConnectionString, commandQueue, Environment.MachineName, consumerId, 30);
+                var consumer = new KafkaConsumer(zkConnectionString, commandQueue, Environment.MachineName, consumerId);
                 try
                 {
                     foreach (var kafkaMessage in consumer.GetMessages(cancellationTokenSource.Token))
