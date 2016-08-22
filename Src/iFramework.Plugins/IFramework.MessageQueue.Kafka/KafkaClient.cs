@@ -109,10 +109,10 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        KafkaConsumer CreateQueueConsumer(string queue, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000, int backOffIncrement = 20)
+        KafkaConsumer CreateQueueConsumer(string queue, string consumerId = null, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(queue);
-            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{consumerId}.{queue}", null, fullLoadThreshold, waitInterval, backOffIncrement);
+            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{consumerId}.{queue}", null, backOffIncrement, fullLoadThreshold, waitInterval);
             return queueConsumer;
         }
 
@@ -129,10 +129,10 @@ namespace IFramework.MessageQueue.MSKafka
             return new KafkaProducer(topic, _zkConnectionString);
         }
 
-        KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000, int backOffIncrement = 20)
+        KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(topic);
-            return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval, backOffIncrement);
+            return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId, backOffIncrement, fullLoadThreshold, waitInterval);
         }
 
         void ReceiveMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived, KafkaConsumer kafkaConsumer)
