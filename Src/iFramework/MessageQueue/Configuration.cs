@@ -62,6 +62,7 @@ namespace IFramework.Config
         {
             var container = IoCFactory.Instance.CurrentContainer;
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
+            defaultTopic = Configuration.Instance.FormatAppName(defaultTopic);
             var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic, needMessageStore);
             container.RegisterInstance<IMessagePublisher>(messagePublisher);
             return configuration;
