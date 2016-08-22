@@ -37,7 +37,10 @@ namespace IFramework.MessageQueue
 
         public static IMessageConsumer CreateEventSubscriber(string topic, string subscription, string consumerId, params string[] handlerProviderNames)
         {
-            subscription = $"{FrameworkConfigurationExtension.AppName}.{subscription}";
+            if (!string.IsNullOrEmpty(FrameworkConfigurationExtension.AppName))
+            {
+                subscription = $"{FrameworkConfigurationExtension.AppName}.{subscription}";
+            }
             var container = IoCFactory.Instance.CurrentContainer;
             var handlerProvider = new EventSubscriberProvider(handlerProviderNames);
             var commandBus = GetCommandBus();

@@ -112,7 +112,7 @@ namespace IFramework.MessageQueue.MSKafka
         KafkaConsumer CreateQueueConsumer(string queue, string consumerId = null, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(queue);
-            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{consumerId}.{queue}", null, backOffIncrement, fullLoadThreshold, waitInterval);
+            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{queue}.consumer", consumerId, backOffIncrement, fullLoadThreshold, waitInterval);
             return queueConsumer;
         }
 

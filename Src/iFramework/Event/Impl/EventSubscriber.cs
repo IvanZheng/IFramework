@@ -65,6 +65,7 @@ namespace IFramework.Event.Impl
 
             if (messageHandlerTypes.Count == 0)
             {
+                _removeMessageContext(eventContext);
                 return;
             }
 

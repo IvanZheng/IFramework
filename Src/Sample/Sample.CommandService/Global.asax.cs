@@ -69,7 +69,7 @@ namespace Sample.CommandService
                 #endregion
 
                 #region application event subscriber init
-                _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber", Environment.MachineName, "ApplicationEventConsumer");
+                _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber", Environment.MachineName, "ApplicationEventSubscriber");
                 _ApplicationEventConsumer.Start();
                 #endregion
 
