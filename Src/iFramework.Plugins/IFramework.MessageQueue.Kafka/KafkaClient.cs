@@ -13,6 +13,7 @@ using Kafka.Client.Cfg;
 using IFramework.Config;
 using System.Threading;
 using Kafka.Client.Helper;
+using IFramework.MessageQueue.MSKafka.Config;
 
 namespace IFramework.MessageQueue.MSKafka
 {
@@ -257,7 +258,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
-            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, fullLoadThreshold, waitInterval);
+            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             var cancellationSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
                                                                           onMessagesReceived,
@@ -275,7 +276,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
-            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval);
+            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             var cancellationSource = new CancellationTokenSource();
 
             var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
