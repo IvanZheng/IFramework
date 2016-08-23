@@ -48,10 +48,10 @@ namespace Sample.CommandService
                             .MessageQueueUseMachineNameFormat()
                             .UseMessageQueue()
                             .UseMessageStore<SampleModelContext>()
-                            .UseKafka("localhost:2181")
-                            //.UseEQueue("192.168.199.242")
+                            //.UseKafka("localhost:2181")
+                            .UseEQueue(Utility.GetLocalIPV4().ToString())
                             .UseCommandBus(Environment.MachineName, linerCommandManager: new Sample.Command.LinearCommandManager())
-                            .UseMessagePublisher("eventTopic", true);
+                            .UseMessagePublisher("eventTopic");
 
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);
 

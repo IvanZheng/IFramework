@@ -15,7 +15,7 @@ namespace IFramework.Message.Impl
 {
     public class MessagePublisher : MessageSender, IMessagePublisher
     {
-        public MessagePublisher(IMessageQueueClient messageQueueClient, string defaultTopic, bool needMessageStore)
+        public MessagePublisher(IMessageQueueClient messageQueueClient, string defaultTopic)
             : base(messageQueueClient, defaultTopic)
         {
             if (string.IsNullOrEmpty(defaultTopic))

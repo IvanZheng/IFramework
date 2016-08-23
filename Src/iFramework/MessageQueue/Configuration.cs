@@ -39,12 +39,12 @@ namespace IFramework.Config
             IoCFactory.Instance.CurrentContainer.RegisterType<IMessagePublisher, MockMessagePublisher>(Lifetime.Singleton);
             return configuration;
         }
-        public static Configuration UseMessagePublisher(this Configuration configuration, string defaultTopic, bool needMessageStore = false)
+        public static Configuration UseMessagePublisher(this Configuration configuration, string defaultTopic)
         {
             var container = IoCFactory.Instance.CurrentContainer;
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
             defaultTopic = Configuration.Instance.FormatAppName(defaultTopic);
-            var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic, needMessageStore);
+            var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);
             container.RegisterInstance<IMessagePublisher>(messagePublisher);
             return configuration;
         }

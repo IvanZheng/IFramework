@@ -1,4 +1,5 @@
 ﻿using IFramework.Config;
+using IFramework.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace EQueueBroker
                 var brokerAddress = 
                 Configuration.Instance
                          .UseAutofacContainer()
-                         .UseEQueue("192.169.199.242")
+                         .UseEQueue(Utility.GetLocalIPV4().ToString())
                          .StartEqueueBroker();
             }
             catch (Exception ex)
