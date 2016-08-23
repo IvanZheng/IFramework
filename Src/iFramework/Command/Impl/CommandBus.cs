@@ -35,7 +35,6 @@ namespace IFramework.Command.Impl
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
                           string consumerId,
-                          //string[] commandQueueNames,
                           string replyTopicName,
                           string replySubscriptionName)
             : base(messageQueueClient)
@@ -45,7 +44,6 @@ namespace IFramework.Command.Impl
             _linearCommandManager = linearCommandManager;
             _replyTopicName = Configuration.Instance.FormatAppName(replyTopicName);
             _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
-            // _commandQueueNames = commandQueueNames;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
         }
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
