@@ -20,14 +20,6 @@ namespace IFramework.Config
     {
         public static readonly Configuration Instance = new Configuration();
 
-        //public UnityConfigurationSection UnityConfigurationSection
-        //{
-        //    get
-        //    {
-        //        return (UnityConfigurationSection)ConfigurationManager.GetSection("unity");
-        //    }
-        //}
-
         Configuration()
         {
            
@@ -146,50 +138,5 @@ namespace IFramework.Config
             }
             return config;
         }
-
-
-
-        //public Configuration RegisterCommandConsumer(IMessageConsumer commandConsumer, string name)
-        //{
-        //    if (commandConsumer == null)
-        //    {
-        //        IoCFactory.Resolve<IMessageConsumer>(name);
-        //    }
-        //    else
-        //    {
-        //        IoCFactory.Instance.CurrentContainer
-        //                 .RegisterInstance<IMessageConsumer>(name
-        //                                   , commandConsumer);
-        //    }
-        //    return this;
-        //}
-
-        //public Configuration CommandHandlerProviderBuild(params string[] assemblies)
-        //{
-        //     IoCFactory.Resolve<ICommandHandlerProvider>(new Parameter("assemblies", assemblies));
-        //    return this;
-        //}
-
-
-        //public Configuration EventSubscriberProviderBuild(IEventSubscriberProvider provider, params string[] assemblies)
-        //{
-        //    if (provider == null)
-        //    {
-        //        provider = IoCFactory.Resolve<IEventSubscriberProvider>(new Parameter("assemblies", assemblies));
-        //    }
-        //    else
-        //    {
-        //        IoCFactory.Instance.CurrentContainer
-        //                 .RegisterInstance(typeof(IEventSubscriberProvider)
-        //                                   , provider);
-        //    }
-        //    return this;
-        //}
-
-        //public Configuration EventBusBuild(params string[] subscriberAssemblies)
-        //{
-        //    EventSubscriberProviderBuild(null, subscriberAssemblies);
-        //    return this;
-        //}
     }
 }
