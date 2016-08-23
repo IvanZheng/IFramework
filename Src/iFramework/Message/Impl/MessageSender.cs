@@ -19,16 +19,16 @@ namespace IFramework.Message.Impl
         protected string _defaultTopic;
         protected Task _sendMessageTask;
         protected IMessageQueueClient _messageQueueClient;
-        protected bool _needMessageStore;
         protected ILogger _logger;
+        protected bool _needMessageStore;
 
-        public MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null, bool needMessageStore = false)
+        public MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null)
         {
             _messageQueueClient = messageQueueClient;
             _defaultTopic = defaultTopic;
-            _needMessageStore = needMessageStore;
             _messageStateQueue = new BlockingCollection<MessageState>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            _needMessageStore = Configuration.Instance.NeedMessageStore;
         }
 
         protected abstract IEnumerable<IMessageContext> GetAllUnSentMessages();

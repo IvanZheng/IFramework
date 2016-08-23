@@ -12,6 +12,7 @@ using System.Web.Configuration;
 using IFramework.IoC;
 using IFramework.Infrastructure.Logging;
 using IFramework.Event.Impl;
+using IFramework.Message.Impl;
 
 namespace IFramework.Config
 {
@@ -35,6 +36,21 @@ namespace IFramework.Config
         public Configuration RegisterCommonComponents()
         {
             UseNoneLogger();
+            UseMessageStore<MockMessageStore>();
+            RegisterDefaultEventBus();
+            return this;
+        }
+
+        public bool NeedMessageStore
+        {
+            get;protected set;
+        }
+
+        public Configuration UseMessageStore<TMessageStore>(Lifetime lifetime = Lifetime.Hierarchical)
+        where TMessageStore : IMessageStore
+        {
+            NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
+            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageStore, TMessageStore>(lifetime);
             return this;
         }
 

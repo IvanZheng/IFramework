@@ -50,7 +50,7 @@ namespace Sample.CommandService
                             .UseMessageStore<SampleModelContext>()
                             .UseKafka("localhost:2181")
                             //.UseEQueue("192.168.199.242")
-                            .UseCommandBus(Environment.MachineName, needMessageStore:true, linerCommandManager: new Sample.Command.LinearCommandManager())
+                            .UseCommandBus(Environment.MachineName, linerCommandManager: new Sample.Command.LinearCommandManager())
                             .UseMessagePublisher("eventTopic", true);
 
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);

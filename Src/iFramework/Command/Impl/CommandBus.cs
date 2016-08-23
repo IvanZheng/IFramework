@@ -37,9 +37,8 @@ namespace IFramework.Command.Impl
                           string consumerId,
                           //string[] commandQueueNames,
                           string replyTopicName,
-                          string replySubscriptionName,
-                          bool needMessageStore = true)
-            : base(messageQueueClient, needMessageStore: needMessageStore)
+                          string replySubscriptionName)
+            : base(messageQueueClient)
         {
             _consumerId = consumerId;
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();

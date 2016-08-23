@@ -30,7 +30,6 @@ namespace Sample.CommandConsumer
                       .UseMessageStore<SampleModelContext>()
                       .UseKafka("192.168.99.60:2181")
                       .UseMessagePublisher("eventTopic", true)
-                      .RegisterDefaultEventBus()
                       .RegisterEntityFrameworkComponents();
 
                 var container = IoCFactory.Instance.CurrentContainer;
