@@ -21,9 +21,7 @@ namespace IFramework.Config
             AppName = appName;
             var appNameFormat = string.IsNullOrEmpty(appName) ? "{0}" : appName + ".{0}";
             configuration.SetAppNameFormat(appNameFormat)
-                         .UseDefaultEventBus()
                          .UseMockCommandBus()
-                         .UseMockMessageStore()
                          .UseMockMessagePublisher();
             return configuration;
         }
@@ -33,18 +31,8 @@ namespace IFramework.Config
             IoCFactory.Instance.CurrentContainer.RegisterType<IEventBus, EventBus>(Lifetime.Hierarchical);
             return configuration;
         }
-
-        public static Configuration UseMockMessageStore(this Configuration configuration)
-        {
-            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageStore, MockMessageStore>(Lifetime.Singleton);
-            return configuration;
-        }
-        public static Configuration UseMessageStore<TMessageStore>(this Configuration configuration)
-            where TMessageStore : IMessageStore
-        {
-            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageStore, TMessageStore>(Lifetime.Hierarchical);
-            return configuration;
-        }
+       
+        
 
         public static Configuration UseMockMessagePublisher(this Configuration configuration)
         {
