@@ -14,6 +14,7 @@ using IFramework.Config;
 using System.Threading;
 using Kafka.Client.Helper;
 using IFramework.MessageQueue.MSKafka.Config;
+using Kafka.Client.Consumers;
 
 namespace IFramework.MessageQueue.MSKafka
 {
@@ -61,18 +62,19 @@ namespace IFramework.MessageQueue.MSKafka
                 BufferSize = KafkaSimpleManagerConfiguration.DefaultBufferSize,
                 Zookeeper = _zkConnectionString
             };
-            var kafkaManager = new KafkaSimpleManager<string, Kafka.Client.Messages.Message>(managerConfig);
-            try
+            using (var kafkaManager = new KafkaSimpleManager<string, Kafka.Client.Messages.Message>(managerConfig))
             {
-                // get all available partitions for a topic through the manager
-                var allPartitions = kafkaManager.GetTopicPartitionsFromZK(topic);
-                return allPartitions.Count > 0;
+                try
+                {
+                    // get all available partitions for a topic through the manager
+                    var allPartitions = kafkaManager.GetTopicPartitionsFromZK(topic);
+                    return allPartitions.Count > 0;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
             }
-            catch (Exception)
-            {
-                return false;
-            }
-
         }
 
         internal static ZooKeeperConfiguration GetZooKeeperConfiguration(string connectString, int sessionTimeout = 30000, int connectionTimeout = 4000, int syncTimeout = 8000)
@@ -337,12 +339,18 @@ namespace IFramework.MessageQueue.MSKafka
             return messageContext;
         }
 
+        protected bool _disposed = false;
         public void Dispose()
         {
-            StopQueueClients();
-            StopSubscriptionClients();
-            _topicClients.Values.ForEach(client => client.Stop());
-            _queueClients.Values.ForEach(client => client.Stop());
+            if (!_disposed)
+            {
+                StopQueueClients();
+                StopSubscriptionClients();
+                _topicClients.Values.ForEach(client => client.Stop());
+                _queueClients.Values.ForEach(client => client.Stop());
+                ZookeeperConsumerConnector.zkClientStatic.Dispose();
+                _disposed = true;
+            }
         }
     }
 }

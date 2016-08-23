@@ -1,9 +1,14 @@
 ﻿using IFramework.AspNet;
 using IFramework.Command;
 using IFramework.Config;
+using IFramework.EntityFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
+using IFramework.MessageQueue;
+using IFramework.MessageQueue.MSKafka;
+using IFramework.MessageQueue.MSKafka.Config;
+using Kafka.Client.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sample.Command;
 using Sample.CommandServiceTests.Products;
@@ -13,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandService.Tests
@@ -21,47 +27,42 @@ namespace Sample.CommandService.Tests
     public class CommandBusTests
     {
         ICommandBus _commandBus;
-
+        static string _zkConnectionString = "localhost:2181";
         List<CreateProduct> _createProducts;
         ILogger _logger;
 
         [TestInitialize]
         public void Initialize()
         {
-            Configuration.Instance.UseUnityContainer();
-            Configuration.Instance.UseLog4Net()
-                              //    .SetCommitPerMessage(true)//for servicebus !!!
-                                  .MessageQueueUseMachineNameFormat(false);
+            Configuration.Instance.UseUnityContainer()
+                                  .UseLog4Net()
+                                  .UseKafka(_zkConnectionString)
+                                  //    .SetCommitPerMessage(true)//for servicebus !!!
+                                  .MessageQueueUseMachineNameFormat()
+                                  .UseCommandBus("CommandBusTest", "CommandBusTest.ReplyTopic", "CommandBusTest.ReplySubscription")
+                                  .RegisterDefaultEventBus()
+                                  .RegisterEntityFrameworkComponents();
+
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(CommandBusTests));
+            InitProducts();
+        }
 
-            _commandBus = IoCFactory.Resolve<ICommandBus>();
-            _commandBus.Start();
 
+        public void InitProducts()
+        {
             var handlerTest = new ProductCommandHandlerTest(batchCount, productCount);
             handlerTest.Initialize();
             _createProducts = handlerTest._createProducts;
-            //_createProducts = new List<CreateProduct>();
-            //var tasks = new List<Task>();
-            //for (int i = 0; i< productCount; i ++)
-            //{
-            //    var createProduct = new CreateProduct
-            //    {
-            //        ProductId = Guid.NewGuid(),
-            //        Name = string.Format("{0}-{1}", DateTime.Now.ToString(), i),
-            //        Count = 20000
-            //    };
-            //    _createProducts.Add(createProduct);
-            //    tasks.Add(_commandBus.Send(createProduct));
-            //}
-            //Task.WaitAll(tasks.ToArray());
         }
 
-        int batchCount = 100;
-        int productCount = 100;
+        int batchCount = 10;
+        int productCount = 10;
 
         [TestMethod()]
         public void CommandBusReduceProductTest()
         {
+            _commandBus = MessageQueueFactory.GetCommandBus();
+            _commandBus.Start();
             var startTime = DateTime.Now;
             ReduceProduct reduceProduct = new ReduceProduct
             {
@@ -88,14 +89,79 @@ namespace Sample.CommandService.Tests
 
             }
             Console.WriteLine($"test success {success}");
+            Stop();
         }
 
+
+        [TestMethod]
+        public void CommandBusExecuteAsyncTest()
+        {
+            _commandBus = MessageQueueFactory.GetCommandBus();
+            _commandBus.Start();
+            ReduceProduct reduceProduct = new ReduceProduct
+            {
+                ProductId = _createProducts.First().ProductId,
+                ReduceCount = 1
+            };
+            var result = _commandBus.ExecuteAsync(reduceProduct).Result;
+            Stop();
+        }
+
+        public static Task CreateConsumerTask(string commandQueue, string consumerId, CancellationTokenSource cancellationTokenSource)
+        {
+            return Task.Run(() =>
+            {
+                var consumer = new KafkaConsumer(_zkConnectionString, commandQueue, $"{Environment.MachineName}.{commandQueue}", consumerId);
+                try
+                {
+                    foreach (var kafkaMessage in consumer.GetMessages(cancellationTokenSource.Token))
+                    {
+                        var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
+                        var sendTime = DateTime.Parse(message);
+                        Console.WriteLine($"consumer:{consumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                        consumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (!cancellationTokenSource.IsCancellationRequested)
+                    {
+                        Console.WriteLine(ex.GetBaseException().Message);
+                    }
+                }
+                finally
+                {
+                    consumer.Stop();
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ConsumerTest()
+        {
+            string commandQueue = "seop.groupcommandqueue";
+            var cancellationTokenSource = new CancellationTokenSource();
+            var consumerTask = CreateConsumerTask(commandQueue, "ConsumerTest", cancellationTokenSource);
+            Thread.Sleep(100);
+            cancellationTokenSource.Cancel();
+            consumerTask.Wait();
+            ZookeeperConsumerConnector.zkClientStatic.Dispose();
+        }
 
         [TestMethod()]
         public void CommandBusPressureTest()
         {
+            _commandBus = MessageQueueFactory.GetCommandBus();
+            _commandBus.Start();
             var startTime = DateTime.Now;
-
             var tasks = new List<Task>();
             for (int i = 0; i < batchCount; i++)
             {
@@ -106,18 +172,18 @@ namespace Sample.CommandService.Tests
                         ProductId = _createProducts[j].ProductId,
                         ReduceCount = 1
                     };
-                    var t = _commandBus.SendAsync(reduceProduct, true).Result;
-                    tasks.Add(t.Reply);
+                    var t = _commandBus.ExecuteAsync(reduceProduct);
+                    tasks.Add(t);
                 }
             }
             Task.WaitAll(tasks.ToArray());
             var costTime = (DateTime.Now - startTime).TotalMilliseconds;
             Console.WriteLine("cost time : {0} ms", costTime);
 
-            var products = _commandBus.SendAsync(new GetProducts
+            var products = _commandBus.ExecuteAsync<List<Project>>(new GetProducts
             {
                 ProductIds = _createProducts.Select(p => p.ProductId).ToList()
-            }, true).Result.ReadAsAsync<List<Project>>().Result;
+            }).Result;
             var success = true;
 
             for (int i = 0; i < _createProducts.Count; i++)
@@ -132,10 +198,11 @@ namespace Sample.CommandService.Tests
             Stop();
         }
 
-       
+
         public void Stop()
         {
             _commandBus.Stop();
+            IoCFactory.Instance.CurrentContainer.Dispose();
         }
     }
 }

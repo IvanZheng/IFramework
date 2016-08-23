@@ -120,6 +120,7 @@ namespace Sample.CommandService
                     Task.Factory.StartNew(() => _DomainEventConsumer?.Stop()),
                     Task.Factory.StartNew(() => _ApplicationEventConsumer?.Stop())
                    );
+                IoCFactory.Instance.CurrentContainer.Dispose();
             }
             catch (Exception ex)
             {
@@ -127,104 +128,7 @@ namespace Sample.CommandService
             }
             _Logger.Debug($"App Ended");
         }
-        // EQueue Application_Start
-        /*
-        public static List<CommandConsumer> CommandConsumers = new List<CommandConsumer>();
-         
-        protected void Application_Start()
-        {
-            try
-            {
-                Configuration.Instance.UseLog4Net();
-
-                Configuration.Instance
-                             .CommandHandlerProviderBuild(null, "CommandHandlers")
-                             .RegisterMvc();
-
-                global::EQueue.Configuration
-                .Create()
-                .UseAutofac()
-                .UseLog4Net()
-                .UseJsonNet()
-                .RegisterFrameworkComponents();
-
-                new BrokerController().Initialize().Start();
-                var consumerSettings = ConsumerSettings.Default;
-                consumerSettings.MessageHandleMode = MessageHandleMode.Sequential;
-                var producerPort = 5000;
-                IEventPublisher eventPublisher = new EventPublisher("domainevent", 
-                                                                    consumerSettings.BrokerAddress,
-                                                                    producerPort);
-                IoCFactory.Instance.CurrentContainer.RegisterInstance(typeof(IEventPublisher), eventPublisher);
-
-                var eventHandlerProvider = IoCFactory.Resolve<IHandlerProvider>("AsyncDomainEventSubscriber");
-                IMessageConsumer domainEventSubscriber = new DomainEventSubscriber("domainEventSubscriber1",
-                                                                                   consumerSettings,
-                                                                                   "DomainEventSubscriber",
-                                                                                   "domainevent",
-                                                                                   eventHandlerProvider);
-                domainEventSubscriber.Start();
-                IoCFactory.Instance.CurrentContainer.RegisterInstance("DomainEventConsumer", domainEventSubscriber);
-
-
-
-                var commandHandlerProvider = IoCFactory.Resolve<ICommandHandlerProvider>();
-                var commandConsumer1 = new CommandConsumer("consumer1", consumerSettings, 
-                                                           "CommandConsumerGroup",
-                                                           "Command",
-                                                           consumerSettings.BrokerAddress,
-                                                           producerPort,
-                                                           commandHandlerProvider);
-
-                var commandConsumer2 = new CommandConsumer("consumer2", consumerSettings,
-                                                           "CommandConsumerGroup",
-                                                           "Command",
-                                                           consumerSettings.BrokerAddress,
-                                                           producerPort,
-                                                           commandHandlerProvider);
-
-                var commandConsumer3 = new CommandConsumer("consumer3", consumerSettings,
-                                                           "CommandConsumerGroup",
-                                                           "Command",
-                                                           consumerSettings.BrokerAddress,
-                                                           producerPort,
-                                                           commandHandlerProvider);
-
-                commandConsumer1.Start();
-                commandConsumer2.Start();
-                commandConsumer3.Start();
-
-                CommandConsumers.Add(commandConsumer1);
-                CommandConsumers.Add(commandConsumer2);
-                CommandConsumers.Add(commandConsumer3);
-
-                ICommandBus commandBus = new CommandBus("CommandBus",
-                                                        commandHandlerProvider,
-                                                        IoCFactory.Resolve<ILinearCommandManager>(),
-                                                        consumerSettings.BrokerAddress,
-                                                        producerPort,
-                                                        consumerSettings,
-                                                        "CommandBus",
-                                                        "Reply", 
-                                                        "Command",
-                                                        true);
-                IoCFactory.Instance.CurrentContainer.RegisterInstance(typeof(ICommandBus),
-                                                                      commandBus,
-                                                                      new ContainerControlledLifetimeManager());
-                commandBus.Start();
-
-                AreaRegistration.RegisterAllAreas();
-                WebApiConfig.Register(GlobalConfiguration.Configuration);
-                FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
-                RouteConfig.RegisterRoutes(RouteTable.Routes);
-                BundleConfig.RegisterBundles(BundleTable.Bundles);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex.GetBaseException().Message, ex);
-            }
-        }
-        */
+      
         protected void Application_Error(object sender, EventArgs e)
         {
 

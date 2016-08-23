@@ -50,7 +50,8 @@ namespace IFramework.MessageQueue.MSKafka
                 MaxFetchBufferLength = ConsumerConfiguration.DefaultMaxFetchBufferLength,
                 FetchSize = ConsumerConfiguration.DefaultFetchSize,
                 AutoOffsetReset = OffsetRequest.LargestTime,
-                ZooKeeper = KafkaClient.GetZooKeeperConfiguration(zkConnectionString)
+                ZooKeeper = KafkaClient.GetZooKeeperConfiguration(zkConnectionString),
+                ShutdownTimeout = 100
             };
             ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true);
         }
