@@ -13,6 +13,8 @@ using Kafka.Client.Cfg;
 using IFramework.Config;
 using System.Threading;
 using Kafka.Client.Helper;
+using IFramework.MessageQueue.MSKafka.Config;
+using Kafka.Client.Consumers;
 
 namespace IFramework.MessageQueue.MSKafka
 {
@@ -60,18 +62,19 @@ namespace IFramework.MessageQueue.MSKafka
                 BufferSize = KafkaSimpleManagerConfiguration.DefaultBufferSize,
                 Zookeeper = _zkConnectionString
             };
-            var kafkaManager = new KafkaSimpleManager<string, Kafka.Client.Messages.Message>(managerConfig);
-            try
+            using (var kafkaManager = new KafkaSimpleManager<string, Kafka.Client.Messages.Message>(managerConfig))
             {
-                // get all available partitions for a topic through the manager
-                var allPartitions = kafkaManager.GetTopicPartitionsFromZK(topic);
-                return allPartitions.Count > 0;
+                try
+                {
+                    // get all available partitions for a topic through the manager
+                    var allPartitions = kafkaManager.GetTopicPartitionsFromZK(topic);
+                    return allPartitions.Count > 0;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
             }
-            catch (Exception)
-            {
-                return false;
-            }
-
         }
 
         internal static ZooKeeperConfiguration GetZooKeeperConfiguration(string connectString, int sessionTimeout = 30000, int connectionTimeout = 4000, int syncTimeout = 8000)
@@ -109,10 +112,10 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        KafkaConsumer CreateQueueConsumer(string queue, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000, int backOffIncrement = 20)
+        KafkaConsumer CreateQueueConsumer(string queue, string consumerId = null, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(queue);
-            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{consumerId}.{queue}", null, fullLoadThreshold, waitInterval, backOffIncrement);
+            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{queue}.consumer", consumerId, backOffIncrement, fullLoadThreshold, waitInterval);
             return queueConsumer;
         }
 
@@ -129,10 +132,10 @@ namespace IFramework.MessageQueue.MSKafka
             return new KafkaProducer(topic, _zkConnectionString);
         }
 
-        KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000, int backOffIncrement = 20)
+        KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(topic);
-            return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval, backOffIncrement);
+            return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId, backOffIncrement, fullLoadThreshold, waitInterval);
         }
 
         void ReceiveMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived, KafkaConsumer kafkaConsumer)
@@ -257,7 +260,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
-            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, fullLoadThreshold, waitInterval);
+            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             var cancellationSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
                                                                           onMessagesReceived,
@@ -275,7 +278,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
-            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval);
+            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             var cancellationSource = new CancellationTokenSource();
 
             var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
@@ -336,12 +339,18 @@ namespace IFramework.MessageQueue.MSKafka
             return messageContext;
         }
 
+        protected bool _disposed = false;
         public void Dispose()
         {
-            StopQueueClients();
-            StopSubscriptionClients();
-            _topicClients.Values.ForEach(client => client.Stop());
-            _queueClients.Values.ForEach(client => client.Stop());
+            if (!_disposed)
+            {
+                StopQueueClients();
+                StopSubscriptionClients();
+                _topicClients.Values.ForEach(client => client.Stop());
+                _queueClients.Values.ForEach(client => client.Stop());
+                ZookeeperConsumerConnector.zkClientStatic.Dispose();
+                _disposed = true;
+            }
         }
     }
 }

@@ -30,11 +30,11 @@ namespace MSKafka.Test
             //GroupConsuemrTest();
         }
 
-        static Task CreateConsumerTask(string consumerId, CancellationTokenSource cancellationTokenSource)
+        public static Task CreateConsumerTask(string commandQueue, string consumerId, CancellationTokenSource cancellationTokenSource)
         {
             return Task.Run(() =>
             {
-                var consumer = new KafkaConsumer(zkConnectionString, commandQueue, Environment.MachineName, consumerId);
+                var consumer = new KafkaConsumer(zkConnectionString, commandQueue, $"{Environment.MachineName}.{commandQueue}", consumerId);
                 try
                 {
                     foreach (var kafkaMessage in consumer.GetMessages(cancellationTokenSource.Token))
@@ -71,9 +71,9 @@ namespace MSKafka.Test
         {
             var cancellationTokenSource = new CancellationTokenSource();
             var consumerTasks = new List<Task>();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 1; i++)
             {
-                consumerTasks.Add(CreateConsumerTask(i.ToString(), cancellationTokenSource));
+                consumerTasks.Add(CreateConsumerTask(commandQueue, i.ToString(), cancellationTokenSource));
             }
 
 

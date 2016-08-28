@@ -22,6 +22,8 @@ using Newtonsoft.Json;
 using IFramework.Domain;
 using System.Web.Hosting;
 using System.Numerics;
+using System.Net;
+using System.Net.Sockets;
 
 namespace IFramework.Infrastructure
 {
@@ -51,7 +53,10 @@ namespace IFramework.Infrastructure
     public static class Utility
     {
         private static readonly uint[] _lookup32 = CreateLookup32();
-
+        public static IPAddress GetLocalIPV4()
+        {
+            return Dns.GetHostEntry(Dns.GetHostName()).AddressList.First<IPAddress>(x => (x.AddressFamily == AddressFamily.InterNetwork));
+        }
         private static uint[] CreateLookup32()
         {
             var result = new uint[256];

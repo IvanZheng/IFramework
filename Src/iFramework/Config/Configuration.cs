@@ -12,20 +12,13 @@ using System.Web.Configuration;
 using IFramework.IoC;
 using IFramework.Infrastructure.Logging;
 using IFramework.Event.Impl;
+using IFramework.Message.Impl;
 
 namespace IFramework.Config
 {
     public class Configuration
     {
         public static readonly Configuration Instance = new Configuration();
-
-        //public UnityConfigurationSection UnityConfigurationSection
-        //{
-        //    get
-        //    {
-        //        return (UnityConfigurationSection)ConfigurationManager.GetSection("unity");
-        //    }
-        //}
 
         Configuration()
         {
@@ -35,6 +28,21 @@ namespace IFramework.Config
         public Configuration RegisterCommonComponents()
         {
             UseNoneLogger();
+            UseMessageStore<MockMessageStore>();
+            RegisterDefaultEventBus();
+            return this;
+        }
+
+        public bool NeedMessageStore
+        {
+            get;protected set;
+        }
+
+        public Configuration UseMessageStore<TMessageStore>(Lifetime lifetime = Lifetime.Hierarchical)
+        where TMessageStore : IMessageStore
+        {
+            NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
+            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageStore, TMessageStore>(lifetime);
             return this;
         }
 
@@ -130,50 +138,5 @@ namespace IFramework.Config
             }
             return config;
         }
-
-
-
-        //public Configuration RegisterCommandConsumer(IMessageConsumer commandConsumer, string name)
-        //{
-        //    if (commandConsumer == null)
-        //    {
-        //        IoCFactory.Resolve<IMessageConsumer>(name);
-        //    }
-        //    else
-        //    {
-        //        IoCFactory.Instance.CurrentContainer
-        //                 .RegisterInstance<IMessageConsumer>(name
-        //                                   , commandConsumer);
-        //    }
-        //    return this;
-        //}
-
-        //public Configuration CommandHandlerProviderBuild(params string[] assemblies)
-        //{
-        //     IoCFactory.Resolve<ICommandHandlerProvider>(new Parameter("assemblies", assemblies));
-        //    return this;
-        //}
-
-
-        //public Configuration EventSubscriberProviderBuild(IEventSubscriberProvider provider, params string[] assemblies)
-        //{
-        //    if (provider == null)
-        //    {
-        //        provider = IoCFactory.Resolve<IEventSubscriberProvider>(new Parameter("assemblies", assemblies));
-        //    }
-        //    else
-        //    {
-        //        IoCFactory.Instance.CurrentContainer
-        //                 .RegisterInstance(typeof(IEventSubscriberProvider)
-        //                                   , provider);
-        //    }
-        //    return this;
-        //}
-
-        //public Configuration EventBusBuild(params string[] subscriberAssemblies)
-        //{
-        //    EventSubscriberProviderBuild(null, subscriberAssemblies);
-        //    return this;
-        //}
     }
 }

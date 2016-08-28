@@ -15,6 +15,7 @@ using IFramework.Config;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using IFramework.MessageQueue.MSKafka.MessageFormat;
+using System;
 
 namespace IFramework.MessageQueue.MSKafka
 {
@@ -30,7 +31,7 @@ namespace IFramework.MessageQueue.MSKafka
         protected int _fullLoadThreshold;
         protected int _waitInterval;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer).Name);
-        public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId, int fullLoadThreshold = 1000, int waitInterval = 1000, int backOffIncrement = 20)
+        public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             _fullLoadThreshold = fullLoadThreshold;
             _waitInterval = waitInterval;
@@ -49,7 +50,8 @@ namespace IFramework.MessageQueue.MSKafka
                 MaxFetchBufferLength = ConsumerConfiguration.DefaultMaxFetchBufferLength,
                 FetchSize = ConsumerConfiguration.DefaultFetchSize,
                 AutoOffsetReset = OffsetRequest.LargestTime,
-                ZooKeeper = KafkaClient.GetZooKeeperConfiguration(zkConnectionString)
+                ZooKeeper = KafkaClient.GetZooKeeperConfiguration(zkConnectionString),
+                ShutdownTimeout = 100
             };
             ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true);
         }
@@ -67,6 +69,7 @@ namespace IFramework.MessageQueue.MSKafka
                     var streams = ZkConsumerConnector.CreateMessageStreams(topicDic, new DefaultDecoder());
                     _stream = streams[Topic][0];
                 }
+                _logger.Debug($"consumer {ConsumerId} has got Stream");
                 return _stream;
             }
         }
