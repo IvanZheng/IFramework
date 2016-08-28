@@ -12,6 +12,7 @@ using IFramework.IoC;
 using Sample.DTO;
 using IFramework.Infrastructure;
 using System.Threading;
+using System.Diagnostics;
 
 namespace MSKafka.Test
 {
@@ -25,7 +26,8 @@ namespace MSKafka.Test
             Configuration.Instance
                          .UseUnityContainer()
                          .UseLog4Net("log4net.config");
-            GroupConsuemrTest();
+            ProducerSendTPSTest();
+            //GroupConsuemrTest();
         }
 
         static Task CreateConsumerTask(string consumerId, CancellationTokenSource cancellationTokenSource)
@@ -99,7 +101,37 @@ namespace MSKafka.Test
                 }
             }
         }
+        
 
+        static void ProducerSendTPSTest()
+        {
+            int batchCount = 100000;
+            var queueClient = new KafkaProducer(commandQueue, zkConnectionString);
+           
+            var message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff");
+            var kafkaMessage = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(message));
+            var data = new Kafka.Client.Producers.ProducerData<string, Kafka.Client.Messages.Message>(commandQueue, message, kafkaMessage);
+            double totalSendRt = 0;
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            for (int i = 0; i < batchCount; i++)
+            {
+                try
+                {
+                    var start = DateTime.Now;
+                    queueClient.Send(data);
+                    totalSendRt += (DateTime.Now - start).TotalMilliseconds;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.GetBaseException().Message);
+                }
+            }
+            var elapsedMs = watch.ElapsedMilliseconds;
+
+            Console.WriteLine($"cost: {elapsedMs}  tps: {batchCount * 1000 / elapsedMs} rt: {totalSendRt / (double)batchCount}");
+            Console.ReadLine();
+        }
         static void ServiceTest()
         {
             ReduceProduct reduceProduct = new ReduceProduct
