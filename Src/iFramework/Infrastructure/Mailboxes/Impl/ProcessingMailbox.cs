@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
     public class ProcessingMailbox<TMessage>
-        where TMessage : class
+            where TMessage : class
     {
         readonly IProcessingMessageScheduler<TMessage> _scheduler;
         internal ConcurrentQueue<TMessage> MessageQueue { get; private set; }
@@ -26,7 +26,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
         }
 
-        public ProcessingMailbox(string key, 
+        public ProcessingMailbox(string key,
             IProcessingMessageScheduler<TMessage> scheduler,
             Func<TMessage, Task> processingMessage,
             Action<ProcessingMailbox<TMessage>> handleMailboxEmpty)
@@ -57,7 +57,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             {
                 if (MessageQueue.TryDequeue(out processingMessage))
                 {
-                    await _processMessage(processingMessage);
+                    await _processMessage(processingMessage).ConfigureAwait(false);
                 }
             }
             finally

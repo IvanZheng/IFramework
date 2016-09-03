@@ -15,6 +15,7 @@ using System.Threading;
 using Kafka.Client.Helper;
 using IFramework.MessageQueue.MSKafka.Config;
 using Kafka.Client.Consumers;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.MSKafka
 {
@@ -317,7 +318,9 @@ namespace IFramework.MessageQueue.MSKafka
             Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null)
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null,
+                                           string key = null, string replyEndPoint = null, 
+                                           string messageId = null, SagaInfo sagaInfo = null)
         {
             var messageContext = new MessageContext(message, messageId);
             if (!string.IsNullOrEmpty(correlationId))
@@ -335,6 +338,10 @@ namespace IFramework.MessageQueue.MSKafka
             if (!string.IsNullOrEmpty(replyEndPoint))
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
+            }
+            if (sagaInfo != null)
+            {
+                messageContext.SagaInfo = sagaInfo;
             }
             return messageContext;
         }

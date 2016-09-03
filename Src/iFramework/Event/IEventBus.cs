@@ -14,7 +14,9 @@ namespace IFramework.Event
         void PublishAnyway(params IEvent[] events);
         IEnumerable<ICommand> GetCommands();
         IEnumerable<IEvent> GetEvents();
+        IEnumerable<object> GetSagaResults();
         IEnumerable<IEvent> GetToPublishAnywayMessages();
+        void FinishSaga(object sagaResult);
         void ClearMessages();
     }
 }

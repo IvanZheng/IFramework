@@ -61,6 +61,7 @@ namespace IFramework.Event.Impl
         protected async Task ConsumeMessage(IMessageContext eventContext)
         {
             var message = eventContext.Message;
+            var sagaInfo = eventContext.SagaInfo;
             var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
 
             if (messageHandlerTypes.Count == 0)
@@ -108,7 +109,7 @@ namespace IFramework.Event.Impl
 
                                 //get commands to be sent
                                 eventBus.GetCommands().ForEach(cmd =>
-                                   commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd)))
+                                   commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd, sagaInfo: sagaInfo)))
                                );
                                 //get events to be published
                                 eventBus.GetEvents().ForEach(msg =>
@@ -118,9 +119,34 @@ namespace IFramework.Event.Impl
                                     {
                                         topic = Configuration.Instance.FormatAppName(topic);
                                     }
-                                    eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key)));
+                                    eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                                 });
 
+                                eventBus.GetToPublishAnywayMessages().ForEach(msg =>
+                                {
+                                    var topic = msg.GetTopic();
+                                    if (!string.IsNullOrEmpty(topic))
+                                    {
+                                        topic = Configuration.Instance.FormatAppName(topic);
+                                    }
+                                    eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
+                                });
+
+                                if (sagaInfo != null)
+                                {
+                                    eventBus.GetSagaResults().ForEach(sagaResult =>
+                                    {
+                                        var topic = sagaInfo.ReplyEndPoint;
+                                        if (!string.IsNullOrEmpty(topic))
+                                        {
+                                            var sagaReply = _MessageQueueClient.WrapMessage(sagaResult,
+                                                                                            topic: topic,
+                                                                                            messageId: ObjectId.GenerateNewId().ToString(),
+                                                                                            sagaInfo: sagaInfo);
+                                            eventMessageStates.Add(new MessageState(sagaReply));
+                                        }
+                                    });
+                                }
                                 messageStore.HandleEvent(eventContext,
                                                        subscriptionName,
                                                        commandMessageStates.Select(s => s.MessageContext),
@@ -156,7 +182,7 @@ namespace IFramework.Event.Impl
                                 {
                                     topic = Configuration.Instance.FormatAppName(topic);
                                 }
-                                eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key)));
+                                eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                             });
                             messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
                             if (eventMessageStates.Count > 0)

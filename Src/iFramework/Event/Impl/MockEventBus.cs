@@ -11,17 +11,17 @@ namespace IFramework.Event.Impl
     {
         public void Commit()
         {
-            
+
         }
 
         public void Dispose()
         {
-           
+
         }
 
         public void Publish<TMessage>(TMessage @event) where TMessage : IEvent
         {
-            
+
         }
 
         public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent
@@ -54,6 +54,16 @@ namespace IFramework.Event.Impl
         }
 
         public IEnumerable<ICommand> GetCommands()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<object> GetSagaResults()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FinishSaga(object sagaResult)
         {
             throw new NotImplementedException();
         }

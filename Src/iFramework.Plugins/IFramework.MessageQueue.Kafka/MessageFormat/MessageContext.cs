@@ -4,6 +4,7 @@ using System.Text;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using Newtonsoft.Json.Linq;
 
 namespace IFramework.MessageQueue.MSKafka.MessageFormat
 {
@@ -62,6 +63,27 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
         public IDictionary<string, object> Headers
         {
             get { return KafkaMessage.Headers; }
+        }
+
+        public SagaInfo SagaInfo
+        {
+            get
+            {
+                SagaInfo sagaInfo = null;
+                var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
+                if (sagaInfoJson != null)
+                {
+                    try
+                    {
+                        sagaInfo = ((JObject)Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                return sagaInfo;
+            }
+            set { Headers["SagaInfo"] = value; }
         }
 
         public string Key

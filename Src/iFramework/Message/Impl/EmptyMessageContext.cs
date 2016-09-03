@@ -12,7 +12,7 @@ namespace IFramework.Message.Impl
         {
 
         }
-        public EmptyMessageContext(IFramework.Message.IMessage message)
+        public EmptyMessageContext(IMessage message)
         {
             SentTime = DateTime.Now;
             Message = message;
@@ -27,6 +27,11 @@ namespace IFramework.Message.Impl
         }
 
         public string Key
+        {
+            get { return null; }
+        }
+
+        public SagaInfo SagaInfo
         {
             get { return null; }
         }
@@ -86,5 +91,4 @@ namespace IFramework.Message.Impl
             get { return null; }
         }
     }
-
 }

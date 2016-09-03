@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Community\AccountRegistered.cs" />
     <Compile Include="DomainEvent.cs" />
+    <Compile Include="Products\ProductCreated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

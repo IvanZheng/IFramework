@@ -17,6 +17,23 @@
         {
             $("#result").prepend(result + "<br>");
         }
+        var doSaga = function (commandName, command) {
+            $.ajax({
+                cache: false,
+                contentType: "application/command+form;command=" + commandName,
+                type: "POST",
+                url: '@Url.Content("~/api/SagaApi")',
+                data: command,
+                success: function (data) {
+                    if (data.errorCode == 0) {
+                        showResult($.toJSON(data));
+                    }
+                    else {
+                        showResult(data.errorCode + " " + data.message);
+                    }
+                }
+            });
+        };
 
         var doCommand = function (commandName, command) {
             $.ajax({
@@ -56,6 +73,17 @@
         };
 
         $(function () {
+            $("#loginCommandSaga").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+
+                var loginCommand = {
+                    UserName: username,
+                    Password: password
+                };
+                doSaga("Login", loginCommand);
+            });
+
             $("#batchRegisterCommand").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
@@ -129,7 +157,7 @@
 
     <input id="registerCommand" type="button" value="RegisterCommand" />
     <input id="loginCommand" type="button" value="LoginCommand" />
-
+    <input id="loginCommandSaga" type="button" value="LoginCommandSaga" />
 
 
     <div>

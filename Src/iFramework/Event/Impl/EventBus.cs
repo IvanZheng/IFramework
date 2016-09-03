@@ -12,14 +12,17 @@ namespace IFramework.Event.Impl
     public class EventBus : IEventBus
     {
         protected List<ICommand> CommandQueue;
+        protected List<object> SagaResultQueue;
         protected List<IEvent> EventQueue;
         protected List<IEvent> ToPublishAnywayEventQueue;
+
         //protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
         public EventBus(/*IEventSubscriberProvider provider*/)
         {
             //EventSubscriberProvider = provider;
             EventQueue = new List<IEvent>();
             CommandQueue = new List<ICommand>();
+            SagaResultQueue = new List<object>();
             ToPublishAnywayEventQueue = new List<IEvent>();
         }
 
@@ -52,8 +55,14 @@ namespace IFramework.Event.Impl
             return EventQueue;
         }
 
+        public IEnumerable<object> GetSagaResults()
+        {
+            return SagaResultQueue;
+        }
+
         public void ClearMessages()
         {
+            SagaResultQueue.Clear();
             EventQueue.Clear();
             CommandQueue.Clear();
             ToPublishAnywayEventQueue.Clear();
@@ -77,6 +86,11 @@ namespace IFramework.Event.Impl
         public IEnumerable<ICommand> GetCommands()
         {
             return CommandQueue;
+        }
+
+        public void FinishSaga(object sagaResult)
+        {
+            SagaResultQueue.Add(sagaResult);
         }
     }
 }

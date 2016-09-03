@@ -10,6 +10,7 @@ using IFramework.Infrastructure;
 using System.Threading;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.EQueue
 {
@@ -106,7 +107,7 @@ namespace IFramework.MessageQueue.EQueue
             return subscriptionClient.CommitOffset;
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null)
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null)
         {
             var messageContext = new MessageContext(message, messageId);
             if (!string.IsNullOrEmpty(correlationId))
@@ -124,6 +125,10 @@ namespace IFramework.MessageQueue.EQueue
             if (!string.IsNullOrEmpty(replyEndPoint))
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
+            }
+            if (sagaInfo != null)
+            {
+                messageContext.SagaInfo = sagaInfo;
             }
             return messageContext;
         }

@@ -3,6 +3,7 @@ using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using IFramework.Message;
+using IFramework.Message.Impl;
 using IFramework.MessageQueue.ServiceBus.MessageFormat;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
@@ -153,7 +154,8 @@ namespace IFramework.MessageQueue.ServiceBus
 
         public IMessageContext WrapMessage(object message, string correlationId = null,
                                            string topic = null, string key = null,
-                                           string replyEndPoint = null, string messageId = null)
+                                           string replyEndPoint = null, string messageId = null,
+                                           SagaInfo sagaInfo = null)
         {
             var messageContext = new MessageContext(message, messageId);
             if (!string.IsNullOrEmpty(correlationId))
@@ -171,6 +173,10 @@ namespace IFramework.MessageQueue.ServiceBus
             if (!string.IsNullOrEmpty(replyEndPoint))
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
+            }
+            if (sagaInfo != null)
+            {
+                messageContext.SagaInfo = sagaInfo;
             }
             return messageContext;
         }
@@ -191,7 +197,7 @@ namespace IFramework.MessageQueue.ServiceBus
             return messageContext => CommitOffset(commandQueueClient, messageContext.Offset);
         }
 
-       
+
 
         void StopQueueClients()
         {

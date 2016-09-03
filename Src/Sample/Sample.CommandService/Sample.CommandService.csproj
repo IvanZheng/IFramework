@@ -227,6 +227,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\CommandController.cs" />
     <Compile Include="Controllers\BatchCommandController.cs" />
+    <Compile Include="Controllers\SagaApiController.cs" />
     <Compile Include="Controllers\TestController.cs" />
     <Compile Include="CustomIsssuerNameRegistry.cs" />
     <Compile Include="Global.asax.cs">

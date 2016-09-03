@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using IFramework.Message.Impl;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,6 @@ namespace IFramework.Message
         DateTime SentTime { get; }
         string Topic { get; }
         long Offset { get; }
+        SagaInfo SagaInfo { get; }
     }
 }

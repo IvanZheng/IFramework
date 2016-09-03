@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using IFramework.Message;
 using EQueueProtocols = EQueue.Protocols;
 using IFramework.Message.Impl;
+using Newtonsoft.Json.Linq;
 
 namespace IFramework.MessageQueue.EQueue.MessageFormat
 {
@@ -135,6 +136,27 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         {
             get { return (string)Headers.TryGetValue("Topic"); }
             set { Headers["Topic"] = value; }
+        }
+
+        public SagaInfo SagaInfo
+        {
+            get
+            {
+                SagaInfo sagaInfo = null;
+                var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
+                if (sagaInfoJson != null)
+                {
+                    try
+                    {
+                        sagaInfo = ((JObject)Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                return sagaInfo;
+            }
+            set { Headers["SagaInfo"] = value; }
         }
     }
 }

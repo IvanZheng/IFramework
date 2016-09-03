@@ -7,6 +7,8 @@ using System.Collections;
 using Newtonsoft.Json;
 using IFramework.Message;
 using Microsoft.ServiceBus.Messaging;
+using Newtonsoft.Json.Linq;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.ServiceBus.MessageFormat
 {
@@ -14,13 +16,13 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
     {
         public BrokeredMessage BrokeredMessage { get; protected set; }
         public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
-        public Action CommitOffset { get; protected set; }
+        public Action Complete { get; protected set; }
         public long Offset { get; protected set; }
         public MessageContext(BrokeredMessage brokeredMessage, Action complete = null)
         {
             BrokeredMessage = brokeredMessage;
             SentTime = DateTime.Now;
-            CommitOffset = complete;
+            Complete = complete;
             Offset = brokeredMessage.SequenceNumber;
             ToBeSentMessageContexts = new List<IMessageContext>();
         }
@@ -51,9 +53,9 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
                     Topic = topicAttribute.Topic;
                 }
             }
-           
+
         }
-     
+
 
         public MessageContext(IMessage message, string key)
             : this(message)
@@ -70,6 +72,27 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
         public IDictionary<string, object> Headers
         {
             get { return BrokeredMessage.Properties; }
+        }
+
+        public SagaInfo SagaInfo
+        {
+            get
+            {
+                SagaInfo sagaInfo = null;
+                var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
+                if (sagaInfoJson != null)
+                {
+                    try
+                    {
+                        sagaInfo = ((JObject)Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                return sagaInfo;
+            }
+            set { Headers["SagaInfo"] = value; }
         }
 
         public string Key
@@ -105,7 +128,7 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
         object _Message;
         public object Message
         {
-           get
+            get
             {
                 if (_Message != null)
                 {
@@ -116,7 +139,7 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
                 {
                     var jsonValue = BrokeredMessage.GetBody<string>();
                     _Message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
-                
+
                 }
                 return _Message;
             }

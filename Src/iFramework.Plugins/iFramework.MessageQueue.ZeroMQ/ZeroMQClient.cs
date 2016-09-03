@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using IFramework.Message;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -34,6 +35,11 @@ namespace IFramework.MessageQueue.ZeroMQ
         }
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null)
         {
             throw new NotImplementedException();
         }

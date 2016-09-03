@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace IFramework.Message
 {
-
     public class MessageResponse
     {
         private bool _needReply;
@@ -18,7 +17,7 @@ namespace IFramework.Message
         public MessageResponse(IMessageContext messageContext)
             : this(messageContext, null, false)
         {
-            
+
         }
 
         public MessageResponse(IMessageContext messageConext, Task<object> replayTask, bool needReply)
@@ -43,16 +42,15 @@ namespace IFramework.Message
 
         public async Task<TResult> ReadAsAsync<TResult>()
         {
-            var result = await Reply;
+            var result = await Reply.ConfigureAwait(false);
             return (TResult)result;
         }
 
         public async Task<TResult> ReadAsAsync<TResult>(TimeSpan timeout)
         {
-            var result =  await Reply.Timeout(timeout);
+            var result = await Reply.Timeout(timeout).ConfigureAwait(false);
             return (TResult)result;
         }
     }
 
-  
 }

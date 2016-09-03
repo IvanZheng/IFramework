@@ -76,7 +76,7 @@ namespace IFramework.Command.Impl
                 _messageProcessor.Process(messageContext, ConsumeMessage);
                 MessageCount++;
             });
-            
+
         }
 
         public void Stop()
@@ -95,6 +95,8 @@ namespace IFramework.Command.Impl
         protected async virtual Task ConsumeMessage(IMessageContext commandContext)
         {
             var command = commandContext.Message as ICommand;
+            var needReply = !string.IsNullOrEmpty(commandContext.ReplyToEndPoint);
+            var sagaInfo = commandContext.SagaInfo;
             IMessageContext messageReply = null;
             if (command == null)
             {
@@ -111,8 +113,11 @@ namespace IFramework.Command.Impl
                 var commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
                 if (commandHasHandled)
                 {
-                    messageReply = _messageQueueClient.WrapMessage(new MessageDuplicatelyHandled(), commandContext.MessageID, commandContext.ReplyToEndPoint);
-                    eventMessageStates.Add(new MessageState(messageReply));
+                    if (needReply)
+                    {
+                        messageReply = _messageQueueClient.WrapMessage(new MessageDuplicatelyHandled(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                        eventMessageStates.Add(new MessageState(messageReply));
+                    }
                 }
                 else
                 {
@@ -121,8 +126,11 @@ namespace IFramework.Command.Impl
 
                     if (messageHandlerType == null)
                     {
-                        messageReply = _messageQueueClient.WrapMessage(new NoHandlerExists(), commandContext.MessageID, commandContext.ReplyToEndPoint);
-                        eventMessageStates.Add(new MessageState(messageReply));
+                        if (needReply)
+                        {
+                            messageReply = _messageQueueClient.WrapMessage(new NoHandlerExists(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                            eventMessageStates.Add(new MessageState(messageReply));
+                        }
                     }
                     else
                     {
@@ -153,9 +161,12 @@ namespace IFramework.Command.Impl
                                             ((dynamic)messageHandler).Handle((dynamic)command);
                                         }).ConfigureAwait(false);
                                     }
+                                    if (needReply)
+                                    {
+                                        messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
+                                        eventMessageStates.Add(new MessageState(messageReply));
+                                    }
 
-                                    messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
-                                    eventMessageStates.Add(new MessageState(messageReply));
                                     eventBus.GetEvents().ForEach(@event =>
                                     {
                                         var topic = @event.GetTopic();
@@ -163,7 +174,18 @@ namespace IFramework.Command.Impl
                                         {
                                             topic = Configuration.Instance.FormatAppName(topic);
                                         }
-                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key);
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
+                                        eventMessageStates.Add(new MessageState(eventContext));
+                                    });
+
+                                    eventBus.GetToPublishAnywayMessages().ForEach(@event =>
+                                    {
+                                        var topic = @event.GetTopic();
+                                        if (!string.IsNullOrEmpty(topic))
+                                        {
+                                            topic = Configuration.Instance.FormatAppName(topic);
+                                        }
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
 
@@ -182,8 +204,11 @@ namespace IFramework.Command.Impl
                                 else
                                 {
                                     messageStore.Rollback();
-                                    messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
-                                    eventMessageStates.Add(new MessageState(messageReply));
+                                    if (needReply)
+                                    {
+                                        messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                                        eventMessageStates.Add(new MessageState(messageReply));
+                                    }
                                     eventBus.GetToPublishAnywayMessages().ForEach(@event =>
                                     {
                                         var topic = @event.GetTopic();
@@ -191,7 +216,7 @@ namespace IFramework.Command.Impl
                                         {
                                             topic = Configuration.Instance.FormatAppName(topic);
                                         }
-                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key);
+                                        var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
 

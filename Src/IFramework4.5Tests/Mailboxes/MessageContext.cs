@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.Message.Impl;
 
 namespace IFramework4._5Tests
 {
@@ -59,6 +60,11 @@ namespace IFramework4._5Tests
         public string Topic
         {
             get; set;
+        }
+
+        public SagaInfo SagaInfo
+        {
+            get;set;
         }
     }
 }

@@ -35,6 +35,7 @@ namespace IFramework.Command.Impl
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
                           string consumerId,
+                          //string[] commandQueueNames,
                           string replyTopicName,
                           string replySubscriptionName)
             : base(messageQueueClient)
@@ -44,6 +45,7 @@ namespace IFramework.Command.Impl
             _linearCommandManager = linearCommandManager;
             _replyTopicName = Configuration.Instance.FormatAppName(replyTopicName);
             _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
+            // _commandQueueNames = commandQueueNames;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
         }
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
@@ -116,21 +118,26 @@ namespace IFramework.Command.Impl
 
         protected async Task ConsumeReply(IMessageContext reply)
         {
-            _logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
-            var messageState = _commandStateQueues.TryGetValue(reply.CorrelationID);
-            if (messageState != null)
+            await Task.Run(() =>
             {
-                _commandStateQueues.TryRemove(reply.CorrelationID);
-                if (reply.Message is Exception)
+                _logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
+                var sagaInfo = reply.SagaInfo;
+                var correlationID = sagaInfo?.SagaId ?? reply.CorrelationID;
+                var messageState = _commandStateQueues.TryGetValue(correlationID);
+                if (messageState != null)
                 {
-                    messageState.ReplyTaskCompletionSource.TrySetException(reply.Message as Exception);
+                    _commandStateQueues.TryRemove(correlationID);
+                    if (reply.Message is Exception)
+                    {
+                        messageState.ReplyTaskCompletionSource.TrySetException(reply.Message as Exception);
+                    }
+                    else
+                    {
+                        messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
+                    }
                 }
-                else
-                {
-                    messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
-                }
-            }
-            _removeMessageContext(reply);
+                _removeMessageContext(reply);
+            }).ConfigureAwait(false);
         }
 
         protected MessageState BuildCommandState(IMessageContext commandContext, CancellationToken sendCancellationToken, TimeSpan timeout, CancellationToken replyCancellationToken, bool needReply)
@@ -175,6 +182,31 @@ namespace IFramework.Command.Impl
             return SendAsync(command, CancellationToken.None, timeout, CancellationToken.None, needReply);
         }
 
+        public Task<MessageResponse> StartSaga(ICommand command, string sageId = null)
+        {
+            return StartSaga(command, CancellationToken.None, TimerTaskFactory.Infinite, CancellationToken.None, sageId);
+        }
+
+        public Task<MessageResponse> StartSaga(ICommand command, TimeSpan timeout, string sageId = null)
+        {
+            return StartSaga(command, CancellationToken.None, timeout, CancellationToken.None, sageId);
+        }
+
+        public Task<MessageResponse> StartSaga(ICommand command, CancellationToken sendCancellationToken, TimeSpan sendTimeout, CancellationToken replyCancellationToken, string sagaId = null)
+        {
+            sagaId = sagaId ?? ObjectId.GenerateNewId().ToString();
+            SagaInfo sagaInfo = null;
+            if (!string.IsNullOrEmpty(sagaId))
+            {
+                sagaInfo = new SagaInfo { SagaId = sagaId, ReplyEndPoint = _replyTopicName };
+            }
+            var commandContext = WrapCommand(command, false, sagaInfo);
+            var commandState = BuildCommandState(commandContext, sendCancellationToken, sendTimeout, replyCancellationToken, true);
+            _commandStateQueues.GetOrAdd(sagaId, commandState);
+            SendAsync(commandState);
+            return commandState.SendTaskCompletionSource.Task;
+        }
+
         public Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken, TimeSpan timeout, CancellationToken replyCancellationToken, bool needReply = false)
         {
             var commandContext = WrapCommand(command, needReply);
@@ -187,7 +219,7 @@ namespace IFramework.Command.Impl
             return commandState.SendTaskCompletionSource.Task;
         }
 
-        public IMessageContext WrapCommand(ICommand command, bool needReply = false)
+        public IMessageContext WrapCommand(ICommand command, bool needReply, SagaInfo sagaInfo = null)
         {
             if (string.IsNullOrEmpty(command.ID))
             {
@@ -211,9 +243,11 @@ namespace IFramework.Command.Impl
             //    commandKey.GetUniqueCode() : command.ID.GetUniqueCode();
             //var queue = _commandQueueNames[Math.Abs(keyUniqueCode % _commandQueueNames.Length)];
             #endregion
+
             commandContext = _messageQueueClient.WrapMessage(command,
                                                              key: commandKey,
-                                                             replyEndPoint: needReply ? _replyTopicName : null);
+                                                             replyEndPoint: needReply ? _replyTopicName : null,
+                                                             sagaInfo: sagaInfo);
             if (string.IsNullOrEmpty(commandContext.Topic))
             {
                 throw new NoCommandTopic();
@@ -229,8 +263,6 @@ namespace IFramework.Command.Impl
                 sendTaskCompletionSource.TrySetException(new TimeoutException());
             }
         }
-
-
 
         protected void OnReplyCancel(object state)
         {

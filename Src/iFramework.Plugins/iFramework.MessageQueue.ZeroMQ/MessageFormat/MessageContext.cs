@@ -7,6 +7,7 @@ using System.Collections;
 using Newtonsoft.Json;
 using IFramework.Message;
 using ZeroMQ;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
 {
@@ -144,6 +145,14 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
         }
 
         public long Offset
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public SagaInfo SagaInfo
         {
             get
             {

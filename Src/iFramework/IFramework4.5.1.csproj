@@ -74,6 +74,7 @@
     <Compile Include="Message\Impl\HandlerTypeInfo.cs" />
     <Compile Include="MessageQueue\SlidingDoor.cs" />
     <Compile Include="Message\Impl\MessageExtension.cs" />
+    <Compile Include="Message\Impl\SagaInfo.cs" />
     <Compile Include="Message\MessageResponse.cs" />
     <Compile Include="Command\ILinearCommandManager.cs" />
     <Compile Include="Command\Impl\CommandBus.cs">
@@ -161,6 +162,7 @@
     <Compile Include="Message\MessageFormatHelper.cs" />
     <Compile Include="Message\MessageState.cs" />
     <Compile Include="Message\TopicAttribute.cs" />
+    <Compile Include="Repositories\DomainRepository.cs" />
     <Compile Include="SysExceptions\CurrentMessageContextIsNull.cs" />
     <Compile Include="SysExceptions\DomainException.cs" />
     <Compile Include="SysExceptions\ErrorCode.cs" />

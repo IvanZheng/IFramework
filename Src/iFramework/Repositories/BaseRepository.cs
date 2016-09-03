@@ -14,7 +14,7 @@ namespace IFramework.Repositories
     /// </summary>
     /// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
     public abstract class BaseRepository<TAggregateRoot> : IRepository<TAggregateRoot>
-        where TAggregateRoot : class
+         where TAggregateRoot : class
     {
         #region Protected Methods
         /// <summary>
@@ -118,7 +118,7 @@ namespace IFramework.Repositories
         }
         public async Task<TAggregateRoot> GetByKeyAsync(params object[] keyValues)
         {
-            return await this.DoGetByKeyAsync(keyValues);
+            return await this.DoGetByKeyAsync(keyValues).ConfigureAwait(false);
         }
         /// <summary>
         /// Removes the entity from the repository.
@@ -199,7 +199,7 @@ namespace IFramework.Repositories
         }
         public async Task<TAggregateRoot> FindAsync(ISpecification<TAggregateRoot> specification)
         {
-            return await this.DoFindAsync(specification);
+            return await this.DoFindAsync(specification).ConfigureAwait(false);
         }
         /// <summary>
         /// Checkes whether the aggregate root which matches the given specification exists.
@@ -213,7 +213,7 @@ namespace IFramework.Repositories
         }
         public async Task<bool> ExistsAsync(ISpecification<TAggregateRoot> specification)
         {
-            return await this.DoExistsAsync(specification);
+            return await this.DoExistsAsync(specification).ConfigureAwait(false);
         }
         #endregion
 
@@ -225,7 +225,7 @@ namespace IFramework.Repositories
 
         public async Task<TAggregateRoot> FindAsync(System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification)
         {
-            return await DoFindAsync(Specification<TAggregateRoot>.Eval(specification));
+            return await DoFindAsync(Specification<TAggregateRoot>.Eval(specification)).ConfigureAwait(false);
         }
         #endregion
 
@@ -248,7 +248,7 @@ namespace IFramework.Repositories
 
         public async Task<bool> ExistsAsync(System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification)
         {
-            return await DoExistsAsync(Specification<TAggregateRoot>.Eval(specification));
+            return await DoExistsAsync(Specification<TAggregateRoot>.Eval(specification)).ConfigureAwait(false);
         }
 
         public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
@@ -264,7 +264,8 @@ namespace IFramework.Repositories
 
         public async Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize, System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
         {
-            return await DoPageFindAsync(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(specification), orderExpressions);
+            return await DoPageFindAsync(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(specification), orderExpressions)
+                                       .ConfigureAwait(false);
 
         }
 
@@ -275,7 +276,7 @@ namespace IFramework.Repositories
 
         public async Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
         {
-            return await DoPageFindAsync(pageIndex, pageSize, specification, orderExpressions);
+            return await DoPageFindAsync(pageIndex, pageSize, specification, orderExpressions).ConfigureAwait(false);
         }
 
         public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
@@ -295,7 +296,7 @@ namespace IFramework.Repositories
 
         public async Task<long> CountAsync(Expression<Func<TAggregateRoot, bool>> specification)
         {
-            return await DoCountAsync(specification);
+            return await DoCountAsync(specification).ConfigureAwait(false);
         }
 
         public long Count(ISpecification<TAggregateRoot> specification)
@@ -304,7 +305,7 @@ namespace IFramework.Repositories
         }
         public async Task<long> CountAsync(ISpecification<TAggregateRoot> specification)
         {
-            return await DoCountAsync(specification);
+            return await DoCountAsync(specification).ConfigureAwait(false);
         }
 
         protected abstract long DoCount(ISpecification<TAggregateRoot> specification);

@@ -1,4 +1,5 @@
 ﻿using IFramework.Message;
+using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,8 @@ namespace IFramework.MessageQueue
 
         IMessageContext WrapMessage(object message, string correlationId = null,
                                     string topic = null, string key = null,
-                                    string replyEndPoint = null, string messageId = null);
+                                    string replyEndPoint = null, string messageId = null,
+                                    SagaInfo sagaInfo = null);
 
         Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000);
 

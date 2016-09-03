@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.Message.Impl;
 
 namespace Sample.CommandServiceTests
 {
@@ -58,6 +59,11 @@ namespace Sample.CommandServiceTests
         public string Topic
         {
             get; set;
+        }
+
+        public SagaInfo SagaInfo
+        {
+            get;set;
         }
     }
 }
