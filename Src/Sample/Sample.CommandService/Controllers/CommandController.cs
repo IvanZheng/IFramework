@@ -51,11 +51,13 @@ namespace Sample.CommandService.Controllers
         {
             if (ModelState.IsValid)
             {
-                HttpClient client = new HttpClient();
-                client.BaseAddress = new Uri(string.Format("{0}://{1}/api/command",
-                    Request.RequestUri.Scheme,
-                    Request.RequestUri.Authority));
-                return client.DoCommand<ApiResult>(command, null);
+                using (HttpClient client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(string.Format("{0}://{1}/api/command",
+                       Request.RequestUri.Scheme,
+                       Request.RequestUri.Authority));
+                    return client.DoCommand<ApiResult>(command, null);
+                }
             }
             else
             {

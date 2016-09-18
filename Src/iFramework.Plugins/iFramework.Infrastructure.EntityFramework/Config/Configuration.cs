@@ -39,6 +39,7 @@ namespace IFramework.EntityFramework.Config
         {
             container = container ?? IoCFactory.Instance.CurrentContainer;
             container.RegisterType<IUnitOfWork, EntityFramework.UnitOfWork>(lifetime);
+            container.RegisterType<IAppUnitOfWork, AppUnitOfWork>(lifetime);
             return configuration;
         }
         public static Configuration RegisterRepositories(this Configuration configuration, IContainer container, Lifetime lifetime = Lifetime.Hierarchical)

@@ -48,8 +48,8 @@ namespace Sample.CommandService
                             .MessageQueueUseMachineNameFormat()
                             .UseMessageQueue()
                             .UseMessageStore<SampleModelContext>()
-                            //.UseKafka("localhost:2181")
-                            .UseEQueue(Utility.GetLocalIPV4().ToString())
+                            .UseKafka("localhost:2181")
+                            //.UseEQueue(Utility.GetLocalIPV4().ToString())
                             .UseCommandBus(Environment.MachineName, linerCommandManager: new Sample.Command.LinearCommandManager())
                             .UseMessagePublisher("eventTopic");
 

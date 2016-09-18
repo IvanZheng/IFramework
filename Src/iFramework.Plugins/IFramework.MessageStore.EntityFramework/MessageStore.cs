@@ -81,7 +81,7 @@ namespace IFramework.MessageStoring
             }
             messageContexts.ForEach(eventContext =>
             {
-                eventContext.CorrelationID = commandContext.MessageID;
+                eventContext.CorrelationID = commandContext?.MessageID;
                 Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });

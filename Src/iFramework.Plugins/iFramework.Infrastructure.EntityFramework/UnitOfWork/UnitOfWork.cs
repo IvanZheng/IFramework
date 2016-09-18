@@ -14,29 +14,42 @@ using IFramework.Event;
 using IFramework.Message;
 using System.Data.Entity.Infrastructure;
 using System.Threading.Tasks;
+using IFramework.Infrastructure.Logging;
 
 namespace IFramework.EntityFramework
 {
     public class UnitOfWork : IUnitOfWork
     {
-        List<MSDbContext> _dbContexts;
-        IEventBus _eventBus;
+        protected List<MSDbContext> _dbContexts;
+        protected IEventBus _eventBus;
+        protected ILogger _logger;
         // IEventPublisher _eventPublisher;
 
-        public UnitOfWork(IEventBus eventBus)//,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
+        public UnitOfWork(IEventBus eventBus, ILoggerFactory loggerFactory)//,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
         {
             _dbContexts = new List<MSDbContext>();
             _eventBus = eventBus;
+            _logger = loggerFactory.Create(this.GetType().Name);
             //  _eventPublisher = eventPublisher;
         }
         #region IUnitOfWork Members
 
-        public void Commit()
+        protected virtual void BeforeCommit()
         {
-            using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
-                                                             new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }, TransactionScopeAsyncFlowOption.Enabled))
+
+        }
+
+        protected virtual void AfterCommit()
+        {
+
+        }
+
+        public virtual void Commit()
+        {
+            try
             {
-                try
+                using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
+                                                           new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }, TransactionScopeAsyncFlowOption.Enabled))
                 {
                     _dbContexts.ForEach(dbContext =>
                     {
@@ -49,27 +62,30 @@ namespace IFramework.EntityFramework
                             }
                         });
                     });
+                    BeforeCommit();
                     scope.Complete();
                 }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    Rollback();
-                    throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
-                }
+                AfterCommit();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                Rollback();
+                throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
             }
         }
 
-        public async Task CommitAsync()
+        public async virtual Task CommitAsync()
         {
-            using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
+
+            try
+            {
+                using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
                                                              new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted },
                                                              TransactionScopeAsyncFlowOption.Enabled))
-            {
-                try
                 {
                     foreach (var dbContext in _dbContexts)
                     {
-                        await dbContext.SaveChangesAsync();
+                        await dbContext.SaveChangesAsync().ConfigureAwait(false);
                         dbContext.ChangeTracker.Entries().ForEach(e =>
                         {
                             if (e.Entity is AggregateRoot)
@@ -78,18 +94,17 @@ namespace IFramework.EntityFramework
                             }
                         });
                     }
+                    BeforeCommit();
                     scope.Complete();
                 }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    Rollback();
-                    throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
-                }
+                AfterCommit();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                Rollback();
+                throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
             }
         }
-
-
-
 
         internal void RegisterDbContext(MSDbContext dbContext)
         {
@@ -100,8 +115,6 @@ namespace IFramework.EntityFramework
         }
 
         #endregion
-
-
 
         public void Dispose()
         {
