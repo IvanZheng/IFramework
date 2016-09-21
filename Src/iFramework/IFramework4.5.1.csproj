@@ -207,6 +207,7 @@
     <Compile Include="SysExceptions\NoMessageId.cs" />
     <Compile Include="SysExceptions\SysException.cs" />
     <Compile Include="UnitOfWork\BaseUnitOfWork.cs" />
+    <Compile Include="UnitOfWork\IAppUnitOfWork.cs" />
     <Compile Include="UnitOfWork\IUnitOfWork.cs" />
     <Compile Include="UnitOfWork\MockUnitOfWork.cs" />
   </ItemGroup>

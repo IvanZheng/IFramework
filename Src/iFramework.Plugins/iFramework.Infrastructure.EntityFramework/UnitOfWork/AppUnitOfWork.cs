@@ -5,6 +5,7 @@ using IFramework.Infrastructure.Logging;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
+using IFramework.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -68,7 +68,6 @@
     <Compile Include="Repositories\Repository.cs" />
     <Compile Include="Repositories\RepositoryExtention.cs" />
     <Compile Include="UnitOfWork\AppUnitOfWork.cs" />
-    <Compile Include="UnitOfWork\IAppUnitOfWork.cs" />
     <Compile Include="UnitOfWork\UnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
