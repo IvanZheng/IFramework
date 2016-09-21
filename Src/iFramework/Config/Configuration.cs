@@ -29,6 +29,8 @@ namespace IFramework.Config
         {
             UseNoneLogger();
             UseMessageStore<MockMessageStore>();
+            this.UseMockMessageQueueClient();
+            this.UseMockMessagePublisher();
             RegisterDefaultEventBus();
             return this;
         }
