@@ -67,6 +67,7 @@ namespace IFramework.EntityFramework
         protected override void AfterCommit()
         {
             base.AfterCommit();
+            _eventBus.ClearMessages();
             try
             {
                 if (_messagePublisher != null && _eventMessageStates.Count > 0)

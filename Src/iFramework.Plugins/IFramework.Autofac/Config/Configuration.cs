@@ -56,7 +56,13 @@ namespace IFramework.Config
                 {
                     //Console.WriteLine(ex.GetBaseException().Message);
                 }
+                builder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies());
                 container = builder.Build();
+            }
+            else
+            {
+                builder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies());
+                builder.Update(container);
             }
             IoC.IoCFactory.SetContainer(new ObjectContainer(container));
             return configuration;
