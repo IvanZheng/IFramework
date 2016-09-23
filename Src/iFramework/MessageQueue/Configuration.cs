@@ -31,8 +31,12 @@ namespace IFramework.Config
             IoCFactory.Instance.CurrentContainer.RegisterType<IEventBus, EventBus>(Lifetime.Hierarchical);
             return configuration;
         }
-       
-        
+
+        public static Configuration UseMockMessageQueueClient(this Configuration configuration)
+        {
+            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageQueueClient, MockMessageQueueClient>(Lifetime.Singleton);
+            return configuration;
+        }
 
         public static Configuration UseMockMessagePublisher(this Configuration configuration)
         {

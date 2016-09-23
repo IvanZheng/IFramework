@@ -70,6 +70,7 @@
     <Compile Include="MessageQueue\Configuration.cs" />
     <Compile Include="MessageQueue\ISlidingDoor.cs" />
     <Compile Include="MessageQueue\MessageQueueFactory.cs" />
+    <Compile Include="MessageQueue\MockMessageQueueClient.cs" />
     <Compile Include="Message\IMessageAsyncHandler.cs" />
     <Compile Include="Message\Impl\HandlerTypeInfo.cs" />
     <Compile Include="MessageQueue\SlidingDoor.cs" />

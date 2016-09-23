@@ -21,9 +21,10 @@ namespace IFramework.Autofac
     {
         readonly string AutofacNotSupportedException = "autofac doesn't support retrieve parent container";
         internal ILifetimeScope _container;
-        public ObjectContainer(ILifetimeScope container)
+        public ObjectContainer(ILifetimeScope container, IoC.IContainer parent = null)
         {
             _container = container;
+            Parent = parent;
             RegisterInstance<IoC.IContainer>(this);
         }
 
@@ -37,16 +38,13 @@ namespace IFramework.Autofac
 
         public IoC.IContainer Parent
         {
-            get
-            {
-                throw new NotSupportedException(AutofacNotSupportedException);
-            }
+            get; protected set;
         }
 
         public IoC.IContainer CreateChildContainer()
         {
             var scope = _container.BeginLifetimeScope();
-            var container = new ObjectContainer(scope);
+            var container = new ObjectContainer(scope, this);
             return container;
         }
 

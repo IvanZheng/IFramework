@@ -1,1 +1,1 @@
-junction.exe packages "E:\projects\packages"
+junction.exe packages "E:\packages"
