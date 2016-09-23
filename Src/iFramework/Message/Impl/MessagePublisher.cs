@@ -29,8 +29,12 @@ namespace IFramework.Message.Impl
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
             using (var messageStore = scope.Resolve<IMessageStore>())
             {
-                return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationID) =>
-                                        _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic, messageId: messageId, correlationId: correlationID));
+                return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationID, replyEndPoint, sagaInfo) =>
+                                        _messageQueueClient.WrapMessage(message, key: message.Key,
+                                                                        topic: topic, messageId: messageId,
+                                                                        correlationId: correlationID,
+                                                                        replyEndPoint: replyEndPoint,
+                                                                        sagaInfo: sagaInfo));
             }
         }
 
@@ -48,15 +52,15 @@ namespace IFramework.Message.Impl
             if (_needMessageStore)
             {
                 Task.Run(() =>
-                           {
-                               using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-                               using (var messageStore = scope.Resolve<IMessageStore>())
-                               {
-                                   messageStore.RemovePublishedEvent(messageState.MessageID);
-                               }
-                           });
+                {
+                    using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+                    using (var messageStore = scope.Resolve<IMessageStore>())
+                    {
+                        messageStore.RemovePublishedEvent(messageState.MessageID);
+                    }
+                });
             }
-           
+
         }
     }
 }

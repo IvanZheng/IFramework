@@ -6,7 +6,7 @@ using System.Text;
 
 namespace IFramework.Message.Impl
 {
-    class MockMessageStore : IMessageStore
+    public class MockMessageStore : IMessageStore
     {
         public bool HasCommandHandled(string commandId)
         {
@@ -16,54 +16,54 @@ namespace IFramework.Message.Impl
         public bool HasEventHandled(string eventId, string subscriptionName)
         {
             return false;
-            
+
         }
 
         public void SaveCommand(IMessageContext commandContext, params IMessageContext[] messageContexts)
         {
         }
 
-     
+
 
         public void RemoveSentCommand(string commandId)
         {
-            
+
         }
 
         public void RemovePublishedEvent(string eventId)
         {
-           
+
         }
 
-       
+
 
         public void Dispose()
         {
-            
+
         }
 
 
-        public void HandleEvent(IMessageContext eventContext, string subscriptionName, 
-                              IEnumerable<IMessageContext> commandContexts, 
+        public void HandleEvent(IMessageContext eventContext, string subscriptionName,
+                              IEnumerable<IMessageContext> commandContexts,
                               IEnumerable<IMessageContext> messageContexts)
         {
         }
-        
 
 
-        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
+
+        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, IMessage, string, string, string, SagaInfo, IMessageContext> wrapMessage)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
+        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, IMessage, string, string, string, SagaInfo, IMessageContext> wrapMessage)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public void Rollback()
         {
-            throw new NotImplementedException();
+
         }
 
         public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, params IMessageContext[] eventContexts)
@@ -76,7 +76,9 @@ namespace IFramework.Message.Impl
 
         public void SaveEvent(IMessageContext eventContext)
         {
-            throw new NotImplementedException();
+
         }
+
+
     }
 }

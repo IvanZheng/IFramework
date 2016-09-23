@@ -9,6 +9,7 @@ using IFramework.Infrastructure.Logging;
 using IFramework.Event;
 using IFramework.EntityFramework;
 using IFramework.IoC;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageStoring
 {
@@ -29,7 +30,10 @@ namespace IFramework.MessageStoring
         public MessageStore(string connectionString = null)
             : base(connectionString ?? "MessageStore")
         {
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            if (IoCFactory.IsInit())
+            {
+                _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            }
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -127,7 +131,7 @@ namespace IFramework.MessageStoring
                 catch (Exception ex)
                 {
                     // only multiple subscribers consuming the same topic message will case the Event Saving conflict.
-                    _logger.Error($"SaveEvent failed. Event: {eventContext.Message.ToJson()}", ex);
+                    _logger?.Error($"SaveEvent failed. Event: {eventContext.Message.ToJson()}", ex);
                 }
             }
         }
@@ -142,8 +146,8 @@ namespace IFramework.MessageStoring
             commandContexts.ForEach(commandContext =>
             {
                 commandContext.CorrelationID = eventContext.MessageID;
-                    // don't save command here like event that would be published to other bounded context
-                    UnSentCommands.Add(new UnSentCommand(commandContext));
+                // don't save command here like event that would be published to other bounded context
+                UnSentCommands.Add(new UnSentCommand(commandContext));
             });
             messageContexts.ForEach(messageContext =>
             {
@@ -202,17 +206,17 @@ namespace IFramework.MessageStoring
         }
 
 
-        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
+        public IEnumerable<IMessageContext> GetAllUnSentCommands(Func<string, IMessage, string, string, string, SagaInfo, IMessageContext> wrapMessage)
         {
             return GetAllUnSentMessages<UnSentCommand>(wrapMessage);
         }
 
-        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
+        public IEnumerable<IMessageContext> GetAllUnPublishedEvents(Func<string, IMessage, string, string, string, SagaInfo, IMessageContext> wrapMessage)
         {
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
 
-        IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>(Func<string, IMessage, string, string, IMessageContext> wrapMessage)
+        IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>(Func<string, IMessage, string, string, string, SagaInfo, IMessageContext> wrapMessage)
             where TMessage : UnSentMessage
         {
             var messageContexts = new List<IMessageContext>();
@@ -223,18 +227,18 @@ namespace IFramework.MessageStoring
                     var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type)) as IMessage;
                     if (rawMessage != null)
                     {
-                        messageContexts.Add(wrapMessage(message.ID, rawMessage, message.Topic, message.CorrelationID));
+                        messageContexts.Add(wrapMessage(message.ID, rawMessage, message.Topic, message.CorrelationID, message.ReplyToEndPoint, message.SagaInfo));
                     }
                     else
                     {
                         this.Set<TMessage>().Remove(message);
-                        _logger.ErrorFormat("get unsent message error: {0}", message.ToJson());
+                        _logger?.ErrorFormat("get unsent message error: {0}", message.ToJson());
                     }
                 }
                 catch (Exception)
                 {
                     this.Set<TMessage>().Remove(message);
-                    _logger.ErrorFormat("get unsent message error: {0}", message.ToJson());
+                    _logger?.ErrorFormat("get unsent message error: {0}", message.ToJson());
                 }
             });
             SaveChanges();

@@ -74,25 +74,28 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             get { return BrokeredMessage.Properties; }
         }
 
+        SagaInfo _sagaInfo;
         public SagaInfo SagaInfo
         {
             get
             {
-                SagaInfo sagaInfo = null;
-                var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
-                if (sagaInfoJson != null)
+                if (_sagaInfo == null)
                 {
-                    try
+                    var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
+                    if (sagaInfoJson != null)
                     {
-                        sagaInfo = ((JObject)Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
-                    }
-                    catch (Exception)
-                    {
+                        try
+                        {
+                            _sagaInfo = ((JObject)Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
+                        }
+                        catch (Exception)
+                        {
+                        }
                     }
                 }
-                return sagaInfo;
+                return _sagaInfo;
             }
-            set { Headers["SagaInfo"] = value; }
+            set { Headers["SagaInfo"] = _sagaInfo = value; }
         }
 
         public string Key
