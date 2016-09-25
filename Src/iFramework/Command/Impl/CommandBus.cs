@@ -53,8 +53,11 @@ namespace IFramework.Command.Impl
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
             using (var messageStore = scope.Resolve<IMessageStore>())
             {
-                return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId) =>
-                                                          _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic, messageId: messageId, correlationId: correlationId));
+                return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId, replyEndPoint, sagaInfo) =>
+                                                          _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic,
+                                                                                          messageId: messageId, correlationId: correlationId,
+                                                                                          replyEndPoint: replyEndPoint,
+                                                                                          sagaInfo: sagaInfo));
             }
         }
 
@@ -118,8 +121,7 @@ namespace IFramework.Command.Impl
 
         protected async Task ConsumeReply(IMessageContext reply)
         {
-            await Task.Run(() =>
-            {
+            await Task.Run(() => {
                 _logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
                 var sagaInfo = reply.SagaInfo;
                 var correlationID = sagaInfo?.SagaId ?? reply.CorrelationID;
@@ -263,6 +265,8 @@ namespace IFramework.Command.Impl
                 sendTaskCompletionSource.TrySetException(new TimeoutException());
             }
         }
+
+
 
         protected void OnReplyCancel(object state)
         {

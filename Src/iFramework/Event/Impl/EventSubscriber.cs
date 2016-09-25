@@ -132,7 +132,7 @@ namespace IFramework.Event.Impl
                                     eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                                 });
 
-                                if (sagaInfo != null)
+                                if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
                                 {
                                     eventBus.GetSagaResults().ForEach(sagaResult =>
                                     {

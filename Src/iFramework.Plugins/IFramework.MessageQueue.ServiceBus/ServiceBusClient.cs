@@ -174,7 +174,7 @@ namespace IFramework.MessageQueue.ServiceBus
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
             }
-            if (sagaInfo != null)
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
             {
                 messageContext.SagaInfo = sagaInfo;
             }

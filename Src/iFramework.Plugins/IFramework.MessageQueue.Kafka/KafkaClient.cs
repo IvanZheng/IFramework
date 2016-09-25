@@ -318,9 +318,7 @@ namespace IFramework.MessageQueue.MSKafka
             Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null,
-                                           string key = null, string replyEndPoint = null, 
-                                           string messageId = null, SagaInfo sagaInfo = null)
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null)
         {
             var messageContext = new MessageContext(message, messageId);
             if (!string.IsNullOrEmpty(correlationId))
@@ -339,7 +337,7 @@ namespace IFramework.MessageQueue.MSKafka
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
             }
-            if (sagaInfo != null)
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
             {
                 messageContext.SagaInfo = sagaInfo;
             }

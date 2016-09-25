@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
 using System.ComponentModel.DataAnnotations.Schema;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageStoring
 {
@@ -16,6 +17,8 @@ namespace IFramework.MessageStoring
             ID = messageContext.MessageID;
             CorrelationID = messageContext.CorrelationID;
             MessageBody = messageContext.Message.ToJson();
+            ReplyToEndPoint = messageContext.ReplyToEndPoint;
+            SagaInfo = messageContext.SagaInfo ?? new SagaInfo();
             CreateTime = messageContext.SentTime;
             if (messageContext.Message != null)
             {
@@ -24,8 +27,10 @@ namespace IFramework.MessageStoring
             }
             Topic = messageContext.Topic;
         }
-
+        
         public string ID { get; set; }
+        public string ReplyToEndPoint { get; set; }
+        public SagaInfo SagaInfo { get; set; }
         public string CorrelationID { get; set; }
         public string MessageBody { get; set; }
         public DateTime CreateTime { get; set; }

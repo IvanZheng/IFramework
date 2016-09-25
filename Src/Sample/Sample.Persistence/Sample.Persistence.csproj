@@ -98,6 +98,10 @@
     <Compile Include="Migrations\201607210609551_RemoveRelationBetweenCommandEvent.Designer.cs">
       <DependentUpon>201607210609551_RemoveRelationBetweenCommandEvent.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201609231404285_AddSagaInfo.cs" />
+    <Compile Include="Migrations\201609231404285_AddSagaInfo.Designer.cs">
+      <DependentUpon>201609231404285_AddSagaInfo.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repositories\CommunityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -152,12 +156,17 @@
     <EmbeddedResource Include="Migrations\201607210609551_RemoveRelationBetweenCommandEvent.resx">
       <DependentUpon>201607210609551_RemoveRelationBetweenCommandEvent.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609231404285_AddSagaInfo.resx">
+      <DependentUpon>201609231404285_AddSagaInfo.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Migrations\sql\201505060539435_AddMessageTopic.sql" />
-    <Content Include="Migrations\sql\201603121337495_AddProduct.sql" />
-    <Content Include="Migrations\sql\201603131106064_AddProjectVersion.sql" />
-    <Content Include="Migrations\sql\AddProductCreateTime.sql" />
+    <None Include="Migrations\sql\201505060539435_AddMessageTopic.sql" />
+    <None Include="Migrations\sql\201603121337495_AddProduct.sql" />
+    <None Include="Migrations\sql\201603131106064_AddProjectVersion.sql" />
+    <None Include="Migrations\sql\201607210609551_RemoveRelationBetweenCommandEvent.sql" />
+    <None Include="Migrations\sql\201609231404285_AddSagaInfo.sql" />
+    <None Include="Migrations\sql\AddProductCreateTime.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
