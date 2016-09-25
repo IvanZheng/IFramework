@@ -142,6 +142,7 @@ namespace IFramework.Infrastructure
                 {
                     await func().ConfigureAwait(continueOnCapturedContext);
                     needRetry = false;
+                    apiResult = new ApiResult();
                 }
                 catch (Exception ex)
                 {
