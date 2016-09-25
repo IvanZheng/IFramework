@@ -39,7 +39,7 @@ namespace EQueueTest
                             var message = Encoding.UTF8.GetString(queueMessage.Body);
                             var sendTime = DateTime.Parse(message);
                             Console.WriteLine($"consumer:{consumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
-                            consumer.CommitOffset(queueMessage.QueueId, queueMessage.QueueOffset);
+                            consumer.CommitOffset(queueMessage.BrokerName, queueMessage.QueueId, queueMessage.QueueOffset);
                         }
                     }
                     catch (OperationCanceledException)

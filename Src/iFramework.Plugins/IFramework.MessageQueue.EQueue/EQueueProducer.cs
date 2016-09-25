@@ -27,8 +27,7 @@ namespace IFramework.MessageQueue.EQueue
         {
             var setting = new ProducerSetting
             {
-                BrokerAddress = new IPEndPoint(BrokerAddress, ProducerPort),
-                BrokerAdminAddress = new IPEndPoint(BrokerAddress, AdminPort)
+                NameServerList = new IPEndPoint(BrokerAddress, ProducerPort)
             };
             Producer = new Producer(setting).Start();
         }

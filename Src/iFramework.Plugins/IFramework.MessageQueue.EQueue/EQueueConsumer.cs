@@ -75,6 +75,7 @@ namespace IFramework.MessageQueue.EQueue
             var slidingDoor = SlidingDoors.GetOrAdd(message.QueueId, partition =>
             {
                 return new SlidingDoor(CommitOffset,
+                                       message.BrokerName,
                                        partition,
                                        Configuration.Instance.GetCommitPerMessage());
             });
@@ -103,9 +104,9 @@ namespace IFramework.MessageQueue.EQueue
         }
 
 
-        public void CommitOffset(int partition, long offset)
+        public void CommitOffset(string broker, int partition, long offset)
         {
-            Consumer.CommitConsumeOffset(Topic, partition, offset);
+            Consumer.CommitConsumeOffset(broker, Topic, partition, offset);
         }
 
     }
