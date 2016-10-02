@@ -16,10 +16,8 @@ namespace IFramework.MessageQueue.EQueue
 {
     public class EQueueClient : IMessageQueueClient
     {
-        public string BrokerAddress { get; protected set; }
-        public int ProducerPort { get; protected set; }
-        public int ConsumerPort { get; protected set; }
-        public int AdminPort { get; protected set; }
+        public string ClusterName { get; set; }
+        public List<System.Net.IPEndPoint> NameServerList { get; set; }
         protected List<EQueueConsumer> _subscriptionClients;
         protected List<EQueueConsumer> _queueConsumers;
         protected List<Task> _subscriptionClientTasks;
@@ -30,18 +28,16 @@ namespace IFramework.MessageQueue.EQueue
         public EQueueProducer _producer { get; protected set; }
 
 
-        public EQueueClient(string brokerAddress, int producerPort = 5000, int consumerPort = 5001, int adminPort = 5002)
+        public EQueueClient(string clusterName, List<System.Net.IPEndPoint> nameServerList)
         {
-            BrokerAddress = brokerAddress;
-            ProducerPort = producerPort;
-            ConsumerPort = consumerPort;
-            AdminPort = adminPort;
+            ClusterName = clusterName;
+            NameServerList = nameServerList;
             _subscriptionClients = new List<EQueueConsumer>();
             _queueConsumers = new List<EQueueConsumer>();
             _subscriptionClientTasks = new List<Task>();
             _commandClientTasks = new List<Task>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
-            _producer = new EQueueProducer(BrokerAddress, ProducerPort, AdminPort);
+            _producer = new EQueueProducer(ClusterName, NameServerList);
             _producer.Start();
         }
 
@@ -194,14 +190,14 @@ namespace IFramework.MessageQueue.EQueue
         #region private methods
         EQueueConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
-            var consumer = new EQueueConsumer(BrokerAddress, ConsumerPort, AdminPort, topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval);
+            var consumer = new EQueueConsumer(ClusterName, NameServerList, topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval);
             consumer.Start();
             return consumer;
         }
 
         EQueueConsumer CreateQueueConsumer(string commandQueueName, string consumerId, int fullLoadThreshold, int waitInterval)
         {
-            var consumer = new EQueueConsumer(BrokerAddress, ConsumerPort, AdminPort, commandQueueName, commandQueueName, consumerId, fullLoadThreshold, waitInterval);
+            var consumer = new EQueueConsumer(ClusterName, NameServerList, commandQueueName, commandQueueName, consumerId, fullLoadThreshold, waitInterval);
             consumer.Start();
             return consumer;
         }

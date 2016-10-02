@@ -3,6 +3,7 @@ using IFramework.MessageQueue.EQueue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,14 +13,13 @@ namespace EQueueTest
     class Program
     {
         static string topic = "groupcommandqueue";
-        static string brokerAddress = "192.168.199.242";
-        static int consumerPort = 5001;
-        static int adminPort = 5002;
+        static string clusterName = "defaultCluster";
+        static List<IPEndPoint> NameServerList = ConfigurationEQueue.GetIPEndPoints("").ToList();
         static void Main(string[] args)
         {
             Configuration.Instance
                          .UseAutofacContainer()
-                         .UseEQueue(brokerAddress)
+                         .UseEQueue()
                          .UseNoneLogger();
             GroupConsuemrTest();
         }
@@ -28,7 +28,7 @@ namespace EQueueTest
         {
             return Task.Run(() =>
             {
-                var consumer = new EQueueConsumer(brokerAddress, consumerPort, adminPort, topic, Environment.MachineName, consumerId);
+                var consumer = new EQueueConsumer(clusterName, NameServerList, topic, Environment.MachineName, consumerId);
                 consumer.Start();
                 while (true)
                 {
@@ -72,7 +72,7 @@ namespace EQueueTest
             }
 
 
-            var producer = new EQueueProducer(brokerAddress);
+            var producer = new EQueueProducer(clusterName, NameServerList);
             producer.Start();
             while (true)
             {

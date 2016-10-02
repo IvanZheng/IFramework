@@ -12,22 +12,22 @@ namespace IFramework.MessageQueue.EQueue
     public class EQueueProducer
     {
         public Producer Producer { get; protected set; }
-        public IPAddress BrokerAddress { get; protected set; }
-        public int ProducerPort { get; protected set; }
+        public string ClusterName { get; protected set; }
+        public List<IPEndPoint> NameServerList { get; protected set; }
         public int AdminPort { get; protected set; }
 
-        public EQueueProducer(string brokerAdress, int producerPort = 5000, int adminPort = 5002)
+        public EQueueProducer(string clusterName, List<IPEndPoint> nameServerList)
         {
-            BrokerAddress = IPAddress.Parse(brokerAdress);
-            ProducerPort = producerPort;
-            AdminPort = adminPort;
+            ClusterName = clusterName;
+            NameServerList = nameServerList;
         }
 
         public void Start()
         {
             var setting = new ProducerSetting
             {
-                NameServerList = new IPEndPoint(BrokerAddress, ProducerPort)
+                ClusterName = ClusterName,
+                NameServerList = NameServerList
             };
             Producer = new Producer(setting).Start();
         }
