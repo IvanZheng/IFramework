@@ -16,14 +16,16 @@ namespace IFramework.MessageQueue
         protected long _lastOffset = -1L;
         protected long _lastCommittedOffset = -1L;
         object _removeOffsetLock = new object();
+        protected string _broker;
         protected int _partition;
         protected bool _commitPerMessage;
-        protected Action<int, long> _commitOffset;
+        protected Action<string, int, long> _commitOffset;
         ILogger _logger;
 
-        public SlidingDoor(Action<int, long> commitOffset, int partition, bool commitPerMessage = false)
+        public SlidingDoor(Action<string, int, long> commitOffset, string broker, int partition, bool commitPerMessage = false)
         {
             _commitOffset = commitOffset;
+            _broker = broker;
             _partition = partition;
             _offsets = new SortedSet<long>();
             _commitPerMessage = commitPerMessage;
@@ -51,7 +53,7 @@ namespace IFramework.MessageQueue
         {
             if (_commitPerMessage)
             {
-                _commitOffset(_partition, offset);
+                _commitOffset(_broker, _partition, offset);
                 lock (_removeOffsetLock)
                 {
                     _offsets.Remove(offset);
@@ -74,7 +76,7 @@ namespace IFramework.MessageQueue
                     }
                     if (_consumedOffset > _lastCommittedOffset)
                     {
-                        _commitOffset(_partition, _consumedOffset);
+                        _commitOffset(_broker, _partition, _consumedOffset);
                         _lastCommittedOffset = _consumedOffset;
                     }
                 }

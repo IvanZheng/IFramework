@@ -88,7 +88,8 @@ namespace IFramework.MessageQueue.MSKafka
         {
             var slidingDoor = SlidingDoors.GetOrAdd(message.PartitionId.Value, partition =>
             {
-                return new SlidingDoor(CommitOffset, 
+                return new SlidingDoor(CommitOffset,
+                                       string.Empty, 
                                        partition,
                                        Configuration.Instance.GetCommitPerMessage());
             });
@@ -118,7 +119,14 @@ namespace IFramework.MessageQueue.MSKafka
 
         public void CommitOffset(int partition, long offset)
         {
+            // kafka not use broker in cluster mode
             ZkConsumerConnector.CommitOffset(Topic, partition, offset, false);
+        }
+
+        public void CommitOffset(string broker, int partition, long offset)
+        {
+            // kafka not use broker in cluster mode
+            CommitOffset(partition, offset);
         }
 
         public void Stop()

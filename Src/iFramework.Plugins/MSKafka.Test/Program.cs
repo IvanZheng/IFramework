@@ -42,7 +42,7 @@ namespace MSKafka.Test
                         var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
                         var sendTime = DateTime.Parse(message);
                         Console.WriteLine($"consumer:{consumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
-                        consumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
+                        consumer.CommitOffset(string.Empty, kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
                     }
                 }
                 catch (OperationCanceledException)
