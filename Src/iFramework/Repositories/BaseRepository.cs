@@ -116,9 +116,9 @@ namespace IFramework.Repositories
         {
             return this.DoGetByKey(keyValues);
         }
-        public async Task<TAggregateRoot> GetByKeyAsync(params object[] keyValues)
+        public Task<TAggregateRoot> GetByKeyAsync(params object[] keyValues)
         {
-            return await this.DoGetByKeyAsync(keyValues).ConfigureAwait(false);
+            return this.DoGetByKeyAsync(keyValues);
         }
         /// <summary>
         /// Removes the entity from the repository.
@@ -197,9 +197,9 @@ namespace IFramework.Repositories
         {
             return this.DoFind(specification);
         }
-        public async Task<TAggregateRoot> FindAsync(ISpecification<TAggregateRoot> specification)
+        public Task<TAggregateRoot> FindAsync(ISpecification<TAggregateRoot> specification)
         {
-            return await this.DoFindAsync(specification).ConfigureAwait(false);
+            return this.DoFindAsync(specification);
         }
         /// <summary>
         /// Checkes whether the aggregate root which matches the given specification exists.
@@ -211,9 +211,9 @@ namespace IFramework.Repositories
         {
             return this.DoExists(specification);
         }
-        public async Task<bool> ExistsAsync(ISpecification<TAggregateRoot> specification)
+        public Task<bool> ExistsAsync(ISpecification<TAggregateRoot> specification)
         {
-            return await this.DoExistsAsync(specification).ConfigureAwait(false);
+            return this.DoExistsAsync(specification);
         }
         #endregion
 
@@ -223,9 +223,9 @@ namespace IFramework.Repositories
             return DoFind(Specification<TAggregateRoot>.Eval(specification));
         }
 
-        public async Task<TAggregateRoot> FindAsync(System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification)
+        public Task<TAggregateRoot> FindAsync(System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification)
         {
-            return await DoFindAsync(Specification<TAggregateRoot>.Eval(specification)).ConfigureAwait(false);
+            return DoFindAsync(Specification<TAggregateRoot>.Eval(specification));
         }
         #endregion
 
@@ -246,9 +246,9 @@ namespace IFramework.Repositories
             return DoExists(Specification<TAggregateRoot>.Eval(specification));
         }
 
-        public async Task<bool> ExistsAsync(System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification)
+        public Task<bool> ExistsAsync(System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification)
         {
-            return await DoExistsAsync(Specification<TAggregateRoot>.Eval(specification)).ConfigureAwait(false);
+            return DoExistsAsync(Specification<TAggregateRoot>.Eval(specification));
         }
 
         public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
@@ -262,10 +262,9 @@ namespace IFramework.Repositories
 
         }
 
-        public async Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize, System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
+        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize, System.Linq.Expressions.Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
         {
-            return await DoPageFindAsync(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(specification), orderExpressions)
-                                       .ConfigureAwait(false);
+            return DoPageFindAsync(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(specification), orderExpressions);
 
         }
 
@@ -274,9 +273,9 @@ namespace IFramework.Repositories
             return DoPageFind(pageIndex, pageSize, specification, ref totalCount, orderExpressions);
         }
 
-        public async Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
+        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
         {
-            return await DoPageFindAsync(pageIndex, pageSize, specification, orderExpressions).ConfigureAwait(false);
+            return DoPageFindAsync(pageIndex, pageSize, specification, orderExpressions);
         }
 
         public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
@@ -294,18 +293,18 @@ namespace IFramework.Repositories
             return DoCount(specification);
         }
 
-        public async Task<long> CountAsync(Expression<Func<TAggregateRoot, bool>> specification)
+        public Task<long> CountAsync(Expression<Func<TAggregateRoot, bool>> specification)
         {
-            return await DoCountAsync(specification).ConfigureAwait(false);
+            return DoCountAsync(specification);
         }
 
         public long Count(ISpecification<TAggregateRoot> specification)
         {
             return DoCount(specification);
         }
-        public async Task<long> CountAsync(ISpecification<TAggregateRoot> specification)
+        public Task<long> CountAsync(ISpecification<TAggregateRoot> specification)
         {
-            return await DoCountAsync(specification).ConfigureAwait(false);
+            return DoCountAsync(specification);
         }
 
         protected abstract long DoCount(ISpecification<TAggregateRoot> specification);

@@ -63,9 +63,9 @@ namespace IFramework.EntityFramework.Repositories
             return DbSet.Where(specification.GetExpression()).FirstOrDefault();
         }
 
-        protected async override Task<TEntity> DoFindAsync(ISpecification<TEntity> specification)
+        protected override Task<TEntity> DoFindAsync(ISpecification<TEntity> specification)
         {
-            return await DbSet.Where(specification.GetExpression()).FirstOrDefaultAsync();
+            return DbSet.Where(specification.GetExpression()).FirstOrDefaultAsync();
         }
 
         protected override TEntity DoGetByKey(params object[] keyValues)
@@ -73,9 +73,9 @@ namespace IFramework.EntityFramework.Repositories
             return DbSet.Find(keyValues);
         }
 
-        protected async override Task<TEntity> DoGetByKeyAsync(params object[] keyValues)
+        protected override Task<TEntity> DoGetByKeyAsync(params object[] keyValues)
         {
-            return await DbSet.FindAsync(keyValues);
+            return DbSet.FindAsync(keyValues);
         }
 
         protected override void DoRemove(TEntity entity)
@@ -147,9 +147,9 @@ namespace IFramework.EntityFramework.Repositories
             return DbSet.LongCount(specification.GetExpression());
         }
 
-        protected async override Task<long> DoCountAsync(ISpecification<TEntity> specification)
+        protected override Task<long> DoCountAsync(ISpecification<TEntity> specification)
         {
-            return await DbSet.LongCountAsync(specification.GetExpression());
+            return DbSet.LongCountAsync(specification.GetExpression());
         }
 
         protected override long DoCount(Expression<Func<TEntity, bool>> specification)
@@ -157,9 +157,9 @@ namespace IFramework.EntityFramework.Repositories
             return DbSet.LongCount(specification);
         }
 
-        protected async override Task<long> DoCountAsync(Expression<Func<TEntity, bool>> specification)
+        protected override Task<long> DoCountAsync(Expression<Func<TEntity, bool>> specification)
         {
-            return await DbSet.LongCountAsync(specification);
+            return DbSet.LongCountAsync(specification);
         }
 
         public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class
