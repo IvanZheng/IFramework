@@ -42,7 +42,7 @@ namespace IFramework.Infrastructure
         public TaskWorker(string id = null)
         {
             Id = id;
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
         }
 
         public TaskWorker(WorkDelegate run, string id = null)
@@ -115,7 +115,7 @@ namespace IFramework.Infrastructure
             }
             catch (Exception ex)
             {
-                _logger.Error(ex);
+                _logger?.Error(ex);
                 //System.IO.File.AppendAllText(System.AppDomain.CurrentDomain.BaseDirectory + "/log/taskError.txt",
                 //    ex.InnerException.Message + "\r\n" + ex.InnerException.StackTrace);
             }

@@ -30,7 +30,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         public MessageProcessor(IProcessingMessageScheduler<IMessageContext> scheduler)
         {
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
 
             _processingMessageScheduler = scheduler;
             _mailboxDict = new ConcurrentDictionary<string, ProcessingMailbox<IMessageContext>>();
@@ -87,7 +87,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex.GetBaseException().Message, ex);
+                    _logger?.Error(ex.GetBaseException().Message, ex);
                 }
             }
         }

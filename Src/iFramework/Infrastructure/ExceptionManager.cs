@@ -55,7 +55,7 @@ namespace IFramework.Infrastructure
 
     public static class ExceptionManager
     {
-        static ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager));
+        static ILogger _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager)) : null;
         public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false, int retryCount = 50)
         {
             ApiResult<T> apiResult = null;
@@ -76,12 +76,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as SysException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, sysException.Message);
-                            _logger.Debug(ex);
+                            _logger?.Debug(ex);
                         }
                         else
                         {
                             apiResult = new ApiResult<T>(ErrorCode.UnknownError, baseException.Message);
-                            _logger.Error(ex);
+                            _logger?.Error(ex);
                         }
                         needRetry = false;
                     }
@@ -157,7 +157,7 @@ namespace IFramework.Infrastructure
                         else
                         {
                             apiResult = new ApiResult(ErrorCode.UnknownError, baseException.Message);
-                            _logger.Error(ex);
+                            _logger?.Error(ex);
                         }
                         needRetry = false;
                     }
@@ -230,7 +230,7 @@ namespace IFramework.Infrastructure
                         else
                         {
                             apiResult = new ApiResult(ErrorCode.UnknownError, baseException.Message);
-                            _logger.Error(ex);
+                            _logger?.Error(ex);
                         }
                         needRetry = false;
                     }
@@ -271,7 +271,7 @@ namespace IFramework.Infrastructure
                         else
                         {
                             apiResult = new ApiResult<T>(ErrorCode.UnknownError, baseException.Message);
-                            _logger.Error(ex);
+                            _logger?.Error(ex);
                         }
                         needRetry = false;
                     }

@@ -99,7 +99,7 @@ namespace IFramework.Command.Impl
             }
             catch (Exception e)
             {
-                _logger.Error(e.GetBaseException().Message, e);
+                _logger?.Error(e.GetBaseException().Message, e);
             }
             #endregion
             _messageProcessor.Start();
@@ -122,7 +122,7 @@ namespace IFramework.Command.Impl
         protected async Task ConsumeReply(IMessageContext reply)
         {
             await Task.Run(() => {
-                _logger.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
+                _logger?.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
                 var sagaInfo = reply.SagaInfo;
                 var correlationID = sagaInfo?.SagaId ?? reply.CorrelationID;
                 var messageState = _commandStateQueues.TryGetValue(correlationID);
@@ -225,7 +225,7 @@ namespace IFramework.Command.Impl
         {
             if (string.IsNullOrEmpty(command.ID))
             {
-                _logger.Error(new NoMessageId());
+                _logger?.Error(new NoMessageId());
                 throw new NoMessageId();
             }
             string commandKey = null;

@@ -27,7 +27,7 @@ namespace IFramework.Message.Impl
             _messageQueueClient = messageQueueClient;
             _defaultTopic = defaultTopic;
             _messageStateQueue = new BlockingCollection<MessageState>();
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
             _needMessageStore = Configuration.Instance.NeedMessageStore;
         }
 
@@ -127,7 +127,7 @@ namespace IFramework.Message.Impl
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(ex);
+                            _logger?.Error(ex);
                             Thread.Sleep(2000);
                         }
                     }
@@ -142,7 +142,7 @@ namespace IFramework.Message.Impl
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex);
+                    _logger?.Error(ex);
                 }
             }
         }

@@ -45,7 +45,7 @@ namespace IFramework.Event.Impl
             _messagePublisher = messagePublisher;
             _commandBus = commandBus;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
         }
 
 
@@ -167,12 +167,12 @@ namespace IFramework.Event.Impl
                         {
                             if (e is DomainException)
                             {
-                                _logger.Warn(message.ToJson(), e);
+                                _logger?.Warn(message.ToJson(), e);
                             }
                             else
                             {
                                 //IO error or sytem Crash
-                                _logger.Error(message.ToJson(), e);
+                                _logger?.Error(message.ToJson(), e);
                             }
                             messageStore.Rollback();
                             eventBus.GetToPublishAnywayMessages().ForEach(msg =>
@@ -207,7 +207,7 @@ namespace IFramework.Event.Impl
             }
             catch (Exception e)
             {
-                _logger.Error(e.GetBaseException().Message, e);
+                _logger?.Error(e.GetBaseException().Message, e);
             }
         }
 

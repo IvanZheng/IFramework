@@ -50,7 +50,7 @@ namespace IFramework.Command.Impl
             _cancellationTokenSource = new CancellationTokenSource();
             _messageQueueClient = messageQueueClient;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
         }
 
         public void Start()
@@ -65,7 +65,7 @@ namespace IFramework.Command.Impl
             }
             catch (Exception e)
             {
-                _logger.Error(e.GetBaseException().Message, e);
+                _logger?.Error(e.GetBaseException().Message, e);
             }
         }
 
@@ -122,7 +122,7 @@ namespace IFramework.Command.Impl
                 else
                 {
                     var messageHandlerType = _handlerProvider.GetHandlerTypes(command.GetType()).FirstOrDefault();
-                    _logger.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
+                    _logger?.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
 
                     if (messageHandlerType == null)
                     {
@@ -222,11 +222,11 @@ namespace IFramework.Command.Impl
 
                                     if (e is DomainException)
                                     {
-                                        _logger.Warn(command.ToJson(), e);
+                                        _logger?.Warn(command.ToJson(), e);
                                     }
                                     else
                                     {
-                                        _logger.Error(command.ToJson(), e);
+                                        _logger?.Error(command.ToJson(), e);
                                     }
                                     messageStore.SaveFailedCommand(commandContext, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
                                     needRetry = false;
@@ -244,7 +244,7 @@ namespace IFramework.Command.Impl
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"_messagePublisher SendAsync error", ex);
+                    _logger?.Error($"_messagePublisher SendAsync error", ex);
                 }
                 _removeMessageContext(commandContext);
             }

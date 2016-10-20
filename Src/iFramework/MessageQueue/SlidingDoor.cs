@@ -19,7 +19,6 @@ namespace IFramework.MessageQueue
         protected int _partition;
         protected bool _commitPerMessage;
         protected Action<int, long> _commitOffset;
-        ILogger _logger;
 
         public SlidingDoor(Action<int, long> commitOffset, int partition, bool commitPerMessage = false)
         {
@@ -27,7 +26,6 @@ namespace IFramework.MessageQueue
             _partition = partition;
             _offsets = new SortedSet<long>();
             _commitPerMessage = commitPerMessage;
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
         }
 
         public int MessageCount
