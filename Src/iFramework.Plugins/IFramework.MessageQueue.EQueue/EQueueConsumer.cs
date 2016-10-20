@@ -18,9 +18,8 @@ namespace IFramework.MessageQueue.EQueue
 {
     public class EQueueConsumer
     {
-        public string BrokerAddress { get; protected set; }
-        public int ConsumerPort { get; protected set; }
-        public int AdminPort { get; protected set; }
+        public string ClusterName { get; protected set; }
+        public List<IPEndPoint> NameServerList { get; protected set; }
         public string Topic { get; protected set; }
         public string GroupId { get; protected set; }
         public string ConsumerId { get; protected set; }
@@ -29,11 +28,12 @@ namespace IFramework.MessageQueue.EQueue
         protected int _fullLoadThreshold;
         protected int _waitInterval;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(EQueueConsumer).Name);
-        public EQueueConsumer(string brokerAdress, int consumerPort, int adminPort, string topic, string groupId, string consumerId, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public EQueueConsumer(string clusterName, List<IPEndPoint> nameServerList, 
+                              string topic, string groupId, string consumerId, 
+                              int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
-            BrokerAddress = brokerAdress;
-            ConsumerPort = consumerPort;
-            AdminPort = adminPort;
+            ClusterName = clusterName;
+            NameServerList = nameServerList;
             _fullLoadThreshold = fullLoadThreshold;
             _waitInterval = waitInterval;
             SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
@@ -48,8 +48,8 @@ namespace IFramework.MessageQueue.EQueue
             {
                 AutoPull = false,
                 ConsumeFromWhere = EQueueMessages.ConsumeFromWhere.FirstOffset,
-                BrokerAddress = new IPEndPoint(IPAddress.Parse(BrokerAddress), ConsumerPort),
-                BrokerAdminAddress = new IPEndPoint(IPAddress.Parse(BrokerAddress), AdminPort)
+                ClusterName = ClusterName,
+                NameServerList = NameServerList
             };
             Consumer = new EQueueConsumers.Consumer(GroupId, setting)
                                           .Subscribe(Topic)
@@ -58,7 +58,7 @@ namespace IFramework.MessageQueue.EQueue
 
         public void Stop()
         {
-            Consumer?.Shutdown();
+            Consumer?.Stop();
         }
 
         public void BlockIfFullLoad()
@@ -75,6 +75,7 @@ namespace IFramework.MessageQueue.EQueue
             var slidingDoor = SlidingDoors.GetOrAdd(message.QueueId, partition =>
             {
                 return new SlidingDoor(CommitOffset,
+                                       message.BrokerName,
                                        partition,
                                        Configuration.Instance.GetCommitPerMessage());
             });
@@ -103,9 +104,9 @@ namespace IFramework.MessageQueue.EQueue
         }
 
 
-        public void CommitOffset(int partition, long offset)
+        public void CommitOffset(string broker, int partition, long offset)
         {
-            Consumer.CommitConsumeOffset(Topic, partition, offset);
+            Consumer.CommitConsumeOffset(broker, Topic, partition, offset);
         }
 
     }

@@ -9,8 +9,21 @@ using IFramework.MessageStoring;
 
 namespace Sample.Persistence
 {
+    public class SampleModelContextCreateDatabaseIfNotExists : DropCreateDatabaseIfModelChanges<SampleModelContext>
+    {
+        protected override void Seed(SampleModelContext context)
+        {
+            base.Seed(context);
+        }
+    }
+
     public class SampleModelContext : MessageStore
     {
+        static SampleModelContext()
+        {
+            Database.SetInitializer(new SampleModelContextCreateDatabaseIfNotExists());
+        }
+
         public SampleModelContext() : base("SampleModelContext") 
         {
         }

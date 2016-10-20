@@ -14,11 +14,11 @@ namespace EQueueBroker
         {
             try
             {
-                var brokerAddress = 
                 Configuration.Instance
                          .UseAutofacContainer()
-                         .UseEQueue(Utility.GetLocalIPV4().ToString())
+                         .UseEQueue()
                          .StartEqueueBroker();
+                Console.WriteLine("EQueue Broker started.");
             }
             catch (Exception ex)
             {

@@ -74,35 +74,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201504300754243_InitialCreate.cs" />
-    <Compile Include="Migrations\201504300754243_InitialCreate.Designer.cs">
-      <DependentUpon>201504300754243_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201505060539435_AddMessageTopic.cs" />
-    <Compile Include="Migrations\201505060539435_AddMessageTopic.Designer.cs">
-      <DependentUpon>201505060539435_AddMessageTopic.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201603121337495_AddProduct.cs" />
-    <Compile Include="Migrations\201603121337495_AddProduct.Designer.cs">
-      <DependentUpon>201603121337495_AddProduct.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201603121628546_AddProductCreateTime.cs" />
-    <Compile Include="Migrations\201603121628546_AddProductCreateTime.Designer.cs">
-      <DependentUpon>201603121628546_AddProductCreateTime.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201603131106064_AddProjectVersion.cs" />
-    <Compile Include="Migrations\201603131106064_AddProjectVersion.Designer.cs">
-      <DependentUpon>201603131106064_AddProjectVersion.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201607210609551_RemoveRelationBetweenCommandEvent.cs" />
-    <Compile Include="Migrations\201607210609551_RemoveRelationBetweenCommandEvent.Designer.cs">
-      <DependentUpon>201607210609551_RemoveRelationBetweenCommandEvent.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201609231404285_AddSagaInfo.cs" />
-    <Compile Include="Migrations\201609231404285_AddSagaInfo.Designer.cs">
-      <DependentUpon>201609231404285_AddSagaInfo.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repositories\CommunityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleModelContext.cs" />
@@ -136,37 +107,6 @@
       <Project>{f1f1b380-f3a0-463e-8686-3af27962c100}</Project>
       <Name>Sample.Domain</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201504300754243_InitialCreate.resx">
-      <DependentUpon>201504300754243_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505060539435_AddMessageTopic.resx">
-      <DependentUpon>201505060539435_AddMessageTopic.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201603121337495_AddProduct.resx">
-      <DependentUpon>201603121337495_AddProduct.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201603121628546_AddProductCreateTime.resx">
-      <DependentUpon>201603121628546_AddProductCreateTime.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201603131106064_AddProjectVersion.resx">
-      <DependentUpon>201603131106064_AddProjectVersion.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607210609551_RemoveRelationBetweenCommandEvent.resx">
-      <DependentUpon>201607210609551_RemoveRelationBetweenCommandEvent.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609231404285_AddSagaInfo.resx">
-      <DependentUpon>201609231404285_AddSagaInfo.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Migrations\sql\201505060539435_AddMessageTopic.sql" />
-    <None Include="Migrations\sql\201603121337495_AddProduct.sql" />
-    <None Include="Migrations\sql\201603131106064_AddProjectVersion.sql" />
-    <None Include="Migrations\sql\201607210609551_RemoveRelationBetweenCommandEvent.sql" />
-    <None Include="Migrations\sql\201609231404285_AddSagaInfo.sql" />
-    <None Include="Migrations\sql\AddProductCreateTime.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
