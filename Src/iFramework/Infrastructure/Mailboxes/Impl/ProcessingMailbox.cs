@@ -17,6 +17,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         Action<ProcessingMailbox<TMessage>> _handleMailboxEmpty;
         public string Key { get; private set; }
         private volatile int _isHandlingMessage;
+        private int _batchCount;
         static int _processedCount;
         public static int ProcessedCount
         {
@@ -29,8 +30,10 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         public ProcessingMailbox(string key,
             IProcessingMessageScheduler<TMessage> scheduler,
             Func<TMessage, Task> processingMessage,
-            Action<ProcessingMailbox<TMessage>> handleMailboxEmpty)
+            Action<ProcessingMailbox<TMessage>> handleMailboxEmpty,
+            int batchCount = 100)
         {
+            _batchCount = batchCount;
             _scheduler = scheduler;
             _processMessage = processingMessage;
             _handleMailboxEmpty = handleMailboxEmpty;
@@ -53,21 +56,31 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         internal async Task Run()
         {
             TMessage processingMessage = null;
-            try
+            int processedCount = 0;
+            while (processedCount < _batchCount)
             {
-                if (MessageQueue.TryDequeue(out processingMessage))
+                try
                 {
-                    await _processMessage(processingMessage).ConfigureAwait(false);
+                    processingMessage = null;
+                    if (MessageQueue.TryDequeue(out processingMessage))
+                    {
+                        await _processMessage(processingMessage).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    processedCount++;
+                    if (processingMessage != null)
+                    {
+                        Interlocked.Add(ref _processedCount, 1);
+                    }
                 }
             }
-            finally
-            {
-                if (processingMessage != null)
-                {
-                    Interlocked.Add(ref _processedCount, 1);
-                }
-                ExitHandlingMessage();
-            }
+            ExitHandlingMessage();
         }
 
 

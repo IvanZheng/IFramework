@@ -37,7 +37,8 @@ namespace IFramework.Command.Impl
                           string consumerId,
                           //string[] commandQueueNames,
                           string replyTopicName,
-                          string replySubscriptionName)
+                          string replySubscriptionName,
+                          int mailboxProcessBatchCount = 100)
             : base(messageQueueClient)
         {
             _consumerId = consumerId;
@@ -46,7 +47,7 @@ namespace IFramework.Command.Impl
             _replyTopicName = Configuration.Instance.FormatAppName(replyTopicName);
             _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
             // _commandQueueNames = commandQueueNames;
-            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
+            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(), mailboxProcessBatchCount);
         }
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {

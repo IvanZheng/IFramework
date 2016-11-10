@@ -35,7 +35,8 @@ namespace IFramework.Event.Impl
                                IMessagePublisher messagePublisher,
                                string subscriptionName,
                                string topic,
-                               string consumerId)
+                               string consumerId,
+                               int mailboxProcessBatchCount = 100)
         {
             _MessageQueueClient = messageQueueClient;
             _handlerProvider = handlerProvider;
@@ -44,7 +45,7 @@ namespace IFramework.Event.Impl
             _subscriptionName = subscriptionName;
             _messagePublisher = messagePublisher;
             _commandBus = commandBus;
-            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
+            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(), mailboxProcessBatchCount);
             _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
         }
 

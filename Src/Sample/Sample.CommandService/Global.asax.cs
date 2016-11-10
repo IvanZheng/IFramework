@@ -50,7 +50,7 @@ namespace Sample.CommandService
                             .UseMessageStore<SampleModelContext>()
                             .UseKafka("localhost:2181")
                             //.UseEQueue()
-                            .UseCommandBus(Environment.MachineName, linerCommandManager: new Sample.Command.LinearCommandManager())
+                            .UseCommandBus(Environment.MachineName, linerCommandManager: new Sample.Command.LinearCommandManager(), mailboxProcessBatchCount: 100)
                             .UseMessagePublisher("eventTopic");
 
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);
@@ -64,12 +64,12 @@ namespace Sample.CommandService
                 #endregion
 
                 #region event subscriber init
-                _DomainEventConsumer = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber", Environment.MachineName, "DomainEventSubscriber");
+                _DomainEventConsumer = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber", Environment.MachineName, 100, "DomainEventSubscriber");
                 _DomainEventConsumer.Start();
                 #endregion
 
                 #region application event subscriber init
-                _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber", Environment.MachineName, "ApplicationEventSubscriber");
+                _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber", Environment.MachineName, 100, "ApplicationEventSubscriber");
                 _ApplicationEventConsumer.Start();
                 #endregion
 
@@ -80,13 +80,13 @@ namespace Sample.CommandService
 
                 #region Command Consuemrs init'
                 var commandQueueName = "commandqueue";
-                _CommandConsumer1 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", "CommandHandlers");
+                _CommandConsumer1 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", 100, "CommandHandlers");
                 _CommandConsumer1.Start();
 
-                _CommandConsumer2 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", "CommandHandlers");
+                _CommandConsumer2 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", 100, "CommandHandlers");
                 _CommandConsumer2.Start();
 
-                _CommandConsumer3 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", "CommandHandlers");
+                _CommandConsumer3 = MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", 100, "CommandHandlers");
                 _CommandConsumer3.Start();
                 #endregion
             }

@@ -26,12 +26,13 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         BlockingCollection<IMailboxProcessorCommand> _mailboxProcessorCommands;
         CancellationTokenSource _cancellationSource;
         Task _processComandTask;
+        int _batchCount;
         ILogger _logger;
 
-        public MessageProcessor(IProcessingMessageScheduler<IMessageContext> scheduler)
+        public MessageProcessor(IProcessingMessageScheduler<IMessageContext> scheduler, int batchCount = 100)
         {
             _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
-
+            _batchCount = batchCount;
             _processingMessageScheduler = scheduler;
             _mailboxDict = new ConcurrentDictionary<string, ProcessingMailbox<IMessageContext>>();
             _mailboxProcessorCommands = new BlockingCollection<IMailboxProcessorCommand>();
@@ -118,7 +119,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             {
                 var mailbox = _mailboxDict.GetOrAdd(key, x =>
                 {
-                    return new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler, processingMessageFunc, HandleMailboxEmpty);
+                    return new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler, processingMessageFunc, HandleMailboxEmpty, _batchCount);
                 });
                 mailbox.EnqueueMessage(messageContext);
                 _processingMessageScheduler.ScheduleMailbox(mailbox);

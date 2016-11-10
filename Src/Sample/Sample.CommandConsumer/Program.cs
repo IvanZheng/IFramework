@@ -43,7 +43,7 @@ namespace Sample.CommandConsumer
 
                 #region CommandConsumer init
                 var commandQueueName = "commandqueue";
-                var commandConsumer = MessageQueueFactory.CreateCommandConsumer(commandQueueName, ObjectId.GenerateNewId().ToString(), "CommandHandlers");
+                var commandConsumer = MessageQueueFactory.CreateCommandConsumer(commandQueueName, ObjectId.GenerateNewId().ToString(), 100, "CommandHandlers");
                 commandConsumer.Start();
                 #endregion
 

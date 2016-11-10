@@ -33,13 +33,15 @@ namespace IFramework.Command.Impl
         protected int _fullLoadThreshold;
         protected int _waitInterval;
         protected Action<IMessageContext> _removeMessageContext;
+
         public CommandConsumer(IMessageQueueClient messageQueueClient,
                                IMessagePublisher messagePublisher,
                                IHandlerProvider handlerProvider,
                                string commandQueueName,
                                string consumerId,
                                int fullLoadThreshold = 1000,
-                               int waitInterval = 1000)
+                               int waitInterval = 1000,
+                               int mailboxProcessBatchCount = 100)
         {
             _fullLoadThreshold = fullLoadThreshold;
             _waitInterval = waitInterval;
@@ -49,7 +51,7 @@ namespace IFramework.Command.Impl
             _consuemrId = consumerId;
             _cancellationTokenSource = new CancellationTokenSource();
             _messageQueueClient = messageQueueClient;
-            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>());
+            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(), mailboxProcessBatchCount);
             _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
         }
 

@@ -25,7 +25,7 @@ namespace IFramework.MessageQueue
             return IoCFactory.Resolve<IMessagePublisher>();
         }
 
-        public static IMessageConsumer CreateCommandConsumer(string commandQueue, string consumerId, params string[] handlerProvierNames)
+        public static IMessageConsumer CreateCommandConsumer(string commandQueue, string consumerId, int mailboxProcessBatchCount, params string[] handlerProvierNames)
         {
             var container = IoCFactory.Instance.CurrentContainer;
             var messagePublisher = container.Resolve<IMessagePublisher>();
@@ -35,7 +35,7 @@ namespace IFramework.MessageQueue
             return commandConsumer;
         }
 
-        public static IMessageConsumer CreateEventSubscriber(string topic, string subscription, string consumerId, params string[] handlerProviderNames)
+        public static IMessageConsumer CreateEventSubscriber(string topic, string subscription, string consumerId, int mailboxProcessBatchCount, params string[] handlerProviderNames)
         {
             if (!string.IsNullOrEmpty(FrameworkConfigurationExtension.AppName))
             {
@@ -47,7 +47,7 @@ namespace IFramework.MessageQueue
             var messagePublisher = GetMessagePublisher();
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
 
-            var eventSubscriber = new EventSubscriber(messageQueueClient, handlerProvider, commandBus, messagePublisher, subscription, topic, consumerId);
+            var eventSubscriber = new EventSubscriber(messageQueueClient, handlerProvider, commandBus, messagePublisher, subscription, topic, consumerId, mailboxProcessBatchCount);
             return eventSubscriber;
         }
     }
