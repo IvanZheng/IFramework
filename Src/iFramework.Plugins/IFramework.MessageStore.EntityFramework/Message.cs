@@ -14,6 +14,7 @@ namespace IFramework.MessageStoring
         public Message(IMessageContext messageContext)
         {
             ID = messageContext.MessageID;
+            Topic = messageContext.Topic;
             CorrelationID = messageContext.CorrelationID;
             MessageBody = messageContext.Message.ToJson();
             CreateTime = messageContext.SentTime;
@@ -30,7 +31,7 @@ namespace IFramework.MessageStoring
         public DateTime CreateTime { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
-
+        public string Topic { get; set; }
         //[ForeignKey("CorrelationID")]
         //public virtual Message ParentMessage { get; set; }
         //[InverseProperty("ParentMessage")]

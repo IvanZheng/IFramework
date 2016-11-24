@@ -63,6 +63,11 @@ namespace IFramework.MessageStoring
                         .Property(c => c.Name)
                         .HasMaxLength(200)
                         .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("NameIndex")));
+            modelBuilder.Entity<Command>()
+                       .Property(c => c.Topic)
+                       .HasMaxLength(200)
+                       .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("TopicIndex")));
+
 
             modelBuilder.Entity<Event>()
                         .Property(e => e.CorrelationID)
@@ -72,11 +77,14 @@ namespace IFramework.MessageStoring
                         .Property(e => e.Name)
                         .HasMaxLength(200)
                         .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("NameIndex")));
-
             modelBuilder.Entity<Event>()
                         .Property(e => e.AggregateRootID)
                         .HasMaxLength(200)
                         .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("AGRootIdIndex")));
+            modelBuilder.Entity<Event>()
+                        .Property(e => e.Topic)
+                        .HasMaxLength(200)
+                        .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("TopicIndex")));
 
             modelBuilder.Entity<UnSentMessage>()
                 .Map<UnSentCommand>(map =>
