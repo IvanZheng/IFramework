@@ -10,6 +10,8 @@ using IFramework.Event;
 using IFramework.EntityFramework;
 using IFramework.IoC;
 using IFramework.Message.Impl;
+using System.Data.Entity.Infrastructure.Annotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IFramework.MessageStoring
 {
@@ -52,6 +54,29 @@ namespace IFramework.MessageStoring
             //        map.ToTable("Events");
             //        map.MapInheritedProperties();
             //    });
+
+            modelBuilder.Entity<Command>()
+                        .Property(c => c.CorrelationID)
+                        .HasMaxLength(200)
+                        .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
+            modelBuilder.Entity<Command>()
+                        .Property(c => c.Name)
+                        .HasMaxLength(200)
+                        .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("NameIndex")));
+
+            modelBuilder.Entity<Event>()
+                        .Property(e => e.CorrelationID)
+                        .HasMaxLength(200)
+                        .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
+            modelBuilder.Entity<Event>()
+                        .Property(e => e.Name)
+                        .HasMaxLength(200)
+                        .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("NameIndex")));
+
+            modelBuilder.Entity<Event>()
+                        .Property(e => e.AggregateRootID)
+                        .HasMaxLength(200)
+                        .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("AGRootIdIndex")));
 
             modelBuilder.Entity<UnSentMessage>()
                 .Map<UnSentCommand>(map =>
