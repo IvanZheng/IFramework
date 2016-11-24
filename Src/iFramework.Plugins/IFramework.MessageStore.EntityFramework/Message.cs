@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using IFramework.Infrastructure;
 using System.ComponentModel.DataAnnotations.Schema;
+using IFramework.Message.Impl;
 
 namespace IFramework.MessageStoring
 {
@@ -18,6 +19,7 @@ namespace IFramework.MessageStoring
             CorrelationID = messageContext.CorrelationID;
             MessageBody = messageContext.Message.ToJson();
             CreateTime = messageContext.SentTime;
+            SagaInfo = messageContext.SagaInfo ?? new SagaInfo();
             if (messageContext.Message != null)
             {
                 Name = messageContext.Message.GetType().Name;
@@ -32,6 +34,8 @@ namespace IFramework.MessageStoring
         public string Name { get; set; }
         public string Type { get; set; }
         public string Topic { get; set; }
+        public SagaInfo SagaInfo { get; set; }
+
         //[ForeignKey("CorrelationID")]
         //public virtual Message ParentMessage { get; set; }
         //[InverseProperty("ParentMessage")]

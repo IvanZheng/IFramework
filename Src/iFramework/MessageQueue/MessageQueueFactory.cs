@@ -37,10 +37,7 @@ namespace IFramework.MessageQueue
 
         public static IMessageConsumer CreateEventSubscriber(string topic, string subscription, string consumerId, int mailboxProcessBatchCount, params string[] handlerProviderNames)
         {
-            if (!string.IsNullOrEmpty(FrameworkConfigurationExtension.AppName))
-            {
-                subscription = $"{FrameworkConfigurationExtension.AppName}.{subscription}";
-            }
+            subscription = Configuration.Instance.FormatAppName(subscription);
             var container = IoCFactory.Instance.CurrentContainer;
             var handlerProvider = new EventSubscriberProvider(handlerProviderNames);
             var commandBus = GetCommandBus();
