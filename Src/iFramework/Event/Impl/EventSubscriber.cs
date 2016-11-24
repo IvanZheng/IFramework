@@ -115,21 +115,13 @@ namespace IFramework.Event.Impl
                                 //get events to be published
                                 eventBus.GetEvents().ForEach(msg =>
                                 {
-                                    var topic = msg.GetTopic();
-                                    if (!string.IsNullOrEmpty(topic))
-                                    {
-                                        topic = Configuration.Instance.FormatAppName(topic);
-                                    }
+                                    var topic = msg.GetFormatTopic();
                                     eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                                 });
 
                                 eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                                 {
-                                    var topic = msg.GetTopic();
-                                    if (!string.IsNullOrEmpty(topic))
-                                    {
-                                        topic = Configuration.Instance.FormatAppName(topic);
-                                    }
+                                    var topic = msg.GetFormatTopic();
                                     eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                                 });
 
@@ -178,11 +170,7 @@ namespace IFramework.Event.Impl
                             messageStore.Rollback();
                             eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                             {
-                                var topic = msg.GetTopic();
-                                if (!string.IsNullOrEmpty(topic))
-                                {
-                                    topic = Configuration.Instance.FormatAppName(topic);
-                                }
+                                var topic = msg.GetFormatTopic();
                                 eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                             });
                             messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());

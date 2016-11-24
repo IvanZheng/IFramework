@@ -16,6 +16,20 @@ namespace IFramework.Config
         static string _appNameFormat = string.Empty;
         static TimeSpan _ReceiveMessageTimeout = new TimeSpan(0, 0, 10);
         public static string AppName { get; private set; }
+
+        static string _defaultTopic = string.Empty;
+        public static Configuration SetDefaultTopic(this Configuration configuration, string defaultTopic)
+        {
+            _defaultTopic = defaultTopic;
+            return configuration;
+        }
+
+        public static string GetDefaultTopic(this Configuration configuration)
+        {
+            return _defaultTopic;
+        }
+
+
         public static Configuration UseMessageQueue(this Configuration configuration, string appName = null)
         {
             AppName = appName;
@@ -32,6 +46,7 @@ namespace IFramework.Config
             return configuration;
         }
 
+
         public static Configuration UseMockMessageQueueClient(this Configuration configuration)
         {
             IoCFactory.Instance.CurrentContainer.RegisterType<IMessageQueueClient, MockMessageQueueClient>(Lifetime.Singleton);
@@ -43,11 +58,13 @@ namespace IFramework.Config
             IoCFactory.Instance.CurrentContainer.RegisterType<IMessagePublisher, MockMessagePublisher>(Lifetime.Singleton);
             return configuration;
         }
+
         public static Configuration UseMessagePublisher(this Configuration configuration, string defaultTopic)
         {
             var container = IoCFactory.Instance.CurrentContainer;
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            defaultTopic = Configuration.Instance.FormatAppName(defaultTopic);
+            configuration.SetDefaultTopic(defaultTopic);
+            defaultTopic = configuration.FormatAppName(defaultTopic);
             var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);
             container.RegisterInstance<IMessagePublisher>(messagePublisher);
             return configuration;
@@ -117,7 +134,5 @@ namespace IFramework.Config
                           name :
                           string.Format(_MessageQueueNameFormat, name);
         }
-
-
     }
 }

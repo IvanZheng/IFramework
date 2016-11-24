@@ -19,16 +19,16 @@ namespace IFramework.Message.Impl
         protected string _defaultTopic;
         protected Task _sendMessageTask;
         protected IMessageQueueClient _messageQueueClient;
-        protected ILogger _logger;
         protected bool _needMessageStore;
+        protected ILogger _logger;
 
         public MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null)
         {
             _messageQueueClient = messageQueueClient;
             _defaultTopic = defaultTopic;
+            _needMessageStore = Configuration.Instance.NeedMessageStore;
             _messageStateQueue = new BlockingCollection<MessageState>();
             _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
-            _needMessageStore = Configuration.Instance.NeedMessageStore;
         }
 
         protected abstract IEnumerable<IMessageContext> GetAllUnSentMessages();
@@ -73,11 +73,7 @@ namespace IFramework.Message.Impl
             }
             var messageStates = messages.Select(message =>
             {
-                var topic = message.GetTopic();
-                if (!string.IsNullOrEmpty(topic))
-                {
-                    topic = Configuration.Instance.FormatAppName(topic);
-                }
+                var topic = message.GetFormatTopic();
                 return new MessageState(_messageQueueClient.WrapMessage(message, topic: topic, key: message.Key),
                                                                                 sendTaskCompletionSource,
                                                                                 false);

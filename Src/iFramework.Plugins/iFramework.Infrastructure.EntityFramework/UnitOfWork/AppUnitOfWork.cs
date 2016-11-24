@@ -42,22 +42,14 @@ namespace IFramework.EntityFramework
             _eventMessageStates.Clear();
             _eventBus.GetEvents().ForEach(@event =>
             {
-                var topic = @event.GetTopic();
-                if (!string.IsNullOrEmpty(topic))
-                {
-                    topic = Configuration.Instance.FormatAppName(topic);
-                }
+                var topic = @event.GetFormatTopic();
                 var eventContext = _messageQueueClient.WrapMessage(@event, null, topic, @event.Key);
                 _eventMessageStates.Add(new MessageState(eventContext));
             });
 
             _eventBus.GetToPublishAnywayMessages().ForEach(@event =>
             {
-                var topic = @event.GetTopic();
-                if (!string.IsNullOrEmpty(topic))
-                {
-                    topic = Configuration.Instance.FormatAppName(topic);
-                }
+                var topic = @event.GetFormatTopic();
                 var eventContext = _messageQueueClient.WrapMessage(@event, null, topic, @event.Key);
                 _eventMessageStates.Add(new MessageState(eventContext));
             });
@@ -67,6 +59,7 @@ namespace IFramework.EntityFramework
         protected override void AfterCommit()
         {
             base.AfterCommit();
+
             _eventBus.ClearMessages();
             try
             {

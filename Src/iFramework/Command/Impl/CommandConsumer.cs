@@ -171,22 +171,14 @@ namespace IFramework.Command.Impl
 
                                     eventBus.GetEvents().ForEach(@event =>
                                     {
-                                        var topic = @event.GetTopic();
-                                        if (!string.IsNullOrEmpty(topic))
-                                        {
-                                            topic = Configuration.Instance.FormatAppName(topic);
-                                        }
+                                        var topic = @event.GetFormatTopic();
                                         var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
 
                                     eventBus.GetToPublishAnywayMessages().ForEach(@event =>
                                     {
-                                        var topic = @event.GetTopic();
-                                        if (!string.IsNullOrEmpty(topic))
-                                        {
-                                            topic = Configuration.Instance.FormatAppName(topic);
-                                        }
+                                        var topic = @event.GetFormatTopic();
                                         var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
@@ -213,11 +205,7 @@ namespace IFramework.Command.Impl
                                     }
                                     eventBus.GetToPublishAnywayMessages().ForEach(@event =>
                                     {
-                                        var topic = @event.GetTopic();
-                                        if (!string.IsNullOrEmpty(topic))
-                                        {
-                                            topic = Configuration.Instance.FormatAppName(topic);
-                                        }
+                                        var topic = @event.GetFormatTopic();
                                         var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
                                         eventMessageStates.Add(new MessageState(eventContext));
                                     });
