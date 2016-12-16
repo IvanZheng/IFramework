@@ -16,37 +16,49 @@ namespace IFramework.EntityFramework
         public static TContext GetDbContext<TContext>(this Entity entity) where TContext : class
         {
             TContext context = entity.GetValueByKey<TContext>("DomainContext");
-            if (context == null)
-            {
-                context = IoCFactory.Resolve<TContext>() as TContext;
-            }
             return context;
         }
 
         public static DbEntityEntry<TEntity> GetDbEntityEntry<TEntity>(this TEntity entity)
             where TEntity : Entity
         {
-            return entity.GetDbContext<MSDbContext>().Entry<TEntity>(entity);
+            return entity.GetDbContext<MSDbContext>()?.Entry<TEntity>(entity);
         }
 
         public static void MarkAsDeleted(this Entity entity)
         {
-            entity.GetDbEntityEntry().State = EntityState.Deleted;
+            var entry = entity.GetDbEntityEntry();
+            if (entry != null)
+            {
+                entry.State = EntityState.Deleted;
+            }
         }
 
         public static void MarkAsAdded(this Entity entity)
         {
-            entity.GetDbEntityEntry().State = EntityState.Added;
+            var entry = entity.GetDbEntityEntry();
+            if (entry != null)
+            {
+                entry.State = EntityState.Added;
+            }
         }
 
         public static void MarkAsModified(this Entity entity)
         {
-            entity.GetDbEntityEntry().State = EntityState.Modified;
+            var entry = entity.GetDbEntityEntry();
+            if (entry != null)
+            {
+                entry.State = EntityState.Modified;
+            }
         }
 
         public static void MarkAsUnchanged(this Entity entity)
         {
-            entity.GetDbEntityEntry().State = EntityState.Unchanged;
+            var entry = entity.GetDbEntityEntry();
+            if (entry != null)
+            {
+                entry.State = EntityState.Unchanged;
+            }
         }
 
         public static IQueryable<TElement> GetQueryable<TElement>(this Entity entity, string collectionName)
@@ -86,7 +98,7 @@ namespace IFramework.EntityFramework
         }
 
         public static void ReferenceLoad<TProperty>(this Entity entity, string navigationPropertyName)
-          
+
             where TProperty : class
         {
             var entry = entity.GetDbEntityEntry();

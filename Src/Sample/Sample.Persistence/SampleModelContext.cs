@@ -36,10 +36,15 @@ namespace Sample.Persistence
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>()
-             .ToTable("Accounts");
+                        .ToTable("Accounts")
+                        .HasMany<ProductId>(a => a.ProductIds)
+                        .WithRequired()
+                        .HasForeignKey(pid => pid.AccountId);
+
+            modelBuilder.Entity<ProductId>()
+                        .HasKey(p => new { p.Value, p.AccountId });
 
             base.OnModelCreating(modelBuilder);
-
         }
 
         public DbSet<Account> Accounts { get; set; }
