@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
+using System.ComponentModel;
 
 namespace IFramework.SysExceptions
 {
@@ -12,11 +13,22 @@ namespace IFramework.SysExceptions
     {
         private static Dictionary<object, string> errorcodeDic = new Dictionary<object, string>();
 
-        public static string GetErrorMessage(object errorcode)
+        public static string GetErrorMessage(object errorcode, params object[] args)
         {
             string errorMessage = errorcodeDic.TryGetValue(errorcode, string.Empty);
-            if (String.IsNullOrEmpty(errorMessage))
-                errorMessage = errorcode.ToString();
+            if (string.IsNullOrEmpty(errorMessage))
+            {
+                errorMessage = errorcode.GetCustomAttribute<DescriptionAttribute>()?.Description;
+                if (string.IsNullOrEmpty(errorMessage))
+                {
+                    errorMessage = errorcode.ToString();
+                }
+            }
+
+            if (args != null && args.Length > 0)
+            {
+                return string.Format(errorMessage, args);
+            }
             return errorMessage;
         }
 
@@ -38,6 +50,12 @@ namespace IFramework.SysExceptions
         }
         public SysException(object errorCode, string message = null)
             : base(message ?? ErrorCodeDictionary.GetErrorMessage(errorCode))
+        {
+            ErrorCode = errorCode;
+        }
+
+        public SysException(object errorCode, object[] args)
+            : base(ErrorCodeDictionary.GetErrorMessage(errorCode, args))
         {
             ErrorCode = errorCode;
         }
