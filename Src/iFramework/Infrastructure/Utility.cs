@@ -199,6 +199,14 @@ namespace IFramework.Infrastructure
                     return attrs.FirstOrDefault() as TAttribute;
                 }
             }
+            else if (obj is FieldInfo)
+            {
+                var attrs = ((FieldInfo)obj).GetCustomAttributes(typeof(TAttribute), inherit);
+                if (attrs != null && attrs.Length > 0)
+                {
+                    return attrs.FirstOrDefault(attr => attr is TAttribute) as TAttribute;
+                }
+            }
             else if (obj is PropertyInfo)
             {
                 var attrs = ((PropertyInfo)obj).GetCustomAttributes(inherit);

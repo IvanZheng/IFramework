@@ -68,7 +68,7 @@ namespace IFramework.AspNet
             _cookies.AddRange(cookies);
         }
 
-        public string TryGetCookie(string key, string defaultValue)
+        protected string TryGetCookie(string key, string defaultValue)
         {
             try
             {
@@ -86,7 +86,7 @@ namespace IFramework.AspNet
             }
         }
 
-        public void RemoveCookies(string key)
+        protected void RemoveCookies(string key)
         {
             var cookies = Request.Headers.GetCookies(key).ToList();
             cookies.ForEach(c => c.Expires = DateTimeOffset.Now.AddDays(-1));
