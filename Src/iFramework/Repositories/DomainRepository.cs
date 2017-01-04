@@ -49,7 +49,7 @@ namespace IFramework.Repositories
         #region IRepository Members
 
 
-        public void Add<TAggregateRoot>(IQueryable<TAggregateRoot> entities) where TAggregateRoot : class, IAggregateRoot
+        public void Add<TAggregateRoot>(IEnumerable<TAggregateRoot> entities) where TAggregateRoot : class, IAggregateRoot
         {
             GetRepository<TAggregateRoot>().Add(entities);
         }

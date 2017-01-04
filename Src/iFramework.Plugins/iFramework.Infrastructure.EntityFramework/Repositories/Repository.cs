@@ -9,6 +9,7 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using IFramework.Repositories;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace IFramework.EntityFramework.Repositories
 {
@@ -134,7 +135,7 @@ namespace IFramework.EntityFramework.Repositories
             return new Tuple<IQueryable<TEntity>, long>(query, totalCount);
         }
 
-        protected override void DoAdd(IQueryable<TEntity> entities)
+        protected override void DoAdd(IEnumerable<TEntity> entities)
         {
             foreach (var entity in entities)
             {

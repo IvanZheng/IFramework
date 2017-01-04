@@ -19,7 +19,7 @@ namespace IFramework.Repositories
         /// Adds an entity to the repository.
         /// </summary>
         /// <param name="entity">The entity object to be added.</param>
-        void Add<TAggregateRoot>(IQueryable<TAggregateRoot> entities) where TAggregateRoot : class, IAggregateRoot;
+        void Add<TAggregateRoot>(IEnumerable<TAggregateRoot> entities) where TAggregateRoot : class, IAggregateRoot;
         void Add<TAggregateRoot>(TAggregateRoot entity) where TAggregateRoot : class, IAggregateRoot;
         /// <summary>
         /// Gets the entity instance from repository by a given key.

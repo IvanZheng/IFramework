@@ -21,7 +21,7 @@ namespace IFramework.Repositories
         /// Adds an entity to the repository.
         /// </summary>
         /// <param name="entity">The entity object to be added.</param>
-        protected abstract void DoAdd(IQueryable<TAggregateRoot> entities);
+        protected abstract void DoAdd(IEnumerable<TAggregateRoot> entities);
         protected abstract void DoAdd(TAggregateRoot entity);
         /// <summary>
         /// Gets the entity instance from repository by a given key.
@@ -97,7 +97,7 @@ namespace IFramework.Repositories
         /// </summary>
         /// <param name="entity">The entity object to be added.</param>
         /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
-        public void Add(IQueryable<TAggregateRoot> entities)
+        public void Add(IEnumerable<TAggregateRoot> entities)
         {
             this.DoAdd(entities);
         }

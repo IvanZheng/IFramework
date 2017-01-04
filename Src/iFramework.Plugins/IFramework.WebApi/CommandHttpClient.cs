@@ -17,9 +17,32 @@ namespace IFramework.AspNet
 {
     public static class CommandHttpClient
     {
-        public async static Task<ApiResult> PostJson<T>(this HttpClient apiClient, string requestUri, T value)
+        public async static Task<ApiResult<T>> ApiGetAsync<T>(this HttpClient client, string requestUrl, object request = null)
         {
-            var response = await apiClient.PostAsJsonAsync(requestUri, value);
+            //解析参数
+            var nameValueCollection = request.ToNameValueCollection();
+            requestUrl += requestUrl.Contains("?") ? "&" : "?" + nameValueCollection.ToString();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(client.BaseAddress, requestUrl));
+            var response = await client.SendAsync(requestMessage).ConfigureAwait(false);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                return await response.Content.ReadAsAsync<ApiResult<T>>().ConfigureAwait(false);
+            }
+            else
+            {
+                return new ApiResult<T>(ErrorCode.HttpStatusError, response.StatusCode.ToString());
+            }
+        }
+
+        public async static Task<T> GetAsync<T>(this HttpClient client, string requestUrl, object request = null)
+        {
+            var response = await GetAsync(client, requestUrl, request).ConfigureAwait(false);
+            return await response.Content.ReadAsAsync<T>().ConfigureAwait(false);
+        }
+
+        public async static Task<ApiResult> ApiPostAsync<T>(this HttpClient apiClient, string requestUri, T value)
+        {
+            var response = await apiClient.PostAsJsonAsync(requestUri, value).ConfigureAwait(false);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 return response.Content.ReadAsAsync<ApiResult>().Result;
@@ -30,12 +53,12 @@ namespace IFramework.AspNet
             }
         }
 
-        public async static Task<ApiResult<TResult>> PostJson<T, TResult>(this HttpClient apiClient, string requestUri, T value)
+        public async static Task<ApiResult<TResult>> ApiPostAsync<T, TResult>(this HttpClient apiClient, string requestUri, T value)
         {
-            var response = await apiClient.PostAsJsonAsync(requestUri, value);
+            var response = await apiClient.PostAsJsonAsync(requestUri, value).ConfigureAwait(false);
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                return response.Content.ReadAsAsync<ApiResult<TResult>>().Result;
+                return await response.Content.ReadAsAsync<ApiResult<TResult>>().ConfigureAwait(false);
             }
             else
             {
@@ -43,25 +66,33 @@ namespace IFramework.AspNet
             }
         }
 
+        public async static Task<T> PostAsync<T>(this HttpClient apiClient, string requestUri, object value)
+        {
+            var response = await apiClient.PostAsJsonAsync(requestUri, value).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsAsync<T>();
+
+        }
+
         //static readonly string CommandActionUrlTemplate = Configuration.GetAppConfig("CommandActionUrlTemplate");    
 
         public async static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
         {
-            var resposne = await apiClient.PostAsJsonAsync(command, requestUrl);
-            return await resposne.Content.ReadAsAsync<TResult>();
+            var resposne = await apiClient.PostCommandAsync(command, requestUrl).ConfigureAwait(false);
+            return await resposne.Content.ReadAsAsync<TResult>().ConfigureAwait(false);
         }
 
 
         public async static Task<TResult> DoCommand<TResult>(this HttpClient apiClient, ICommand command, TimeSpan timeout, string requestUrl = "api/command")
         {
             apiClient.Timeout = timeout;
-            var response = await apiClient.PostAsJsonAsync(command, requestUrl);
-            return await response.Content.ReadAsAsync<TResult>();
+            var response = await apiClient.PostCommandAsync(command, requestUrl).ConfigureAwait(false);
+            return await response.Content.ReadAsAsync<TResult>().ConfigureAwait(false);
         }
 
         public async static Task<HttpResponseMessage> DoCommand(this HttpClient apiClient, ICommand command, string requestUrl = "api/command")
         {
-            return await apiClient.PostAsJsonAsync(command, requestUrl);
+            return await apiClient.PostCommandAsync(command, requestUrl).ConfigureAwait(false);
         }
 
         public async static Task<HttpResponseMessage> GetAsync(this HttpClient client, string requestUrl, object request)
@@ -70,22 +101,17 @@ namespace IFramework.AspNet
             var nameValueCollection = request.ToNameValueCollection();
             requestUrl += requestUrl.Contains("?") ? "&" : "?" + nameValueCollection.ToString();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(client.BaseAddress, requestUrl));
-            var response = await client.SendAsync(requestMessage);
+            var response = await client.SendAsync(requestMessage).ConfigureAwait(false);
             return response.EnsureSuccessStatusCode();
         }
 
-        public async static Task<T> GetAsync<T>(this HttpClient client, string requestUrl, object request)
-        {
-            var response = await GetAsync(client, requestUrl, request);
-            return await response.Content.ReadAsAsync<T>();
-        }
 
         //static string GetCommandUrl(ICommand command)
         //{
         //    return string.Format(CommandActionUrlTemplate, command.GetType().Name);
         //}
 
-        public async static Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
+        public async static Task<HttpResponseMessage> PostCommandAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
         {
             var mediaType = new MediaTypeWithQualityHeaderValue("application/command");
             mediaType.Parameters.Add(new NameValueHeaderValue("command",
@@ -96,11 +122,11 @@ namespace IFramework.AspNet
             requestMessage.Content = new ObjectContent(command.GetType(), command, new JsonMediaTypeFormatter(), mediaType);
             //requestMessage.Method = HttpMethod.Post;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var response = await client.SendAsync(requestMessage);
+            var response = await client.SendAsync(requestMessage).ConfigureAwait(false);
             return response.EnsureSuccessStatusCode();
         }
 
-        public async static Task<HttpResponseMessage> PutAsJsonAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
+        public async static Task<HttpResponseMessage> PutCommandAsync(this HttpClient client, ICommand command, string requestUrl = "api/command")
         {
             var mediaType = new MediaTypeWithQualityHeaderValue("application/command");
             mediaType.Parameters.Add(new NameValueHeaderValue("command",
@@ -111,7 +137,7 @@ namespace IFramework.AspNet
             requestMessage.Content = new ObjectContent(command.GetType(), command, new JsonMediaTypeFormatter(), mediaType);
             //requestMessage.Method = HttpMethod.Post;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var response = await client.SendAsync(requestMessage);
+            var response = await client.SendAsync(requestMessage).ConfigureAwait(false);
             return response.EnsureSuccessStatusCode();
         }
     }
