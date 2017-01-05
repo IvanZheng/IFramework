@@ -19,8 +19,16 @@ namespace IFramework.AspNet
 {
     public class ApiControllerBase : ApiController
     {
+
+        protected string GetModelErrorMessage()
+        {
+            return string.Join(",", ModelState.Values
+                                              .SelectMany(v => v.Errors
+                                                                .Select(e => $"error:{e.ErrorMessage} exception:{e.Exception?.GetBaseException()?.Message}")));
+        }
+
         #region process wrapping
-        protected ApiResult<T> Process<T>(Func<T> func, bool needRetry = false)
+        protected ApiResult<T> Process<T>(Func<T> func, bool needRetry = true)
         {
             if (ModelState.IsValid)
             {
@@ -33,13 +41,11 @@ namespace IFramework.AspNet
                     new ApiResult<T>
                     (
                         ErrorCode.InvalidParameters,
-                        string.Join(",", ModelState.Values
-                                                       .SelectMany(v => v.Errors
-                                                                         .Select(e => e.ErrorMessage)))
+                        GetModelErrorMessage()
                     );
             }
         }
-        protected ApiResult Process(Action action, bool needRetry = false)
+        protected ApiResult Process(Action action, bool needRetry = true)
         {
             if (ModelState.IsValid)
             {
@@ -52,9 +58,8 @@ namespace IFramework.AspNet
                     new ApiResult
                     (
                         ErrorCode.InvalidParameters,
-                        string.Join(",", ModelState.Values
-                                                       .SelectMany(v => v.Errors
-                                                                         .Select(e => e.ErrorMessage)))
+                        GetModelErrorMessage()
+
                     );
             }
         }
@@ -107,7 +112,7 @@ namespace IFramework.AspNet
         }
 
 
-        protected async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false)
+        protected async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = true)
         {
             if (ModelState.IsValid)
             {
@@ -119,14 +124,13 @@ namespace IFramework.AspNet
                     new ApiResult
                     (
                         ErrorCode.InvalidParameters,
-                        string.Join(",", ModelState.Values
-                                                       .SelectMany(v => v.Errors
-                                                                         .Select(e => e.ErrorMessage)))
+                        GetModelErrorMessage()
+
                     );
             }
         }
 
-        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false)
+        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = true)
         {
             if (ModelState.IsValid)
             {
@@ -138,9 +142,7 @@ namespace IFramework.AspNet
                    new ApiResult<T>
                    (
                       ErrorCode.InvalidParameters,
-                      string.Join(",", ModelState.Values
-                                                      .SelectMany(v => v.Errors
-                                                                        .Select(e => e.ErrorMessage)))
+                      GetModelErrorMessage()
                    );
             }
 
