@@ -23,6 +23,16 @@ namespace IFramework.Domain
             }
         }
 
+        public static bool operator !=(ValueObject a, ValueObject b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static bool operator ==(ValueObject a, ValueObject b)
+        {
+            return a.Equals(b);
+        }
+
         /// <summary>
         /// Helper function for implementing overloaded equality operator.
         /// </summary>
