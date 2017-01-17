@@ -25,12 +25,12 @@ namespace IFramework.Domain
 
         public static bool operator !=(ValueObject a, ValueObject b)
         {
-            return !a.Equals(b);
+            return NotEqualOperator(a, b);
         }
 
         public static bool operator ==(ValueObject a, ValueObject b)
         {
-            return a.Equals(b);
+            return EqualOperator(a, b);
         }
 
         /// <summary>
