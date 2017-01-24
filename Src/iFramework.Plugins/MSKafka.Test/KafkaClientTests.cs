@@ -52,8 +52,8 @@ namespace MSKafka.Test
 
             queueClient.Send(data);
             Console.WriteLine($"send message: {message}");
-            queueClient.Stop();
             ZookeeperConsumerConnector.zkClientStatic.Dispose();
+            queueClient.Stop();
         }
 
         [TestMethod]
@@ -62,9 +62,9 @@ namespace MSKafka.Test
             var cancellationTokenSource = new CancellationTokenSource();
             var consumerTask = Program.CreateConsumerTask(commandQueue, "ConsumerTest", cancellationTokenSource);
             Thread.Sleep(100);
+            ZookeeperConsumerConnector.zkClientStatic.Dispose();
             cancellationTokenSource.Cancel();
             consumerTask.Wait();
-            ZookeeperConsumerConnector.zkClientStatic.Dispose();
         }
     }
 }

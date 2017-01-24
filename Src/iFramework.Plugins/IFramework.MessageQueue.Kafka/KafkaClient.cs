@@ -349,11 +349,11 @@ namespace IFramework.MessageQueue.MSKafka
         {
             if (!_disposed)
             {
+                ZookeeperConsumerConnector.zkClientStatic.Dispose();
                 StopQueueClients();
                 StopSubscriptionClients();
                 _topicClients.Values.ForEach(client => client.Stop());
                 _queueClients.Values.ForEach(client => client.Stop());
-                ZookeeperConsumerConnector.zkClientStatic.Dispose();
                 _disposed = true;
             }
         }
