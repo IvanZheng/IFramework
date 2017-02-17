@@ -8,58 +8,63 @@ using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using System.Web.Mvc;
 using System.Web.Http.Results;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Web.Http.Controllers;
 using IFramework.Infrastructure;
+using System.Web.Http.ModelBinding;
 
 namespace IFramework.AspNet
 {
     public class ApiControllerBase : ApiController
     {
 
-        protected string GetModelErrorMessage()
+        protected string GetModelErrorMessage(ModelStateDictionary modelState)
         {
-            return string.Join(",", ModelState.Values
+            return string.Join(",", modelState.Values
                                               .SelectMany(v => v.Errors
                                                                 .Select(e => $"error:{e.ErrorMessage} exception:{e.Exception?.GetBaseException()?.Message}")));
         }
 
         #region process wrapping
-        protected ApiResult<T> Process<T>(Func<T> func, bool needRetry = true)
+        protected ApiResult<T> Process<T>(Func<T> func, bool needRetry = true,
+            Func<Exception, string> getExceptionMessage = null,
+            Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
             {
-                var apiResult = ExceptionManager.Process<T>(func, needRetry);
+                var apiResult = ExceptionManager.Process<T>(func, needRetry, getExceptionMessage: getExceptionMessage);
                 return apiResult;
             }
             else
             {
+                getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
                 return
                     new ApiResult<T>
                     (
                         ErrorCode.InvalidParameters,
-                        GetModelErrorMessage()
+                        getModelErrorMessage(ModelState)
                     );
             }
         }
-        protected ApiResult Process(Action action, bool needRetry = true)
+        protected ApiResult Process(Action action, bool needRetry = true,
+            Func<Exception, string> getExceptionMessage = null,
+            Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
             {
-                var apiResult = ExceptionManager.Process(action, needRetry);
+                var apiResult = ExceptionManager.Process(action, needRetry, getExceptionMessage: getExceptionMessage);
                 return apiResult;
             }
             else
             {
+                getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
                 return
                     new ApiResult
                     (
                         ErrorCode.InvalidParameters,
-                        GetModelErrorMessage()
-
+                        getModelErrorMessage(ModelState)
                     );
             }
         }
@@ -112,38 +117,53 @@ namespace IFramework.AspNet
         }
 
 
-        protected async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = true)
+        protected async Task<ApiResult> ProcessAsync(Func<Task> func,
+                                                     bool continueOnCapturedContext = false,
+                                                     bool needRetry = true,
+                                                     Func<Exception, string> getExceptionMessage = null,
+                                                     Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry).ConfigureAwait(continueOnCapturedContext);
+                return await ExceptionManager.ProcessAsync(func,
+                                                           continueOnCapturedContext,
+                                                           needRetry,
+                                                           getExceptionMessage: getExceptionMessage)
+                                             .ConfigureAwait(continueOnCapturedContext);
             }
             else
             {
+                getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
                 return
                     new ApiResult
                     (
                         ErrorCode.InvalidParameters,
-                        GetModelErrorMessage()
-
+                        getModelErrorMessage(ModelState)
                     );
             }
         }
 
-        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = true)
+        protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
+                                                           bool continueOnCapturedContext = false,
+                                                           bool needRetry = true,
+                                                           Func<Exception, string> getExceptionMessage = null,
+                                                           Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry).ConfigureAwait(continueOnCapturedContext);
+                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry,
+                                                           getExceptionMessage: getExceptionMessage)
+                                             .ConfigureAwait(continueOnCapturedContext);
             }
             else
             {
+                getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
                 return
-                   new ApiResult<T>
-                   (
-                      ErrorCode.InvalidParameters,
-                      GetModelErrorMessage()
-                   );
+                    new ApiResult<T>
+                    (
+                        ErrorCode.InvalidParameters,
+                        getModelErrorMessage(ModelState)
+                    );
             }
 
         }

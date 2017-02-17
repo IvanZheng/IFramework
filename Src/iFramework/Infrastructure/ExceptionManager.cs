@@ -56,9 +56,20 @@ namespace IFramework.Infrastructure
     public static class ExceptionManager
     {
         static ILogger _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager)) : null;
-        public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func, bool continueOnCapturedContext = false, bool needRetry = false, int retryCount = 50)
+        static string GetExceptionMessage(Exception ex)
+        {
+            return ex?.Message;
+        }
+
+        public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
+                                                               bool continueOnCapturedContext = false,
+                                                               bool needRetry = false,
+                                                               int retryCount = 50,
+                                                               Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
+            getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
+
             do
             {
                 try
@@ -75,12 +86,12 @@ namespace IFramework.Infrastructure
                         if (baseException is SysException)
                         {
                             var sysException = baseException as SysException;
-                            apiResult = new ApiResult<T>(sysException.ErrorCode, sysException.Message);
+                            apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
                             _logger?.Debug(ex);
                         }
                         else
                         {
-                            apiResult = new ApiResult<T>(ErrorCode.UnknownError, baseException.Message);
+                            apiResult = new ApiResult<T>(ErrorCode.UnknownError, getExceptionMessage(ex));
                             _logger?.Error(ex);
                         }
                         needRetry = false;
@@ -133,8 +144,13 @@ namespace IFramework.Infrastructure
             #endregion
         }
 
-        public static async Task<ApiResult> ProcessAsync(Func<Task> func, bool continueOnCapturedContext = false, bool needRetry = false, int retryCount = 50)
+        public static async Task<ApiResult> ProcessAsync(Func<Task> func,
+                                                         bool continueOnCapturedContext = false,
+                                                         bool needRetry = false,
+                                                         int retryCount = 50,
+                                                         Func<Exception, string> getExceptionMessage = null)
         {
+            getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
             ApiResult apiResult = null;
             do
             {
@@ -152,11 +168,11 @@ namespace IFramework.Infrastructure
                         if (baseException is SysException)
                         {
                             var sysException = baseException as SysException;
-                            apiResult = new ApiResult(sysException.ErrorCode, sysException.Message);
+                            apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
                         }
                         else
                         {
-                            apiResult = new ApiResult(ErrorCode.UnknownError, baseException.Message);
+                            apiResult = new ApiResult(ErrorCode.UnknownError, getExceptionMessage(ex));
                             _logger?.Error(ex);
                         }
                         needRetry = false;
@@ -206,9 +222,10 @@ namespace IFramework.Infrastructure
             #endregion
         }
 
-        public static ApiResult Process(Action action, bool needRetry = false, int retryCount = 50)
+        public static ApiResult Process(Action action, bool needRetry = false, int retryCount = 50, Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult apiResult = null;
+            getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
             do
             {
                 try
@@ -219,17 +236,18 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
+
                     if (!(ex is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
                         if (baseException is SysException)
                         {
                             var sysException = baseException as SysException;
-                            apiResult = new ApiResult(sysException.ErrorCode, sysException.Message);
+                            apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
                         }
                         else
                         {
-                            apiResult = new ApiResult(ErrorCode.UnknownError, baseException.Message);
+                            apiResult = new ApiResult(ErrorCode.UnknownError, getExceptionMessage(ex));
                             _logger?.Error(ex);
                         }
                         needRetry = false;
@@ -240,9 +258,10 @@ namespace IFramework.Infrastructure
             return apiResult;
         }
 
-        public static ApiResult<T> Process<T>(Func<T> func, bool needRetry = false, int retryCount = 50)
+        public static ApiResult<T> Process<T>(Func<T> func, bool needRetry = false, int retryCount = 50, Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
+            getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
             do
             {
                 try
@@ -266,11 +285,11 @@ namespace IFramework.Infrastructure
                         if (baseException is SysException)
                         {
                             var sysException = baseException as SysException;
-                            apiResult = new ApiResult<T>(sysException.ErrorCode, sysException.Message);
+                            apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
                         }
                         else
                         {
-                            apiResult = new ApiResult<T>(ErrorCode.UnknownError, baseException.Message);
+                            apiResult = new ApiResult<T>(ErrorCode.UnknownError, getExceptionMessage(baseException));
                             _logger?.Error(ex);
                         }
                         needRetry = false;

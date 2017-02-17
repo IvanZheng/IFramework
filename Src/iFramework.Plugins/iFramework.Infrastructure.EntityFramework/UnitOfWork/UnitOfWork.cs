@@ -15,6 +15,7 @@ using IFramework.Message;
 using System.Data.Entity.Infrastructure;
 using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
+using System.Data.Entity.Validation;
 
 namespace IFramework.EntityFramework
 {
@@ -49,7 +50,8 @@ namespace IFramework.EntityFramework
             try
             {
                 using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
-                                                           new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }, TransactionScopeAsyncFlowOption.Enabled))
+                                                           new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted },
+                                                           TransactionScopeAsyncFlowOption.Enabled))
                 {
                     _dbContexts.ForEach(dbContext =>
                     {
@@ -71,6 +73,14 @@ namespace IFramework.EntityFramework
             {
                 Rollback();
                 throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
+            }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessage = string.Join(";", ex.EntityValidationErrors
+                                                      .SelectMany(eve => eve.ValidationErrors
+                                                                            .Select(e => new { Entry = eve.Entry, Error = e })
+                                                      .Select(e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                throw new Exception(errorMessage, ex);
             }
         }
 
@@ -103,6 +113,14 @@ namespace IFramework.EntityFramework
             {
                 Rollback();
                 throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
+            }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessage = string.Join(";", ex.EntityValidationErrors
+                                                      .SelectMany(eve => eve.ValidationErrors
+                                                                            .Select(e => new { Entry = eve.Entry, Error = e })
+                                                      .Select(e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                throw new Exception(errorMessage, ex);
             }
         }
 
