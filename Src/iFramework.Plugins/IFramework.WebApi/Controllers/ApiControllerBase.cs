@@ -22,9 +22,8 @@ namespace IFramework.AspNet
 
         protected string GetModelErrorMessage(ModelStateDictionary modelState)
         {
-            return string.Join(",", modelState.Values
-                                              .SelectMany(v => v.Errors
-                                                                .Select(e => $"error:{e.ErrorMessage} exception:{e.Exception?.GetBaseException()?.Message}")));
+            return string.Join(";",
+                               modelState.Select(m => $"{m.Key}:{string.Join(",", m.Value.Errors.Select(e => e.ErrorMessage + e.Exception?.Message))}"));
         }
 
         #region process wrapping
