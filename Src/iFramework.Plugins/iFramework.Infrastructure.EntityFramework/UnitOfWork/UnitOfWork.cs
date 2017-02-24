@@ -7,6 +7,7 @@ using IFramework.Event;
 using System.Data.Entity.Infrastructure;
 using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
+using System.Data.Entity.Validation;
 
 namespace IFramework.EntityFramework
 {
@@ -66,6 +67,14 @@ namespace IFramework.EntityFramework
                 Rollback();
                 throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
             }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessage = string.Join(";", ex.EntityValidationErrors
+                                                      .SelectMany(eve => eve.ValidationErrors
+                                                                            .Select(e => new { Entry = eve.Entry, Error = e })
+                                                      .Select(e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                throw new Exception(errorMessage, ex);
+            }
         }
 
         public async virtual Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted, 
@@ -98,6 +107,14 @@ namespace IFramework.EntityFramework
             {
                 Rollback();
                 throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
+            }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessage = string.Join(";", ex.EntityValidationErrors
+                                                      .SelectMany(eve => eve.ValidationErrors
+                                                                            .Select(e => new { Entry = eve.Entry, Error = e })
+                                                      .Select(e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                throw new Exception(errorMessage, ex);
             }
         }
 
