@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace IFramework.UnitOfWork
 {
@@ -13,7 +14,8 @@ namespace IFramework.UnitOfWork
 
         }
 
-        public void Commit()
+        public void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+                           TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
            
         }
@@ -22,7 +24,8 @@ namespace IFramework.UnitOfWork
         {
         }
 
-        public Task CommitAsync()
+        public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+                                TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
             return null;
         }

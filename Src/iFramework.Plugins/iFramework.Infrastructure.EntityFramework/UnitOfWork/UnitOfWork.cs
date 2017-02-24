@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Transactions;
 using IFramework.UnitOfWork;
-using IFramework.Bus;
 using IFramework.Infrastructure;
-using IFramework.Config;
-using IFramework.Repositories;
 using IFramework.Domain;
 using IFramework.Event;
-using IFramework.Message;
 using System.Data.Entity.Infrastructure;
 using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
@@ -44,12 +36,14 @@ namespace IFramework.EntityFramework
 
         }
 
-        public virtual void Commit()
+        public virtual void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+                                   TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
             try
             {
-                using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
-                                                           new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }, TransactionScopeAsyncFlowOption.Enabled))
+                using (TransactionScope scope = new TransactionScope(scopOption,
+                                                                     new TransactionOptions { IsolationLevel = isolationLevel }, 
+                                                                     TransactionScopeAsyncFlowOption.Enabled))
                 {
                     _dbContexts.ForEach(dbContext =>
                     {
@@ -74,13 +68,14 @@ namespace IFramework.EntityFramework
             }
         }
 
-        public async virtual Task CommitAsync()
+        public async virtual Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted, 
+                                              TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
 
             try
             {
-                using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required,
-                                                             new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted },
+                using (TransactionScope scope = new TransactionScope(scopOption,
+                                                             new TransactionOptions { IsolationLevel = isolationLevel },
                                                              TransactionScopeAsyncFlowOption.Enabled))
                 {
                     foreach (var dbContext in _dbContexts)

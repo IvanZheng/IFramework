@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using IFramework.Bus;
-using IFramework.Repositories;
-using IFramework.Domain;
-using IFramework.Message;
+﻿
+
+using System;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace IFramework.UnitOfWork
 {
     public interface IUnitOfWork: IDisposable
     {
-        void Commit();
-        Task CommitAsync();
+        void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+                    TransactionScopeOption scopOption = TransactionScopeOption.Required);
+        Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+                         TransactionScopeOption scopOption = TransactionScopeOption.Required);
         void Rollback();
     }
 }

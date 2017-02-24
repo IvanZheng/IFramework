@@ -47,9 +47,11 @@ namespace IFramework.UnitOfWork
         //    private set;
         //}
 
-        public abstract void Commit();
+        public abstract void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+                                    TransactionScopeOption scopOption = TransactionScopeOption.Required);
 
-        public abstract Task CommitAsync();
+        public abstract Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+                                         TransactionScopeOption scopOption = TransactionScopeOption.Required);
         #endregion
 
         public virtual void Dispose()
