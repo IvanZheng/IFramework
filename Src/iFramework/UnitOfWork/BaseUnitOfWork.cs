@@ -47,10 +47,10 @@ namespace IFramework.UnitOfWork
         //    private set;
         //}
 
-        public abstract void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+        public abstract void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                     TransactionScopeOption scopOption = TransactionScopeOption.Required);
 
-        public abstract Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+        public abstract Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                          TransactionScopeOption scopOption = TransactionScopeOption.Required);
         #endregion
 

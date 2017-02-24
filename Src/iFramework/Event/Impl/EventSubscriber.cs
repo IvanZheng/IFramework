@@ -91,7 +91,7 @@ namespace IFramework.Event.Impl
                             using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
                                                                                new TransactionOptions
                                                                                {
-                                                                                   IsolationLevel = IsolationLevel.ReadUncommitted
+                                                                                   IsolationLevel = IsolationLevel.ReadCommitted
                                                                                },
                                                                                TransactionScopeAsyncFlowOption.Enabled))
                             {

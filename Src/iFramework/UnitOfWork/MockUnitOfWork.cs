@@ -14,7 +14,7 @@ namespace IFramework.UnitOfWork
 
         }
 
-        public void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+        public void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                            TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
            
@@ -24,7 +24,7 @@ namespace IFramework.UnitOfWork
         {
         }
 
-        public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+        public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                 TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
             return null;

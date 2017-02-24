@@ -39,7 +39,7 @@ namespace IFramework.EntityFramework
 
         }
 
-        public virtual void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted,
+        public virtual void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                    TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
             try
@@ -79,7 +79,7 @@ namespace IFramework.EntityFramework
             }
         }
 
-        public async virtual Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted, 
+        public async virtual Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, 
                                               TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
 

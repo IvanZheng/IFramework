@@ -147,7 +147,7 @@ namespace IFramework.Command.Impl
                                 }
 
                                 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                   new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted },
+                                                                   new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted },
                                                                    TransactionScopeAsyncFlowOption.Enabled))
                                 {
                                     if (messageHandlerType.IsAsync)
