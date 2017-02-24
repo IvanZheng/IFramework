@@ -8,6 +8,8 @@ using System.Data.Entity.Infrastructure;
 using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
 using System.Data.Entity.Validation;
+using System.Linq;
+using System;
 
 namespace IFramework.EntityFramework
 {
