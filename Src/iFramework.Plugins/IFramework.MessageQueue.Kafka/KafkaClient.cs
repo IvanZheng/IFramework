@@ -25,9 +25,6 @@ namespace IFramework.MessageQueue.MSKafka
         protected ConcurrentDictionary<string, KafkaProducer> _topicClients;
         protected List<KafkaConsumer> _subscriptionClients;
         protected List<KafkaConsumer> _queueConsumers;
-
-        protected List<Task> _subscriptionClientTasks;
-        protected List<Task> _commandClientTasks;
         protected string _zkConnectionString;
         protected ILogger _logger = null;
 
@@ -113,10 +110,14 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        KafkaConsumer CreateQueueConsumer(string queue, string consumerId = null, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        KafkaConsumer CreateQueueConsumer(string queue, OnMessagesReceived onMessagesReceived, 
+                                          string consumerId = null, int backOffIncrement = 30, 
+                                          int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(queue);
-            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{queue}.consumer", consumerId, backOffIncrement, fullLoadThreshold, waitInterval);
+            var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{queue}.consumer", consumerId,
+                                                  BuildOnKafkaMessageReceived(onMessagesReceived),
+                                                  backOffIncrement, fullLoadThreshold, waitInterval);
             return queueConsumer;
         }
 
@@ -133,69 +134,26 @@ namespace IFramework.MessageQueue.MSKafka
             return new KafkaProducer(topic, _zkConnectionString);
         }
 
-        KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName,
+                                               OnMessagesReceived onMessagesReceived,
+                                               string consumerId = null, int backOffIncrement = 30, 
+                                               int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(topic);
-            return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId, backOffIncrement, fullLoadThreshold, waitInterval);
+            return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId, 
+                                     BuildOnKafkaMessageReceived(onMessagesReceived), backOffIncrement, fullLoadThreshold, waitInterval);
         }
 
-        void ReceiveMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived, KafkaConsumer kafkaConsumer)
+        OnKafkaMessageReceived BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)
         {
-            IEnumerable<Kafka.Client.Messages.Message> messages = null;
-
-            #region peek messages that not been consumed since last time
-            while (!cancellationTokenSource.IsCancellationRequested)
+            return (consumer, message) =>
             {
-                try
-                {
-                    messages = kafkaConsumer.GetMessages(cancellationTokenSource.Token);
-                    foreach (var message in messages)
-                    {
-                        try
-                        {
-                            var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
-                            var messageContext = new MessageContext(kafkaMessage, message.PartitionId.Value, message.Offset);
-                            kafkaConsumer.AddMessage(message);
-                            onMessagesReceived(messageContext);
-                            kafkaConsumer.BlockIfFullLoad();
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            return;
-                        }
-                        catch (ThreadAbortException)
-                        {
-                            return;
-                        }
-                        catch (Exception ex)
-                        {
-                            if (message.Payload != null)
-                            {
-                                kafkaConsumer.RemoveMessage(message.PartitionId.Value, message.Offset);
-                            }
-                            _logger.Error(ex.GetBaseException().Message, ex);
-                        }
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (!cancellationTokenSource.IsCancellationRequested)
-                    {
-                        Thread.Sleep(1000);
-                        _logger.Error(ex.GetBaseException().Message, ex);
-                    }
-                }
-            }
-            #endregion
+                var kafkaMessage = Encoding.UTF8.GetString(message.Payload).ToJsonObject<KafkaMessage>();
+                var messageContext = new MessageContext(kafkaMessage, message.PartitionId.Value, message.Offset);
+                onMessagesReceived(messageContext);
+            };
         }
+
         #endregion
 
 
@@ -204,8 +162,6 @@ namespace IFramework.MessageQueue.MSKafka
             _zkConnectionString = zkConnectionString;
             _queueClients = new ConcurrentDictionary<string, KafkaProducer>();
             _topicClients = new ConcurrentDictionary<string, KafkaProducer>();
-            _subscriptionClientTasks = new List<Task>();
-            _commandClientTasks = new List<Task>();
             _subscriptionClients = new List<KafkaConsumer>();
             _queueConsumers = new List<KafkaConsumer>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
@@ -227,15 +183,7 @@ namespace IFramework.MessageQueue.MSKafka
             var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
             var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
             var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(topic, messageContext.Key, message);
-
-            try
-            {
-                topicClient.Send(producerData);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"send message failed: {jsonValue}.", ex);
-            }
+            topicClient.Send(producerData);
         }
 
         public void Send(IMessageContext messageContext, string queue)
@@ -246,31 +194,14 @@ namespace IFramework.MessageQueue.MSKafka
             var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
             var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
             var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(queue, messageContext.Key, message);
-
-            try
-            {
-                queueClient.Send(producerData);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"send message failed: {jsonValue}.", ex);
-            }
+            queueClient.Send(producerData);
         }
 
         public Action<IMessageContext> StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
-            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
-            var cancellationSource = new CancellationTokenSource();
-            var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
-                                                                          onMessagesReceived,
-                                                                          queueConsumer),
-                                                     cancellationSource,
-                                                     cancellationSource.Token,
-                                                     TaskCreationOptions.LongRunning,
-                                                     TaskScheduler.Default);
-            _commandClientTasks.Add(task);
+            var queueConsumer = CreateQueueConsumer(commandQueueName, onMessagesReceived, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             _queueConsumers.Add(queueConsumer);
             return queueConsumer.CommitOffset;
         }
@@ -279,43 +210,19 @@ namespace IFramework.MessageQueue.MSKafka
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
-            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
-            var cancellationSource = new CancellationTokenSource();
-
-            var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
-                                                                   onMessagesReceived,
-                                                                   subscriptionClient),
-                                             cancellationSource,
-                                             cancellationSource.Token,
-                                             TaskCreationOptions.LongRunning,
-                                             TaskScheduler.Default);
-            _subscriptionClientTasks.Add(task);
+            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             _subscriptionClients.Add(subscriptionClient);
             return subscriptionClient.CommitOffset;
         }
 
         void StopQueueClients()
         {
-            _commandClientTasks.ForEach(task =>
-            {
-                CancellationTokenSource cancellationSource = task.AsyncState as CancellationTokenSource;
-                cancellationSource.Cancel(true);
-            }
-            );
             _queueConsumers.ForEach(client => client.Stop());
-            Task.WaitAll(_commandClientTasks.ToArray());
         }
 
         void StopSubscriptionClients()
         {
-            _subscriptionClientTasks.ForEach(subscriptionClientTask =>
-            {
-                CancellationTokenSource cancellationSource = subscriptionClientTask.AsyncState as CancellationTokenSource;
-                cancellationSource.Cancel(true);
-            }
-              );
             _subscriptionClients.ForEach(client => client.Stop());
-            Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null)

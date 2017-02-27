@@ -107,41 +107,18 @@ namespace Sample.CommandService.Tests
             Stop();
         }
 
-        public static Task CreateConsumerTask(string commandQueue, string consumerId, CancellationTokenSource cancellationTokenSource)
+        public static KafkaConsumer CreateConsumer(string commandQueue, string consumerId, CancellationTokenSource cancellationTokenSource)
         {
-            return Task.Run(() =>
+            OnKafkaMessageReceived onMessageReceived = (kafkaConsumer, kafkaMessage) =>
             {
-                var consumer = new KafkaConsumer(_zkConnectionString, commandQueue, $"{Environment.MachineName}.{commandQueue}", consumerId);
-                try
-                {
-                    foreach (var kafkaMessage in consumer.GetMessages(cancellationTokenSource.Token))
-                    {
-                        var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
-                        var sendTime = DateTime.Parse(message);
-                        Console.WriteLine($"consumer:{consumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
-                        consumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (!cancellationTokenSource.IsCancellationRequested)
-                    {
-                        Console.WriteLine(ex.GetBaseException().Message);
-                    }
-                }
-                finally
-                {
-                    consumer.Stop();
-                }
-            });
+                var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
+                var sendTime = DateTime.Parse(message);
+                Console.WriteLine($"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                kafkaConsumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
+            };
+            var consumer = new KafkaConsumer(_zkConnectionString, commandQueue, $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
+            return consumer;
+
         }
 
         [TestMethod]
@@ -149,10 +126,10 @@ namespace Sample.CommandService.Tests
         {
             string commandQueue = "seop.groupcommandqueue";
             var cancellationTokenSource = new CancellationTokenSource();
-            var consumerTask = CreateConsumerTask(commandQueue, "ConsumerTest", cancellationTokenSource);
+            var consumer = CreateConsumer(commandQueue, "ConsumerTest", cancellationTokenSource);
             Thread.Sleep(100);
             cancellationTokenSource.Cancel();
-            consumerTask.Wait();
+            consumer.Stop();
             ZookeeperConsumerConnector.zkClientStatic.Dispose();
         }
 

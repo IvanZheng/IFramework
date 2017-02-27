@@ -30,61 +30,38 @@ namespace MSKafka.Test
             //GroupConsuemrTest();
         }
 
-        public static Task CreateConsumerTask(string commandQueue, string consumerId, CancellationTokenSource cancellationTokenSource)
+        public static KafkaConsumer CreateConsumer(string commandQueue, string consumerId)
         {
-            return Task.Run(() =>
+            OnKafkaMessageReceived onMessageReceived = (kafkaConsumer, kafkaMessage) =>
             {
-                var consumer = new KafkaConsumer(zkConnectionString, commandQueue, $"{Environment.MachineName}.{commandQueue}", consumerId);
-                try
-                {
-                    foreach (var kafkaMessage in consumer.GetMessages(cancellationTokenSource.Token))
-                    {
-                        var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
-                        var sendTime = DateTime.Parse(message);
-                        Console.WriteLine($"consumer:{consumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
-                        consumer.CommitOffset(string.Empty, kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (!cancellationTokenSource.IsCancellationRequested)
-                    {
-                        Console.WriteLine(ex.GetBaseException().Message);
-                    }
-                }
-                finally
-                {
-                    consumer.Stop();
-                }
-            });
+                var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
+                var sendTime = DateTime.Parse(message);
+                Console.WriteLine($"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                kafkaConsumer.CommitOffset(string.Empty, kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
+            };
+
+            var consumer = new KafkaConsumer(zkConnectionString, commandQueue,
+                                             $"{Environment.MachineName}.{commandQueue}", consumerId, 
+                                             onMessageReceived);
+            return consumer;
+
         }
 
         static void GroupConsuemrTest()
         {
-            var cancellationTokenSource = new CancellationTokenSource();
-            var consumerTasks = new List<Task>();
+            var consumers = new List<KafkaConsumer>();
             for (int i = 0; i < 1; i++)
             {
-                consumerTasks.Add(CreateConsumerTask(commandQueue, i.ToString(), cancellationTokenSource));
+                consumers.Add(CreateConsumer(commandQueue, i.ToString()));
             }
-
-
+            
             var queueClient = new KafkaProducer(commandQueue, zkConnectionString);
             while (true)
             {
                 var message = Console.ReadLine();
                 if (message.Equals("q"))
                 {
-                    cancellationTokenSource.Cancel();
-                    Task.WaitAll(consumerTasks.ToArray());
+                    consumers.ForEach(consumer => consumer.Stop());
                     break;
                 }
                 message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff");
@@ -101,13 +78,13 @@ namespace MSKafka.Test
                 }
             }
         }
-        
+
 
         static void ProducerSendTPSTest()
         {
             int batchCount = 100000;
             var queueClient = new KafkaProducer(commandQueue, zkConnectionString);
-           
+
             var message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff");
             var kafkaMessage = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(message));
             var data = new Kafka.Client.Producers.ProducerData<string, Kafka.Client.Messages.Message>(commandQueue, message, kafkaMessage);

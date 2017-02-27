@@ -102,6 +102,7 @@ namespace IFramework.Command.Impl
             IMessageContext messageReply = null;
             if (command == null)
             {
+                _removeMessageContext(commandContext);
                 return;
             }
             var needRetry = command.NeedRetry;

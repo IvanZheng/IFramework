@@ -16,9 +16,13 @@ using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using IFramework.MessageQueue.MSKafka.MessageFormat;
 using System;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace IFramework.MessageQueue.MSKafka
 {
+    public delegate void OnKafkaMessageReceived(KafkaConsumer consumer, KafkaMessages.Message message);
+
     public class KafkaConsumer
     {
         public string ZkConnectionString { get; protected set; }
@@ -30,16 +34,24 @@ namespace IFramework.MessageQueue.MSKafka
         public ConcurrentDictionary<int, SlidingDoor> SlidingDoors { get; protected set; }
         protected int _fullLoadThreshold;
         protected int _waitInterval;
+
+        protected OnKafkaMessageReceived _onMessageReceived;
+        protected CancellationTokenSource _cancellationTokenSource;
+        protected Task _consumerTask;
+
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer).Name);
-        public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId, int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId,
+                             OnKafkaMessageReceived onMessageReceived,
+                             int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000,
+                             bool start = true)
         {
             _fullLoadThreshold = fullLoadThreshold;
             _waitInterval = waitInterval;
-            SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
             ZkConnectionString = zkConnectionString;
             Topic = topic;
             GroupId = groupId;
             ConsumerId = consumerId ?? string.Empty;
+            SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
             ConsumerConfiguration = new ConsumerConfiguration
             {
                 BackOffIncrement = backOffIncrement,
@@ -53,29 +65,107 @@ namespace IFramework.MessageQueue.MSKafka
                 ZooKeeper = KafkaClient.GetZooKeeperConfiguration(zkConnectionString),
                 ShutdownTimeout = 100
             };
-            ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true);
-        }
-
-        IKafkaMessageStream<KafkaMessages.Message> _stream;
-        public IKafkaMessageStream<KafkaMessages.Message> Stream
-        {
-            get
+            _onMessageReceived = onMessageReceived;
+            if (start)
             {
-                if (_stream == null)
-                {
-                    var topicDic = new Dictionary<string, int>() {
-                        {Topic, 1 }
-                    };
-                    var streams = ZkConsumerConnector.CreateMessageStreams(topicDic, new DefaultDecoder());
-                    _stream = streams[Topic][0];
-                }
-                _logger.Debug($"consumer {ConsumerId} has got Stream");
-                return _stream;
+                CreateConsumerTask();
             }
         }
 
+        private void ZkDisconnectedHandler(object sender, EventArgs args)
+        {
+            _logger.Error($"{GroupId}.{ConsumerId} zookeeper disconnected!");
+            ReStart();
+        }
 
-        public void BlockIfFullLoad()
+        public void ReStart()
+        {
+            Stop();
+            CreateConsumerTask();
+        }
+
+        private void CreateConsumerTask()
+        {
+            ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true, zkDisconnectedHandler: ZkDisconnectedHandler);
+            _cancellationTokenSource = new CancellationTokenSource();
+            _consumerTask = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
+                                                                          _onMessageReceived),
+                                                     _cancellationTokenSource,
+                                                     _cancellationTokenSource.Token,
+                                                     TaskCreationOptions.LongRunning,
+                                                     TaskScheduler.Default);
+        }
+
+        public IKafkaMessageStream<KafkaMessages.Message> GetStream()
+        {
+            var topicDic = new Dictionary<string, int>() {
+                        {Topic, 1 }
+                    };
+            var streams = ZkConsumerConnector.CreateMessageStreams(topicDic, new DefaultDecoder());
+            var stream = streams[Topic][0];
+            _logger.Debug($"consumer {ConsumerId} has got Stream");
+            return stream;
+        }
+
+        void ReceiveMessages(CancellationTokenSource cancellationTokenSource, OnKafkaMessageReceived onMessagesReceived)
+        {
+            IEnumerable<KafkaMessages.Message> messages = null;
+
+            #region peek messages that not been consumed since last time
+            while (!cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    messages = GetMessages(cancellationTokenSource.Token);
+                    foreach (var message in messages)
+                    {
+                        try
+                        {
+                            AddMessage(message);
+                            onMessagesReceived(this, message);
+                            BlockIfFullLoad();
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            return;
+                        }
+                        catch (ThreadAbortException)
+                        {
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (message.Payload != null)
+                            {
+                                RemoveMessage(message.PartitionId.Value, message.Offset);
+                            }
+                            _logger.Error(ex.GetBaseException().Message, ex);
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (!cancellationTokenSource.IsCancellationRequested)
+                    {
+                        Thread.Sleep(1000);
+                        _logger.Error(ex.GetBaseException().Message, ex);
+                    }
+                }
+            }
+            #endregion
+        }
+
+
+
+        protected void BlockIfFullLoad()
         {
             while (SlidingDoors.Sum(d => d.Value.MessageCount) > _fullLoadThreshold)
             {
@@ -84,12 +174,12 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        internal void AddMessage(KafkaMessages.Message message)
+        protected void AddMessage(KafkaMessages.Message message)
         {
             var slidingDoor = SlidingDoors.GetOrAdd(message.PartitionId.Value, partition =>
             {
                 return new SlidingDoor(CommitOffset,
-                                       string.Empty, 
+                                       string.Empty,
                                        partition,
                                        Configuration.Instance.GetCommitPerMessage());
             });
@@ -108,7 +198,7 @@ namespace IFramework.MessageQueue.MSKafka
 
         public IEnumerable<KafkaMessages.Message> GetMessages(CancellationToken cancellationToken)
         {
-            return Stream.GetCancellable(cancellationToken);
+            return GetStream().GetCancellable(cancellationToken);
         }
 
         internal void CommitOffset(IMessageContext messageContext)
@@ -136,6 +226,15 @@ namespace IFramework.MessageQueue.MSKafka
                 ZkConsumerConnector.Dispose();
                 ZkConsumerConnector = null;
             }
+            _cancellationTokenSource?.Cancel(true);
+            _consumerTask?.Wait(5000);
+            _consumerTask?.Dispose();
+            _consumerTask = null;
+            _cancellationTokenSource = null;
+            ZkConsumerConnector = null;
+            SlidingDoors.Clear();
         }
+
+
     }
 }
