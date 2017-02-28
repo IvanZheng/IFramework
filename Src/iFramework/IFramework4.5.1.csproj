@@ -68,6 +68,7 @@
     <Compile Include="IoC\Lifetime.cs" />
     <Compile Include="IoC\Parameter.cs" />
     <Compile Include="MessageQueue\Configuration.cs" />
+    <Compile Include="MessageQueue\ICommitOffsetable.cs" />
     <Compile Include="MessageQueue\ISlidingDoor.cs" />
     <Compile Include="MessageQueue\MessageQueueFactory.cs" />
     <Compile Include="MessageQueue\MockMessageQueueClient.cs" />

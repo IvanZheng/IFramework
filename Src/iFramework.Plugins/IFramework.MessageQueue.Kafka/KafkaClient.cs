@@ -110,8 +110,8 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        KafkaConsumer CreateQueueConsumer(string queue, OnMessagesReceived onMessagesReceived, 
-                                          string consumerId = null, int backOffIncrement = 30, 
+        KafkaConsumer CreateQueueConsumer(string queue, OnMessagesReceived onMessagesReceived,
+                                          string consumerId = null, int backOffIncrement = 30,
                                           int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(queue);
@@ -136,11 +136,11 @@ namespace IFramework.MessageQueue.MSKafka
 
         KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName,
                                                OnMessagesReceived onMessagesReceived,
-                                               string consumerId = null, int backOffIncrement = 30, 
+                                               string consumerId = null, int backOffIncrement = 30,
                                                int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(topic);
-            return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId, 
+            return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId,
                                      BuildOnKafkaMessageReceived(onMessagesReceived), backOffIncrement, fullLoadThreshold, waitInterval);
         }
 
@@ -197,22 +197,22 @@ namespace IFramework.MessageQueue.MSKafka
             queueClient.Send(producerData);
         }
 
-        public Action<IMessageContext> StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
             var queueConsumer = CreateQueueConsumer(commandQueueName, onMessagesReceived, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             _queueConsumers.Add(queueConsumer);
-            return queueConsumer.CommitOffset;
+            return queueConsumer;
         }
 
-        public Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             _subscriptionClients.Add(subscriptionClient);
-            return subscriptionClient.CommitOffset;
+            return subscriptionClient;
         }
 
         void StopQueueClients()
@@ -256,11 +256,9 @@ namespace IFramework.MessageQueue.MSKafka
         {
             if (!_disposed)
             {
-                ZookeeperConsumerConnector.zkClientStatic.Dispose();
-                StopQueueClients();
-                StopSubscriptionClients();
                 _topicClients.Values.ForEach(client => client.Stop());
                 _queueClients.Values.ForEach(client => client.Stop());
+                ZookeeperConsumerConnector.zkClientStatic?.Dispose();
                 _disposed = true;
             }
         }

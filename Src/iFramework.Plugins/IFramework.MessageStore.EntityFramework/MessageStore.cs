@@ -163,7 +163,7 @@ namespace IFramework.MessageStoring
                 }
                 catch (Exception ex)
                 {
-                    // only multiple subscribers consuming the same topic message will case the Event Saving conflict.
+                    // only multiple subscribers consuming the same topic message will cause the Event Saving conflict.
                     _logger?.Error($"SaveEvent failed. Event: {eventContext.Message.ToJson()}", ex);
                 }
             }

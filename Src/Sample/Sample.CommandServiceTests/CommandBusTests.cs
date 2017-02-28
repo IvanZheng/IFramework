@@ -107,7 +107,7 @@ namespace Sample.CommandService.Tests
             Stop();
         }
 
-        public static KafkaConsumer CreateConsumer(string commandQueue, string consumerId, CancellationTokenSource cancellationTokenSource)
+        public static KafkaConsumer CreateConsumer(string commandQueue, string consumerId)
         {
             OnKafkaMessageReceived onMessageReceived = (kafkaConsumer, kafkaMessage) =>
             {
@@ -116,9 +116,9 @@ namespace Sample.CommandService.Tests
                 Console.WriteLine($"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
                 kafkaConsumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
             };
+
             var consumer = new KafkaConsumer(_zkConnectionString, commandQueue, $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
             return consumer;
-
         }
 
         [TestMethod]
@@ -126,11 +126,10 @@ namespace Sample.CommandService.Tests
         {
             string commandQueue = "seop.groupcommandqueue";
             var cancellationTokenSource = new CancellationTokenSource();
-            var consumer = CreateConsumer(commandQueue, "ConsumerTest", cancellationTokenSource);
+            var consumer = CreateConsumer(commandQueue, "ConsumerTest");
             Thread.Sleep(100);
-            cancellationTokenSource.Cancel();
             consumer.Stop();
-            ZookeeperConsumerConnector.zkClientStatic.Dispose();
+            ZookeeperConsumerConnector.zkClientStatic?.Dispose();
         }
 
         [TestMethod()]

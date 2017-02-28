@@ -64,7 +64,7 @@ namespace IFramework.MessageQueue.EQueue
             _producer.Send(GetEQueueMessage(messageContext, queue), messageContext.Key);
         }
 
-        public Action<IMessageContext> StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
@@ -79,12 +79,12 @@ namespace IFramework.MessageQueue.EQueue
                                                      TaskScheduler.Default);
             _commandClientTasks.Add(task);
             _queueConsumers.Add(queueConsumer);
-            return queueConsumer.CommitOffset;
+            return queueConsumer;
         }
 
 
 
-        public Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -100,7 +100,7 @@ namespace IFramework.MessageQueue.EQueue
                                              TaskScheduler.Default);
             _subscriptionClientTasks.Add(task);
             _subscriptionClients.Add(subscriptionClient);
-            return subscriptionClient.CommitOffset;
+            return subscriptionClient;
         }
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null)

@@ -30,7 +30,7 @@ namespace IFramework.Command.Impl
         /// </summary>
         protected ConcurrentDictionary<string, MessageState> _commandStateQueues;
         protected MessageProcessor _messageProcessor;
-        protected Action<IMessageContext> _removeMessageContext;
+        protected ICommitOffsetable _internalConsumer;
         protected string _consumerId;
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
@@ -95,7 +95,7 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_replyTopicName))
                 {
-                    _removeMessageContext = _messageQueueClient.StartSubscriptionClient(_replyTopicName, _replySubscriptionName, _consumerId, OnMessagesReceived);
+                    _internalConsumer = _messageQueueClient.StartSubscriptionClient(_replyTopicName, _replySubscriptionName, _consumerId, OnMessagesReceived);
                 }
             }
             catch (Exception e)
@@ -109,6 +109,7 @@ namespace IFramework.Command.Impl
         public override void Stop()
         {
             base.Stop();
+            _internalConsumer.Stop();
             _messageProcessor.Stop();
         }
 
@@ -122,7 +123,8 @@ namespace IFramework.Command.Impl
 
         protected async Task ConsumeReply(IMessageContext reply)
         {
-            await Task.Run(() => {
+            await Task.Run(() =>
+            {
                 _logger?.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
                 var sagaInfo = reply.SagaInfo;
                 var correlationID = sagaInfo?.SagaId ?? reply.CorrelationID;
@@ -139,7 +141,7 @@ namespace IFramework.Command.Impl
                         messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
                     }
                 }
-                _removeMessageContext(reply);
+                _internalConsumer.CommitOffset(reply);
             }).ConfigureAwait(false);
         }
 

@@ -57,7 +57,6 @@ namespace IFramework.Message.Impl
                 cancellationSource.Cancel(true);
                 Task.WaitAll(_sendMessageTask);
             }
-            _messageQueueClient.Dispose();
         }
         public Task<MessageResponse[]> SendAsync(params IMessage[] messages)
         {

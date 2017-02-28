@@ -27,7 +27,7 @@ namespace IFramework.Event.Impl
         protected string _consumerId;
         protected MessageProcessor _messageProcessor;
         protected ILogger _logger;
-        protected Action<IMessageContext> _removeMessageContext;
+        protected ICommitOffsetable _internalConsumer;
 
         public EventSubscriber(IMessageQueueClient messageQueueClient,
                                IHandlerProvider handlerProvider,
@@ -46,7 +46,7 @@ namespace IFramework.Event.Impl
             _messagePublisher = messagePublisher;
             _commandBus = commandBus;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(), mailboxProcessBatchCount);
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name) : null;
         }
 
 
@@ -61,128 +61,138 @@ namespace IFramework.Event.Impl
 
         protected async Task ConsumeMessage(IMessageContext eventContext)
         {
-            var message = eventContext.Message;
-            var sagaInfo = eventContext.SagaInfo;
-            var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
-
-            if (messageHandlerTypes.Count == 0)
+            try
             {
-                _removeMessageContext(eventContext);
-                return;
-            }
+                _logger?.Debug($"start handle event {this._consumerId} {eventContext.Message.ToJson()}");
 
-            SaveEvent(eventContext);
-            //messageHandlerTypes.ForEach(messageHandlerType =>
-            foreach (var messageHandlerType in messageHandlerTypes)
-            {
-                using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+                var message = eventContext.Message;
+                var sagaInfo = eventContext.SagaInfo;
+                var messageHandlerTypes = _handlerProvider.GetHandlerTypes(message.GetType());
+
+                if (messageHandlerTypes.Count == 0)
                 {
-                    scope.RegisterInstance(typeof(IMessageContext), eventContext);
-                    var messageStore = scope.Resolve<IMessageStore>();
-                    var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.Type.FullName);
-                    if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
+                    _logger?.Debug($"event has no handlerTypes, message:{message.ToJson()}");
+                    _internalConsumer.CommitOffset(eventContext);
+                    return;
+                }
+
+                SaveEvent(eventContext);
+                //messageHandlerTypes.ForEach(messageHandlerType =>
+                foreach (var messageHandlerType in messageHandlerTypes)
+                {
+                    using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                     {
-                        var eventMessageStates = new List<MessageState>();
-                        var commandMessageStates = new List<MessageState>();
-                        var eventBus = scope.Resolve<IEventBus>();
-                        try
+                        scope.RegisterInstance(typeof(IMessageContext), eventContext);
+                        var messageStore = scope.Resolve<IMessageStore>();
+                        var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.Type.FullName);
+                        if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                         {
-                            var messageHandler = scope.Resolve(messageHandlerType.Type);
-                            using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                               new TransactionOptions
-                                                                               {
-                                                                                   IsolationLevel = IsolationLevel.ReadCommitted
-                                                                               },
-                                                                               TransactionScopeAsyncFlowOption.Enabled))
+                            var eventMessageStates = new List<MessageState>();
+                            var commandMessageStates = new List<MessageState>();
+                            var eventBus = scope.Resolve<IEventBus>();
+                            try
                             {
-                                if (messageHandlerType.IsAsync)
+                                var messageHandler = scope.Resolve(messageHandlerType.Type);
+                                using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+                                                                                   new TransactionOptions
+                                                                                   {
+                                                                                       IsolationLevel = IsolationLevel.ReadCommitted
+                                                                                   },
+                                                                                   TransactionScopeAsyncFlowOption.Enabled))
                                 {
-                                    await ((dynamic)messageHandler).Handle((dynamic)message)
-                                                                   .ConfigureAwait(false);
+                                    if (messageHandlerType.IsAsync)
+                                    {
+                                        await ((dynamic)messageHandler).Handle((dynamic)message)
+                                                                       .ConfigureAwait(false);
+                                    }
+                                    else
+                                    {
+                                        await Task.Run(() =>
+                                        {
+                                            ((dynamic)messageHandler).Handle((dynamic)message);
+                                        }).ConfigureAwait(false);
+                                    }
+
+                                    //get commands to be sent
+                                    eventBus.GetCommands().ForEach(cmd =>
+                                       commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd, sagaInfo: sagaInfo)))
+                                   );
+                                    //get events to be published
+                                    eventBus.GetEvents().ForEach(msg =>
+                                    {
+                                        var topic = msg.GetFormatTopic();
+                                        eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
+                                    });
+
+                                    eventBus.GetToPublishAnywayMessages().ForEach(msg =>
+                                    {
+                                        var topic = msg.GetFormatTopic();
+                                        eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
+                                    });
+
+                                    if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+                                    {
+                                        eventBus.GetSagaResults().ForEach(sagaResult =>
+                                        {
+                                            var topic = sagaInfo.ReplyEndPoint;
+                                            if (!string.IsNullOrEmpty(topic))
+                                            {
+                                                var sagaReply = _MessageQueueClient.WrapMessage(sagaResult,
+                                                                                                topic: topic,
+                                                                                                messageId: ObjectId.GenerateNewId().ToString(),
+                                                                                                sagaInfo: sagaInfo);
+                                                eventMessageStates.Add(new MessageState(sagaReply));
+                                            }
+                                        });
+                                    }
+                                    messageStore.HandleEvent(eventContext,
+                                                           subscriptionName,
+                                                           commandMessageStates.Select(s => s.MessageContext),
+                                                           eventMessageStates.Select(s => s.MessageContext));
+
+                                    transactionScope.Complete();
+                                }
+                                if (commandMessageStates.Count > 0)
+                                {
+                                    _commandBus?.SendMessageStates(commandMessageStates);
+                                }
+                                if (eventMessageStates.Count > 0)
+                                {
+                                    _messagePublisher?.SendAsync(eventMessageStates.ToArray());
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                if (e is DomainException)
+                                {
+                                    _logger?.Warn(message.ToJson(), e);
                                 }
                                 else
                                 {
-                                    await Task.Run(() =>
-                                    {
-                                        ((dynamic)messageHandler).Handle((dynamic)message);
-                                    }).ConfigureAwait(false);
+                                    //IO error or sytem Crash
+                                    _logger?.Error(message.ToJson(), e);
                                 }
-
-                                //get commands to be sent
-                                eventBus.GetCommands().ForEach(cmd =>
-                                   commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd, sagaInfo: sagaInfo)))
-                               );
-                                //get events to be published
-                                eventBus.GetEvents().ForEach(msg =>
-                                {
-                                    var topic = msg.GetFormatTopic();
-                                    eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
-                                });
-
+                                messageStore.Rollback();
                                 eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                                 {
                                     var topic = msg.GetFormatTopic();
                                     eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                                 });
-
-                                if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+                                messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
+                                if (eventMessageStates.Count > 0)
                                 {
-                                    eventBus.GetSagaResults().ForEach(sagaResult =>
-                                    {
-                                        var topic = sagaInfo.ReplyEndPoint;
-                                        if (!string.IsNullOrEmpty(topic))
-                                        {
-                                            var sagaReply = _MessageQueueClient.WrapMessage(sagaResult,
-                                                                                            topic: topic,
-                                                                                            messageId: ObjectId.GenerateNewId().ToString(),
-                                                                                            sagaInfo: sagaInfo);
-                                            eventMessageStates.Add(new MessageState(sagaReply));
-                                        }
-                                    });
+                                    _messagePublisher?.SendAsync(eventMessageStates.ToArray());
                                 }
-                                messageStore.HandleEvent(eventContext,
-                                                       subscriptionName,
-                                                       commandMessageStates.Select(s => s.MessageContext),
-                                                       eventMessageStates.Select(s => s.MessageContext));
-
-                                transactionScope.Complete();
-                            }
-                            if (commandMessageStates.Count > 0)
-                            {
-                                _commandBus?.SendMessageStates(commandMessageStates);
-                            }
-                            if (eventMessageStates.Count > 0)
-                            {
-                                _messagePublisher?.SendAsync(eventMessageStates.ToArray());
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            if (e is DomainException)
-                            {
-                                _logger?.Warn(message.ToJson(), e);
-                            }
-                            else
-                            {
-                                //IO error or sytem Crash
-                                _logger?.Error(message.ToJson(), e);
-                            }
-                            messageStore.Rollback();
-                            eventBus.GetToPublishAnywayMessages().ForEach(msg =>
-                            {
-                                var topic = msg.GetFormatTopic();
-                                eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
-                            });
-                            messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
-                            if (eventMessageStates.Count > 0)
-                            {
-                                _messagePublisher?.SendAsync(eventMessageStates.ToArray());
                             }
                         }
                     }
                 }
             }
-            _removeMessageContext(eventContext);
+            catch (Exception e)
+            {
+                _logger?.Error($"Handle event failed event: {eventContext.ToJson()}", e);
+            }
+            _internalConsumer.CommitOffset(eventContext);
         }
         public void Start()
         {
@@ -190,7 +200,7 @@ namespace IFramework.Event.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_topic))
                 {
-                    _removeMessageContext = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, _consumerId, OnMessagesReceived);
+                    _internalConsumer = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, _consumerId, OnMessagesReceived);
                 }
                 _messageProcessor.Start();
             }
@@ -202,7 +212,7 @@ namespace IFramework.Event.Impl
 
         public void Stop()
         {
-            _MessageQueueClient.Dispose();
+            _internalConsumer.Stop();
             _messageProcessor.Stop();
         }
 

@@ -16,7 +16,7 @@ using System.Net;
 
 namespace IFramework.MessageQueue.EQueue
 {
-    public class EQueueConsumer
+    public class EQueueConsumer : ICommitOffsetable
     {
         public string ClusterName { get; protected set; }
         public List<IPEndPoint> NameServerList { get; protected set; }
@@ -28,8 +28,17 @@ namespace IFramework.MessageQueue.EQueue
         protected int _fullLoadThreshold;
         protected int _waitInterval;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(EQueueConsumer).Name);
-        public EQueueConsumer(string clusterName, List<IPEndPoint> nameServerList, 
-                              string topic, string groupId, string consumerId, 
+
+        public string Id
+        {
+            get
+            {
+                return $"{GroupId}.{Topic}.{ConsumerId}";
+            }
+        }
+
+        public EQueueConsumer(string clusterName, List<IPEndPoint> nameServerList,
+                              string topic, string groupId, string consumerId,
                               int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             ClusterName = clusterName;
@@ -92,7 +101,7 @@ namespace IFramework.MessageQueue.EQueue
             slidingDoor.RemoveOffset(offset);
         }
 
-        internal void CommitOffset(IMessageContext messageContext)
+        public void CommitOffset(IMessageContext messageContext)
         {
             var message = (messageContext as MessageContext);
             RemoveMessage(message.Partition, message.Offset);

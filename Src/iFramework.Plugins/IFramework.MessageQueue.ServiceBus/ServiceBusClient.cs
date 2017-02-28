@@ -9,11 +9,6 @@ using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
@@ -24,9 +19,6 @@ namespace IFramework.MessageQueue.ServiceBus
         protected MessagingFactory _messageFactory;
         protected ConcurrentDictionary<string, TopicClient> _topicClients;
         protected ConcurrentDictionary<string, QueueClient> _queueClients;
-
-        protected List<Task> _subscriptionClientTasks;
-        protected List<Task> _commandClientTasks;
         protected ILogger _logger = null;
         public ServiceBusClient(string serviceBusConnectionString)
         {
@@ -35,8 +27,6 @@ namespace IFramework.MessageQueue.ServiceBus
             _messageFactory = MessagingFactory.CreateFromConnectionString(_serviceBusConnectionString);
             _topicClients = new ConcurrentDictionary<string, TopicClient>();
             _queueClients = new ConcurrentDictionary<string, QueueClient>();
-            _subscriptionClientTasks = new List<Task>();
-            _commandClientTasks = new List<Task>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType());
         }
 
@@ -180,248 +170,24 @@ namespace IFramework.MessageQueue.ServiceBus
             }
             return messageContext;
         }
-        public Action<IMessageContext> StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             commandQueueName = $"{commandQueueName}.{consumerId}";
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var commandQueueClient = CreateQueueClient(commandQueueName);
-            var cancellationSource = new CancellationTokenSource();
-            var task = Task.Factory.StartNew((cs) => ReceiveQueueMessages(cs as CancellationTokenSource,
-                                                                          onMessagesReceived,
-                                                                          commandQueueClient),
-                                                     cancellationSource,
-                                                     cancellationSource.Token,
-                                                     TaskCreationOptions.LongRunning,
-                                                     TaskScheduler.Default);
-            _commandClientTasks.Add(task);
-            return messageContext => CommitOffset(commandQueueClient, messageContext.Offset);
+            return new QueueConsumer(commandQueueName, onMessagesReceived, commandQueueClient);
         }
 
-
-
-        void StopQueueClients()
-        {
-            _commandClientTasks.ForEach(task =>
-            {
-                CancellationTokenSource cancellationSource = task.AsyncState as CancellationTokenSource;
-                cancellationSource.Cancel(true);
-            }
-           );
-            Task.WaitAll(_commandClientTasks.ToArray());
-        }
-
-        public Action<IMessageContext> StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName);
-            var cancellationSource = new CancellationTokenSource();
-
-            var task = Task.Factory.StartNew((cs) => ReceiveTopicMessages(cs as CancellationTokenSource,
-                                                                   onMessagesReceived,
-                                                                   subscriptionClient),
-                                             cancellationSource,
-                                             cancellationSource.Token,
-                                             TaskCreationOptions.LongRunning,
-                                             TaskScheduler.Default);
-            _subscriptionClientTasks.Add(task);
-            return messageContext => CommitOffset(subscriptionClient, messageContext.Offset);
-        }
-
-        //public void CompleteMessage(IMessageContext messageContext)
-        //{
-        //    (messageContext as MessageContext).Complete();
-        //}
-
-        void StopSubscriptionClients()
-        {
-            _subscriptionClientTasks.ForEach(subscriptionClientTask =>
-            {
-                CancellationTokenSource cancellationSource = subscriptionClientTask.AsyncState as CancellationTokenSource;
-                cancellationSource.Cancel(true);
-            }
-            );
-            Task.WaitAll(_subscriptionClientTasks.ToArray());
-        }
-
-        private void ReceiveTopicMessages(CancellationTokenSource cancellationSource, OnMessagesReceived onMessagesReceived, SubscriptionClient subscriptionClient)
-        {
-            bool needPeek = true;
-            long sequenceNumber = 0;
-            IEnumerable<BrokeredMessage> brokeredMessages = null;
-
-            #region peek messages that not been consumed since last time
-            while (!cancellationSource.IsCancellationRequested && needPeek)
-            {
-                try
-                {
-                    brokeredMessages = subscriptionClient.PeekBatch(sequenceNumber, 50);
-                    if (brokeredMessages == null || brokeredMessages.Count() == 0)
-                    {
-                        break;
-                    }
-                    List<IMessageContext> messageContexts = new List<IMessageContext>();
-                    foreach (var message in brokeredMessages)
-                    {
-                        if (message.State != Microsoft.ServiceBus.Messaging.MessageState.Deferred)
-                        {
-                            needPeek = false;
-                            break;
-                        }
-                        messageContexts.Add(new MessageContext(message));
-                        sequenceNumber = message.SequenceNumber + 1;
-                    }
-                    onMessagesReceived(messageContexts.ToArray());
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Thread.Sleep(1000);
-                    _logger.Error($"subscriptionClient.ReceiveBatch {subscriptionClient.Name} failed", ex);
-                }
-            }
-            #endregion
-
-            #region receive messages to enqueue consuming queue
-            while (!cancellationSource.IsCancellationRequested)
-            {
-                try
-                {
-                    brokeredMessages = subscriptionClient.ReceiveBatch(50, Configuration.Instance.GetMessageQueueReceiveMessageTimeout());
-                    foreach (var message in brokeredMessages)
-                    {
-                        message.Defer();
-                        onMessagesReceived(new MessageContext(message));
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Thread.Sleep(1000);
-                    _logger.Error($"subscriptionClient.ReceiveBatch {subscriptionClient.Name} failed", ex);
-                }
-            }
-            #endregion
-        }
-
-        private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived, QueueClient queueClient)
-        {
-            bool needPeek = true;
-            long sequenceNumber = 0;
-            IEnumerable<BrokeredMessage> brokeredMessages = null;
-
-            #region peek messages that not been consumed since last time
-            while (!cancellationTokenSource.IsCancellationRequested && needPeek)
-            {
-                try
-                {
-                    brokeredMessages = queueClient.PeekBatch(sequenceNumber, 50);
-                    if (brokeredMessages == null || brokeredMessages.Count() == 0)
-                    {
-                        break;
-                    }
-                    List<IMessageContext> messageContexts = new List<IMessageContext>();
-                    foreach (var message in brokeredMessages)
-                    {
-                        if (message.State != Microsoft.ServiceBus.Messaging.MessageState.Deferred)
-                        {
-                            needPeek = false;
-                            break;
-                        }
-                        messageContexts.Add(new MessageContext(message));
-                        sequenceNumber = message.SequenceNumber + 1;
-                    }
-                    onMessagesReceived(messageContexts.ToArray());
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Thread.Sleep(1000);
-                    _logger.Error($" queueClient.PeekBatch {queueClient.Path} failed", ex);
-                }
-            }
-            #endregion
-
-            #region receive messages to enqueue consuming queue
-            while (!cancellationTokenSource.IsCancellationRequested)
-            {
-                try
-                {
-                    brokeredMessages = queueClient.ReceiveBatch(50, Configuration.Instance.GetMessageQueueReceiveMessageTimeout());
-                    foreach (var message in brokeredMessages)
-                    {
-                        message.Defer();
-                        onMessagesReceived(new MessageContext(message));
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Thread.Sleep(1000);
-                    _logger.Error($" queueClient.PeekBatch {queueClient.Path} failed", ex);
-                }
-            }
-            #endregion
-        }
-
-        private void CommitOffset(SubscriptionClient subscriptionClient, long sequenceNumber)
-        {
-            try
-            {
-                var toCompleteMessage = subscriptionClient.Receive(sequenceNumber);
-                toCompleteMessage.Complete();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"subscriptionClient commit offset {sequenceNumber} failed", ex);
-            }
-        }
-
-        private void CommitOffset(QueueClient queueClient, long sequenceNumber)
-        {
-            try
-            {
-                var toCompleteMessage = queueClient.Receive(sequenceNumber);
-                toCompleteMessage.Complete();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"queueClient commit offset {sequenceNumber} failed", ex);
-            }
+            return new SubscriptionConsumer($"{topic}.{subscriptionName}", onMessagesReceived, subscriptionClient);
         }
 
         public void Dispose()
         {
-            StopQueueClients();
-            StopSubscriptionClients();
             _topicClients.Values.ForEach(client => client.Close());
             _queueClients.Values.ForEach(client => client.Close());
         }

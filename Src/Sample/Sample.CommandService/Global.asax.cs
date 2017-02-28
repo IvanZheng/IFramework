@@ -111,20 +111,27 @@ namespace Sample.CommandService
         {
             try
             {
-                Task.WaitAll(
-                    Task.Factory.StartNew(() => _CommandConsumer1?.Stop()),
-                    Task.Factory.StartNew(() => _CommandConsumer3?.Stop()),
-                    Task.Factory.StartNew(() => _CommandConsumer2?.Stop()),
-                    Task.Factory.StartNew(() => _CommandBus?.Stop()),
-                    Task.Factory.StartNew(() => _MessagePublisher?.Stop()),
-                    Task.Factory.StartNew(() => _DomainEventConsumer?.Stop()),
-                    Task.Factory.StartNew(() => _ApplicationEventConsumer?.Stop())
-                   );
-                IoCFactory.Instance.CurrentContainer.Dispose();
+                var endSuccesss = Task.WaitAll(new Task[] {
+                    Task.Run(() => _CommandConsumer1?.Stop()),
+                    Task.Run(() => _CommandConsumer2?.Stop()),
+                    Task.Run(() => _CommandConsumer3?.Stop()),
+                    Task.Run(() => _DomainEventConsumer?.Stop()),
+                    Task.Run(() => _ApplicationEventConsumer?.Stop()),
+                    Task.Run(() => _CommandBus?.Stop()),
+                    Task.Run(() => _MessagePublisher?.Stop())
+                }, 10000);
+                if (!endSuccesss)
+                {
+                    throw new Exception($"stop message queue client timeout!");
+                }
             }
             catch (Exception ex)
             {
                 _Logger.Error(ex.GetBaseException().Message, ex);
+            }
+            finally
+            {
+                IoCFactory.Instance.CurrentContainer.Dispose();
             }
             _Logger.Debug($"App Ended");
         }

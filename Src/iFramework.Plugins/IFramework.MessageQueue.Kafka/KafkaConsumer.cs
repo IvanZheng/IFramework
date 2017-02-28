@@ -23,7 +23,7 @@ namespace IFramework.MessageQueue.MSKafka
 {
     public delegate void OnKafkaMessageReceived(KafkaConsumer consumer, KafkaMessages.Message message);
 
-    public class KafkaConsumer
+    public class KafkaConsumer : ICommitOffsetable
     {
         public string ZkConnectionString { get; protected set; }
         public string Topic { get; protected set; }
@@ -40,6 +40,14 @@ namespace IFramework.MessageQueue.MSKafka
         protected Task _consumerTask;
 
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer).Name);
+
+        public string Id
+        {
+            get
+            {
+                return $"{GroupId}.{ConsumerId}";
+            }
+        }
         public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId,
                              OnKafkaMessageReceived onMessageReceived,
                              int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000,
@@ -68,7 +76,7 @@ namespace IFramework.MessageQueue.MSKafka
             _onMessageReceived = onMessageReceived;
             if (start)
             {
-                CreateConsumerTask();
+                Start();
             }
         }
 
@@ -78,15 +86,27 @@ namespace IFramework.MessageQueue.MSKafka
             ReStart();
         }
 
-        public void ReStart()
+        private void ZkRebalanceHandler(object sender, EventArgs args)
         {
-            Stop();
-            CreateConsumerTask();
+            _logger.Error($"{GroupId}.{ConsumerId} zookeeper RebalanceHandler!");
+        }
+        private void ZkExpiredHandler(object sender, EventArgs args)
+        {
+            _logger.Error($"{GroupId}.{ConsumerId} zookeeper ZkExpiredHandler!");
         }
 
-        private void CreateConsumerTask()
+        protected void ReStart()
         {
-            ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true, zkDisconnectedHandler: ZkDisconnectedHandler);
+            Stop();
+            Start();
+        }
+
+        public void Start()
+        {
+            ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true,
+                                                                 rebalanceHandler: ZkRebalanceHandler,
+                                                                 zkDisconnectedHandler: ZkDisconnectedHandler,
+                                                                 zkExpiredHandler: ZkExpiredHandler);
             _cancellationTokenSource = new CancellationTokenSource();
             _consumerTask = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
                                                                           _onMessageReceived),
@@ -96,13 +116,14 @@ namespace IFramework.MessageQueue.MSKafka
                                                      TaskScheduler.Default);
         }
 
+        IDictionary<string, IList<KafkaMessageStream<KafkaMessages.Message>>> _streams;
         public IKafkaMessageStream<KafkaMessages.Message> GetStream()
         {
             var topicDic = new Dictionary<string, int>() {
                         {Topic, 1 }
                     };
-            var streams = ZkConsumerConnector.CreateMessageStreams(topicDic, new DefaultDecoder());
-            var stream = streams[Topic][0];
+            _streams = _streams ?? ZkConsumerConnector.CreateMessageStreams(topicDic, new DefaultDecoder());
+            var stream = _streams[Topic][0];
             _logger.Debug($"consumer {ConsumerId} has got Stream");
             return stream;
         }
@@ -116,6 +137,8 @@ namespace IFramework.MessageQueue.MSKafka
             {
                 try
                 {
+                    //var linkedTimeoutCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token,
+                    //                                                                       new CancellationTokenSource(3000).Token);
                     messages = GetMessages(cancellationTokenSource.Token);
                     foreach (var message in messages)
                     {
@@ -201,7 +224,7 @@ namespace IFramework.MessageQueue.MSKafka
             return GetStream().GetCancellable(cancellationToken);
         }
 
-        internal void CommitOffset(IMessageContext messageContext)
+        public void CommitOffset(IMessageContext messageContext)
         {
             var message = (messageContext as MessageContext);
             RemoveMessage(message.Partition, message.Offset);
@@ -221,20 +244,18 @@ namespace IFramework.MessageQueue.MSKafka
 
         public void Stop()
         {
-            if (ZkConsumerConnector != null)
-            {
-                ZkConsumerConnector.Dispose();
-                ZkConsumerConnector = null;
-            }
             _cancellationTokenSource?.Cancel(true);
             _consumerTask?.Wait(5000);
             _consumerTask?.Dispose();
             _consumerTask = null;
             _cancellationTokenSource = null;
-            ZkConsumerConnector = null;
+            _streams = null;
             SlidingDoors.Clear();
+            if (ZkConsumerConnector != null)
+            {
+                ZkConsumerConnector.Dispose();
+                ZkConsumerConnector = null;
+            }
         }
-
-
     }
 }
