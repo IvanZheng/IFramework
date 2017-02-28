@@ -45,7 +45,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             get
             {
-                return $"{GroupId}.{ConsumerId}";
+                return $"{GroupId}.{Topic}.{ConsumerId}";
             }
         }
         public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId,
