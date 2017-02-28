@@ -13,9 +13,13 @@ using System.Threading;
 using EQueueMessages = EQueue.Protocols;
 using EQueueConsumers = EQueue.Clients.Consumers;
 using System.Net;
+using System.Threading.Tasks;
+using System.Text;
 
 namespace IFramework.MessageQueue.EQueue
 {
+    public delegate void OnEQueueMessageReceived(EQueueConsumer consumer, EQueueMessages.QueueMessage message);
+
     public class EQueueConsumer : ICommitOffsetable
     {
         public string ClusterName { get; protected set; }
@@ -27,6 +31,9 @@ namespace IFramework.MessageQueue.EQueue
         protected EQueueConsumers.Consumer Consumer { get; set; }
         protected int _fullLoadThreshold;
         protected int _waitInterval;
+        protected CancellationTokenSource _cancellationTokenSource;
+        protected Task _consumerTask;
+        OnEQueueMessageReceived _onMessageReceived;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(EQueueConsumer).Name);
 
         public string Id
@@ -39,8 +46,11 @@ namespace IFramework.MessageQueue.EQueue
 
         public EQueueConsumer(string clusterName, List<IPEndPoint> nameServerList,
                               string topic, string groupId, string consumerId,
-                              int fullLoadThreshold = 1000, int waitInterval = 1000)
+                              OnEQueueMessageReceived onMessageReceived,
+                              int fullLoadThreshold = 1000, int waitInterval = 1000,
+                              bool start = true)
         {
+            _onMessageReceived = onMessageReceived;
             ClusterName = clusterName;
             NameServerList = nameServerList;
             _fullLoadThreshold = fullLoadThreshold;
@@ -49,6 +59,10 @@ namespace IFramework.MessageQueue.EQueue
             Topic = topic;
             GroupId = groupId;
             ConsumerId = consumerId ?? string.Empty;
+            if (start)
+            {
+                Start();
+            }
         }
 
         public void Start()
@@ -63,11 +77,20 @@ namespace IFramework.MessageQueue.EQueue
             Consumer = new EQueueConsumers.Consumer(GroupId, setting)
                                           .Subscribe(Topic)
                                           .Start();
+            _cancellationTokenSource = new CancellationTokenSource();
+            _consumerTask = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
+                                                                          _onMessageReceived),
+                                                     _cancellationTokenSource,
+                                                     _cancellationTokenSource.Token,
+                                                     TaskCreationOptions.LongRunning,
+                                                     TaskScheduler.Default);
         }
 
         public void Stop()
         {
             Consumer?.Stop();
+            _cancellationTokenSource.Cancel(true);
+            _consumerTask.Wait(5000);
         }
 
         public void BlockIfFullLoad()
@@ -77,6 +100,62 @@ namespace IFramework.MessageQueue.EQueue
                 Thread.Sleep(_waitInterval);
                 _logger.Warn($"working is full load sleep 1000 ms");
             }
+        }
+
+        void ReceiveMessages(CancellationTokenSource cancellationTokenSource, OnEQueueMessageReceived onMessageReceived)
+        {
+            IEnumerable<EQueueMessages.QueueMessage> messages = null;
+
+            #region peek messages that not been consumed since last time
+            while (!cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    messages = PullMessages(100, 2000, cancellationTokenSource.Token);
+                    foreach (var message in messages)
+                    {
+                        try
+                        {
+                            AddMessage(message);
+                            onMessageReceived(this, message);
+                            BlockIfFullLoad();
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            return;
+                        }
+                        catch (ThreadAbortException)
+                        {
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (message.Body != null)
+                            {
+                                RemoveMessage(message.QueueId, message.QueueOffset);
+                            }
+                            _logger.Error(ex.GetBaseException().Message, ex);
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (!cancellationTokenSource.IsCancellationRequested)
+                    {
+                        Thread.Sleep(1000);
+                        _logger.Error(ex.GetBaseException().Message, ex);
+                    }
+                }
+            }
+            #endregion
         }
 
         internal void AddMessage(EQueueMessages.QueueMessage message)

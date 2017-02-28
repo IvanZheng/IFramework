@@ -1,4 +1,5 @@
 ﻿using IFramework.Config;
+using IFramework.MessageQueue;
 using IFramework.MessageQueue.EQueue;
 using System;
 using System.Collections.Generic;
@@ -13,65 +14,38 @@ namespace EQueueTest
     class Program
     {
         static string topic = "groupcommandqueue";
-        static string clusterName = "defaultCluster";
+        static string clusterName = "DefaultCluster";
         static List<IPEndPoint> NameServerList = ConfigurationEQueue.GetIPEndPoints("").ToList();
         static void Main(string[] args)
         {
             Configuration.Instance
                          .UseAutofacContainer()
-                         .UseEQueue()
+                         .UseEQueue(clusterName: clusterName)
                          .UseNoneLogger();
             GroupConsuemrTest();
         }
 
-        static Task CreateConsumerTask(string consumerId, CancellationTokenSource cancellationTokenSource)
+        static EQueueConsumer CreateConsumer(string consumerId)
         {
-            return Task.Run(() =>
+            OnEQueueMessageReceived onMessageReceived = (equeueConsumer, queueMessage) =>
             {
-                var consumer = new EQueueConsumer(clusterName, NameServerList, topic, Environment.MachineName, consumerId);
-                consumer.Start();
-                while (true)
-                {
-                    try
-                    {
-                        foreach (var queueMessage in consumer.PullMessages(100, 2000, cancellationTokenSource.Token))
-                        {
-                            var message = Encoding.UTF8.GetString(queueMessage.Body);
-                            var sendTime = DateTime.Parse(message);
-                            Console.WriteLine($"consumer:{consumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
-                            consumer.CommitOffset(queueMessage.BrokerName, queueMessage.QueueId, queueMessage.QueueOffset);
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        break;
-                    }
-                    catch (ThreadAbortException)
-                    {
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        if (!cancellationTokenSource.IsCancellationRequested)
-                        {
-                            Console.WriteLine(ex.GetBaseException().Message);
-                        }
-                    }
-                }
-                consumer.Stop();
-            });
+                var message = Encoding.UTF8.GetString(queueMessage.Body);
+                var sendTime = DateTime.Parse(message);
+                Console.WriteLine($"consumer:{equeueConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                equeueConsumer.CommitOffset(queueMessage.BrokerName, queueMessage.QueueId, queueMessage.QueueOffset);
+            };
+
+            var consumer = new EQueueConsumer(clusterName, NameServerList, topic, Environment.MachineName, consumerId, onMessageReceived);
+            return consumer;
         }
 
         static void GroupConsuemrTest()
         {
-            var cancellationTokenSource = new CancellationTokenSource();
-            var consumerTasks = new List<Task>();
+            var consumers = new List<EQueueConsumer>();
             for (int i = 0; i < 3; i++)
             {
-                consumerTasks.Add(CreateConsumerTask(i.ToString(), cancellationTokenSource));
+                consumers.Add(CreateConsumer(i.ToString()));
             }
-
-
             var producer = new EQueueProducer(clusterName, NameServerList);
             producer.Start();
             while (true)
@@ -79,14 +53,27 @@ namespace EQueueTest
                 var message = Console.ReadLine();
                 if (message.Equals("q"))
                 {
-                    cancellationTokenSource.Cancel();
-                    Task.WaitAll(consumerTasks.ToArray());
+                    consumers.ForEach(consumer => consumer.Stop());
                     break;
                 }
                 message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff");
                 var queueMessage = new EQueue.Protocols.Message(topic, 1, Encoding.UTF8.GetBytes(message));
-                producer.Send(queueMessage, message);
-                Console.WriteLine($"send message: {message}");
+
+                while (true)
+                {
+                    try
+                    {
+                        producer.Send(queueMessage, message);
+                        Console.WriteLine($"send message: {message}");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.GetBaseException().Message);
+                        Thread.Sleep(2000);
+                    }
+                }
+
             }
         }
     }

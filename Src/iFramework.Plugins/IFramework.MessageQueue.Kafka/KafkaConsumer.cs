@@ -83,7 +83,10 @@ namespace IFramework.MessageQueue.MSKafka
         private void ZkDisconnectedHandler(object sender, EventArgs args)
         {
             _logger.Error($"{GroupId}.{ConsumerId} zookeeper disconnected!");
-            ReStart();
+            if (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                ReStart();
+            }
         }
 
         private void ZkRebalanceHandler(object sender, EventArgs args)
@@ -245,7 +248,7 @@ namespace IFramework.MessageQueue.MSKafka
         public void Stop()
         {
             _cancellationTokenSource?.Cancel(true);
-            _consumerTask?.Wait(5000);
+            _consumerTask?.Wait();
             _consumerTask?.Dispose();
             _consumerTask = null;
             _cancellationTokenSource = null;

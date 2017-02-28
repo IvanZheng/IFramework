@@ -20,8 +20,6 @@ namespace IFramework.MessageQueue.EQueue
         public List<System.Net.IPEndPoint> NameServerList { get; set; }
         protected List<EQueueConsumer> _subscriptionClients;
         protected List<EQueueConsumer> _queueConsumers;
-        protected List<Task> _subscriptionClientTasks;
-        protected List<Task> _commandClientTasks;
         protected ILogger _logger = null;
 
       
@@ -34,8 +32,6 @@ namespace IFramework.MessageQueue.EQueue
             NameServerList = nameServerList;
             _subscriptionClients = new List<EQueueConsumer>();
             _queueConsumers = new List<EQueueConsumer>();
-            _subscriptionClientTasks = new List<Task>();
-            _commandClientTasks = new List<Task>();
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
             _producer = new EQueueProducer(ClusterName, NameServerList);
             _producer.Start();
@@ -43,8 +39,7 @@ namespace IFramework.MessageQueue.EQueue
 
         public void Dispose()
         {
-            StopQueueClients();
-            StopSubscriptionClients();
+            _producer.Stop();
         }
 
         protected EQueueMessages.Message GetEQueueMessage(IMessageContext messageContext, string topic)
@@ -68,16 +63,7 @@ namespace IFramework.MessageQueue.EQueue
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
-            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, fullLoadThreshold, waitInterval);
-            var cancellationSource = new CancellationTokenSource();
-            var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
-                                                                          onMessagesReceived,
-                                                                          queueConsumer),
-                                                     cancellationSource,
-                                                     cancellationSource.Token,
-                                                     TaskCreationOptions.LongRunning,
-                                                     TaskScheduler.Default);
-            _commandClientTasks.Add(task);
+            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, fullLoadThreshold, waitInterval, onMessagesReceived);
             _queueConsumers.Add(queueConsumer);
             return queueConsumer;
         }
@@ -88,17 +74,8 @@ namespace IFramework.MessageQueue.EQueue
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
-            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval);
-            var cancellationSource = new CancellationTokenSource();
-
-            var task = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
-                                                                   onMessagesReceived,
-                                                                   subscriptionClient),
-                                             cancellationSource,
-                                             cancellationSource.Token,
-                                             TaskCreationOptions.LongRunning,
-                                             TaskScheduler.Default);
-            _subscriptionClientTasks.Add(task);
+            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, 
+                                                              consumerId, fullLoadThreshold, waitInterval);
             _subscriptionClients.Add(subscriptionClient);
             return subscriptionClient;
         }
@@ -129,101 +106,36 @@ namespace IFramework.MessageQueue.EQueue
             return messageContext;
         }
 
-        void ReceiveMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived, EQueueConsumer equeueConsumer)
-        {
-            IEnumerable<EQueueMessages.QueueMessage> messages = null;
-
-            #region peek messages that not been consumed since last time
-            while (!cancellationTokenSource.IsCancellationRequested)
-            {
-                try
-                {
-                    messages = equeueConsumer.PullMessages(100, 2000, cancellationTokenSource.Token);
-                    foreach (var message in messages)
-                    {
-                        try
-                        {
-                            var equeueMessage = Encoding.UTF8.GetString(message.Body).ToJsonObject<EQueueMessage>();
-                            var messageContext = new MessageContext(equeueMessage, message.QueueId, message.QueueOffset);
-                            equeueConsumer.AddMessage(message);
-                            onMessagesReceived(messageContext);
-                            equeueConsumer.BlockIfFullLoad();
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            return;
-                        }
-                        catch (ThreadAbortException)
-                        {
-                            return;
-                        }
-                        catch (Exception ex)
-                        {
-                            if (message.Body != null)
-                            {
-                                equeueConsumer.RemoveMessage(message.QueueId, message.QueueOffset);
-                            }
-                            _logger.Error(ex.GetBaseException().Message, ex);
-                        }
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (!cancellationTokenSource.IsCancellationRequested)
-                    {
-                        Thread.Sleep(1000);
-                        _logger.Error(ex.GetBaseException().Message, ex);
-                    }
-                }
-            }
-            #endregion
-        }
-
         #region private methods
-        EQueueConsumer CreateSubscriptionClient(string topic, string subscriptionName, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000)
+
+        OnEQueueMessageReceived BuildOnEQueueMessageReceived(OnMessagesReceived onMessagesReceived)
         {
-            var consumer = new EQueueConsumer(ClusterName, NameServerList, topic, subscriptionName, consumerId, fullLoadThreshold, waitInterval);
-            consumer.Start();
+            return (consumer, message) =>
+            {
+                var equeueMessage = Encoding.UTF8.GetString(message.Body).ToJsonObject<EQueueMessage>();
+                var messageContext = new MessageContext(equeueMessage, message.QueueId, message.QueueOffset);
+                onMessagesReceived(messageContext);
+            };
+        }
+       
+
+
+
+        EQueueConsumer CreateSubscriptionClient(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived, string consumerId = null, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        {
+            var consumer = new EQueueConsumer(ClusterName, NameServerList, topic, subscriptionName, consumerId,
+                                              BuildOnEQueueMessageReceived(onMessagesReceived),
+                                              fullLoadThreshold, waitInterval);
             return consumer;
         }
 
-        EQueueConsumer CreateQueueConsumer(string commandQueueName, string consumerId, int fullLoadThreshold, int waitInterval)
+        EQueueConsumer CreateQueueConsumer(string commandQueueName, string consumerId, int fullLoadThreshold, int waitInterval, OnMessagesReceived onMessagesReceived)
         {
-            var consumer = new EQueueConsumer(ClusterName, NameServerList, commandQueueName, commandQueueName, consumerId, fullLoadThreshold, waitInterval);
-            consumer.Start();
+            var consumer = new EQueueConsumer(ClusterName, NameServerList, commandQueueName, 
+                                              commandQueueName, consumerId,
+                                              BuildOnEQueueMessageReceived(onMessagesReceived),
+                                              fullLoadThreshold, waitInterval);
             return consumer;
-        }
-
-        void StopQueueClients()
-        {
-            _commandClientTasks.ForEach(task =>
-            {
-                CancellationTokenSource cancellationSource = task.AsyncState as CancellationTokenSource;
-                cancellationSource.Cancel(true);
-            }
-            );
-            _queueConsumers.ForEach(client => client.Stop());
-            Task.WaitAll(_commandClientTasks.ToArray());
-        }
-
-        void StopSubscriptionClients()
-        {
-            _subscriptionClientTasks.ForEach(subscriptionClientTask =>
-            {
-                CancellationTokenSource cancellationSource = subscriptionClientTask.AsyncState as CancellationTokenSource;
-                cancellationSource.Cancel(true);
-            }
-              );
-            _subscriptionClients.ForEach(client => client.Stop());
-            Task.WaitAll(_subscriptionClientTasks.ToArray());
         }
         #endregion
     }

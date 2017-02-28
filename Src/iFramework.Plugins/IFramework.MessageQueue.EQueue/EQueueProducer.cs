@@ -32,6 +32,11 @@ namespace IFramework.MessageQueue.EQueue
             Producer = new Producer(setting).Start();
         }
 
+        public void Stop()
+        {
+            Producer?.Shutdown();
+        }
+
         public void Send(global::EQueue.Protocols.Message equeueMessage, string key)
         {
             if (key == null)

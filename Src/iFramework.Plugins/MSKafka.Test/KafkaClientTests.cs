@@ -59,11 +59,10 @@ namespace MSKafka.Test
         [TestMethod]
         public void ConsumerTest()
         {
-            var cancellationTokenSource = new CancellationTokenSource();
             var consumer = Program.CreateConsumer(commandQueue, "ConsumerTest");
             Thread.Sleep(100);
-            consumer.Stop();
             ZookeeperConsumerConnector.zkClientStatic?.Dispose();
+            consumer.Stop();
         }
     }
 }
