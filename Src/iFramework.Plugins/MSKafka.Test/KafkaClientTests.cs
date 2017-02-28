@@ -61,8 +61,8 @@ namespace MSKafka.Test
         {
             var consumer = Program.CreateConsumer(commandQueue, "ConsumerTest");
             Thread.Sleep(100);
-            ZookeeperConsumerConnector.zkClientStatic?.Dispose();
             consumer.Stop();
+            ZookeeperConsumerConnector.zkClientStatic?.Dispose();
         }
     }
 }

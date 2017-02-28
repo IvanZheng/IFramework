@@ -111,7 +111,6 @@ namespace Sample.CommandService
         {
             try
             {
-                IoCFactory.Instance.CurrentContainer.Dispose();
                 var endSuccesss = Task.WaitAll(new Task[] {
                     Task.Run(() => _CommandConsumer1?.Stop()),
                     Task.Run(() => _CommandConsumer2?.Stop()),
@@ -129,6 +128,10 @@ namespace Sample.CommandService
             catch (Exception ex)
             {
                 _Logger.Error(ex.GetBaseException().Message, ex);
+            }
+            finally
+            {
+                IoCFactory.Instance.CurrentContainer.Dispose();
             }
             _Logger.Debug($"App Ended");
         }
