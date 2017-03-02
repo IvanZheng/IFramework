@@ -90,14 +90,19 @@ namespace IFramework.MessageQueue.MSKafka
             };
             using (Producer producer = new Producer(producerConfiguration))
             {
-                try
+                while (true)
                 {
-                    var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty, new Kafka.Client.Messages.Message(new byte[0]));
-                    producer.Send(data);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Create topic {topic} failed", ex);
+                    try
+                    {
+                        var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty, new Kafka.Client.Messages.Message(new byte[0]));
+                        producer.Send(data);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Create topic {topic} failed", ex);
+                        Task.Delay(2000).Wait();
+                    }
                 }
             }
         }

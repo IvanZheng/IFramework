@@ -19,7 +19,7 @@ namespace MSKafka.Test
 {
     class Program
     {
-        static string commandQueue = "groupcommandqueue";
+        static string commandQueue = "iframework.groupcommandqueue";
         static string zkConnectionString = "localhost:2181";
 
         static void Main(string[] args)
@@ -75,7 +75,7 @@ namespace MSKafka.Test
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex.GetBaseException().Message);
+                        Console.WriteLine("send message failed");
                         Thread.Sleep(2000);
                     }
                 }

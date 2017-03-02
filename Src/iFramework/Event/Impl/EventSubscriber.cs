@@ -130,21 +130,8 @@ namespace IFramework.Event.Impl
                                         eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                                     });
 
-                                    if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
-                                    {
-                                        eventBus.GetSagaResults().ForEach(sagaResult =>
-                                        {
-                                            var topic = sagaInfo.ReplyEndPoint;
-                                            if (!string.IsNullOrEmpty(topic))
-                                            {
-                                                var sagaReply = _MessageQueueClient.WrapMessage(sagaResult,
-                                                                                                topic: topic,
-                                                                                                messageId: ObjectId.GenerateNewId().ToString(),
-                                                                                                sagaInfo: sagaInfo);
-                                                eventMessageStates.Add(new MessageState(sagaReply));
-                                            }
-                                        });
-                                    }
+                                    eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                   
                                     messageStore.HandleEvent(eventContext,
                                                            subscriptionName,
                                                            commandMessageStates.Select(s => s.MessageContext),
@@ -178,6 +165,9 @@ namespace IFramework.Event.Impl
                                     var topic = msg.GetFormatTopic();
                                     eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
                                 });
+
+                                eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+
                                 messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
                                 if (eventMessageStates.Count > 0)
                                 {
@@ -194,6 +184,30 @@ namespace IFramework.Event.Impl
             }
             _internalConsumer.CommitOffset(eventContext);
         }
+
+
+        private List<MessageState> GetSagaReplyMessageStates(SagaInfo sagaInfo, IEventBus eventBus)
+        {
+            List<MessageState> eventMessageStates = new List<MessageState>();
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            {
+                eventBus.GetSagaResults().ForEach(sagaResult =>
+                {
+                    var topic = sagaInfo.ReplyEndPoint;
+                    if (!string.IsNullOrEmpty(topic))
+                    {
+                        var sagaReply = _MessageQueueClient.WrapMessage(sagaResult,
+                                                                        topic: topic,
+                                                                        messageId: ObjectId.GenerateNewId().ToString(),
+                                                                        sagaInfo: sagaInfo);
+                        eventMessageStates.Add(new MessageState(sagaReply));
+                    }
+                });
+            }
+            return eventMessageStates;
+        }
+
+
         public void Start()
         {
             try

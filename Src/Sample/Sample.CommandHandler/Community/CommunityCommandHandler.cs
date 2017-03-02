@@ -53,7 +53,9 @@ namespace Sample.CommandHandler.Community
                                                  .ConfigureAwait(false);
             if (account == null)
             {
-                throw new SysException(DTO.ErrorCode.WrongUsernameOrPassword);
+                var ex = new SysException(DTO.ErrorCode.WrongUsernameOrPassword);
+                _EventBus.FinishSaga(ex);
+                throw ex;
             }
 
             _EventBus.Publish(new AccountLogined { AccountID = account.ID, LoginTime = DateTime.Now });

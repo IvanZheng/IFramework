@@ -93,6 +93,27 @@ namespace IFramework.Command.Impl
 
         public decimal MessageCount { get; set; }
 
+        private List<MessageState> GetSagaReplyMessageStates(SagaInfo sagaInfo, IEventBus eventBus)
+        {
+            List<MessageState> eventMessageStates = new List<MessageState>();
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            {
+                eventBus.GetSagaResults().ForEach(sagaResult =>
+                {
+                    var topic = sagaInfo.ReplyEndPoint;
+                    if (!string.IsNullOrEmpty(topic))
+                    {
+                        var sagaReply = _messageQueueClient.WrapMessage(sagaResult,
+                                                                        topic: topic,
+                                                                        messageId: ObjectId.GenerateNewId().ToString(),
+                                                                        sagaInfo: sagaInfo);
+                        eventMessageStates.Add(new MessageState(sagaReply));
+                    }
+                });
+            }
+            return eventMessageStates;
+        }
+
         protected async virtual Task ConsumeMessage(IMessageContext commandContext)
         {
             try
@@ -186,6 +207,8 @@ namespace IFramework.Command.Impl
                                             eventMessageStates.Add(new MessageState(eventContext));
                                         });
 
+                                        eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+
                                         messageStore.SaveCommand(commandContext, eventMessageStates.Select(s => s.MessageContext).ToArray());
                                         transactionScope.Complete();
                                     }
@@ -212,6 +235,8 @@ namespace IFramework.Command.Impl
                                             var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
                                             eventMessageStates.Add(new MessageState(eventContext));
                                         });
+
+                                        eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
                                         if (e is DomainException)
                                         {
