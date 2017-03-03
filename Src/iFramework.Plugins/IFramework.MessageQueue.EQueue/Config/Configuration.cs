@@ -112,9 +112,9 @@ namespace IFramework.Config
             setting.NameServerList = nameServerIPEndPoints;
             setting.BrokerInfo.BrokerName = ConfigurationManager.AppSettings["brokerName"];
             setting.BrokerInfo.GroupName = ConfigurationManager.AppSettings["groupName"];
-            setting.BrokerInfo.ProducerAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), producerPort).ToAddress();
-            setting.BrokerInfo.ConsumerAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), consumerPort).ToAddress();
-            setting.BrokerInfo.AdminAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), adminPort).ToAddress();
+            setting.BrokerInfo.ProducerAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), producerPort).ToString();
+            setting.BrokerInfo.ConsumerAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), consumerPort).ToString();
+            setting.BrokerInfo.AdminAddress = new IPEndPoint(SocketUtils.GetLocalIPV4(), adminPort).ToString();
             BrokerController.Create(setting).Start();
             return configuration;
         }
