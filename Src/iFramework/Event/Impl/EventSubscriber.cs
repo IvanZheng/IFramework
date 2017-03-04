@@ -49,7 +49,14 @@ namespace IFramework.Event.Impl
             _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name) : null;
         }
 
-
+        string _producer;
+        public string Producer
+        {
+            get
+            {
+                return _producer ?? (_producer = $"{_subscriptionName}.{_topic}.{_consumerId}");
+            }
+        }
         protected void SaveEvent(IMessageContext eventContext)
         {
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
@@ -115,23 +122,25 @@ namespace IFramework.Event.Impl
 
                                     //get commands to be sent
                                     eventBus.GetCommands().ForEach(cmd =>
-                                       commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd, sagaInfo: sagaInfo)))
+                                       commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd, sagaInfo: sagaInfo, producer: Producer)))
                                    );
                                     //get events to be published
                                     eventBus.GetEvents().ForEach(msg =>
                                     {
                                         var topic = msg.GetFormatTopic();
-                                        eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
+                                        eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic,
+                                            key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
                                     });
 
                                     eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                                     {
                                         var topic = msg.GetFormatTopic();
-                                        eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
+                                        eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key,
+                                            sagaInfo: sagaInfo, producer: Producer)));
                                     });
 
                                     eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
-                                   
+
                                     messageStore.HandleEvent(eventContext,
                                                            subscriptionName,
                                                            commandMessageStates.Select(s => s.MessageContext),
@@ -163,7 +172,7 @@ namespace IFramework.Event.Impl
                                 eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                                 {
                                     var topic = msg.GetFormatTopic();
-                                    eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo)));
+                                    eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
                                 });
 
                                 eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
@@ -199,7 +208,8 @@ namespace IFramework.Event.Impl
                         var sagaReply = _MessageQueueClient.WrapMessage(sagaResult,
                                                                         topic: topic,
                                                                         messageId: ObjectId.GenerateNewId().ToString(),
-                                                                        sagaInfo: sagaInfo);
+                                                                        sagaInfo: sagaInfo,
+                                                                        producer: Producer);
                         eventMessageStates.Add(new MessageState(sagaReply));
                     }
                 });

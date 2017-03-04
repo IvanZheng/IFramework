@@ -37,5 +37,7 @@ namespace IFramework.MessageStoring
         public string Name { get; set; }
         public string Type { get; set; }
         public string Topic { get; set; }
+        public string IP { get; set; }
+        public string Producer { get; set; }
     }
 }

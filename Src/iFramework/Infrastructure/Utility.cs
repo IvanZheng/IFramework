@@ -53,6 +53,13 @@ namespace IFramework.Infrastructure
     public static class Utility
     {
         private static readonly uint[] _lookup32 = CreateLookup32();
+
+        public static IPAddress[] GetLocalIPAddresses()
+        {
+            Dns.GetHostName();
+            return Dns.GetHostAddresses(Dns.GetHostName());
+        }
+
         public static IPAddress GetLocalIPV4()
         {
             return Dns.GetHostEntry(Dns.GetHostName()).AddressList.First<IPAddress>(x => (x.AddressFamily == AddressFamily.InterNetwork));

@@ -54,11 +54,11 @@ namespace IFramework.Command.Impl
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
             using (var messageStore = scope.Resolve<IMessageStore>())
             {
-                return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId, replyEndPoint, sagaInfo) =>
+                return messageStore.GetAllUnSentCommands((messageId, message, topic, correlationId, replyEndPoint, sagaInfo, producer) =>
                                                           _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic,
                                                                                           messageId: messageId, correlationId: correlationId,
                                                                                           replyEndPoint: replyEndPoint,
-                                                                                          sagaInfo: sagaInfo));
+                                                                                          sagaInfo: sagaInfo, producer: producer));
             }
         }
 
@@ -224,7 +224,7 @@ namespace IFramework.Command.Impl
             return commandState.SendTaskCompletionSource.Task;
         }
 
-        public IMessageContext WrapCommand(ICommand command, bool needReply, SagaInfo sagaInfo = null)
+        public IMessageContext WrapCommand(ICommand command, bool needReply, SagaInfo sagaInfo = null, string producer = null)
         {
             if (string.IsNullOrEmpty(command.ID))
             {
@@ -252,7 +252,7 @@ namespace IFramework.Command.Impl
             commandContext = _messageQueueClient.WrapMessage(command,
                                                              key: commandKey,
                                                              replyEndPoint: needReply ? _replyTopicName : null,
-                                                             sagaInfo: sagaInfo);
+                                                             sagaInfo: sagaInfo, producer: producer ?? _consumerId);
             if (string.IsNullOrEmpty(commandContext.Topic))
             {
                 throw new NoCommandTopic();

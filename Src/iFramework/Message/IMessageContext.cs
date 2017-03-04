@@ -21,5 +21,7 @@ namespace IFramework.Message
         string Topic { get; }
         long Offset { get; }
         SagaInfo SagaInfo { get; }
+        string IP { get; set; }
+        string Producer { get; set; }
     }
 }

@@ -159,5 +159,16 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
                 throw new NotImplementedException();
             }
         }
+
+        public string IP
+        {
+            get { return (string)Headers.TryGetValue("IP"); }
+            set { Headers["IP"] = value; }
+        }
+        public string Producer
+        {
+            get { return (string)Headers.TryGetValue("Producer"); }
+            set { Headers["Producer"] = value; }
+        }
     }
 }

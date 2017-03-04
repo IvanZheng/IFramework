@@ -80,9 +80,13 @@ namespace IFramework.MessageQueue.EQueue
             return subscriptionClient;
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null)
+        public IMessageContext WrapMessage(object message, string correlationId = null, 
+            string topic = null, string key = null, string replyEndPoint = null, 
+            string messageId = null, SagaInfo sagaInfo = null, string producer = null)
         {
             var messageContext = new MessageContext(message, messageId);
+            messageContext.Producer = producer;
+            messageContext.IP = Utility.GetLocalIPV4()?.ToString();
             if (!string.IsNullOrEmpty(correlationId))
             {
                 messageContext.CorrelationID = correlationId;

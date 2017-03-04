@@ -20,6 +20,8 @@ namespace IFramework.MessageStoring
             MessageBody = messageContext.Message.ToJson();
             CreateTime = messageContext.SentTime;
             SagaInfo = messageContext.SagaInfo ?? new SagaInfo();
+            IP = messageContext.IP;
+            Producer = messageContext.Producer;
             if (messageContext.Message != null)
             {
                 Name = messageContext.Message.GetType().Name;
@@ -35,10 +37,8 @@ namespace IFramework.MessageStoring
         public string Type { get; set; }
         public string Topic { get; set; }
         public SagaInfo SagaInfo { get; set; }
-
-        //[ForeignKey("CorrelationID")]
-        //public virtual Message ParentMessage { get; set; }
-        //[InverseProperty("ParentMessage")]
-        //public virtual ICollection<Message> ChildrenMessage { get; set; }
+        public string IP { get; set; }
+        public string Producer { get; set; }
+      
     }
 }

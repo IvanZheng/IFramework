@@ -26,13 +26,22 @@ namespace IFramework.Command.Impl
         protected IMessageQueueClient _messageQueueClient;
         protected IMessagePublisher _messagePublisher;
         protected string _commandQueueName;
-        protected string _consuemrId;
+        protected string _consumerId;
         protected CancellationTokenSource _cancellationTokenSource;
         //protected Task _consumeMessageTask;
         protected MessageProcessor _messageProcessor;
         protected int _fullLoadThreshold;
         protected int _waitInterval;
         protected ICommitOffsetable _internalConsumer;
+
+        string _producer;
+        public string Producer
+        {
+            get
+            {
+                return _producer ?? (_producer = $"{_commandQueueName}.{_consumerId}");
+            }
+        }
         public CommandConsumer(IMessageQueueClient messageQueueClient,
                                IMessagePublisher messagePublisher,
                                IHandlerProvider handlerProvider,
@@ -47,7 +56,7 @@ namespace IFramework.Command.Impl
             _commandQueueName = commandQueueName;
             _handlerProvider = handlerProvider;
             _messagePublisher = messagePublisher;
-            _consuemrId = consumerId;
+            _consumerId = consumerId;
             _cancellationTokenSource = new CancellationTokenSource();
             _messageQueueClient = messageQueueClient;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(), mailboxProcessBatchCount);
@@ -60,7 +69,7 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
-                    _internalConsumer = _messageQueueClient.StartQueueClient(_commandQueueName, _consuemrId, OnMessageReceived, _fullLoadThreshold, _waitInterval);
+                    _internalConsumer = _messageQueueClient.StartQueueClient(_commandQueueName, _consumerId, OnMessageReceived, _fullLoadThreshold, _waitInterval);
                 }
                 _messageProcessor.Start();
             }
@@ -106,7 +115,7 @@ namespace IFramework.Command.Impl
                         var sagaReply = _messageQueueClient.WrapMessage(sagaResult,
                                                                         topic: topic,
                                                                         messageId: ObjectId.GenerateNewId().ToString(),
-                                                                        sagaInfo: sagaInfo);
+                                                                        sagaInfo: sagaInfo, producer: Producer);
                         eventMessageStates.Add(new MessageState(sagaReply));
                     }
                 });
@@ -140,7 +149,8 @@ namespace IFramework.Command.Impl
                     {
                         if (needReply)
                         {
-                            messageReply = _messageQueueClient.WrapMessage(new MessageDuplicatelyHandled(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                            messageReply = _messageQueueClient.WrapMessage(new MessageDuplicatelyHandled(), commandContext.MessageID, 
+                                                                           commandContext.ReplyToEndPoint, producer: Producer);
                             eventMessageStates.Add(new MessageState(messageReply));
                         }
                     }
@@ -154,7 +164,8 @@ namespace IFramework.Command.Impl
                             _logger?.Debug($"command has no handlerTypes, message:{command.ToJson()}");
                             if (needReply)
                             {
-                                messageReply = _messageQueueClient.WrapMessage(new NoHandlerExists(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                                messageReply = _messageQueueClient.WrapMessage(new NoHandlerExists(), commandContext.MessageID,
+                                    commandContext.ReplyToEndPoint, producer: Producer);
                                 eventMessageStates.Add(new MessageState(messageReply));
                             }
                         }
@@ -189,21 +200,24 @@ namespace IFramework.Command.Impl
                                         }
                                         if (needReply)
                                         {
-                                            messageReply = _messageQueueClient.WrapMessage(commandContext.Reply, commandContext.MessageID, commandContext.ReplyToEndPoint);
+                                            messageReply = _messageQueueClient.WrapMessage(commandContext.Reply,
+                                                commandContext.MessageID, commandContext.ReplyToEndPoint, producer: Producer);
                                             eventMessageStates.Add(new MessageState(messageReply));
                                         }
 
                                         eventBus.GetEvents().ForEach(@event =>
                                         {
                                             var topic = @event.GetFormatTopic();
-                                            var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
+                                            var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, 
+                                                sagaInfo: sagaInfo, producer: Producer);
                                             eventMessageStates.Add(new MessageState(eventContext));
                                         });
 
                                         eventBus.GetToPublishAnywayMessages().ForEach(@event =>
                                         {
                                             var topic = @event.GetFormatTopic();
-                                            var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
+                                            var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic,
+                                                @event.Key, sagaInfo: sagaInfo, producer: Producer);
                                             eventMessageStates.Add(new MessageState(eventContext));
                                         });
 
@@ -226,13 +240,15 @@ namespace IFramework.Command.Impl
                                         messageStore.Rollback();
                                         if (needReply)
                                         {
-                                            messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), commandContext.MessageID, commandContext.ReplyToEndPoint);
+                                            messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), 
+                                                commandContext.MessageID, commandContext.ReplyToEndPoint, producer: Producer);
                                             eventMessageStates.Add(new MessageState(messageReply));
                                         }
                                         eventBus.GetToPublishAnywayMessages().ForEach(@event =>
                                         {
                                             var topic = @event.GetFormatTopic();
-                                            var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, sagaInfo: sagaInfo);
+                                            var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID,
+                                                topic, @event.Key, sagaInfo: sagaInfo, producer: Producer);
                                             eventMessageStates.Add(new MessageState(eventContext));
                                         });
 

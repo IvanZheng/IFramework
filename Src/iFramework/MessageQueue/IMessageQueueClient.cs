@@ -17,7 +17,7 @@ namespace IFramework.MessageQueue
         IMessageContext WrapMessage(object message, string correlationId = null,
                                     string topic = null, string key = null,
                                     string replyEndPoint = null, string messageId = null,
-                                    SagaInfo sagaInfo = null);
+                                    SagaInfo sagaInfo = null, string producer = null);
 
         ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000);
 

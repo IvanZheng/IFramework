@@ -159,5 +159,16 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
             get { return (string)Headers.TryGetValue("Topic"); }
             set { Headers["Topic"] = value; }
         }
+
+        public string IP
+        {
+            get { return (string)Headers.TryGetValue("IP"); }
+            set { Headers["IP"] = value; }
+        }
+        public string Producer
+        {
+            get { return (string)Headers.TryGetValue("Producer"); }
+            set { Headers["Producer"] = value; }
+        }
     }
 }

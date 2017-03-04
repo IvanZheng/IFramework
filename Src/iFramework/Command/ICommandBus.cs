@@ -21,6 +21,6 @@ namespace IFramework.Command
         Task<MessageResponse> SendAsync(ICommand command, TimeSpan timeout, bool needReply = false);
         Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken, TimeSpan sendTimeout, CancellationToken replyCancellationToken, bool needReply = false);
         void SendMessageStates(IEnumerable<MessageState> messageStates);
-        IMessageContext WrapCommand(ICommand command, bool needReply = false, SagaInfo sagaInfo = null);
+        IMessageContext WrapCommand(ICommand command, bool needReply = false, SagaInfo sagaInfo = null, string producer = null);
     }
 }

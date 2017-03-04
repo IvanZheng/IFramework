@@ -39,7 +39,7 @@ namespace IFramework.Command.Impl
 
         }
 
-        public IMessageContext WrapCommand(ICommand command, bool needReply = false, SagaInfo sagaInfo = null)
+        public IMessageContext WrapCommand(ICommand command, bool needReply = false, SagaInfo sagaInfo = null, string producer = null)
         {
             throw new NotImplementedException();
         }

@@ -10,11 +10,12 @@ namespace Sample.CommandServiceTests
 {
     public class MessageContext : IMessageContext
     {
+        public string Producer { get; set; }
+        public string IP { get; set; }
         public string CorrelationID
         {
             get; set;
         }
-
         public long Offset { get; set; }
         public IDictionary<string, object> Headers
         {

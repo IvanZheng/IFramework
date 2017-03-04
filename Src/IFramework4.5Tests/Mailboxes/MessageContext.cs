@@ -15,6 +15,9 @@ namespace IFramework4._5Tests
             get; set;
         }
 
+        public string Producer { get; set; }
+        public string IP { get; set; }
+
         public long Offset { get; set; }
 
         public IDictionary<string, object> Headers

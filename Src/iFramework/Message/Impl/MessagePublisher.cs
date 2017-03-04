@@ -29,12 +29,12 @@ namespace IFramework.Message.Impl
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
             using (var messageStore = scope.Resolve<IMessageStore>())
             {
-                return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationID, replyEndPoint, sagaInfo) =>
+                return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationID, replyEndPoint, sagaInfo, producer) =>
                                         _messageQueueClient.WrapMessage(message, key: message.Key,
                                                                         topic: topic, messageId: messageId,
                                                                         correlationId: correlationID,
                                                                         replyEndPoint: replyEndPoint,
-                                                                        sagaInfo: sagaInfo));
+                                                                        sagaInfo: sagaInfo, producer:producer));
             }
         }
 

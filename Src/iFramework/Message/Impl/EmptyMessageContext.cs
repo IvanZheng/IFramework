@@ -90,5 +90,15 @@ namespace IFramework.Message.Impl
         {
             get { return null; }
         }
+
+        public string IP
+        {
+            get;set;
+        }
+
+        public string Producer
+        {
+            get;set;
+        }
     }
 }

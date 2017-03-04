@@ -35,7 +35,7 @@ namespace IFramework.MessageQueue
             return null;
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null)
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null, string producer = null)
         {
             return new EmptyMessageContext();
         }
