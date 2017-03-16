@@ -11,11 +11,11 @@ namespace IFramework.SysExceptions
 {
     public class ErrorCodeDictionary
     {
-        private static Dictionary<object, string> errorcodeDic = new Dictionary<object, string>();
+        private static Dictionary<object, string> _errorcodeDic = new Dictionary<object, string>();
 
         public static string GetErrorMessage(object errorcode, params object[] args)
         {
-            string errorMessage = errorcodeDic.TryGetValue(errorcode, string.Empty);
+            string errorMessage = _errorcodeDic.TryGetValue(errorcode, string.Empty);
             if (string.IsNullOrEmpty(errorMessage))
             {
                 errorMessage = errorcode.GetCustomAttribute<DescriptionAttribute>()?.Description;
@@ -32,11 +32,18 @@ namespace IFramework.SysExceptions
             return errorMessage;
         }
 
-        public static void InitErrorCodeDictionary(IDictionary<object, string> dictionary)
+        public static void AddErrorCodeMessages(IDictionary<object, string> dictionary)
         {
-            errorcodeDic = new Dictionary<object, string>(dictionary);
+            dictionary.ForEach(p =>
+            {
+                if (_errorcodeDic.ContainsKey(p.Key))
+                {
+                    throw new Exception($"ErrorCode dictionary has already had the key {p.Key}");
+                }
+                _errorcodeDic.Add(p.Key, p.Value);
+            });
         }
-       
+
     }
 
     public class SysException : DomainException
