@@ -54,8 +54,11 @@ namespace IFramework.MessageStoring
             //        map.ToTable("Events");
             //        map.MapInheritedProperties();
             //    });
+            modelBuilder.Entity<HandledEvent>()
+                        .ToTable("msgs_HandledEvents");
 
             modelBuilder.Entity<Command>()
+                        .ToTable("msgs_Commands")
                         .Property(c => c.CorrelationID)
                         .HasMaxLength(200)
                         .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
@@ -70,6 +73,7 @@ namespace IFramework.MessageStoring
 
 
             modelBuilder.Entity<Event>()
+                        .ToTable("msgs_Events")
                         .Property(e => e.CorrelationID)
                         .HasMaxLength(200)
                         .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
@@ -89,12 +93,12 @@ namespace IFramework.MessageStoring
             modelBuilder.Entity<UnSentMessage>()
                 .Map<UnSentCommand>(map =>
                 {
-                    map.ToTable("UnSentCommands");
+                    map.ToTable("msgs_UnSentCommands");
                     map.MapInheritedProperties();
                 })
                 .Map<UnPublishedEvent>(map =>
                 {
-                    map.ToTable("UnPublishedEvents");
+                    map.ToTable("msgs_UnPublishedEvents");
                     map.MapInheritedProperties();
                 });
         }
@@ -228,13 +232,13 @@ namespace IFramework.MessageStoring
 
         public void RemoveSentCommand(string commandId)
         {
-            var deleteSql = string.Format("delete from UnSentCommands where ID = '{0}'", commandId);
+            var deleteSql = string.Format("delete from msgs_UnSentCommands where ID = '{0}'", commandId);
             this.Database.ExecuteSqlCommand(deleteSql);
         }
 
         public void RemovePublishedEvent(string eventId)
         {
-            var deleteSql = string.Format("delete from UnPublishedEvents where ID = '{0}'", eventId);
+            var deleteSql = string.Format("delete from msgs_UnPublishedEvents where ID = '{0}'", eventId);
             this.Database.ExecuteSqlCommand(deleteSql);
         }
 
