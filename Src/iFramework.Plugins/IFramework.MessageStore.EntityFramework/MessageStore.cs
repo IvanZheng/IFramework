@@ -15,7 +15,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IFramework.MessageStoring
 {
-    public class MessageStore : MSDbContext, IMessageStore
+    public abstract class MessageStore : MSDbContext, IMessageStore
     {
         protected readonly ILogger _logger;
 
@@ -54,10 +54,13 @@ namespace IFramework.MessageStoring
             //        map.ToTable("Events");
             //        map.MapInheritedProperties();
             //    });
+
+
             modelBuilder.Entity<HandledEvent>()
                         .ToTable("msgs_HandledEvents");
 
             modelBuilder.Entity<Command>()
+                        .Ignore(c => c.Reply)
                         .ToTable("msgs_Commands")
                         .Property(c => c.CorrelationID)
                         .HasMaxLength(200)
@@ -103,9 +106,9 @@ namespace IFramework.MessageStoring
                 });
         }
 
-        protected virtual Command BuildCommand(IMessageContext commandContext, Exception ex = null)
+        protected virtual Command BuildCommand(IMessageContext commandContext, object result)
         {
-            return new Command(commandContext, ex);
+            return new Command(commandContext, result);
         }
 
         protected virtual Event BuildEvent(IMessageContext eventContext)
@@ -113,11 +116,11 @@ namespace IFramework.MessageStoring
             return new Event(eventContext);
         }
 
-        public void SaveCommand(IMessageContext commandContext, params IMessageContext[] messageContexts)
+        public void SaveCommand(IMessageContext commandContext, object result = null, params IMessageContext[] messageContexts)
         {
             if (commandContext != null)
             {
-                var command = BuildCommand(commandContext);
+                var command = BuildCommand(commandContext, result);
                 Commands.Add(command);
             }
             messageContexts.ForEach(eventContext =>
@@ -218,9 +221,19 @@ namespace IFramework.MessageStoring
             }
         }
 
-        public bool HasCommandHandled(string commandId)
+        public CommandHandledInfo GetCommandHandledInfo(string commandId)
         {
-            return Commands.Count(command => command.ID == commandId) > 0;
+            CommandHandledInfo commandHandledInfo = null;
+            var command = Commands.FirstOrDefault(c => c.ID == commandId);
+            if (command != null)
+            {
+                commandHandledInfo = new CommandHandledInfo
+                {
+                    Result = command.Reply,
+                    Id = command.ID
+                };
+            }
+            return commandHandledInfo;
         }
 
         public bool HasEventHandled(string eventId, string subscriptionName)

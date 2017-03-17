@@ -8,22 +8,11 @@ namespace IFramework.Message.Impl
 {
     public class MockMessageStore : IMessageStore
     {
-        public bool HasCommandHandled(string commandId)
-        {
-            return false;
-        }
-
         public bool HasEventHandled(string eventId, string subscriptionName)
         {
             return false;
 
         }
-
-        public void SaveCommand(IMessageContext commandContext, params IMessageContext[] messageContexts)
-        {
-        }
-
-
 
         public void RemoveSentCommand(string commandId)
         {
@@ -79,6 +68,13 @@ namespace IFramework.Message.Impl
 
         }
 
+        public CommandHandledInfo GetCommandHandledInfo(string commandId)
+        {
+            return null;
+        }
 
+        public void SaveCommand(IMessageContext commandContext, object result = null, params IMessageContext[] eventContexts)
+        {
+        }
     }
 }

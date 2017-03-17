@@ -8,7 +8,7 @@ namespace IFramework.Message
 {
     public interface IMessageStore : IDisposable
     {
-        bool HasCommandHandled(string commandId);
+        CommandHandledInfo GetCommandHandledInfo(string commandId);
         bool HasEventHandled(string eventId, string subscriptionName);
         void HandleEvent(IMessageContext eventContext, string subscriptionName,
                        IEnumerable<IMessageContext> commandContexts,
@@ -20,7 +20,7 @@ namespace IFramework.Message
         /// </summary>
         /// <param name="commandContext"></param>
         /// <param name="eventContexts"></param>
-        void SaveCommand(IMessageContext commandContext, params IMessageContext[] eventContexts);
+        void SaveCommand(IMessageContext commandContext, object result = null, params IMessageContext[] eventContexts);
         void SaveFailedCommand(IMessageContext commandContext, Exception ex = null, params IMessageContext[] eventContexts);
         void RemoveSentCommand(string commandId);
         void RemovePublishedEvent(string eventId);

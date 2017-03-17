@@ -53,7 +53,7 @@ namespace IFramework.EntityFramework
                 var eventContext = _messageQueueClient.WrapMessage(@event, null, topic, @event.Key);
                 _eventMessageStates.Add(new MessageState(eventContext));
             });
-            _messageStore.SaveCommand(null, _eventMessageStates.Select(s => s.MessageContext).ToArray());
+            _messageStore.SaveCommand(null, null, _eventMessageStates.Select(s => s.MessageContext).ToArray());
         }
 
         protected override void AfterCommit()

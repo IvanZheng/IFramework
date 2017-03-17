@@ -141,21 +141,21 @@ namespace IFramework.Command.Impl
                 using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                 {
                     scope.RegisterInstance(typeof(IMessageContext), commandContext);
-                    var eventMessageStates = new List<MessageState>();
                     var messageStore = scope.Resolve<IMessageStore>();
-                    var eventBus = scope.Resolve<IEventBus>();
-                    var commandHasHandled = messageStore.HasCommandHandled(commandContext.MessageID);
-                    if (commandHasHandled)
+                    var eventMessageStates = new List<MessageState>();
+                    var commandHandledInfo = messageStore.GetCommandHandledInfo(commandContext.MessageID);
+                    if (commandHandledInfo != null)
                     {
                         if (needReply)
                         {
-                            messageReply = _messageQueueClient.WrapMessage(new MessageDuplicatelyHandled(), commandContext.MessageID, 
+                            messageReply = _messageQueueClient.WrapMessage(commandHandledInfo.Result, commandContext.MessageID,
                                                                            commandContext.ReplyToEndPoint, producer: Producer);
                             eventMessageStates.Add(new MessageState(messageReply));
                         }
                     }
                     else
                     {
+                        var eventBus = scope.Resolve<IEventBus>();
                         var messageHandlerType = _handlerProvider.GetHandlerTypes(command.GetType()).FirstOrDefault();
                         _logger?.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
 
@@ -208,7 +208,7 @@ namespace IFramework.Command.Impl
                                         eventBus.GetEvents().ForEach(@event =>
                                         {
                                             var topic = @event.GetFormatTopic();
-                                            var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key, 
+                                            var eventContext = _messageQueueClient.WrapMessage(@event, commandContext.MessageID, topic, @event.Key,
                                                 sagaInfo: sagaInfo, producer: Producer);
                                             eventMessageStates.Add(new MessageState(eventContext));
                                         });
@@ -223,7 +223,7 @@ namespace IFramework.Command.Impl
 
                                         eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
-                                        messageStore.SaveCommand(commandContext, eventMessageStates.Select(s => s.MessageContext).ToArray());
+                                        messageStore.SaveCommand(commandContext, commandContext.Reply, eventMessageStates.Select(s => s.MessageContext).ToArray());
                                         transactionScope.Complete();
                                     }
                                     needRetry = false;
@@ -240,7 +240,7 @@ namespace IFramework.Command.Impl
                                         messageStore.Rollback();
                                         if (needReply)
                                         {
-                                            messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(), 
+                                            messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(),
                                                 commandContext.MessageID, commandContext.ReplyToEndPoint, producer: Producer);
                                             eventMessageStates.Add(new MessageState(messageReply));
                                         }
