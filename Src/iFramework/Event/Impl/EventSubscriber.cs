@@ -6,7 +6,7 @@ using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
-using IFramework.SysExceptions;
+using IFramework.Exceptions;
 using IFramework.Command;
 using IFramework.IoC;
 using IFramework.Infrastructure.Mailboxes.Impl;
@@ -19,7 +19,7 @@ namespace IFramework.Event.Impl
     public class EventSubscriber : IMessageConsumer
     {
         readonly string _topic;
-        protected IMessageQueueClient _MessageQueueClient;
+        protected IMessageQueueClient _messageQueueClient;
         protected ICommandBus _commandBus;
         protected IMessagePublisher _messagePublisher;
         protected IHandlerProvider _handlerProvider;
@@ -38,7 +38,7 @@ namespace IFramework.Event.Impl
                                string consumerId,
                                int mailboxProcessBatchCount = 100)
         {
-            _MessageQueueClient = messageQueueClient;
+            _messageQueueClient = messageQueueClient;
             _handlerProvider = handlerProvider;
             _topic = topic;
             _consumerId = consumerId;
@@ -128,14 +128,14 @@ namespace IFramework.Event.Impl
                                     eventBus.GetEvents().ForEach(msg =>
                                     {
                                         var topic = msg.GetFormatTopic();
-                                        eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic,
+                                        eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg, topic: topic,
                                             key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
                                     });
 
                                     eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                                     {
                                         var topic = msg.GetFormatTopic();
-                                        eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key,
+                                        eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key,
                                             sagaInfo: sagaInfo, producer: Producer)));
                                     });
 
@@ -159,20 +159,30 @@ namespace IFramework.Event.Impl
                             }
                             catch (Exception e)
                             {
+                                messageStore.Rollback();
                                 if (e is DomainException)
                                 {
+                                    var exceptionMessage = _messageQueueClient.WrapMessage(e.GetBaseException(),
+                                                                                           eventContext.MessageID,
+                                                                                           producer: Producer);
+                                    eventMessageStates.Add(new MessageState(exceptionMessage));
                                     _logger?.Warn(message.ToJson(), e);
                                 }
                                 else
                                 {
                                     //IO error or sytem Crash
+                                    //if we meet with unknown exception, we interrupt saga
+                                    if (sagaInfo != null)
+                                    {
+                                        eventBus.FinishSaga(e);
+                                    }
                                     _logger?.Error(message.ToJson(), e);
                                 }
-                                messageStore.Rollback();
+
                                 eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                                 {
                                     var topic = msg.GetFormatTopic();
-                                    eventMessageStates.Add(new MessageState(_MessageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
+                                    eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
                                 });
 
                                 eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
@@ -205,7 +215,7 @@ namespace IFramework.Event.Impl
                     var topic = sagaInfo.ReplyEndPoint;
                     if (!string.IsNullOrEmpty(topic))
                     {
-                        var sagaReply = _MessageQueueClient.WrapMessage(sagaResult,
+                        var sagaReply = _messageQueueClient.WrapMessage(sagaResult,
                                                                         topic: topic,
                                                                         messageId: ObjectId.GenerateNewId().ToString(),
                                                                         sagaInfo: sagaInfo,
@@ -224,7 +234,7 @@ namespace IFramework.Event.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_topic))
                 {
-                    _internalConsumer = _MessageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, _consumerId, OnMessagesReceived);
+                    _internalConsumer = _messageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, _consumerId, OnMessagesReceived);
                 }
                 _messageProcessor.Start();
             }

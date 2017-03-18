@@ -1,7 +1,7 @@
 ﻿using IFramework.Domain;
 using IFramework.Event;
 using IFramework.Message;
-using IFramework.SysExceptions;
+using IFramework.Exceptions;
 using Sample.DomainEvents.Products;
 using Sample.DTO;
 using System;
@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Sample.DomainEvents;
 
 namespace Sample.Domain.Model
 {
@@ -43,7 +44,7 @@ namespace Sample.Domain.Model
             Count = Count - reduceCount;
             if (Count < 0)
             {
-                throw new SysException(ErrorCode.CountNotEnougth);
+                throw new SampleDomainException(DTO.ErrorCode.CountNotEnougth);
             }
         }
 

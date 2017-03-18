@@ -1,6 +1,7 @@
 ﻿using IFramework.Command;
 using IFramework.Event;
-using IFramework.SysExceptions;
+using IFramework.Exceptions;
+using Sample.DomainEvents;
 using Sample.DomainEvents.Community;
 using System;
 using System.Collections.Generic;
@@ -11,13 +12,20 @@ using System.Threading;
 namespace Sample.AsyncDomainEventSubscriber.Community
 {
     public class AccountEventSubscriber : 
-        IEventSubscriber<AccountRegistered>
+        IEventSubscriber<AccountRegistered>,
+        IEventSubscriber<SampleDomainException>
     {
         IEventBus _EventBus;
         public AccountEventSubscriber(IEventBus eventBus)
         {
             _EventBus = eventBus;
         }
+
+        public void Handle(SampleDomainException message)
+        {
+            Console.Write($"{message.ErrorCode} {message.Message} {message.StackTrace}");
+        }
+
         public void Handle(AccountRegistered @event)
         {
             Console.Write("subscriber1: {0} has registered.", @event.UserName);

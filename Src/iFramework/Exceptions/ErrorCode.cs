@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IFramework.SysExceptions.ErrorCodes
+namespace IFramework.Exceptions
 {
     public class ErrorCode
     {

@@ -6,8 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using System.ComponentModel;
+using IFramework.Event;
 
-namespace IFramework.SysExceptions
+namespace IFramework.Exceptions
 {
     public class ErrorCodeDictionary
     {
@@ -46,30 +47,44 @@ namespace IFramework.SysExceptions
 
     }
 
-    public class SysException : DomainException
+    public class DomainException : Exception, IEvent
     {
         public object ErrorCode { get; set; }
-        public SysException() { }
-        protected SysException(SerializationInfo info, StreamingContext context)
+
+        public string ID { get; set; }
+
+        public string Key { get; set; }
+
+        public DomainException()
+        {
+            ID = ObjectId.GenerateNewId().ToString();
+        }
+        protected DomainException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            ID = info.GetValue("ID", typeof(string)) as string;
+            Key = info.GetValue("Key", typeof(string)) as string;
             ErrorCode = info.GetValue("ErrorCode", typeof(object));
         }
-        public SysException(object errorCode, string message = null)
+        public DomainException(object errorCode, string message = null)
             : base(message ?? ErrorCodeDictionary.GetErrorMessage(errorCode))
         {
+            ID = ObjectId.GenerateNewId().ToString();
             ErrorCode = errorCode;
         }
 
-        public SysException(object errorCode, object[] args)
+        public DomainException(object errorCode, object[] args)
             : base(ErrorCodeDictionary.GetErrorMessage(errorCode, args))
         {
+            ID = ObjectId.GenerateNewId().ToString();
             ErrorCode = errorCode;
         }
 
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue("ErrorCode", this.ErrorCode);
+            info.AddValue("ID", ID);
+            info.AddValue("Key", Key);
+            info.AddValue("ErrorCode", ErrorCode);
             base.GetObjectData(info, context);
         }
     }

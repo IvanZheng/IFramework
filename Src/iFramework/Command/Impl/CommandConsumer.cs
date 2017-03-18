@@ -7,7 +7,7 @@ using IFramework.IoC;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
-using IFramework.SysExceptions;
+using IFramework.Exceptions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -149,7 +149,8 @@ namespace IFramework.Command.Impl
                         if (needReply)
                         {
                             messageReply = _messageQueueClient.WrapMessage(commandHandledInfo.Result, commandContext.MessageID,
-                                                                           commandContext.ReplyToEndPoint, producer: Producer);
+                                                                           commandContext.ReplyToEndPoint, producer: Producer,
+                                                                           messageId: ObjectId.GenerateNewId().ToString());
                             eventMessageStates.Add(new MessageState(messageReply));
                         }
                     }
@@ -241,7 +242,10 @@ namespace IFramework.Command.Impl
                                         if (needReply)
                                         {
                                             messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(),
-                                                commandContext.MessageID, commandContext.ReplyToEndPoint, producer: Producer);
+                                                commandContext.MessageID, 
+                                                commandContext.ReplyToEndPoint, 
+                                                producer: Producer,
+                                                messageId: ObjectId.GenerateNewId().ToString());
                                             eventMessageStates.Add(new MessageState(messageReply));
                                         }
                                         eventBus.GetToPublishAnywayMessages().ForEach(@event =>
@@ -251,17 +255,24 @@ namespace IFramework.Command.Impl
                                                 topic, @event.Key, sagaInfo: sagaInfo, producer: Producer);
                                             eventMessageStates.Add(new MessageState(eventContext));
                                         });
-
-                                        eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
-
                                         if (e is DomainException)
                                         {
+                                            var exceptionMessage = _messageQueueClient.WrapMessage(e.GetBaseException(),
+                                                                                                   commandContext.MessageID,
+                                                                                                   producer: Producer);
+                                            eventMessageStates.Add(new MessageState(exceptionMessage));
                                             _logger?.Warn(command.ToJson(), e);
                                         }
                                         else
                                         {
                                             _logger?.Error(command.ToJson(), e);
+                                            //if we meet with unknown exception, we interrupt saga
+                                            if (sagaInfo != null)
+                                            {
+                                                eventBus.FinishSaga(e);
+                                            }
                                         }
+                                        eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
                                         messageStore.SaveFailedCommand(commandContext, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
                                         needRetry = false;
                                     }

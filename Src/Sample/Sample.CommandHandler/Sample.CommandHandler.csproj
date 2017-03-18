@@ -84,6 +84,10 @@
       <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
       <Name>Sample.Command</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj">
+      <Project>{AF5512AA-CAF1-4066-90BD-EFB9B951FE18}</Project>
+      <Name>Sample.DomainEvents</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj">
       <Project>{f1f1b380-f3a0-463e-8686-3af27962c100}</Project>
       <Name>Sample.Domain</Name>
