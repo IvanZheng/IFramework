@@ -22,8 +22,9 @@ namespace IFramework.AspNet
 
         protected string GetModelErrorMessage(ModelStateDictionary modelState)
         {
+            var isDeubg = Config.Configuration.GetCompliationSection()?.Debug ?? false;
             return string.Join(";",
-                               modelState.Select(m => $"{m.Key}:{string.Join(",", m.Value.Errors.Select(e => e.ErrorMessage + e.Exception?.Message))}"));
+                               modelState.Select(m => $"{m.Key}:{(isDeubg ? string.Join(",", m.Value.Errors.Select(e => e.ErrorMessage + e.Exception?.Message)) : "invalid")}"));
         }
 
         #region process wrapping

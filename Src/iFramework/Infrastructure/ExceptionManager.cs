@@ -56,9 +56,29 @@ namespace IFramework.Infrastructure
     public static class ExceptionManager
     {
         static ILogger _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager)) : null;
+        static string _UnKnownMessage = ErrorCode.UnknownError.ToString();
+
+        public static void SetUnKnownMessage(string unknownMessage)
+        {
+            _UnKnownMessage = unknownMessage;
+        }
+
+
+        static string GetUnknownErrorMessage(Exception ex)
+        {
+            var unknownErrorMessage = _UnKnownMessage;
+            var compliationSection = Config.Configuration.GetCompliationSection();
+            if (compliationSection != null && compliationSection.Debug)
+            {
+                unknownErrorMessage = ex.Message;
+            }
+            return unknownErrorMessage;
+        }
+
+
         static string GetExceptionMessage(Exception ex)
         {
-            return ex?.Message;
+            return GetUnknownErrorMessage(ex);
         }
 
         public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
