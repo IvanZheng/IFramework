@@ -46,6 +46,7 @@
     <Compile Include="DomainEvent.cs" />
     <Compile Include="Products\ProductCreated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SampleDomainException.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\iFramework\IFramework4.5.1.csproj">

@@ -23,3 +23,5 @@ obj
 /Src/Sample/Sample.CommandService.ZeroMQ/App_Data
 /Src/iFramework.Plugins/IFramework.Sample.AuthWeb/App_Data
 /Src/TestResults
+/Src/.vs
+/Src/.vs

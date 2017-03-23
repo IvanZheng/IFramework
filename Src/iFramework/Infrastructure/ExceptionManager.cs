@@ -1,8 +1,7 @@
 ﻿
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
-using IFramework.SysExceptions;
-using IFramework.SysExceptions.ErrorCodes;
+using IFramework.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -103,9 +102,9 @@ namespace IFramework.Infrastructure
                     if (!(ex is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
-                        if (baseException is SysException)
+                        if (baseException is DomainException)
                         {
-                            var sysException = baseException as SysException;
+                            var sysException = baseException as DomainException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
                             _logger?.Debug(ex);
                         }
@@ -185,9 +184,9 @@ namespace IFramework.Infrastructure
                     if (!(ex is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
-                        if (baseException is SysException)
+                        if (baseException is DomainException)
                         {
-                            var sysException = baseException as SysException;
+                            var sysException = baseException as DomainException;
                             apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
                         }
                         else
@@ -260,9 +259,9 @@ namespace IFramework.Infrastructure
                     if (!(ex is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
-                        if (baseException is SysException)
+                        if (baseException is DomainException)
                         {
-                            var sysException = baseException as SysException;
+                            var sysException = baseException as DomainException;
                             apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
                         }
                         else
@@ -302,9 +301,9 @@ namespace IFramework.Infrastructure
                     if (!(ex is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
-                        if (baseException is SysException)
+                        if (baseException is DomainException)
                         {
-                            var sysException = baseException as SysException;
+                            var sysException = baseException as DomainException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
                         }
                         else

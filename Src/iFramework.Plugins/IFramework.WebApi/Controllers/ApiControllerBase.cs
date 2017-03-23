@@ -1,5 +1,4 @@
-﻿using IFramework.SysExceptions;
-using IFramework.SysExceptions.ErrorCodes;
+﻿using IFramework.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

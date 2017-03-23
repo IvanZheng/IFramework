@@ -4,7 +4,7 @@ using IFramework.Infrastructure;
 using IFramework.IoC;
 using IFramework.Message;
 using IFramework.Repositories;
-using IFramework.SysExceptions;
+using IFramework.Exceptions;
 using IFramework.UnitOfWork;
 using Sample.ApplicationEvent;
 using Sample.Command;
@@ -15,11 +15,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Sample.DomainEvents;
 
 namespace Sample.CommandHandler.Community
 {
     public class CommunityCommandHandler : ICommandAsyncHandler<Login>,
-                                           ICommandHandler<Register>,       
+                                           ICommandHandler<Register>,
                                            ICommandHandler<Modify>
     {
         IEventBus _EventBus;
@@ -27,7 +28,7 @@ namespace Sample.CommandHandler.Community
         CommunityRepository _DomainRepository;
         IUnitOfWork _UnitOfWork;
         IContainer _container;
-        public CommunityCommandHandler(IUnitOfWork unitOfWork, 
+        public CommunityCommandHandler(IUnitOfWork unitOfWork,
                                        CommunityRepository domainRepository,
                                        IEventBus eventBus,
                                        IMessageContext commandContext,
@@ -53,7 +54,8 @@ namespace Sample.CommandHandler.Community
                                                  .ConfigureAwait(false);
             if (account == null)
             {
-                var ex = new SysException(DTO.ErrorCode.WrongUsernameOrPassword);
+                var ex = new SampleDomainException(DTO.ErrorCode.WrongUsernameOrPassword,
+                                                new[] { command.UserName });
                 _EventBus.FinishSaga(ex);
                 throw ex;
             }
@@ -68,7 +70,7 @@ namespace Sample.CommandHandler.Community
         {
             if (_DomainRepository.Find<Account>(a => a.UserName == command.UserName) != null)
             {
-                throw new SysException(DTO.ErrorCode.UsernameAlreadyExists, string.Format("Username {0} exists!", command.UserName));
+                throw new SampleDomainException(DTO.ErrorCode.UsernameAlreadyExists, string.Format("Username {0} exists!", command.UserName));
             }
 
             Account account = new Account(command.UserName, command.Password, command.Email);
@@ -82,7 +84,7 @@ namespace Sample.CommandHandler.Community
             var account = _DomainRepository.Find<Account>(a => a.UserName == command.UserName);
             if (account == null)
             {
-                throw new SysException(DTO.ErrorCode.UserNotExists);
+                throw new SampleDomainException(DTO.ErrorCode.UserNotExists);
             }
             account.Modify(command.Email);
             _UnitOfWork.Commit();

@@ -13,7 +13,7 @@ using IFramework.Config;
 using IFramework.Infrastructure.Logging;
 using IFramework.MessageQueue;
 using System.Collections.Concurrent;
-using IFramework.SysExceptions;
+using IFramework.Exceptions;
 using IFramework.IoC;
 using IFramework.Infrastructure.Mailboxes.Impl;
 
