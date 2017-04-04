@@ -242,8 +242,8 @@ namespace IFramework.Command.Impl
                                         if (needReply)
                                         {
                                             messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(),
-                                                commandContext.MessageID, 
-                                                commandContext.ReplyToEndPoint, 
+                                                commandContext.MessageID,
+                                                commandContext.ReplyToEndPoint,
                                                 producer: Producer,
                                                 messageId: ObjectId.GenerateNewId().ToString());
                                             eventMessageStates.Add(new MessageState(messageReply));
@@ -280,16 +280,10 @@ namespace IFramework.Command.Impl
                             } while (needRetry);
                         }
                     }
-                    try
+                    if (_messagePublisher != null && eventMessageStates.Count > 0)
                     {
-                        if (_messagePublisher != null && eventMessageStates.Count > 0)
-                        {
-                            _messagePublisher.SendAsync(eventMessageStates.ToArray());
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger?.Error($"_messagePublisher SendAsync error", ex);
+                        var sendTask = _messagePublisher.SendAsync(eventMessageStates.ToArray());
+                        // we don't need to wait the send task complete here.
                     }
                 }
             }

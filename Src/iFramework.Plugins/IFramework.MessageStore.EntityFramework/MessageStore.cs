@@ -12,6 +12,7 @@ using IFramework.IoC;
 using IFramework.Message.Impl;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using IFramework.Exceptions;
 
 namespace IFramework.MessageStoring
 {
@@ -137,7 +138,7 @@ namespace IFramework.MessageStoring
             if (commandContext != null)
             {
                 var command = BuildCommand(commandContext, ex);
-                command.Status = MessageStatus.Failed;
+                command.Status = ex is DomainException ? MessageStatus.Failed : MessageStatus.UnknownFailed;
                 Commands.Add(command);
 
                 if (eventContexts != null)
