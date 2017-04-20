@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IFramework.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,21 @@ namespace IFramework.Domain
                 ms.Position = 0;
                 return formatter.Deserialize(ms);
             }
+        }
+
+        public object Clone(object newValues)
+        {
+            return Clone<object>(newValues);
+        }
+
+        public T Clone<T>(object newValues)
+        {
+            var cloned = this.Clone();
+            newValues?.GetType().GetProperties().ForEach(p =>
+            {
+                cloned.SetValueByKey(p.Name, p.GetValue(newValues));
+            });
+            return (T)cloned;
         }
 
         public static bool operator !=(ValueObject a, ValueObject b)
