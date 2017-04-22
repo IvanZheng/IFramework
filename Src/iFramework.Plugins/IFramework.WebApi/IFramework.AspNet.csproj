@@ -98,6 +98,8 @@
     <Compile Include="Controllers\ApiControllerBase.cs" />
     <Compile Include="CommandHttpClient.cs" />
     <Compile Include="Cors\EnableCorsAttribute.cs" />
+    <Compile Include="HttpConfigurationExtension.cs" />
+    <Compile Include="IPRestrictFilterAttribute.cs" />
     <Compile Include="MediaTypeFormatters\CommandMediaTypeFormatter.cs" />
     <Compile Include="Controllers\ControllerExtension.cs" />
     <Compile Include="MediaTypeFormatters\MultipartMediaTypeFormatter.cs" />

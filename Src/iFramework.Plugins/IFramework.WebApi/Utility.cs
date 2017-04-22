@@ -6,7 +6,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -185,6 +187,37 @@ namespace IFramework.AspNet
                 }
             }
             return nameValueCollection;
+        }
+    }
+
+    public static class WebApiUtility
+    {
+        public static string GetClientIp(this HttpRequestMessage request)
+        {
+            // Owin Hosting
+            //if (requestMessage.Properties.ContainsKey("MS_OwinContext"))
+            //{
+            //    return HttpContext.Current != null
+            //        ? HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress
+            //        : null;
+            //}
+            if (request != null && request.Properties.ContainsKey("MS_HttpContext"))
+            {
+                return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+            }
+            else if (request != null && request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
+            {
+                RemoteEndpointMessageProperty property = (RemoteEndpointMessageProperty)request.Properties[RemoteEndpointMessageProperty.Name];
+                return property != null ? property.Address : null;
+            }
+            else if (HttpContext.Current != null)
+            {
+                return HttpContext.Current.Request.UserHostAddress;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
