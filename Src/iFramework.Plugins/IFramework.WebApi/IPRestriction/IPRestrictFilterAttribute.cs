@@ -41,7 +41,7 @@ namespace IFramework.AspNet
         {
             base.OnActionExecuting(actionContext);
             var clientIP = actionContext.Request.GetClientIp();
-            if (clientIP != "::1" && !WhiteList.Contains(clientIP))
+            if (clientIP != "::1" && clientIP != "127.0.0.1" && !WhiteList.Contains(clientIP))
             {
                 throw new HttpResponseException(actionContext.Request
                                                              .CreateErrorResponse(HttpStatusCode.Forbidden,
