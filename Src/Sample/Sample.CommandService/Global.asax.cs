@@ -47,16 +47,16 @@ namespace Sample.CommandService
                             .UseLog4Net()
                             .MessageQueueUseMachineNameFormat()
                             .UseMessageQueue()
-                            .UseMessageStore<SampleModelContext>()
-                            .UseKafka("localhost:2181")
+                            .UseMessageStore<SampleModelContext>();
+                            //.UseKafka("localhost:2181")
                             //.UseEQueue()
-                            .UseCommandBus(Environment.MachineName, linerCommandManager: new Sample.Command.LinearCommandManager(), mailboxProcessBatchCount: 100)
-                            .UseMessagePublisher("eventTopic");
-
+                            //.UseCommandBus(Environment.MachineName, linerCommandManager: new Sample.Command.LinearCommandManager(), mailboxProcessBatchCount: 100)
+                            //.UseMessagePublisher("eventTopic");
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);
 
 
                 _Logger.Debug($"App Started");
+                return;
 
                 #region EventPublisher init
                 _MessagePublisher = MessageQueueFactory.GetMessagePublisher();

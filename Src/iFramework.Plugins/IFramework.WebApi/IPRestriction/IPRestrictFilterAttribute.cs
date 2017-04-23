@@ -26,36 +26,27 @@ namespace IFramework.AspNet
         {
             if (string.IsNullOrEmpty(entry))
             {
-                WhiteList = HttpConfigurationExtension.IPRestrictConfig?.GlobalWhiteList;
+                WhiteList = IPRestrictExtension.IPRestrictConfig?.GlobalWhiteList;
             }
             else
             {
-                WhiteList = HttpConfigurationExtension.IPRestrictConfig
-                                                      .EntryWhiteListDictionary
-                                                      .TryGetValue(entry, null);
+                WhiteList = IPRestrictExtension.IPRestrictConfig
+                                               .EntryWhiteListDictionary
+                                               .TryGetValue(entry, null);
             }
-
+            WhiteList = WhiteList ?? new List<string>();
         }
 
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
             base.OnActionExecuting(actionContext);
             var clientIP = actionContext.Request.GetClientIp();
-            if (clientIP != "::1" 
-             && WhiteList != null
-             && WhiteList.Count > 0 
-             && !WhiteList.Contains(clientIP))
+            if (clientIP != "::1" && !WhiteList.Contains(clientIP))
             {
                 throw new HttpResponseException(actionContext.Request
                                                              .CreateErrorResponse(HttpStatusCode.Forbidden,
                                                                                   "Client IP is not allowed!"));
             }
         }
-
-        public override Task OnActionExecutingAsync(HttpActionContext actionContext, CancellationToken cancellationToken)
-        {
-            return Task.Run(() => OnActionExecuting(actionContext));
-        }
-
     }
 }

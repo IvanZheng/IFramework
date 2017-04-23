@@ -20,7 +20,7 @@ namespace IFramework.AspNet
         public Dictionary<string, List<string>> EntryWhiteListDictionary { get; set; }
     }
 
-    public static class HttpConfigurationExtension
+    public static class IPRestrictExtension
     {
         internal static IPRestrictConfig IPRestrictConfig = new IPRestrictConfig();
         public static HttpConfiguration EnableIPRestrict(this HttpConfiguration config, string configFile = null)

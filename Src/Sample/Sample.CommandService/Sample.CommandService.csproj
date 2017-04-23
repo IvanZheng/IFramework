@@ -229,6 +229,7 @@
     <Compile Include="Controllers\BatchCommandController.cs" />
     <Compile Include="Controllers\SagaApiController.cs" />
     <Compile Include="Controllers\TestController.cs" />
+    <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="CustomIsssuerNameRegistry.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
