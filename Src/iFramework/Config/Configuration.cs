@@ -13,6 +13,8 @@ using IFramework.IoC;
 using IFramework.Infrastructure.Logging;
 using IFramework.Event.Impl;
 using IFramework.Message.Impl;
+using IFramework.Infrastructure.Caching;
+using IFramework.Infrastructure.Caching.Impl;
 
 namespace IFramework.Config
 {
@@ -28,6 +30,7 @@ namespace IFramework.Config
         public Configuration RegisterCommonComponents()
         {
             UseNoneLogger();
+            UseMemoryCahce();
             UseMessageStore<MockMessageStore>();
             this.UseMockMessageQueueClient();
             this.UseMockMessagePublisher();
@@ -38,6 +41,13 @@ namespace IFramework.Config
         public bool NeedMessageStore
         {
             get;protected set;
+        }
+
+
+        public Configuration UseMemoryCahce(Lifetime lifetime = Lifetime.Hierarchical)
+        {
+            IoCFactory.Instance.CurrentContainer.RegisterType<ICacheManager, MemoryCacheManager>(lifetime);
+            return this;
         }
 
         public Configuration UseMessageStore<TMessageStore>(Lifetime lifetime = Lifetime.Hierarchical)
