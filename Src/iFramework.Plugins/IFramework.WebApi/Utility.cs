@@ -192,6 +192,10 @@ namespace IFramework.AspNet
 
     public static class WebApiUtility
     {
+        public const string LocalIPv4 = "127.0.0.1";
+        public const string LocalIPv6 = "::1";
+        public const string ClientIPNotAllowedMessage = "Client IP is not allowed!";
+
         public static string GetClientIp(this HttpRequestMessage request)
         {
             // Owin Hosting
