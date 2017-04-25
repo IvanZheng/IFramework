@@ -25,7 +25,7 @@ namespace IFramework.AspNet
         internal static IPRestrictConfig IPRestrictConfig = new IPRestrictConfig();
         public static HttpConfiguration EnableIPRestrict(this HttpConfiguration config, string configFile = null)
         {
-            configFile = configFile ?? "IPRestrict.config";
+            configFile = configFile ?? "ipRestrict.json";
             var file = new FileInfo(configFile);
             if (!file.Exists)
             {

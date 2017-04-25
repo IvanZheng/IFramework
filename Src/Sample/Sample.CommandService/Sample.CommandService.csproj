@@ -247,7 +247,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="IPRestrict.config" />
+    <None Include="ipRestrict.json" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <None Include="log4netv1.2.10.0\log4net.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
