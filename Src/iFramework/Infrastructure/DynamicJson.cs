@@ -9,6 +9,10 @@ namespace IFramework.Infrastructure
 {
     public class DynamicJson : DynamicObject
     {
+        public string ToJson()
+        {
+            return _json?.ToString();
+        }
         internal Newtonsoft.Json.Linq.JObject _json;
         public DynamicJson(Newtonsoft.Json.Linq.JObject json)
         {
