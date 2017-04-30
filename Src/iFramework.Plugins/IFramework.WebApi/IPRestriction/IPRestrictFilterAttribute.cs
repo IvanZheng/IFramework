@@ -40,14 +40,17 @@ namespace IFramework.AspNet
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
             base.OnActionExecuting(actionContext);
-            var clientIP = actionContext.Request.GetClientIp();
-            if (clientIP != WebApiUtility.LocalIPv4
-             && clientIP != WebApiUtility.LocalIPv6
-             && !WhiteList.Contains(clientIP))
+            if (IPRestrictExtension.Enabled)
             {
-                throw new HttpResponseException(actionContext.Request
-                                                             .CreateErrorResponse(HttpStatusCode.Forbidden,
-                                                                                  WebApiUtility.ClientIPNotAllowedMessage));
+                var clientIP = actionContext.Request.GetClientIp();
+                if (clientIP != WebApiUtility.LocalIPv4
+                 && clientIP != WebApiUtility.LocalIPv6
+                 && !WhiteList.Contains(clientIP))
+                {
+                    throw new HttpResponseException(actionContext.Request
+                                                                 .CreateErrorResponse(HttpStatusCode.Forbidden,
+                                                                                      WebApiUtility.ClientIPNotAllowedMessage));
+                }
             }
         }
     }

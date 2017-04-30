@@ -308,7 +308,7 @@ namespace IFramework.Infrastructure
                         }
                         else
                         {
-                            apiResult = new ApiResult<T>(ErrorCode.UnknownError, getExceptionMessage(baseException));
+                            apiResult = new ApiResult<T>(ErrorCode.UnknownError, getExceptionMessage(ex));
                             _logger?.Error(ex);
                         }
                         needRetry = false;

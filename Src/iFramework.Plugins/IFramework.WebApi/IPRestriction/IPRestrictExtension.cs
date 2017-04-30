@@ -22,6 +22,7 @@ namespace IFramework.AspNet
 
     public static class IPRestrictExtension
     {
+        internal static bool Enabled = false;
         internal static IPRestrictConfig IPRestrictConfig = new IPRestrictConfig();
         public static HttpConfiguration EnableIPRestrict(this HttpConfiguration config, string configFile = null)
         {
@@ -37,6 +38,7 @@ namespace IFramework.AspNet
                 var json = File.ReadAllText(file.FullName);
                 IPRestrictConfig = json.ToJsonObject<IPRestrictConfig>();
             }
+            Enabled = true;
             return config;
         }
     }
