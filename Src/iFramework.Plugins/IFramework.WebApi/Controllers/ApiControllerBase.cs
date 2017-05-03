@@ -121,7 +121,7 @@ namespace IFramework.AspNet
                         t.Result.Headers.AddCookies(_cookies);
                     }
                     return t.Result;
-                }); ;
+                });
         }
 
         protected async Task<ApiResult> ProcessAsync(Func<Task> func,
