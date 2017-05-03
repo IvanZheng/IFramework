@@ -108,6 +108,14 @@ namespace IFramework.AspNet
             return base.ExecuteAsync(controllerContext, cancellationToken)
                 .ContinueWith(t =>
                 {
+                    if (t.IsFaulted)
+                    {
+                        var httpResponseException = t.Exception.GetBaseException() as HttpResponseException;
+                        if (httpResponseException != null)
+                        {
+                            return httpResponseException.Response;
+                        }
+                    }
                     if (_cookies != null && _cookies.Count > 0)
                     {
                         t.Result.Headers.AddCookies(_cookies);
@@ -115,7 +123,6 @@ namespace IFramework.AspNet
                     return t.Result;
                 }); ;
         }
-
 
         protected async Task<ApiResult> ProcessAsync(Func<Task> func,
                                                      bool continueOnCapturedContext = false,

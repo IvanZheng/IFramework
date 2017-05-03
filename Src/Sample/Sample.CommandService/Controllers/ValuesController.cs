@@ -1,4 +1,5 @@
 ﻿using IFramework.AspNet;
+using IFramework.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +11,16 @@ using System.Web.Http;
 namespace Sample.CommandService.Controllers
 {
     [IPFilter]
-    public class ValuesController : ApiController
+    public class ValuesController : ApiControllerBase
     {
         // GET api/<controller>
-        public Task<string[]> Get()
+        public Task<ApiResult<string[]>> Get()
         {
-            return Task.FromResult(new string[] { "value1", "value2" });
+            return ProcessAsync(() => {
+                throw new Exception("test exception");
+                return Task.FromResult(new string[] { "value1", "value2" });
+            });
+            
         }
 
         // GET api/<controller>/5
