@@ -35,7 +35,8 @@ namespace IFramework.Specifications
             var bodyNot = Expression.Lambda<Func<T, bool>>(Expression.Not(Right.GetExpression().Body));
             //var body = Expression.And(Left.GetExpression().Body, bodyNot);
             var body = Left.GetExpression().And(bodyNot);
-            return Expression.Lambda<Func<T, bool>>(body, Left.GetExpression().Parameters);
+            return body;
+            //return Expression.Lambda<Func<T, bool>>(body, Left.GetExpression().Parameters);
         }
         #endregion
     }

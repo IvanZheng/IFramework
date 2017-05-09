@@ -441,11 +441,21 @@ namespace IFramework.Infrastructure
 
         public static LambdaExpression GetLambdaExpression(Type type, string propertyName)
         {
-            ParameterExpression param = Expression.Parameter(type);
-            PropertyInfo property = type.GetProperty(propertyName);
-            Expression propertyAccessExpression = Expression.MakeMemberAccess(param, property);
-            var le = Expression.Lambda(propertyAccessExpression, param);
-            return le;
+            var param = Expression.Parameter(type);
+            Expression body = param;
+            foreach (var member in propertyName.Split('.'))
+            {
+                body = Expression.PropertyOrField(body, member);
+            }
+            return Expression.Lambda(body, param);
+        }
+
+        public static LambdaExpression GetLambdaExpression(Type type, Expression expression)
+        {
+            var propertyName = expression.ToString();
+            var index = propertyName.IndexOf('.');
+            propertyName = propertyName.Substring(index + 1);
+            return GetLambdaExpression(type, propertyName);
         }
 
         public static IQueryable<TEntity> GetOrderByQueryable<TEntity>(IQueryable<TEntity> query, LambdaExpression orderByExpression, bool asc)

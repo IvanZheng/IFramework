@@ -16,7 +16,8 @@ namespace IFramework.Specifications
         {
             //var body = Expression.OrElse(Left.GetExpression().Body, Right.GetExpression().Body);
             var body = Left.GetExpression().Or(Right.GetExpression());
-            return Expression.Lambda<Func<T, bool>>(body, Left.GetExpression().Parameters);
+            return body;
+            //return Expression.Lambda<Func<T, bool>>(body, Left.GetExpression().Parameters);
         }
     }
 }
