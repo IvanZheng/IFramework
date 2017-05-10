@@ -31,7 +31,8 @@ namespace IFramework.Specifications
         {
             //var body = Expression.AndAlso(Left.GetExpression().Body, Right.GetExpression().Body);
             var body = Left.GetExpression().And(Right.GetExpression());
-            return Expression.Lambda<Func<T, bool>>(body, Left.GetExpression().Parameters);
+            return body;
+            //return Expression.Lambda<Func<T, bool>>(body, Left.GetExpression().Parameters);
         }
         #endregion
     }

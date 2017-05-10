@@ -38,9 +38,8 @@ namespace IFramework.Repositories
             LambdaExpression le = null;
             if (orderExpression is OrderExpression<TEntity>)
             {
-                le = Utility.GetLambdaExpression(typeof(TEntity)
-                    , ((orderExpression as OrderExpression<TEntity>).OrderByExpression.Body
-                    .GetValueByKey<System.Linq.Expressions.MemberExpression>("Operand").Member.Name));
+                var member = ((orderExpression as OrderExpression<TEntity>).OrderByExpression.Body as UnaryExpression).Operand;
+                le = Utility.GetLambdaExpression(typeof(TEntity), member);
             }
             else if (!string.IsNullOrWhiteSpace(orderExpression.OrderByField))
             {
