@@ -91,14 +91,15 @@ namespace IFramework.EntityFramework.Repositories
 
         protected override IQueryable<TEntity> DoFindAll(ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
         {
-            IQueryable<TEntity> query = DbSet.Where(specification.GetExpression());
-            bool hasSorted = false;
-            orderExpressions.ForEach(orderExpression =>
-            {
-                query = query.MergeOrderExpression(orderExpression, hasSorted);
-                hasSorted = true;
-            });
-            return query;
+            return DbSet.FindAll(specification, orderExpressions);
+            //IQueryable<TEntity> query = DbSet.Where(specification.GetExpression());
+            //bool hasSorted = false;
+            //orderExpressions.ForEach(orderExpression =>
+            //{
+            //    query = query.MergeOrderExpression(orderExpression, hasSorted);
+            //    hasSorted = true;
+            //});
+            //return query;
         }
 
         protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize, ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)

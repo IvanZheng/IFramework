@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -38,6 +40,7 @@ namespace IFramework.Infrastructure
     }
     public static class JsonHelper
     {
+        static ILogger _JsonLogger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(JsonHelper).Name) : null;
         static JsonSerializerSettings _NonPublicSerializerSettings;
         static JsonSerializerSettings NonPublicSerializerSettings
         {
@@ -53,6 +56,8 @@ namespace IFramework.Infrastructure
                 return _NonPublicSerializerSettings;
             }
         }
+
+        static readonly JsonSerializerSettings DefaultSerializerSettings = new JsonSerializerSettings();
 
         static readonly JsonSerializerSettings LoopSerializeSerializerSettings = new JsonSerializerSettings
         {
@@ -93,9 +98,22 @@ namespace IFramework.Infrastructure
             {
                 customSettings = LoopSerializeSerializerSettings;
             }
-            else if (useCamelCase)
+            else
             {
-                customSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                customSettings = DefaultSerializerSettings;
+            }
+
+            if (useCamelCase)
+            {
+                var resolver = customSettings.ContractResolver as DefaultContractResolver;
+                if (resolver != null)
+                {
+                    resolver.NamingStrategy = new CamelCaseNamingStrategy
+                    {
+                        ProcessDictionaryKeys = true,
+                        OverrideSpecifiedNames = true
+                    };
+                }
             }
             return customSettings;
         }
@@ -115,8 +133,9 @@ namespace IFramework.Infrastructure
                 }
                 return Newtonsoft.Json.JsonConvert.DeserializeObject(json, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _JsonLogger?.Error($"ToJsonObject Failed {json}", ex);
                 return null;
             }
 
@@ -143,8 +162,9 @@ namespace IFramework.Infrastructure
                     return Newtonsoft.Json.JsonConvert.DeserializeObject(json, jsonType, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _JsonLogger?.Error($"ToJsonObject Failed {json}", ex);
                 return null;
             }
 
@@ -171,8 +191,9 @@ namespace IFramework.Infrastructure
                     return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json, GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _JsonLogger?.Error($"ToJsonObject Failed {json}", ex);
                 return default(T);
             }
 
