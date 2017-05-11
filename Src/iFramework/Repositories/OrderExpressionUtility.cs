@@ -38,7 +38,11 @@ namespace IFramework.Repositories
             LambdaExpression le = null;
             if (orderExpression is OrderExpression<TEntity>)
             {
-                var member = ((orderExpression as OrderExpression<TEntity>).OrderByExpression.Body as UnaryExpression).Operand;
+                var member = (orderExpression as OrderExpression<TEntity>).OrderByExpression.Body;
+                if (member is UnaryExpression)
+                {
+                    member = (member as UnaryExpression).Operand;
+                }
                 le = Utility.GetLambdaExpression(typeof(TEntity), member);
             }
             else if (!string.IsNullOrWhiteSpace(orderExpression.OrderByField))
