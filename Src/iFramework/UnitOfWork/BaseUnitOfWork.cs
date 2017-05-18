@@ -11,6 +11,7 @@ using IFramework.Message;
 using IFramework.Config;
 using System.Transactions;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace IFramework.UnitOfWork
 {
@@ -49,6 +50,9 @@ namespace IFramework.UnitOfWork
 
         public abstract void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                     TransactionScopeOption scopOption = TransactionScopeOption.Required);
+        public abstract Task CommitAsync(CancellationToken cancellationToken,
+                                         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+                                         TransactionScopeOption scopeOption = TransactionScopeOption.Required);
 
         public abstract Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                          TransactionScopeOption scopOption = TransactionScopeOption.Required);

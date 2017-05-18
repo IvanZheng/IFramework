@@ -10,6 +10,7 @@ using IFramework.Infrastructure.Logging;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System;
+using System.Threading;
 
 namespace IFramework.EntityFramework
 {
@@ -45,7 +46,7 @@ namespace IFramework.EntityFramework
             try
             {
                 using (TransactionScope scope = new TransactionScope(scopOption,
-                                                                     new TransactionOptions { IsolationLevel = isolationLevel }, 
+                                                                     new TransactionOptions { IsolationLevel = isolationLevel },
                                                                      TransactionScopeAsyncFlowOption.Enabled))
                 {
                     _dbContexts.ForEach(dbContext =>
@@ -79,7 +80,12 @@ namespace IFramework.EntityFramework
             }
         }
 
-        public async virtual Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, 
+        public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, TransactionScopeOption scopeOption = TransactionScopeOption.Required)
+        {
+            return CommitAsync(CancellationToken.None, isolationLevel, scopeOption);
+        }
+
+        public async virtual Task CommitAsync(CancellationToken cancellationToken, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                               TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
 
@@ -91,7 +97,7 @@ namespace IFramework.EntityFramework
                 {
                     foreach (var dbContext in _dbContexts)
                     {
-                        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                         dbContext.ChangeTracker.Entries().ForEach(e =>
                         {
                             if (e.Entity is AggregateRoot)
