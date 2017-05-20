@@ -733,14 +733,14 @@ namespace IFramework.Infrastructure
 
 
 
-        public static TValueObject Clone<TValueObject>(this TValueObject valueObject,
-                                                       Action<TValueObject> initAction)
-            where  TValueObject : ValueObject, new()
-        {
-            var clonedObject = valueObject.Clone() as TValueObject;
-            initAction(clonedObject);
-            return clonedObject;
-        }
+        //public static TValueObject Clone<TValueObject>(this TValueObject valueObject,
+        //                                               Action<TValueObject> initAction = null)
+        //    where  TValueObject : ValueObject, new()
+        //{
+        //    var clonedObject = valueObject.Clone() as TValueObject;
+        //    initAction(clonedObject);
+        //    return clonedObject;
+        //}
 
         public static string ResolveVirtualPath(string path)
         {
