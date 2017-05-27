@@ -11,6 +11,12 @@ namespace IFramework.EntityFramework
 {
     public static class EntityExtension
     {
+        public static void Reload<TEntity>(this TEntity entity)
+            where TEntity : Entity
+        {
+            entity.GetDbContext<MSDbContext>()?.Reload(entity);
+        }
+
         public static TContext GetDbContext<TContext>(this Entity entity) where TContext : class
         {
             var context = entity.GetValueByKey<TContext>("DomainContext");

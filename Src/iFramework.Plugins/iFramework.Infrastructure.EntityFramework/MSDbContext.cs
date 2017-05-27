@@ -9,6 +9,7 @@ using IFramework.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Threading;
 using System.Threading.Tasks;
+using EntityKey = System.Data.Entity.Core.EntityKey;
 using EntityState = System.Data.Entity.EntityState;
 
 namespace IFramework.EntityFramework
@@ -19,7 +20,7 @@ namespace IFramework.EntityFramework
         {
             var dbEntity = entity as Entity;
             if (dbEntity != null)
-                ((dynamic) dbEntity).DomainContext = context;
+                ((dynamic)dbEntity).DomainContext = context;
         }
     }
 
@@ -44,35 +45,59 @@ namespace IFramework.EntityFramework
             //}
         }
 
+        private ObjectContext _objectContext;
+
         protected void InitObjectContext()
         {
-            var objectContext = (this as IObjectContextAdapter).ObjectContext;
-            if (objectContext != null)
-                objectContext.ObjectMaterialized +=
+            _objectContext = (this as IObjectContextAdapter).ObjectContext;
+            if (_objectContext != null)
+                _objectContext.ObjectMaterialized +=
                     (s, e) => this.InitializeQueryableCollections(e.Entity);
         }
 
         public virtual void Rollback()
         {
-            var context = (this as IObjectContextAdapter).ObjectContext;
             ChangeTracker.Entries().Where(e => e.State == EntityState.Added || e.State == EntityState.Deleted)
                 .ForEach(e => { e.State = EntityState.Detached; });
             var refreshableObjects = ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Modified || e.State == EntityState.Unchanged)
                 .Select(c => c.Entity);
-            context.Refresh(RefreshMode.StoreWins, refreshableObjects);
+            _objectContext.Refresh(RefreshMode.StoreWins, refreshableObjects);
             ChangeTracker.Entries().ForEach(e =>
             {
                 (e.Entity as AggregateRoot)?.Rollback();
             });
         }
 
+        public EntityKey GetEntityKey<T>(T entity)
+            where T : class
+        {
+            ObjectStateEntry ose;
+            if (null != entity && _objectContext.ObjectStateManager
+                    .TryGetObjectStateEntry(entity, out ose))
+            {
+                return ose.EntityKey;
+            }
+            return null;
+        }
 
+        public void Reload<TEntity>(TEntity entity)
+            where TEntity : class
+        {
+            var entry = Entry(entity);
+            entry.Reload();
+        }
 
         public override int SaveChanges()
         {
             try
             {
+                ChangeTracker.Entries()
+                             .Where(e => e.State == EntityState.Added)
+                             .ForEach(e =>
+                             {
+                                 this.InitializeQueryableCollections(e.Entity);
+                             });
                 return base.SaveChanges();
             }
             catch (DbUpdateConcurrencyException ex)
@@ -100,6 +125,12 @@ namespace IFramework.EntityFramework
         {
             try
             {
+                ChangeTracker.Entries()
+                    .Where(e => e.State == EntityState.Added)
+                    .ForEach(e =>
+                    {
+                        this.InitializeQueryableCollections(e.Entity);
+                    });
                 return await base.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
