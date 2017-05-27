@@ -53,6 +53,7 @@ namespace IFramework4._5Tests
         {
             _logger.DebugFormat("order: {1} process: {0}", messageContext.MessageID, _totalProcessed);
             Interlocked.Add(ref _totalProcessed, 1);
+            await Task.FromResult(true);
         }
     }
 }

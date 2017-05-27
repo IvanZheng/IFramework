@@ -51,7 +51,7 @@ namespace IFramework.Config
                     if (settingsReader != null)
                         builder.RegisterModule(settingsReader);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //Console.WriteLine(ex.GetBaseException().Message);
                 }

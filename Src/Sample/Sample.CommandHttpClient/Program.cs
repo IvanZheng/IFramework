@@ -49,22 +49,22 @@ namespace Sample.CommandHttpClient
             }
 
             return;
-            var apiClient = new HttpClient();
-            // apiClient.BaseAddress = new System.Uri("http://localhost:6357");
-            apiClient.BaseAddress = new Uri("http://localhost:63581");
+            //var apiClient = new HttpClient();
+            //// apiClient.BaseAddress = new System.Uri("http://localhost:6357");
+            //apiClient.BaseAddress = new Uri("http://localhost:63581");
 
-            var command = new ModifyCooperatorBasic
-            {
-                CooperatorID = "52b007cd9a37601480b6d5e6",
-                Name = "ivan",
-                Type = 0,
-                Remark = ""
-            };
+            //var command = new ModifyCooperatorBasic
+            //{
+            //    CooperatorID = "52b007cd9a37601480b6d5e6",
+            //    Name = "ivan",
+            //    Type = 0,
+            //    Remark = ""
+            //};
 
-            var task = apiClient.DoCommand(command);
+            //var task = apiClient.DoCommand(command);
 
-            var result = task.Result.Content.ReadAsStringAsync().Result;
-            Console.Write(result);
+            //var result = task.Result.Content.ReadAsStringAsync().Result;
+            //Console.Write(result);
         }
 
         public static void HttpClientGetTest()

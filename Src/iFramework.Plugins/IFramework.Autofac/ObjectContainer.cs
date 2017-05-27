@@ -20,7 +20,7 @@ namespace IFramework.Autofac
 
     public class ObjectContainer : IContainer
     {
-        private readonly string AutofacNotSupportedException = "autofac doesn't support retrieve parent container";
+        //private readonly string _autofacNotSupportedException = "autofac doesn't support retrieve parent container";
         internal ILifetimeScope _container;
 
         private bool _disposed;

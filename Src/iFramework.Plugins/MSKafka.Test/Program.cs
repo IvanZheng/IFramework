@@ -60,7 +60,7 @@ namespace MSKafka.Test
                     ZookeeperConsumerConnector.zkClientStatic?.Dispose();
                     break;
                 }
-                message = $"{message} @{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}";
+                message = $"{message} @{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffffff}";
                 var kafkaMessage = new Message(Encoding.UTF8.GetBytes(message));
                 var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
                 while (true)
@@ -72,7 +72,7 @@ namespace MSKafka.Test
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("send message failed");
+                        Console.WriteLine("send message failed {0}", ex.Message);
                         Thread.Sleep(2000);
                     }
             }
