@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Linq;
+using System.Threading.Tasks;
 using IFramework.EntityFramework;
-using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
@@ -57,7 +57,7 @@ namespace IFramework.MessageStoring
             if (commandContext != null)
             {
                 var command = BuildCommand(commandContext, ex);
-                command.Status = ex is DomainException ? MessageStatus.Failed : MessageStatus.UnknownFailed;
+                command.Status = MessageStatus.Failed;
                 Commands.Add(command);
 
                 if (eventContexts != null)
@@ -74,24 +74,7 @@ namespace IFramework.MessageStoring
 
         public void SaveEvent(IMessageContext eventContext)
         {
-            lock (EventLock)
-            {
-                try
-                {
-                    var @event = Events.Find(eventContext.MessageID);
-                    if (@event == null)
-                    {
-                        @event = BuildEvent(eventContext);
-                        Events.Add(@event);
-                        SaveChanges();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // only multiple subscribers consuming the same topic message will cause the Event Saving conflict.
-                    _logger?.Error($"SaveEvent failed. Event: {eventContext.Message.ToJson()}", ex);
-                }
-            }
+            InternalSaveEvent(eventContext);
         }
 
         // if not subscribe the same event message by topic's mulitple subscriptions
@@ -119,25 +102,16 @@ namespace IFramework.MessageStoring
         public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e,
             params IMessageContext[] messageContexts)
         {
-            //lock (EventLock)
+            var @event = InternalSaveEvent(eventContext);
+            HandledEvents.Add(new FailHandledEvent(@event.ID, subscriptionName, DateTime.Now, e));
+
+            messageContexts.ForEach(messageContext =>
             {
-                var @event = Events.Find(eventContext.MessageID);
-                if (@event == null)
-                {
-                    @event = BuildEvent(eventContext);
-                    Events.Add(@event);
-                }
-                HandledEvents.Add(new FailHandledEvent(@event.ID, subscriptionName, DateTime.Now, e));
-
-
-                messageContexts.ForEach(messageContext =>
-                {
-                    messageContext.CorrelationID = eventContext.MessageID;
-                    Events.Add(BuildEvent(messageContext));
-                    UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
-                });
-                SaveChanges();
-            }
+                messageContext.CorrelationID = eventContext.MessageID;
+                Events.Add(BuildEvent(messageContext));
+                UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
+            });
+            SaveChanges();
         }
 
         public CommandHandledInfo GetCommandHandledInfo(string commandId)
@@ -185,10 +159,40 @@ namespace IFramework.MessageStoring
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
 
+
+        internal Event InternalSaveEvent(IMessageContext eventContext)
+        {
+            // lock (EventLock)
+            {
+                var retryTimes = 5;
+                while (true)
+                    try
+                    {
+                        var @event = Events.Find(eventContext.MessageID);
+                        if (@event == null)
+                        {
+                            @event = BuildEvent(eventContext);
+                            Events.Add(@event);
+                            SaveChanges();
+                        }
+                        return @event;
+                    }
+                    catch (Exception)
+                    {
+                        if (--retryTimes > 0)
+                            Task.Delay(50).Wait();
+                        else
+                            throw;
+                    }
+            }
+        }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<HandledEvent>().HasKey(e => new {e.Id, e.SubscriptionName});
+            modelBuilder.Entity<HandledEvent>().HasKey(e => new {e.Id, e.SubscriptionName})
+                .Property(handledEvent => handledEvent.SubscriptionName)
+                .HasMaxLength(322);
 
             //modelBuilder.Entity<Message>()
             //    .Map<Command>(map =>

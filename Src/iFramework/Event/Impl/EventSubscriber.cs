@@ -215,7 +215,7 @@ namespace IFramework.Event.Impl
             }
             catch (Exception e)
             {
-                _logger?.Error($"Handle event failed event: {eventContext.ToJson()}", e);
+                _logger?.Fatal($"Handle event failed event: {eventContext.ToJson()}", e);
             }
             _internalConsumer.CommitOffset(eventContext);
         }

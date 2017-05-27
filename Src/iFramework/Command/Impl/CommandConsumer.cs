@@ -283,7 +283,7 @@ namespace IFramework.Command.Impl
             }
             catch (Exception ex)
             {
-                _logger?.Error($"consume command failed", ex);
+                _logger?.Fatal($"consume command failed", ex);
             }
             _internalConsumer.CommitOffset(commandContext);
         }

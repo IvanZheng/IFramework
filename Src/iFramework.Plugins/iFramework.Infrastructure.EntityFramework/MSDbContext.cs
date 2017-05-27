@@ -1,9 +1,15 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Data;
+using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using IFramework.Domain;
 using IFramework.Infrastructure;
+using System.Data.Entity.Validation;
+using System.Threading;
+using System.Threading.Tasks;
+using EntityState = System.Data.Entity.EntityState;
 
 namespace IFramework.EntityFramework
 {
@@ -38,7 +44,6 @@ namespace IFramework.EntityFramework
             //}
         }
 
-
         protected void InitObjectContext()
         {
             var objectContext = (this as IObjectContextAdapter).ObjectContext;
@@ -58,9 +63,59 @@ namespace IFramework.EntityFramework
             context.Refresh(RefreshMode.StoreWins, refreshableObjects);
             ChangeTracker.Entries().ForEach(e =>
             {
-                if (e.Entity is AggregateRoot)
-                    (e.Entity as AggregateRoot).Rollback();
+                (e.Entity as AggregateRoot)?.Rollback();
             });
+        }
+
+
+
+        public override int SaveChanges()
+        {
+            try
+            {
+                return base.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                Rollback();
+                throw new OptimisticConcurrencyException(ex.Message, ex);
+            }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessage = string.Join(";", ex.EntityValidationErrors
+                    .SelectMany(eve => eve.ValidationErrors
+                        .Select(e => new { eve.Entry, Error = e })
+                        .Select(
+                            e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                throw new Exception(errorMessage, ex);
+            }
+        }
+
+        public override Task<int> SaveChangesAsync()
+        {
+            return SaveChangesAsync(CancellationToken.None);
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await base.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                Rollback();
+                throw new OptimisticConcurrencyException(ex.Message, ex);
+            }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessage = string.Join(";", ex.EntityValidationErrors
+                    .SelectMany(eve => eve.ValidationErrors
+                        .Select(e => new { eve.Entry, Error = e })
+                        .Select(
+                            e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                throw new Exception(errorMessage, ex);
+            }
         }
     }
 }
