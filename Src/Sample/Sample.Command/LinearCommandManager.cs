@@ -1,17 +1,11 @@
-﻿using Sample.Command;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Sample.Command
+﻿namespace Sample.Command
 {
     public class LinearCommandManager : IFramework.Command.Impl.LinearCommandManager
     {
-        public LinearCommandManager() : base()
+        public LinearCommandManager()
         {
-            this.RegisterLinearCommand<Login>(cmd => cmd.UserName);
-            this.RegisterLinearCommand<Register>(cmd => "register:" + cmd.UserName);
+            RegisterLinearCommand<Login>(cmd => cmd.UserName);
+            RegisterLinearCommand<Register>(cmd => "register:" + cmd.UserName);
         }
     }
 }

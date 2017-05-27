@@ -1,37 +1,18 @@
-﻿/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Web.Script.Serialization;
+using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 
 namespace Kafka.Client.Consumers
 {
-    using IFramework.IoC;using IFramework.Infrastructure.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Reflection;
-    using System.Text;
-    using System.Web.Script.Serialization;
-    using Utils;
-
     internal class TopicCount
     {
         public static ILogger Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(TopicCount));
+        private readonly string consumerIdString;
 
         private readonly IDictionary<string, int> topicCountMap;
-        private readonly string consumerIdString;
 
         public TopicCount(string consumerIdString, IDictionary<string, int> topicCountMap)
         {
@@ -58,13 +39,11 @@ namespace Kafka.Client.Consumers
         public IDictionary<string, IList<string>> GetConsumerThreadIdsPerTopic()
         {
             var result = new Dictionary<string, IList<string>>();
-            foreach (KeyValuePair<string, int> item in topicCountMap)
+            foreach (var item in topicCountMap)
             {
                 var consumerSet = new List<string>();
-                for (int i = 0; i < item.Value; i++)
-                {
+                for (var i = 0; i < item.Value; i++)
                     consumerSet.Add(consumerIdString + "-" + i);
-                }
 
                 result.Add(item.Key, consumerSet);
             }
@@ -76,9 +55,7 @@ namespace Kafka.Client.Consumers
         {
             var o = obj as TopicCount;
             if (o != null)
-            {
-                return this.consumerIdString == o.consumerIdString && this.topicCountMap == o.topicCountMap;
-            }
+                return consumerIdString == o.consumerIdString && topicCountMap == o.topicCountMap;
 
             return false;
         }
@@ -86,12 +63,12 @@ namespace Kafka.Client.Consumers
 
         public override int GetHashCode()
         {
-            if (this.consumerIdString != null && this.topicCountMap != null)
-                return this.consumerIdString.GetHashCode() ^ this.topicCountMap.GetHashCode();
-            if (this.consumerIdString != null)
-                return this.consumerIdString.GetHashCode();
-            if (this.topicCountMap != null)
-                return this.topicCountMap.GetHashCode();
+            if (consumerIdString != null && topicCountMap != null)
+                return consumerIdString.GetHashCode() ^ topicCountMap.GetHashCode();
+            if (consumerIdString != null)
+                return consumerIdString.GetHashCode();
+            if (topicCountMap != null)
+                return topicCountMap.GetHashCode();
             return 0;
         }
 
@@ -105,13 +82,11 @@ namespace Kafka.Client.Consumers
         {
             var sb = new StringBuilder();
             sb.Append("{ ");
-            int i = 0;
-            foreach (KeyValuePair<string, int> entry in this.topicCountMap)
+            var i = 0;
+            foreach (var entry in topicCountMap)
             {
                 if (i > 0)
-                {
                     sb.Append(",");
-                }
 
                 sb.Append("\"" + entry.Key + "\": " + entry.Value);
                 i++;

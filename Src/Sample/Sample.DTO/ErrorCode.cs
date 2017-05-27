@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Sample.DTO
 {
@@ -11,8 +6,7 @@ namespace Sample.DTO
     {
         NoError,
         UsernameAlreadyExists,
-        [Description("username:{0} or password is wrong!")]
-        WrongUsernameOrPassword,
+        [Description("username:{0} or password is wrong!")] WrongUsernameOrPassword,
         UserNotExists,
         CountNotEnougth,
         CommandInvalid = 0x7ffffffe,

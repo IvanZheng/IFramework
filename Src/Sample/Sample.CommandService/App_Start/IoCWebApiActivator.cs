@@ -1,8 +1,10 @@
 using System.Web.Http;
 using IFramework.IoC.WebApi;
+using Sample.CommandService.App_Start;
+using WebActivatorEx;
 
-[assembly: WebActivatorEx.PreApplicationStartMethod(typeof(Sample.CommandService.App_Start.IoCWebApiActivator), "Start")]
-[assembly: WebActivatorEx.ApplicationShutdownMethod(typeof(Sample.CommandService.App_Start.IoCWebApiActivator), "Shutdown")]
+[assembly: PreApplicationStartMethod(typeof(IoCWebApiActivator), "Start")]
+[assembly: ApplicationShutdownMethod(typeof(IoCWebApiActivator), "Shutdown")]
 
 namespace Sample.CommandService.App_Start
 {

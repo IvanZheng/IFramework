@@ -4,11 +4,11 @@ namespace IFramework.SingleSignOn.IdentityProvider
 {
     public class SingleSignOnManager
     {
-        const string SiteCookieName = "StsSiteCookie";
-        const string SiteName = "StsSite";
+        private const string SiteCookieName = "StsSiteCookie";
+        private const string SiteName = "StsSite";
 
         /// <summary>
-        /// Returns a list of sites the user is logged in via the STS
+        ///     Returns a list of sites the user is logged in via the STS
         /// </summary>
         /// <returns></returns>
         public static string[] SignOut()
@@ -39,7 +39,5 @@ namespace IFramework.SingleSignOn.IdentityProvider
                 HttpContext.Current.Response.AppendCookie(siteCookie);
             }
         }
-
     }
-
 }

@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace IFramework.Infrastructure
 {
     public static class GuidUtil
     {
-        private static readonly long EpochMilliseconds = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks / 10000L;
+        private static readonly long EpochMilliseconds =
+            new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks / 10000L;
 
         /// <summary>
-        /// Creates a sequential GUID according to SQL Server's ordering rules.
+        ///     Creates a sequential GUID according to SQL Server's ordering rules.
         /// </summary>
         public static Guid NewSequentialId()
         {
@@ -19,7 +17,7 @@ namespace IFramework.Infrastructure
             var guidBytes = Guid.NewGuid().ToByteArray();
 
             // get the milliseconds since Jan 1 1970
-            byte[] sequential = BitConverter.GetBytes((DateTime.Now.Ticks / 10000L) - EpochMilliseconds);
+            var sequential = BitConverter.GetBytes(DateTime.Now.Ticks / 10000L - EpochMilliseconds);
 
             // discard the 2 most significant bytes, as we only care about the milliseconds increasing, but the highest ones 
             // should be 0 for several thousand years to come (non-issue).

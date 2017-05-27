@@ -1,17 +1,16 @@
-﻿using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using IFramework.Infrastructure;
-using System.ComponentModel.DataAnnotations.Schema;
+using IFramework.Message;
 using IFramework.Message.Impl;
 
 namespace IFramework.MessageStoring
 {
     public abstract class Message
     {
-        public Message() { }
+        public Message()
+        {
+        }
+
         public Message(IMessageContext messageContext)
         {
             ID = messageContext.MessageID;
@@ -39,6 +38,5 @@ namespace IFramework.MessageStoring
         public SagaInfo SagaInfo { get; set; }
         public string IP { get; set; }
         public string Producer { get; set; }
-      
     }
 }

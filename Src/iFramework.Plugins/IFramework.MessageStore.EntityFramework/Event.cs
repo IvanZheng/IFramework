@@ -1,19 +1,14 @@
 ﻿using IFramework.Event;
 using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace IFramework.MessageStoring
 {
     public class Event : Message
     {
-        public string AggregateRootID { get; set; }
-        public string AggregateRootType { get; set; }
-        public int Version { get; set; }
+        public Event()
+        {
+        }
 
-        public Event() { }
         public Event(IMessageContext messageContext) :
             base(messageContext)
         {
@@ -26,11 +21,16 @@ namespace IFramework.MessageStoring
             }
         }
 
-        //public Message Parent
-        //{
-        //    get
-        //    {
+        public string AggregateRootID { get; set; }
+        public string AggregateRootType { get; set; }
+
+        public int Version { get; set; }
         //        return ParentMessage;
+        //    {
+        //    get
+        //{
+
+        //public Message Parent
         //    }
         //}
 

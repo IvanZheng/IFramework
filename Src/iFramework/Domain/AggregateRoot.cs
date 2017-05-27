@@ -1,17 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using IFramework.Infrastructure;
-using System.Reflection;
 using IFramework.Event;
-using IFramework.Event.Impl;
+using Newtonsoft.Json;
 
 namespace IFramework.Domain
 {
     public abstract class AggregateRoot : Entity, IAggregateRoot
     {
-        Queue<IDomainEvent> EventQueue = new Queue<IDomainEvent>();
+        private string _aggreagetRootType;
+        private readonly Queue<IDomainEvent> EventQueue = new Queue<IDomainEvent>();
+
+        [JsonIgnore]
+        protected string AggregateRootName
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_aggreagetRootType))
+                {
+                    var aggreagetRootType = GetType();
+                    if ("EntityProxyModule" == GetType().Module.ToString())
+                        aggreagetRootType = aggreagetRootType.BaseType;
+                    _aggreagetRootType = aggreagetRootType.FullName;
+                }
+                return _aggreagetRootType;
+            }
+        }
 
         public IEnumerable<IDomainEvent> GetDomainEvents()
         {
@@ -23,28 +36,9 @@ namespace IFramework.Domain
             EventQueue.Clear();
         }
 
-        string _aggreagetRootType;
-        [Newtonsoft.Json.JsonIgnore]
-        protected string AggregateRootName
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(_aggreagetRootType))
-                {
-                    var aggreagetRootType = this.GetType();
-                    if ("EntityProxyModule" == this.GetType().Module.ToString())
-                    {
-                        aggreagetRootType = aggreagetRootType.BaseType;
-                    }
-                    _aggreagetRootType = aggreagetRootType.FullName;
-                }
-                return _aggreagetRootType;
-            }
-        }
-
         protected virtual void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
         {
-            HandleEvent<TDomainEvent>(@event);
+            HandleEvent(@event);
             @event.AggregateRootName = AggregateRootName;
             EventQueue.Enqueue(@event);
         }
@@ -53,9 +47,7 @@ namespace IFramework.Domain
         {
             var subscriber = this as IEventSubscriber<TDomainEvent>;
             if (subscriber != null)
-            {
                 subscriber.Handle(@event);
-            }
             //else no need to call parent event handler, let client decide it!
             //{
             //    var eventSubscriberInterfaces = this.GetType().GetInterfaces()

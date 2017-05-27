@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
 
@@ -9,17 +7,19 @@ namespace IFramework.Infrastructure
 {
     public class DynamicJson : DynamicObject
     {
-        public string ToJson()
-        {
-            return _json?.ToString();
-        }
-        internal Newtonsoft.Json.Linq.JObject _json;
-        public DynamicJson(Newtonsoft.Json.Linq.JObject json)
+        internal JObject _json;
+
+        public DynamicJson(JObject json)
         {
             _json = json;
         }
 
-        dynamic ObjectToDynamic(object value)
+        public string ToJson()
+        {
+            return _json?.ToString();
+        }
+
+        private dynamic ObjectToDynamic(object value)
         {
             object result = null;
             if (value is JValue)
@@ -33,10 +33,7 @@ namespace IFramework.Infrastructure
             else if (value is JArray)
             {
                 var values = new List<dynamic>();
-                (value as JArray).ForEach(v =>
-                {
-                    values.Add(ObjectToDynamic(v));
-                });
+                (value as JArray).ForEach(v => { values.Add(ObjectToDynamic(v)); });
                 result = values;
             }
             else
@@ -48,7 +45,7 @@ namespace IFramework.Infrastructure
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            bool ret = false;
+            var ret = false;
             JToken value;
             if (_json.TryGetValue(binder.Name, out value))
             {
@@ -64,18 +61,14 @@ namespace IFramework.Infrastructure
 
         public override bool TrySetMember(SetMemberBinder binder, object val)
         {
-            bool ret = true;
+            var ret = true;
             try
             {
                 var property = _json.Property(binder.Name);
                 if (property != null)
-                {
                     property.Value = JToken.FromObject(val);
-                }
                 else
-                {
                     _json.Add(binder.Name, JToken.FromObject(val));
-                }
             }
             catch (Exception)
             {

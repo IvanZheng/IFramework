@@ -1,11 +1,7 @@
-﻿using IFramework.SingleSignOn.IdentityProvider;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Services;
-using System.Linq;
+﻿using System.IdentityModel.Services;
 using System.Security.Claims;
-using System.Web;
 using System.Web.Mvc;
+using IFramework.SingleSignOn.IdentityProvider;
 
 namespace IFramework.Sample.AuthWeb.Controllers
 {
@@ -15,10 +11,10 @@ namespace IFramework.Sample.AuthWeb.Controllers
         public ActionResult Index()
         {
             FederatedPassiveSecurityTokenServiceOperations.ProcessRequest(
-            System.Web.HttpContext.Current.Request,
-            User as ClaimsPrincipal,
-            CustomSecurityTokenServiceConfiguration.Current.CreateSecurityTokenService(),
-            System.Web.HttpContext.Current.Response);
+                System.Web.HttpContext.Current.Request,
+                User as ClaimsPrincipal,
+                CustomSecurityTokenServiceConfiguration.Current.CreateSecurityTokenService(),
+                System.Web.HttpContext.Current.Response);
             return View();
         }
 

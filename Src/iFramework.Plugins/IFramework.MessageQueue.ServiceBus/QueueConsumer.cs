@@ -1,19 +1,20 @@
-﻿using IFramework.Config;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using IFramework.Config;
 using IFramework.Message;
 using IFramework.MessageQueue.ServiceBus.MessageFormat;
 using Microsoft.ServiceBus.Messaging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using MessageState = Microsoft.ServiceBus.Messaging.MessageState;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
     public class QueueConsumer : ServiceBusConsumer
     {
-        QueueClient _queueClient;
+        private readonly QueueClient _queueClient;
+
         public QueueConsumer(string id, OnMessagesReceived onMessagesReceived, QueueClient queueClient)
             : base(id, onMessagesReceived)
         {
@@ -37,34 +38,33 @@ namespace IFramework.MessageQueue.ServiceBus
         public override void Start()
         {
             _cancellationTokenSource = new CancellationTokenSource();
-            var task = Task.Factory.StartNew((cs) => ReceiveQueueMessages(cs as CancellationTokenSource,
-                                                                          _onMessagesReceived),
-                                                     _cancellationTokenSource,
-                                                     _cancellationTokenSource.Token,
-                                                     TaskCreationOptions.LongRunning,
-                                                     TaskScheduler.Default);
+            var task = Task.Factory.StartNew(cs => ReceiveQueueMessages(cs as CancellationTokenSource,
+                    _onMessagesReceived),
+                _cancellationTokenSource,
+                _cancellationTokenSource.Token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
         }
 
-        private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource, OnMessagesReceived onMessagesReceived)
+        private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource,
+            OnMessagesReceived onMessagesReceived)
         {
-            bool needPeek = true;
+            var needPeek = true;
             long sequenceNumber = 0;
             IEnumerable<BrokeredMessage> brokeredMessages = null;
 
             #region peek messages that not been consumed since last time
+
             while (!cancellationTokenSource.IsCancellationRequested && needPeek)
-            {
                 try
                 {
                     brokeredMessages = _queueClient.PeekBatch(sequenceNumber, 50);
                     if (brokeredMessages == null || brokeredMessages.Count() == 0)
-                    {
                         break;
-                    }
-                    List<IMessageContext> messageContexts = new List<IMessageContext>();
+                    var messageContexts = new List<IMessageContext>();
                     foreach (var message in brokeredMessages)
                     {
-                        if (message.State != Microsoft.ServiceBus.Messaging.MessageState.Deferred)
+                        if (message.State != MessageState.Deferred)
                         {
                             needPeek = false;
                             break;
@@ -87,15 +87,16 @@ namespace IFramework.MessageQueue.ServiceBus
                     Thread.Sleep(1000);
                     _logger.Error($" queueClient.PeekBatch {_queueClient.Path} failed", ex);
                 }
-            }
+
             #endregion
 
             #region receive messages to enqueue consuming queue
+
             while (!cancellationTokenSource.IsCancellationRequested)
-            {
                 try
                 {
-                    brokeredMessages = _queueClient.ReceiveBatch(50, Configuration.Instance.GetMessageQueueReceiveMessageTimeout());
+                    brokeredMessages =
+                        _queueClient.ReceiveBatch(50, Configuration.Instance.GetMessageQueueReceiveMessageTimeout());
                     foreach (var message in brokeredMessages)
                     {
                         message.Defer();
@@ -115,10 +116,8 @@ namespace IFramework.MessageQueue.ServiceBus
                     Thread.Sleep(1000);
                     _logger.Error($" queueClient.PeekBatch {_queueClient.Path} failed", ex);
                 }
-            }
+
             #endregion
         }
-
-
     }
 }

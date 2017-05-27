@@ -1,27 +1,17 @@
-﻿using IFramework.Message;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using IFramework.Command;
 
 namespace IFramework.Event.Impl
 {
     public class MockEventBus : IEventBus
     {
-        public void Commit()
-        {
-
-        }
-
         public void Dispose()
         {
-
         }
 
         public void Publish<TMessage>(TMessage @event) where TMessage : IEvent
         {
-
         }
 
         public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent
@@ -66,6 +56,10 @@ namespace IFramework.Event.Impl
         public void FinishSaga(object sagaResult)
         {
             throw new NotImplementedException();
+        }
+
+        public void Commit()
+        {
         }
     }
 }

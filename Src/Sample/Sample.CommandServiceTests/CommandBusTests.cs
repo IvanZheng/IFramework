@@ -1,4 +1,9 @@
-﻿using IFramework.AspNet;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.EntityFramework.Config;
@@ -13,35 +18,31 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sample.Command;
 using Sample.CommandServiceTests.Products;
 using Sample.DTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sample.CommandService.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class CommandBusTests
     {
-        ICommandBus _commandBus;
-        static string _zkConnectionString = "localhost:2181";
-        List<CreateProduct> _createProducts;
-        ILogger _logger;
+        private static readonly string _zkConnectionString = "localhost:2181";
+        private ICommandBus _commandBus;
+        private List<CreateProduct> _createProducts;
+        private ILogger _logger;
+
+        private readonly int batchCount = 10;
+        private readonly int productCount = 10;
 
         [TestInitialize]
         public void Initialize()
         {
             Configuration.Instance.UseUnityContainer()
-                                  .UseLog4Net()
-                                  .UseKafka(_zkConnectionString)
-                                  //    .SetCommitPerMessage(true)//for servicebus !!!
-                                  .MessageQueueUseMachineNameFormat()
-                                  .UseCommandBus("CommandBusTest", "CommandBusTest.ReplyTopic", "CommandBusTest.ReplySubscription")
-                                  .RegisterDefaultEventBus()
-                                  .RegisterEntityFrameworkComponents();
+                .UseLog4Net()
+                .UseKafka(_zkConnectionString)
+                //    .SetCommitPerMessage(true)//for servicebus !!!
+                .MessageQueueUseMachineNameFormat()
+                .UseCommandBus("CommandBusTest", "CommandBusTest.ReplyTopic", "CommandBusTest.ReplySubscription")
+                .RegisterDefaultEventBus()
+                .RegisterEntityFrameworkComponents();
 
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(CommandBusTests));
             InitProducts();
@@ -55,16 +56,13 @@ namespace Sample.CommandService.Tests
             _createProducts = handlerTest._createProducts;
         }
 
-        int batchCount = 10;
-        int productCount = 10;
-
-        [TestMethod()]
+        [TestMethod]
         public void CommandBusReduceProductTest()
         {
             _commandBus = MessageQueueFactory.GetCommandBus();
             _commandBus.Start();
             var startTime = DateTime.Now;
-            ReduceProduct reduceProduct = new ReduceProduct
+            var reduceProduct = new ReduceProduct
             {
                 ProductId = _createProducts[0].ProductId,
                 ReduceCount = 1
@@ -81,13 +79,10 @@ namespace Sample.CommandService.Tests
             }, true).Result.ReadAsAsync<List<Project>>().Result;
             var success = true;
             Console.WriteLine(products.ToJson());
-            for (int i = 0; i < _createProducts.Count; i++)
-            {
+            for (var i = 0; i < _createProducts.Count; i++)
                 success = success && products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
-                                             .Count ==
-                                     _createProducts[i].Count - batchCount;
-
-            }
+                              .Count ==
+                          _createProducts[i].Count - batchCount;
             Console.WriteLine($"test success {success}");
             Stop();
         }
@@ -98,7 +93,7 @@ namespace Sample.CommandService.Tests
         {
             _commandBus = MessageQueueFactory.GetCommandBus();
             _commandBus.Start();
-            ReduceProduct reduceProduct = new ReduceProduct
+            var reduceProduct = new ReduceProduct
             {
                 ProductId = _createProducts.First().ProductId,
                 ReduceCount = 1
@@ -113,18 +108,20 @@ namespace Sample.CommandService.Tests
             {
                 var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
                 var sendTime = DateTime.Parse(message);
-                Console.WriteLine($"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                Console.WriteLine(
+                    $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
                 kafkaConsumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
             };
 
-            var consumer = new KafkaConsumer(_zkConnectionString, commandQueue, $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
+            var consumer = new KafkaConsumer(_zkConnectionString, commandQueue,
+                $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
             return consumer;
         }
 
         [TestMethod]
         public void ConsumerTest()
         {
-            string commandQueue = "seop.groupcommandqueue";
+            var commandQueue = "seop.groupcommandqueue";
             var cancellationTokenSource = new CancellationTokenSource();
             var consumer = CreateConsumer(commandQueue, "ConsumerTest");
             Thread.Sleep(100);
@@ -132,25 +129,23 @@ namespace Sample.CommandService.Tests
             ZookeeperConsumerConnector.zkClientStatic?.Dispose();
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CommandBusPressureTest()
         {
             _commandBus = MessageQueueFactory.GetCommandBus();
             _commandBus.Start();
             var startTime = DateTime.Now;
             var tasks = new List<Task>();
-            for (int i = 0; i < batchCount; i++)
+            for (var i = 0; i < batchCount; i++)
+            for (var j = 0; j < _createProducts.Count; j++)
             {
-                for (int j = 0; j < _createProducts.Count; j++)
+                var reduceProduct = new ReduceProduct
                 {
-                    ReduceProduct reduceProduct = new ReduceProduct
-                    {
-                        ProductId = _createProducts[j].ProductId,
-                        ReduceCount = 1
-                    };
-                    var t = _commandBus.ExecuteAsync(reduceProduct);
-                    tasks.Add(t);
-                }
+                    ProductId = _createProducts[j].ProductId,
+                    ReduceCount = 1
+                };
+                var t = _commandBus.ExecuteAsync(reduceProduct);
+                tasks.Add(t);
             }
             Task.WaitAll(tasks.ToArray());
             var costTime = (DateTime.Now - startTime).TotalMilliseconds;
@@ -162,13 +157,10 @@ namespace Sample.CommandService.Tests
             }).Result;
             var success = true;
 
-            for (int i = 0; i < _createProducts.Count; i++)
-            {
+            for (var i = 0; i < _createProducts.Count; i++)
                 success = success && products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
-                                             .Count ==
-                                     _createProducts[i].Count - batchCount;
-
-            }
+                              .Count ==
+                          _createProducts[i].Count - batchCount;
             Console.WriteLine($"test success {success}");
             Assert.IsTrue(success);
             Stop();

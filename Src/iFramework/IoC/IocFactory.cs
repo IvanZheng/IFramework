@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Configuration;
 
 namespace IFramework.IoC
 {
@@ -10,24 +6,16 @@ namespace IFramework.IoC
     {
         #region Singleton
 
-        static readonly IoCFactory instance = new IoCFactory();
-
         /// <summary>
-        /// Get singleton instance of IoCFactory
+        ///     Get singleton instance of IoCFactory
         /// </summary>
-        public static IoCFactory Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
+        public static IoCFactory Instance { get; } = new IoCFactory();
 
         #endregion
 
         #region Members
 
-        static IContainer _CurrentContainer;
+        private static IContainer _CurrentContainer;
 
         public static bool IsInit()
         {
@@ -35,19 +23,17 @@ namespace IFramework.IoC
         }
 
         /// <summary>
-        /// Get current configured IContainer
-        /// <remarks>
-        /// At this moment only IoCUnityContainer existss
-        /// </remarks>
+        ///     Get current configured IContainer
+        ///     <remarks>
+        ///         At this moment only IoCUnityContainer existss
+        ///     </remarks>
         /// </summary>
         public IContainer CurrentContainer
         {
             get
             {
                 if (_CurrentContainer == null)
-                {
                     throw new Exception("Please call SetContainer first.");
-                }
                 return _CurrentContainer;
             }
         }

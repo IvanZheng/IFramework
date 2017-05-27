@@ -1,11 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace Kafka.Client.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-
     public class UnableToConnectToHostException : Exception
     {
         public UnableToConnectToHostException(string server, int port)
@@ -18,13 +15,17 @@ namespace Kafka.Client.Exceptions
         {
         }
 
-        public UnableToConnectToHostException() : base()
+        public UnableToConnectToHostException()
         {
         }
+
         public UnableToConnectToHostException(string message, Exception innterException)
             : base(message, innterException)
         {
         }
-        public UnableToConnectToHostException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+
+        public UnableToConnectToHostException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
     }
 }

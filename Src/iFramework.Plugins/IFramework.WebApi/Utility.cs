@@ -5,11 +5,9 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.ServiceModel.Channels;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
@@ -21,29 +19,6 @@ namespace IFramework.AspNet
         private const string BracketExpressionString = @"\[([A-Za-z]+)\]";
 
         private static readonly Regex BracketExpression = new Regex(BracketExpressionString);
-
-        private static IEnumerable<string> ParseKey(string key)
-        {
-            // for form values like data[key1][key2], as provided using jQuery $.post, we want
-            //   to also ensure that the form data.key1.key2 is in the dictionary to conform to
-            //   what ASP.NET MVC expects
-
-            var result = new List<string>
-        {
-            key
-        };
-
-            var str = key;
-
-            while (BracketExpression.IsMatch(str))
-            {
-                str = BracketExpression.Replace(str, @".$1", 1);
-
-                result.Add(str);
-            }
-
-            return result;
-        }
 
         private readonly IValueProvider _valueProvider;
 
@@ -66,24 +41,18 @@ namespace IFramework.AspNet
                     var keys = ParseKey(key);
 
                     foreach (var k in keys)
-                    {
                         if (k.EndsWith("[]"))
                         {
                             var arrayKey = k.Substring(0, k.Length - 2);
                             var arrayValues = value.Split(',');
                             if (arrayValues.Length > 0)
-                            {
-                                for (int i = 0; i < arrayValues.Length; i++)
-                                {
+                                for (var i = 0; i < arrayValues.Length; i++)
                                     values[string.Format("{0}[{1}]", arrayKey, i)] = arrayValues[i];
-                                }
-                            }
                         }
                         else
                         {
                             values[k] = value;
                         }
-                    }
                 }
             }
 
@@ -103,15 +72,39 @@ namespace IFramework.AspNet
 
             return result;
         }
+
+        private static IEnumerable<string> ParseKey(string key)
+        {
+            // for form values like data[key1][key2], as provided using jQuery $.post, we want
+            //   to also ensure that the form data.key1.key2 is in the dictionary to conform to
+            //   what ASP.NET MVC expects
+
+            var result = new List<string>
+            {
+                key
+            };
+
+            var str = key;
+
+            while (BracketExpression.IsMatch(str))
+            {
+                str = BracketExpression.Replace(str, @".$1", 1);
+
+                result.Add(str);
+            }
+
+            return result;
+        }
     }
+
     public static class FormDataUtility
     {
         public static object ConvertToObject(this FormDataCollection formDataCollection, Type type)
         {
             try
             {
-                DefaultModelBinder binder = new DefaultModelBinder();
-                ModelBindingContext modelBindingContext = new ModelBindingContext()
+                var binder = new DefaultModelBinder();
+                var modelBindingContext = new ModelBindingContext
                 {
                     ModelMetadata = ModelMetadataProviders.Current.GetMetadataForType(null, type),
                     ValueProvider = new FormValueProvider(formDataCollection.ReadAsNameValueCollection())
@@ -126,66 +119,56 @@ namespace IFramework.AspNet
         }
 
 
-
-
-        public static NameValueCollection ToNameValueCollection<T>(this T dynamicObject, 
-                                                                   string key = null,
-                                                                   NameValueCollection nameValueCollection = null,
-                                                                   bool removeEmptyObject = true)
+        public static NameValueCollection ToNameValueCollection<T>(this T dynamicObject,
+            string key = null,
+            NameValueCollection nameValueCollection = null,
+            bool removeEmptyObject = true)
         {
             nameValueCollection = nameValueCollection ?? HttpUtility.ParseQueryString("");
             if (dynamicObject == null)
-            {
                 return nameValueCollection;
-            }
             var objectType = dynamicObject.GetType();
             if (objectType.IsPrimitive || objectType == typeof(string) || objectType == typeof(DateTime))
             {
                 var value = dynamicObject.ToString();
                 if (!removeEmptyObject || !string.IsNullOrWhiteSpace(value))
-                {
                     nameValueCollection.Add(key, value);
-                }
                 return nameValueCollection;
             }
             var propertyDescriptors = TypeDescriptor.GetProperties(dynamicObject);
-            for (int i = 0; i < propertyDescriptors.Count; i++)
+            for (var i = 0; i < propertyDescriptors.Count; i++)
             {
-                PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
+                var propertyDescriptor = propertyDescriptors[i];
                 var value = propertyDescriptor.GetValue(dynamicObject);
                 if (value == null)
-                {
                     continue;
-                }
                 if (propertyDescriptor.PropertyType.IsPrimitive ||
-                         propertyDescriptor.PropertyType == typeof(string) ||
-                         propertyDescriptor.PropertyType == typeof(DateTime))
+                    propertyDescriptor.PropertyType == typeof(string) ||
+                    propertyDescriptor.PropertyType == typeof(DateTime))
                 {
                     if (removeEmptyObject && string.IsNullOrWhiteSpace(value.ToString()))
-                    {
                         continue;
-                    }
-                    var formDataKey = string.IsNullOrEmpty(key) ? $"{propertyDescriptor.Name}" :
-                                        $"{key}[{propertyDescriptor.Name}]";
+                    var formDataKey = string.IsNullOrEmpty(key)
+                        ? $"{propertyDescriptor.Name}"
+                        : $"{key}[{propertyDescriptor.Name}]";
 
                     nameValueCollection.Add(formDataKey, value.ToString());
                 }
                 else if (value is IEnumerable)
                 {
-                    int j = 0;
-                    foreach (var val in (value as IEnumerable))
+                    var j = 0;
+                    foreach (var val in value as IEnumerable)
                     {
-                        var formDataKey = string.IsNullOrEmpty(key) ? $"{propertyDescriptor.Name}[{j}]" :
-                                          $"{key}[{propertyDescriptor.Name}][{j}]";
+                        var formDataKey = string.IsNullOrEmpty(key)
+                            ? $"{propertyDescriptor.Name}[{j}]"
+                            : $"{key}[{propertyDescriptor.Name}][{j}]";
                         var valType = val.GetType();
                         if (valType.IsPrimitive ||
                             valType == typeof(string) ||
                             valType == typeof(DateTime))
                         {
                             if (!removeEmptyObject || !string.IsNullOrWhiteSpace(val.ToString()))
-                            {
                                 nameValueCollection.Add(formDataKey, val.ToString());
-                            }
                         }
                         else
                         {
@@ -196,8 +179,9 @@ namespace IFramework.AspNet
                 }
                 else
                 {
-                    var formDataKey = string.IsNullOrEmpty(key) ? $"{propertyDescriptor.Name}" :
-                                        $"{key}[{propertyDescriptor.Name}]";
+                    var formDataKey = string.IsNullOrEmpty(key)
+                        ? $"{propertyDescriptor.Name}"
+                        : $"{key}[{propertyDescriptor.Name}]";
                     ToNameValueCollection(value, formDataKey, nameValueCollection, removeEmptyObject);
                 }
             }
@@ -221,22 +205,15 @@ namespace IFramework.AspNet
             //        : null;
             //}
             if (request != null && request.Properties.ContainsKey("MS_HttpContext"))
+                return ((HttpContextWrapper) request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+            if (request != null && request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
             {
-                return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
-            }
-            else if (request != null && request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
-            {
-                RemoteEndpointMessageProperty property = (RemoteEndpointMessageProperty)request.Properties[RemoteEndpointMessageProperty.Name];
+                var property = (RemoteEndpointMessageProperty) request.Properties[RemoteEndpointMessageProperty.Name];
                 return property != null ? property.Address : null;
             }
-            else if (HttpContext.Current != null)
-            {
+            if (HttpContext.Current != null)
                 return HttpContext.Current.Request.UserHostAddress;
-            }
-            else
-            {
-                return null;
-            }
+            return null;
         }
     }
 }

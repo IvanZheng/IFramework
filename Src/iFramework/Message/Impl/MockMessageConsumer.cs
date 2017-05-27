@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace IFramework.Message.Impl
 {
@@ -16,17 +13,14 @@ namespace IFramework.Message.Impl
             throw new NotImplementedException();
         }
 
-        public decimal MessageCount
-        {
-            get { return 0; }
-        }
-
-        public void EnqueueMessage(object message)
-        {
-        }
+        public decimal MessageCount => 0;
 
 
         public void Stop()
+        {
+        }
+
+        public void EnqueueMessage(object message)
         {
         }
     }

@@ -6,31 +6,25 @@ using System.Text.RegularExpressions;
 namespace IFramework.Infrastructure.Caching.Impl
 {
     /// <summary>
-    /// Represents a manager for caching between HTTP requests (long term caching)
+    ///     Represents a manager for caching between HTTP requests (long term caching)
     /// </summary>
-    public partial class MemoryCacheManager : ICacheManager
+    public class MemoryCacheManager : ICacheManager
     {
-        protected ObjectCache Cache
-        {
-            get
-            {
-                return MemoryCache.Default;
-            }
-        }
+        protected ObjectCache Cache => MemoryCache.Default;
 
         /// <summary>
-        /// Gets or sets the value associated with the specified key.
+        ///     Gets or sets the value associated with the specified key.
         /// </summary>
         /// <typeparam name="T">Type</typeparam>
         /// <param name="key">The key of the value to get.</param>
         /// <returns>The value associated with the specified key.</returns>
         public virtual T Get<T>(string key)
         {
-            return (T)Cache[key];
+            return (T) Cache[key];
         }
 
         /// <summary>
-        /// Adds the specified key and object to the cache.
+        ///     Adds the specified key and object to the cache.
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
@@ -46,17 +40,17 @@ namespace IFramework.Infrastructure.Caching.Impl
         }
 
         /// <summary>
-        /// Gets a value indicating whether the value associated with the specified key is cached
+        ///     Gets a value indicating whether the value associated with the specified key is cached
         /// </summary>
         /// <param name="key">key</param>
         /// <returns>Result</returns>
         public virtual bool IsSet(string key)
         {
-            return (Cache.Contains(key));
+            return Cache.Contains(key);
         }
 
         /// <summary>
-        /// Removes the value with the specified key from the cache
+        ///     Removes the value with the specified key from the cache
         /// </summary>
         /// <param name="key">/key</param>
         public virtual void Remove(string key)
@@ -65,26 +59,24 @@ namespace IFramework.Infrastructure.Caching.Impl
         }
 
         /// <summary>
-        /// Removes items by pattern
+        ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
         public virtual void RemoveByPattern(string pattern)
         {
             var regex = new Regex(pattern, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            var keysToRemove = new List<String>();
+            var keysToRemove = new List<string>();
 
             foreach (var item in Cache)
                 if (regex.IsMatch(item.Key))
                     keysToRemove.Add(item.Key);
 
-            foreach (string key in keysToRemove)
-            {
+            foreach (var key in keysToRemove)
                 Remove(key);
-            }
         }
 
         /// <summary>
-        /// Clear all cache data
+        ///     Clear all cache data
         /// </summary>
         public virtual void Clear()
         {

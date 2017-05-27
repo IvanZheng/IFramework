@@ -1,12 +1,8 @@
-﻿using IFramework.AspNet;
-using IFramework.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System;
 using System.Threading.Tasks;
 using System.Web.Http;
+using IFramework.AspNet;
+using IFramework.Infrastructure;
 
 namespace Sample.CommandService.Controllers
 {
@@ -16,11 +12,11 @@ namespace Sample.CommandService.Controllers
         // GET api/<controller>
         public Task<ApiResult<string[]>> Get()
         {
-            return ProcessAsync(() => {
+            return ProcessAsync(() =>
+            {
                 throw new Exception("test exception");
-                return Task.FromResult(new string[] { "value1", "value2" });
+                return Task.FromResult(new[] {"value1", "value2"});
             });
-            
         }
 
         // GET api/<controller>/5
@@ -30,12 +26,12 @@ namespace Sample.CommandService.Controllers
         }
 
         // POST api/<controller>
-        public void Post([FromBody]string value)
+        public void Post([FromBody] string value)
         {
         }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody]string value)
+        public void Put(int id, [FromBody] string value)
         {
         }
 

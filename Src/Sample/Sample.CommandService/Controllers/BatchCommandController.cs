@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Http;
 using System.Threading.Tasks;
-using System.Threading;
-using Sample.Command;
-using Sample.Persistence;
-using Sample.ApplicationEvent;
-using IFramework.Infrastructure;
-using IFramework.Message;
+using System.Web.Http;
 using IFramework.Command;
+using IFramework.Infrastructure;
 using IFramework.IoC;
+using IFramework.Message;
+using Sample.DTO;
+using Sample.Persistence;
 
 namespace Sample.CommandService.Controllers
 {
@@ -19,25 +16,27 @@ namespace Sample.CommandService.Controllers
     {
         public ArrayModel[] ArrayModels { get; set; }
     }
+
     public class ArrayModel
     {
         public string[] Ids { get; set; }
         public DateTime DateTime { get; set; }
         public ArrayModel[] ArrayModels { get; set; }
-
     }
 
     [AllowAnonymous]
     public class BatchCommandController : ApiController
     {
-        SampleModelContext _QueryContext = IoCFactory.Resolve<SampleModelContext>();
-        IMessagePublisher _MessagePublisher = IoCFactory.Resolve<IMessagePublisher>();
-        ICommandBus _CommandBus { get; set; }
+        private static List<ICommand> BatchCommands = new List<ICommand>();
+        private IMessagePublisher _MessagePublisher = IoCFactory.Resolve<IMessagePublisher>();
+        private SampleModelContext _QueryContext = IoCFactory.Resolve<SampleModelContext>();
 
         public BatchCommandController(ICommandBus commandBus)
         {
             _CommandBus = commandBus;
         }
+
+        private ICommandBus _CommandBus { get; }
 
 
         //[HttpGet]
@@ -49,42 +48,34 @@ namespace Sample.CommandService.Controllers
 
         [HttpGet]
         [Route("api/BatchCommand/Collection")]
-        public ArrayModelCollection Collection([FromUri]ArrayModelCollection models)
+        public ArrayModelCollection Collection([FromUri] ArrayModelCollection models)
         {
             return models;
         }
 
 
-        public ArrayModelCollection Post([FromBody]ArrayModelCollection models)
+        public ArrayModelCollection Post([FromBody] ArrayModelCollection models)
         {
             return models;
         }
 
-        async Task<ApiResult> Action(ICommand command)
+        private async Task<ApiResult> Action(ICommand command)
         {
             if (ModelState.IsValid)
-            {
                 return await ExceptionManager.ProcessAsync(async () =>
                 {
                     var messageResponse = await _CommandBus.SendAsync(command, true);
                     return await messageResponse.ReadAsAsync<ApiResult>();
                 });
-            }
-            else
-            {
-                return
-                    new ApiResult
-                    {
-                        ErrorCode = DTO.ErrorCode.CommandInvalid,
-                        Message = string.Join(",", ModelState.Values
-                                                       .SelectMany(v => v.Errors
-                                                                         .Select(e => e.ErrorMessage)))
-                    };
-            }
-
+            return
+                new ApiResult
+                {
+                    ErrorCode = ErrorCode.CommandInvalid,
+                    Message = string.Join(",", ModelState.Values
+                        .SelectMany(v => v.Errors
+                            .Select(e => e.ErrorMessage)))
+                };
         }
-
-        static List<ICommand> BatchCommands = new List<ICommand>();
 
         //public Task<ApiResult> Post([FromBody]ICommand command)
         //{
@@ -145,15 +136,9 @@ namespace Sample.CommandService.Controllers
         //    return result;
         //}
 
-        void DoCommand(List<ICommand> batchCommands)
+        private void DoCommand(List<ICommand> batchCommands)
         {
-            batchCommands.ForEach(cmd =>
-            {
-                Task.Factory.StartNew(() =>
-                {
-                    Action(cmd);
-                });
-            });
+            batchCommands.ForEach(cmd => { Task.Factory.StartNew(() => { Action(cmd); }); });
         }
     }
 }

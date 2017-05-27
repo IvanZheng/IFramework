@@ -1,12 +1,10 @@
-﻿using IFramework.Repositories;
-using IFramework.Specifications;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
+using IFramework.Repositories;
 
 namespace IFramework.EntityFramework.Repositories
 {
@@ -35,7 +33,8 @@ namespace IFramework.EntityFramework.Repositories
             return QueryableExtensions.Include(source, path);
         }
 
-        public static IQueryable<T> Include<T, TProperty>(this IQueryable<T> source, Expression<Func<T, TProperty>> path)
+        public static IQueryable<T> Include<T, TProperty>(this IQueryable<T> source,
+            Expression<Func<T, TProperty>> path)
         {
             return QueryableExtensions.Include(source, path);
         }
@@ -45,16 +44,12 @@ namespace IFramework.EntityFramework.Repositories
             return QueryableExtensions.ToListAsync(query);
         }
 
-        public static Task<TEntity> FirstOrDefaultAsync<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate = null) where TEntity : class
+        public static Task<TEntity> FirstOrDefaultAsync<TEntity>(this IQueryable<TEntity> query,
+            Expression<Func<TEntity, bool>> predicate = null) where TEntity : class
         {
             if (predicate == null)
-            {
                 return QueryableExtensions.FirstOrDefaultAsync(query);
-            }
-            else
-            {
-                return QueryableExtensions.FirstOrDefaultAsync(query, predicate);
-            }
+            return QueryableExtensions.FirstOrDefaultAsync(query, predicate);
         }
     }
 }

@@ -1,17 +1,16 @@
-﻿using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using IFramework.Infrastructure;
-using System.ComponentModel.DataAnnotations.Schema;
+using IFramework.Message;
 using IFramework.Message.Impl;
 
 namespace IFramework.MessageStoring
 {
     public abstract class UnSentMessage
     {
-        public UnSentMessage() { }
+        public UnSentMessage()
+        {
+        }
+
         public UnSentMessage(IMessageContext messageContext)
         {
             ID = messageContext.MessageID;
@@ -27,7 +26,7 @@ namespace IFramework.MessageStoring
             }
             Topic = messageContext.Topic;
         }
-        
+
         public string ID { get; set; }
         public string ReplyToEndPoint { get; set; }
         public SagaInfo SagaInfo { get; set; }

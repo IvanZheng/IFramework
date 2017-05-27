@@ -1,4 +1,5 @@
-﻿using IFramework.Command;
+﻿using System;
+using IFramework.Command;
 using IFramework.Command.Impl;
 using IFramework.Event;
 using IFramework.Event.Impl;
@@ -6,18 +7,18 @@ using IFramework.IoC;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
-using System;
 
 namespace IFramework.Config
 {
     public static class FrameworkConfigurationExtension
     {
-        static string _MessageQueueNameFormat = string.Empty;
-        static string _appNameFormat = string.Empty;
-        static TimeSpan _ReceiveMessageTimeout = new TimeSpan(0, 0, 10);
+        private static string _MessageQueueNameFormat = string.Empty;
+        private static string _appNameFormat = string.Empty;
+        private static TimeSpan _ReceiveMessageTimeout = new TimeSpan(0, 0, 10);
+
+        private static string _defaultTopic = string.Empty;
         public static string AppName { get; private set; }
 
-        static string _defaultTopic = string.Empty;
         public static Configuration SetDefaultTopic(this Configuration configuration, string defaultTopic)
         {
             _defaultTopic = defaultTopic;
@@ -35,8 +36,8 @@ namespace IFramework.Config
             AppName = appName;
             var appNameFormat = string.IsNullOrEmpty(appName) ? "{0}" : appName + ".{0}";
             configuration.SetAppNameFormat(appNameFormat)
-                         .UseMockCommandBus()
-                         .UseMockMessagePublisher();
+                .UseMockCommandBus()
+                .UseMockMessagePublisher();
             return configuration;
         }
 
@@ -49,13 +50,15 @@ namespace IFramework.Config
 
         public static Configuration UseMockMessageQueueClient(this Configuration configuration)
         {
-            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageQueueClient, MockMessageQueueClient>(Lifetime.Singleton);
+            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageQueueClient, MockMessageQueueClient>(Lifetime
+                .Singleton);
             return configuration;
         }
 
         public static Configuration UseMockMessagePublisher(this Configuration configuration)
         {
-            IoCFactory.Instance.CurrentContainer.RegisterType<IMessagePublisher, MockMessagePublisher>(Lifetime.Singleton);
+            IoCFactory.Instance.CurrentContainer.RegisterType<IMessagePublisher, MockMessagePublisher>(Lifetime
+                .Singleton);
             return configuration;
         }
 
@@ -75,15 +78,17 @@ namespace IFramework.Config
             IoCFactory.Instance.CurrentContainer.RegisterType<ICommandBus, MockCommandBus>(Lifetime.Singleton);
             return configuration;
         }
-        public static Configuration UseCommandBus(this Configuration configuration, string consumerId, string replyTopic = "replyTopic", string replySubscription = "replySubscription", ILinearCommandManager linerCommandManager = null, int mailboxProcessBatchCount = 100)
+
+        public static Configuration UseCommandBus(this Configuration configuration, string consumerId,
+            string replyTopic = "replyTopic", string replySubscription = "replySubscription",
+            ILinearCommandManager linerCommandManager = null, int mailboxProcessBatchCount = 100)
         {
             var container = IoCFactory.Instance.CurrentContainer;
             if (linerCommandManager == null)
-            {
                 linerCommandManager = new LinearCommandManager();
-            }
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic, replySubscription, mailboxProcessBatchCount);
+            var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic,
+                replySubscription, mailboxProcessBatchCount);
             container.RegisterInstance<ICommandBus>(commandBus);
             return configuration;
         }
@@ -93,7 +98,8 @@ namespace IFramework.Config
             return _ReceiveMessageTimeout;
         }
 
-        public static Configuration SetMessageQueueReceiveMessageTimeout(this Configuration configuration, TimeSpan timeout)
+        public static Configuration SetMessageQueueReceiveMessageTimeout(this Configuration configuration,
+            TimeSpan timeout)
         {
             _ReceiveMessageTimeout = timeout;
             return configuration;
@@ -111,28 +117,23 @@ namespace IFramework.Config
             return configuration;
         }
 
-        public static Configuration MessageQueueUseMachineNameFormat(this Configuration configuration, bool onlyInDebug = true)
+        public static Configuration MessageQueueUseMachineNameFormat(this Configuration configuration,
+            bool onlyInDebug = true)
         {
             var compliationSection = Configuration.GetCompliationSection();
-            if (!onlyInDebug || (compliationSection != null && compliationSection.Debug))
-            {
+            if (!onlyInDebug || compliationSection != null && compliationSection.Debug)
                 configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
-            }
             return configuration;
         }
 
         public static string FormatAppName(this Configuration configuration, string topic)
         {
-            return string.IsNullOrEmpty(_appNameFormat) ?
-                          topic :
-                          string.Format(_appNameFormat, topic);
+            return string.IsNullOrEmpty(_appNameFormat) ? topic : string.Format(_appNameFormat, topic);
         }
 
         public static string FormatMessageQueueName(this Configuration configuration, string name)
         {
-            return string.IsNullOrEmpty(_MessageQueueNameFormat) ?
-                          name :
-                          string.Format(_MessageQueueNameFormat, name);
+            return string.IsNullOrEmpty(_MessageQueueNameFormat) ? name : string.Format(_MessageQueueNameFormat, name);
         }
     }
 }

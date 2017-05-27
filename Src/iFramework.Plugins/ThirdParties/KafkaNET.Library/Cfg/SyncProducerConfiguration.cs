@@ -1,24 +1,7 @@
-﻿/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+﻿using Kafka.Client.Utils;
 
 namespace Kafka.Client.Cfg
 {
-    using Kafka.Client.Utils;
-
     public class SyncProducerConfiguration : ISyncProducerConfigShared
     {
         public const int DefaultBufferSize = 100 * 1024;
@@ -43,50 +26,40 @@ namespace Kafka.Client.Cfg
 
         public SyncProducerConfiguration()
         {
-            this.BufferSize = DefaultBufferSize;
-            this.ConnectTimeout = DefaultConnectTimeout;
-            this.MaxMessageSize = DefaultMaxMessageSize;
-            this.CorrelationId = DefaultCorrelationId;
-            this.ClientId = DefaultClientId;
-            this.RequiredAcks = DefaultRequiredAcks;
-            this.AckTimeout = DefaultAckTimeout;
-            this.ReconnectInterval = DefaultReconnectInterval;
-            this.ReceiveTimeout = DefaultReceiveTimeout;
-            this.SendTimeout = DefaultSendTimeout;
+            BufferSize = DefaultBufferSize;
+            ConnectTimeout = DefaultConnectTimeout;
+            MaxMessageSize = DefaultMaxMessageSize;
+            CorrelationId = DefaultCorrelationId;
+            ClientId = DefaultClientId;
+            RequiredAcks = DefaultRequiredAcks;
+            AckTimeout = DefaultAckTimeout;
+            ReconnectInterval = DefaultReconnectInterval;
+            ReceiveTimeout = DefaultReceiveTimeout;
+            SendTimeout = DefaultSendTimeout;
         }
 
-        public SyncProducerConfiguration(ProducerConfiguration config, int id, string host, int port) 
+        public SyncProducerConfiguration(ProducerConfiguration config, int id, string host, int port)
         {
             Guard.NotNull(config, "config");
 
-            this.Host = host;
-            this.Port = port;
-            this.BrokerId = id;
-            this.BufferSize = config.BufferSize;
-            this.ConnectTimeout = config.ConnectTimeout;
-            this.MaxMessageSize = config.MaxMessageSize;
-            this.ReconnectInterval = config.ReconnectInterval;
-            this.ReceiveTimeout = config.ReceiveTimeout;
-            this.SendTimeout = config.SendTimeout;
-            this.ClientId = config.ClientId;
-            this.CorrelationId = DefaultCorrelationId;
-            this.RequiredAcks = config.RequiredAcks;
-            this.AckTimeout = config.AckTimeout;
+            Host = host;
+            Port = port;
+            BrokerId = id;
+            BufferSize = config.BufferSize;
+            ConnectTimeout = config.ConnectTimeout;
+            MaxMessageSize = config.MaxMessageSize;
+            ReconnectInterval = config.ReconnectInterval;
+            ReceiveTimeout = config.ReceiveTimeout;
+            SendTimeout = config.SendTimeout;
+            ClientId = config.ClientId;
+            CorrelationId = DefaultCorrelationId;
+            RequiredAcks = config.RequiredAcks;
+            AckTimeout = config.AckTimeout;
         }
-
-        public int BufferSize { get; set; }
-
-        public int ConnectTimeout { get; set; }
 
         public int KeepAliveTime { get; set; }
 
         public int KeepAliveInterval { get; set; }
-
-        public int ReceiveTimeout { get; set; }
-        
-        public int SendTimeout { get; set; }
-
-        public int MaxMessageSize { get; set; }
 
         public string Host { get; set; }
 
@@ -94,11 +67,21 @@ namespace Kafka.Client.Cfg
 
         public int BrokerId { get; set; }
 
-        public int CorrelationId{ get; set; }
+        public int CorrelationId { get; set; }
 
-        public string ClientId{ get; set; }
+        public int BufferSize { get; set; }
 
-        public short RequiredAcks{ get; set; }
+        public int ConnectTimeout { get; set; }
+
+        public int ReceiveTimeout { get; set; }
+
+        public int SendTimeout { get; set; }
+
+        public int MaxMessageSize { get; set; }
+
+        public string ClientId { get; set; }
+
+        public short RequiredAcks { get; set; }
 
         public int AckTimeout { get; set; }
 

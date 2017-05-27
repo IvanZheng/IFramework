@@ -1,18 +1,7 @@
-﻿using Sample.Command;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using IFramework.Command;
 using IFramework.AspNet;
-using System.Web;
-using IFramework.Infrastructure;
-using Newtonsoft.Json;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Collections;
+using IFramework.Command;
 
 namespace Sample.CommandHttpClient
 {
@@ -20,12 +9,14 @@ namespace Sample.CommandHttpClient
     {
         public ArrayModel[] ArrayModels { get; set; }
     }
+
     public class ArrayModel
     {
         public ArrayModel()
         {
             DateTime = DateTime.Now;
         }
+
         public string[] Ids { get; set; }
         public DateTime DateTime { get; set; }
         public ArrayModel[] ArrayModels { get; set; }
@@ -38,23 +29,15 @@ namespace Sample.CommandHttpClient
         public int Type { get; set; }
         public string Remark { get; set; }
         public string Key { get; set; }
-        public bool NeedRetry
-        {
-            get; set;
-        }
 
-        public string ID
-        {
-            get; set;
-        }
+        public bool NeedRetry { get; set; }
 
-        public ModifyCooperatorBasic() {
-        }
-
+        public string ID { get; set; }
     }
-    class Program
+
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             try
             {
@@ -68,7 +51,7 @@ namespace Sample.CommandHttpClient
             return;
             var apiClient = new HttpClient();
             // apiClient.BaseAddress = new System.Uri("http://localhost:6357");
-            apiClient.BaseAddress = new System.Uri("http://localhost:63581");
+            apiClient.BaseAddress = new Uri("http://localhost:63581");
 
             var command = new ModifyCooperatorBasic
             {
@@ -86,13 +69,13 @@ namespace Sample.CommandHttpClient
 
         public static void HttpClientGetTest()
         {
-            HttpClient client = new HttpClient
+            var client = new HttpClient
             {
                 BaseAddress = new Uri("http://localhost:63581")
             };
-            var model1 = new ArrayModel { Ids = new string[] { "1", "3", "5" } };
-            var model2 = new ArrayModel { Ids = new string[] { "2", "4", "6" } };
-            var model3 = new ArrayModel { Ids = new string[] { "a", "b", "c" } };
+            var model1 = new ArrayModel {Ids = new[] {"1", "3", "5"}};
+            var model2 = new ArrayModel {Ids = new[] {"2", "4", "6"}};
+            var model3 = new ArrayModel {Ids = new[] {"a", "b", "c"}};
 
             //var json = JsonConvert.SerializeObject(model);
             //var nameValues = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
@@ -103,14 +86,15 @@ namespace Sample.CommandHttpClient
 
             //Console.Write(nameValueCollection.ToString());
 
-            model2.ArrayModels = new ArrayModel[] { model3 };
+            model2.ArrayModels = new[] {model3};
             var arrayModelCollection = new ArrayModelCollection
             {
-                ArrayModels = new ArrayModel[] { model1, model2 }
+                ArrayModels = new[] {model1, model2}
             };
-          //  var result1 = client.GetAsync<ArrayModel>("api/BatchCommand", model1).Result;
+            //  var result1 = client.GetAsync<ArrayModel>("api/BatchCommand", model1).Result;
 
-            var result2 = client.GetAsync<ArrayModelCollection>("api/BatchCommand/Collection", arrayModelCollection).Result;
+            var result2 = client.GetAsync<ArrayModelCollection>("api/BatchCommand/Collection", arrayModelCollection)
+                .Result;
         }
     }
 }

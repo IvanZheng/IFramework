@@ -1,31 +1,17 @@
-﻿using System.Data.Entity;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Threading.Tasks;
+using IFramework.SingleSignOn.IdentityProvider;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using IFramework.SingleSignOn.IdentityProvider;
-using System;
 
 namespace IFramework.Sample.AuthWeb.Models
 {
     // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
     public class ApplicationUser : IdentityUser, ICustomIdentityObject
     {
-        public string ID
-        {
-            get
-            {
-                return Id;
-            }
-        }
+        public string ID => Id;
 
-        public string Name
-        {
-            get
-            {
-                return UserName;
-            }
-        }
+        public string Name => UserName;
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
@@ -39,7 +25,7 @@ namespace IFramework.Sample.AuthWeb.Models
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
-            : base("DefaultConnection", throwIfV1Schema: false)
+            : base("DefaultConnection", false)
         {
         }
 

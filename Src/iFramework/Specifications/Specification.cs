@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Linq.Expressions;
 
 namespace IFramework.Specifications
 {
     /// <summary>
-    /// Represents the generic version of the base class for all the specifications.
+    ///     Represents the generic version of the base class for all the specifications.
     /// </summary>
     /// <typeparam name="T">The type of the aggregation root.</typeparam>
     public abstract class Specification<T> : ISpecification<T>
-      //  where T : class, IEntity
+        //  where T : class, IEntity
     {
-
         public static Specification<T> Eval(Expression<Func<T, bool>> expression)
         {
             return new ExpressionSpecification<T>(expression);
@@ -23,7 +19,7 @@ namespace IFramework.Specifications
 
         public virtual bool IsSatisfiedBy(T obj)
         {
-            return this.GetExpression().Compile()(obj);
+            return GetExpression().Compile()(obj);
         }
 
         public ISpecification<T> And(ISpecification<T> other)

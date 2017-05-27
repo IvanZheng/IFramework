@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ServiceModel.Dispatcher;
 using System.ServiceModel;
+using System.ServiceModel.Dispatcher;
 
 namespace IFramework.IoC
 {
     public class IocInstanceProvider : IInstanceProvider
     {
-        Type _serviceType;
-        IContainer _container;
+        private readonly IContainer _container;
+        private readonly Type _serviceType;
 
         public IocInstanceProvider(Type serviceType)
         {
@@ -33,7 +30,7 @@ namespace IFramework.IoC
         public void ReleaseInstance(InstanceContext instanceContext, object instance)
         {
             if (instance is IDisposable)
-                ((IDisposable)instance).Dispose();
+                ((IDisposable) instance).Dispose();
         }
 
         #endregion

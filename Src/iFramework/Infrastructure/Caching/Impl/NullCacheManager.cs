@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace IFramework.Infrastructure.Caching.Impl
+﻿namespace IFramework.Infrastructure.Caching.Impl
 {
-       /// <summary>
-    /// Represents a NopNullCache
+    /// <summary>
+    ///     Represents a NopNullCache
     /// </summary>
-    public partial class NullCacheManager : ICacheManager
+    public class NullCacheManager : ICacheManager
     {
         /// <summary>
-        /// Gets or sets the value associated with the specified key.
+        ///     Gets or sets the value associated with the specified key.
         /// </summary>
         /// <typeparam name="T">Type</typeparam>
         /// <param name="key">The key of the value to get.</param>
@@ -22,7 +17,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         }
 
         /// <summary>
-        /// Adds the specified key and object to the cache.
+        ///     Adds the specified key and object to the cache.
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
@@ -32,7 +27,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         }
 
         /// <summary>
-        /// Gets a value indicating whether the value associated with the specified key is cached
+        ///     Gets a value indicating whether the value associated with the specified key is cached
         /// </summary>
         /// <param name="key">key</param>
         /// <returns>Result</returns>
@@ -42,7 +37,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         }
 
         /// <summary>
-        /// Removes the value with the specified key from the cache
+        ///     Removes the value with the specified key from the cache
         /// </summary>
         /// <param name="key">/key</param>
         public virtual void Remove(string key)
@@ -50,7 +45,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         }
 
         /// <summary>
-        /// Removes items by pattern
+        ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
         public virtual void RemoveByPattern(string pattern)
@@ -58,7 +53,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         }
 
         /// <summary>
-        /// Clear all cache data
+        ///     Clear all cache data
         /// </summary>
         public virtual void Clear()
         {

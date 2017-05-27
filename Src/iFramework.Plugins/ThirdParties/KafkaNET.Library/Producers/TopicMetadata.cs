@@ -1,33 +1,16 @@
-﻿/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using Kafka.Client.Cluster;
+using Kafka.Client.Requests;
+using Kafka.Client.Serialization;
+using Kafka.Client.Utils;
 
 namespace Kafka.Client.Producers
 {
-    using Kafka.Client.Cluster;
-    using Kafka.Client.Requests;
-    using Kafka.Client.Utils;
-    using Serialization;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-
     /// <summary>
-    /// TODO: Update summary.
+    ///     TODO: Update summary.
     /// </summary>
     public class TopicMetadata : IWritable
     {
@@ -35,35 +18,34 @@ namespace Kafka.Client.Producers
 
         public TopicMetadata(string topic, IEnumerable<PartitionMetadata> partitionsMetadata, ErrorMapping error)
         {
-            this.Topic = topic;
-            this.PartitionsMetadata = partitionsMetadata;
+            Topic = topic;
+            PartitionsMetadata = partitionsMetadata;
             Error = error;
         }
 
 
-        public string Topic { get; private set; }
-        public IEnumerable<PartitionMetadata> PartitionsMetadata { get; private set; }
-        public ErrorMapping Error { get; private set; }
+        public string Topic { get; }
+        public IEnumerable<PartitionMetadata> PartitionsMetadata { get; }
+        public ErrorMapping Error { get; }
+
         public int SizeInBytes
         {
             get
             {
-                var size = (int)BitWorks.GetShortStringLength(this.Topic, AbstractRequest.DefaultEncoding);
-                foreach (var partitionMetadata in this.PartitionsMetadata)
-                {
+                var size = (int) BitWorks.GetShortStringLength(Topic, AbstractRequest.DefaultEncoding);
+                foreach (var partitionMetadata in PartitionsMetadata)
                     size += DefaultNumOfPartitionsSize + partitionMetadata.SizeInBytes;
-                }
                 return size;
             }
         }
 
-        public void WriteTo(System.IO.MemoryStream output)
+        public void WriteTo(MemoryStream output)
         {
             Guard.NotNull(output, "output");
 
             using (var writer = new KafkaBinaryWriter(output))
             {
-                this.WriteTo(writer);
+                WriteTo(writer);
             }
         }
 
@@ -71,12 +53,10 @@ namespace Kafka.Client.Producers
         {
             Guard.NotNull(writer, "writer");
 
-            writer.WriteShortString(this.Topic, AbstractRequest.DefaultEncoding);
-            writer.Write(this.PartitionsMetadata.Count());
+            writer.WriteShortString(Topic, AbstractRequest.DefaultEncoding);
+            writer.Write(PartitionsMetadata.Count());
             foreach (var partitionMetadata in PartitionsMetadata)
-            {
                 partitionMetadata.WriteTo(writer);
-            }
         }
 
         internal static TopicMetadata ParseFrom(KafkaBinaryReader reader, Dictionary<int, Broker> brokers)
@@ -85,27 +65,26 @@ namespace Kafka.Client.Producers
             var topic = BitWorks.ReadShortString(reader, AbstractRequest.DefaultEncoding);
             var numPartitions = reader.ReadInt32();
             var partitionsMetadata = new List<PartitionMetadata>();
-            for (int i = 0; i < numPartitions; i++)
-            {
+            for (var i = 0; i < numPartitions; i++)
                 partitionsMetadata.Add(PartitionMetadata.ParseFrom(reader, brokers));
-            }
             return new TopicMetadata(topic, partitionsMetadata, ErrorMapper.ToError(errorCode));
         }
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder(1024);
-            sb.AppendFormat("TopicMetaData.Topic:{0},Error:{1},PartitionMetaData Count={2}", this.Topic, this.Error.ToString(), this.PartitionsMetadata.Count());
+            var sb = new StringBuilder(1024);
+            sb.AppendFormat("TopicMetaData.Topic:{0},Error:{1},PartitionMetaData Count={2}", Topic, Error,
+                PartitionsMetadata.Count());
             sb.AppendLine();
 
-            int j = 0;
-            foreach (var p in this.PartitionsMetadata)
+            var j = 0;
+            foreach (var p in PartitionsMetadata)
             {
-                sb.AppendFormat("PartitionMetaData[{0}]:{1}", j, p.ToString());
+                sb.AppendFormat("PartitionMetaData[{0}]:{1}", j, p);
                 j++;
             }
 
-            string s = sb.ToString();
+            var s = sb.ToString();
             sb.Length = 0;
             return s;
         }

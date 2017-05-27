@@ -1,42 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Transactions;
-using IFramework.Message;
-using IFramework.MessageQueue;
+using IFramework.Command;
+using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
-using IFramework.Exceptions;
-using IFramework.Command;
-using IFramework.IoC;
 using IFramework.Infrastructure.Mailboxes.Impl;
+using IFramework.IoC;
+using IFramework.Message;
 using IFramework.Message.Impl;
-using IFramework.Config;
-using System.Threading.Tasks;
+using IFramework.MessageQueue;
 
 namespace IFramework.Event.Impl
 {
     public class EventSubscriber : IMessageConsumer
     {
-        readonly string _topic;
-        protected IMessageQueueClient _messageQueueClient;
+        private readonly string _topic;
         protected ICommandBus _commandBus;
-        protected IMessagePublisher _messagePublisher;
-        protected IHandlerProvider _handlerProvider;
-        protected string _subscriptionName;
         protected string _consumerId;
-        protected MessageProcessor _messageProcessor;
-        protected ILogger _logger;
+        protected IHandlerProvider _handlerProvider;
         protected ICommitOffsetable _internalConsumer;
+        protected ILogger _logger;
+        protected MessageProcessor _messageProcessor;
+        protected IMessagePublisher _messagePublisher;
+        protected IMessageQueueClient _messageQueueClient;
+
+        private string _producer;
+        protected string _subscriptionName;
 
         public EventSubscriber(IMessageQueueClient messageQueueClient,
-                               IHandlerProvider handlerProvider,
-                               ICommandBus commandBus,
-                               IMessagePublisher messagePublisher,
-                               string subscriptionName,
-                               string topic,
-                               string consumerId,
-                               int mailboxProcessBatchCount = 100)
+            IHandlerProvider handlerProvider,
+            ICommandBus commandBus,
+            IMessagePublisher messagePublisher,
+            string subscriptionName,
+            string topic,
+            string consumerId,
+            int mailboxProcessBatchCount = 100)
         {
             _messageQueueClient = messageQueueClient;
             _handlerProvider = handlerProvider;
@@ -45,18 +46,43 @@ namespace IFramework.Event.Impl
             _subscriptionName = subscriptionName;
             _messagePublisher = messagePublisher;
             _commandBus = commandBus;
-            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(), mailboxProcessBatchCount);
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name) : null;
+            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
+                mailboxProcessBatchCount);
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name) : null;
         }
 
-        string _producer;
-        public string Producer
+        public string Producer => _producer ?? (_producer = $"{_subscriptionName}.{_topic}.{_consumerId}");
+
+
+        public void Start()
         {
-            get
+            try
             {
-                return _producer ?? (_producer = $"{_subscriptionName}.{_topic}.{_consumerId}");
+                if (!string.IsNullOrWhiteSpace(_topic))
+                    _internalConsumer =
+                        _messageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, _consumerId,
+                            OnMessagesReceived);
+                _messageProcessor.Start();
+            }
+            catch (Exception e)
+            {
+                _logger?.Error(e.GetBaseException().Message, e);
             }
         }
+
+        public void Stop()
+        {
+            _internalConsumer.Stop();
+            _messageProcessor.Stop();
+        }
+
+        public string GetStatus()
+        {
+            return string.Format("Handled message count {0}", MessageCount);
+        }
+
+        public decimal MessageCount { get; set; }
+
         protected void SaveEvent(IMessageContext eventContext)
         {
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
@@ -70,7 +96,7 @@ namespace IFramework.Event.Impl
         {
             try
             {
-                _logger?.Debug($"start handle event {this._consumerId} {eventContext.Message.ToJson()}");
+                _logger?.Debug($"start handle event {_consumerId} {eventContext.Message.ToJson()}");
 
                 var message = eventContext.Message;
                 var sagaInfo = eventContext.SagaInfo;
@@ -86,12 +112,12 @@ namespace IFramework.Event.Impl
                 SaveEvent(eventContext);
                 //messageHandlerTypes.ForEach(messageHandlerType =>
                 foreach (var messageHandlerType in messageHandlerTypes)
-                {
                     using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                     {
                         scope.RegisterInstance(typeof(IMessageContext), eventContext);
                         var messageStore = scope.Resolve<IMessageStore>();
-                        var subscriptionName = string.Format("{0}.{1}", _subscriptionName, messageHandlerType.Type.FullName);
+                        var subscriptionName =
+                            string.Format("{0}.{1}", _subscriptionName, messageHandlerType.Type.FullName);
                         if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                         {
                             var eventMessageStates = new List<MessageState>();
@@ -101,61 +127,54 @@ namespace IFramework.Event.Impl
                             {
                                 var messageHandler = scope.Resolve(messageHandlerType.Type);
                                 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                                   new TransactionOptions
-                                                                                   {
-                                                                                       IsolationLevel = IsolationLevel.ReadCommitted
-                                                                                   },
-                                                                                   TransactionScopeAsyncFlowOption.Enabled))
+                                    new TransactionOptions
+                                    {
+                                        IsolationLevel = IsolationLevel.ReadCommitted
+                                    },
+                                    TransactionScopeAsyncFlowOption.Enabled))
                                 {
                                     if (messageHandlerType.IsAsync)
-                                    {
-                                        await ((dynamic)messageHandler).Handle((dynamic)message)
-                                                                       .ConfigureAwait(false);
-                                    }
+                                        await ((dynamic) messageHandler).Handle((dynamic) message)
+                                            .ConfigureAwait(false);
                                     else
-                                    {
-                                        await Task.Run(() =>
-                                        {
-                                            ((dynamic)messageHandler).Handle((dynamic)message);
-                                        }).ConfigureAwait(false);
-                                    }
+                                        await Task.Run(() => { ((dynamic) messageHandler).Handle((dynamic) message); })
+                                            .ConfigureAwait(false);
 
                                     //get commands to be sent
                                     eventBus.GetCommands().ForEach(cmd =>
-                                       commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd, sagaInfo: sagaInfo, producer: Producer)))
-                                   );
+                                        commandMessageStates.Add(new MessageState(_commandBus?.WrapCommand(cmd,
+                                            sagaInfo: sagaInfo, producer: Producer)))
+                                    );
                                     //get events to be published
                                     eventBus.GetEvents().ForEach(msg =>
                                     {
                                         var topic = msg.GetFormatTopic();
-                                        eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg, topic: topic,
+                                        eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg,
+                                            topic: topic,
                                             key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
                                     });
 
                                     eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                                     {
                                         var topic = msg.GetFormatTopic();
-                                        eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key,
+                                        eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg,
+                                            topic: topic, key: msg.Key,
                                             sagaInfo: sagaInfo, producer: Producer)));
                                     });
 
                                     eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
                                     messageStore.HandleEvent(eventContext,
-                                                           subscriptionName,
-                                                           commandMessageStates.Select(s => s.MessageContext),
-                                                           eventMessageStates.Select(s => s.MessageContext));
+                                        subscriptionName,
+                                        commandMessageStates.Select(s => s.MessageContext),
+                                        eventMessageStates.Select(s => s.MessageContext));
 
                                     transactionScope.Complete();
                                 }
                                 if (commandMessageStates.Count > 0)
-                                {
                                     _commandBus?.SendMessageStates(commandMessageStates);
-                                }
                                 if (eventMessageStates.Count > 0)
-                                {
                                     _messagePublisher?.SendAsync(eventMessageStates.ToArray());
-                                }
                             }
                             catch (Exception e)
                             {
@@ -163,8 +182,8 @@ namespace IFramework.Event.Impl
                                 if (e is DomainException)
                                 {
                                     var exceptionMessage = _messageQueueClient.WrapMessage(e.GetBaseException(),
-                                                                                           eventContext.MessageID,
-                                                                                           producer: Producer);
+                                        eventContext.MessageID,
+                                        producer: Producer);
                                     eventMessageStates.Add(new MessageState(exceptionMessage));
                                     _logger?.Warn(message.ToJson(), e);
                                 }
@@ -173,29 +192,26 @@ namespace IFramework.Event.Impl
                                     //IO error or sytem Crash
                                     //if we meet with unknown exception, we interrupt saga
                                     if (sagaInfo != null)
-                                    {
                                         eventBus.FinishSaga(e);
-                                    }
                                     _logger?.Error(message.ToJson(), e);
                                 }
 
                                 eventBus.GetToPublishAnywayMessages().ForEach(msg =>
                                 {
                                     var topic = msg.GetFormatTopic();
-                                    eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg, topic: topic, key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
+                                    eventMessageStates.Add(new MessageState(_messageQueueClient.WrapMessage(msg,
+                                        topic: topic, key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
                                 });
 
                                 eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
-                                messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e, eventMessageStates.Select(s => s.MessageContext).ToArray());
+                                messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e,
+                                    eventMessageStates.Select(s => s.MessageContext).ToArray());
                                 if (eventMessageStates.Count > 0)
-                                {
                                     _messagePublisher?.SendAsync(eventMessageStates.ToArray());
-                                }
                             }
                         }
                     }
-                }
             }
             catch (Exception e)
             {
@@ -207,47 +223,22 @@ namespace IFramework.Event.Impl
 
         private List<MessageState> GetSagaReplyMessageStates(SagaInfo sagaInfo, IEventBus eventBus)
         {
-            List<MessageState> eventMessageStates = new List<MessageState>();
+            var eventMessageStates = new List<MessageState>();
             if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
-            {
                 eventBus.GetSagaResults().ForEach(sagaResult =>
                 {
                     var topic = sagaInfo.ReplyEndPoint;
                     if (!string.IsNullOrEmpty(topic))
                     {
                         var sagaReply = _messageQueueClient.WrapMessage(sagaResult,
-                                                                        topic: topic,
-                                                                        messageId: ObjectId.GenerateNewId().ToString(),
-                                                                        sagaInfo: sagaInfo,
-                                                                        producer: Producer);
+                            topic: topic,
+                            messageId: ObjectId.GenerateNewId().ToString(),
+                            sagaInfo: sagaInfo,
+                            producer: Producer);
                         eventMessageStates.Add(new MessageState(sagaReply));
                     }
                 });
-            }
             return eventMessageStates;
-        }
-
-
-        public void Start()
-        {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(_topic))
-                {
-                    _internalConsumer = _messageQueueClient.StartSubscriptionClient(_topic, _subscriptionName, _consumerId, OnMessagesReceived);
-                }
-                _messageProcessor.Start();
-            }
-            catch (Exception e)
-            {
-                _logger?.Error(e.GetBaseException().Message, e);
-            }
-        }
-
-        public void Stop()
-        {
-            _internalConsumer.Stop();
-            _messageProcessor.Stop();
         }
 
         protected void OnMessagesReceived(params IMessageContext[] messageContexts)
@@ -258,12 +249,5 @@ namespace IFramework.Event.Impl
                 MessageCount++;
             });
         }
-
-        public string GetStatus()
-        {
-            return string.Format("Handled message count {0}", MessageCount);
-        }
-
-        public decimal MessageCount { get; set; }
     }
 }

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Caching
@@ -9,12 +6,10 @@ namespace IFramework.Infrastructure.Caching
     public static class CacheExtensions
     {
         /// <summary>
-        /// Variable (lock) to support thread-safe
+        ///     Variable (lock) to support thread-safe
         /// </summary>
-        //private static readonly object _syncObject = new object();
-
         /// <summary>
-        /// Get a cached item. If it's not in the cache yet, then load and cache it
+        ///     Get a cached item. If it's not in the cache yet, then load and cache it
         /// </summary>
         /// <typeparam name="T">Type</typeparam>
         /// <param name="cacheManager">Cache manager</param>
@@ -27,7 +22,7 @@ namespace IFramework.Infrastructure.Caching
         }
 
         /// <summary>
-        /// Get a cached item. If it's not in the cache yet, then load and cache it
+        ///     Get a cached item. If it's not in the cache yet, then load and cache it
         /// </summary>
         /// <typeparam name="T">Type</typeparam>
         /// <param name="cacheManager">Cache manager</param>
@@ -48,24 +43,20 @@ namespace IFramework.Infrastructure.Caching
             return result;
         }
 
-        public static Task<T> GetAsync<T>(this ICacheManager cacheManager, string key, int cacheTime, Func<System.Threading.Tasks.Task<T>> acquire)
+        public static Task<T> GetAsync<T>(this ICacheManager cacheManager, string key, int cacheTime,
+            Func<Task<T>> acquire)
         {
             var taskResult = new Task<T>(() => cacheManager.Get<T>(key));
             taskResult.RunSynchronously();
             if (taskResult.Result == null)
-            {
                 taskResult = acquire().ContinueWith(t =>
                 {
                     var result = t.Result;
                     if (cacheTime > 0)
-                    {
                         cacheManager.Set(key, result, cacheTime);
-                    }
                     return result;
                 });
-            }
             return taskResult;
-
         }
     }
 }

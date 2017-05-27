@@ -1,9 +1,4 @@
-﻿using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace IFramework.Message.Impl
@@ -27,12 +22,10 @@ namespace IFramework.Message.Impl
 
         public void Start()
         {
-
         }
 
         public void Stop()
         {
-
         }
     }
 }

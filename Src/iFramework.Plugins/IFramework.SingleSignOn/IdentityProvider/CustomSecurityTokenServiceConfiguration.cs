@@ -1,19 +1,19 @@
-﻿using IFramework.Config;
-using System.IdentityModel.Configuration;
+﻿using System.IdentityModel.Configuration;
 using System.Web;
 using System.Web.Configuration;
+using IFramework.Config;
 
 namespace IFramework.SingleSignOn.IdentityProvider
 {
     public class CustomSecurityTokenServiceConfiguration : SecurityTokenServiceConfiguration
     {
-        private static readonly object SyncRoot = new object();
         private const string CustomSecurityTokenServiceConfigurationKey = "CustomSecurityTokenServiceConfigurationKey";
+        private static readonly object SyncRoot = new object();
 
         public CustomSecurityTokenServiceConfiguration()
             : base(WebConfigurationManager.AppSettings[Common.IssuerName])
         {
-            this.SecurityTokenService = Configuration.Instance.GetCustomSecurityTokenServiceType();
+            SecurityTokenService = Configuration.Instance.GetCustomSecurityTokenServiceType();
         }
 
         public static CustomSecurityTokenServiceConfiguration Current
@@ -21,12 +21,14 @@ namespace IFramework.SingleSignOn.IdentityProvider
             get
             {
                 var app = HttpContext.Current.Application;
-                var config = app.Get(CustomSecurityTokenServiceConfigurationKey) as CustomSecurityTokenServiceConfiguration;
+                var config =
+                    app.Get(CustomSecurityTokenServiceConfigurationKey) as CustomSecurityTokenServiceConfiguration;
                 if (config != null)
                     return config;
                 lock (SyncRoot)
                 {
-                    config = app.Get(CustomSecurityTokenServiceConfigurationKey) as CustomSecurityTokenServiceConfiguration;
+                    config =
+                        app.Get(CustomSecurityTokenServiceConfigurationKey) as CustomSecurityTokenServiceConfiguration;
                     if (config == null)
                     {
                         config = new CustomSecurityTokenServiceConfiguration();
@@ -36,7 +38,5 @@ namespace IFramework.SingleSignOn.IdentityProvider
                 }
             }
         }
-        
     }
-
 }

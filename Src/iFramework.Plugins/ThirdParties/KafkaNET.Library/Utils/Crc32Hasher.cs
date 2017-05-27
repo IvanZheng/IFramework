@@ -1,37 +1,20 @@
-﻿/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+﻿using System;
+using System.Security.Cryptography;
 
 namespace Kafka.Client.Utils
 {
-    using System;
-    using System.Security.Cryptography;
-
     /// <summary>
-    /// From http://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net
+    ///     From http://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net
     /// </summary>
     public class Crc32Hasher : HashAlgorithm
     {
-        internal const UInt32 DefaultPolynomial = 0xedb88320;
-        internal const UInt32 DefaultSeed = 0xffffffff;
+        internal const uint DefaultPolynomial = 0xedb88320;
+        internal const uint DefaultSeed = 0xffffffff;
+        private static uint[] defaultTable;
 
-        private UInt32 hash;
-        private UInt32 seed;
-        private UInt32[] table;
-        private static UInt32[] defaultTable;
+        private uint hash;
+        private readonly uint seed;
+        private readonly uint[] table;
 
         public Crc32Hasher()
         {
@@ -41,12 +24,14 @@ namespace Kafka.Client.Utils
         }
 
         [CLSCompliant(false)]
-        public Crc32Hasher(UInt32 polynomial, UInt32 seed)
+        public Crc32Hasher(uint polynomial, uint seed)
         {
             table = InitializeTable(polynomial);
             this.seed = seed;
             Initialize();
         }
+
+        public override int HashSize => 32;
 
         public override void Initialize()
         {
@@ -60,20 +45,15 @@ namespace Kafka.Client.Utils
 
         protected override byte[] HashFinal()
         {
-            byte[] hashBuffer = UInt32ToBigEndianBytes(~hash);
-            this.HashValue = hashBuffer;
+            var hashBuffer = UInt32ToBigEndianBytes(~hash);
+            HashValue = hashBuffer;
             return hashBuffer;
-        }
-
-        public override int HashSize
-        {
-            get { return 32; }
         }
 
         public static byte[] Compute(byte[] bytes)
         {
             var hasher = new Crc32Hasher();
-            byte[] hash = hasher.ComputeHash(bytes);
+            var hash = hasher.ComputeHash(bytes);
             return hash;
         }
 
@@ -83,16 +63,16 @@ namespace Kafka.Client.Utils
             return ~CalculateHash(InitializeTable(DefaultPolynomial), DefaultSeed, bytes, offset, count);
         }
 
-        private static UInt32[] InitializeTable(UInt32 polynomial)
+        private static uint[] InitializeTable(uint polynomial)
         {
             if (polynomial == DefaultPolynomial && defaultTable != null)
                 return defaultTable;
 
-            UInt32[] createTable = new UInt32[256];
-            for (int i = 0; i < 256; i++)
+            var createTable = new uint[256];
+            for (var i = 0; i < 256; i++)
             {
-                UInt32 entry = (UInt32)i;
-                for (int j = 0; j < 8; j++)
+                var entry = (uint) i;
+                for (var j = 0; j < 8; j++)
                     if ((entry & 1) == 1)
                         entry = (entry >> 1) ^ polynomial;
                     else
@@ -106,24 +86,25 @@ namespace Kafka.Client.Utils
             return createTable;
         }
 
-        private static UInt32 CalculateHash(UInt32[] table, UInt32 seed, byte[] buffer, int start, int size)
+        private static uint CalculateHash(uint[] table, uint seed, byte[] buffer, int start, int size)
         {
-            UInt32 crc = seed;
-            for (int i = start; i < start + size; i++)
+            var crc = seed;
+            for (var i = start; i < start + size; i++)
                 unchecked
                 {
-                    crc = (crc >> 8) ^ table[buffer[i] ^ crc & 0xff];
+                    crc = (crc >> 8) ^ table[buffer[i] ^ (crc & 0xff)];
                 }
             return crc;
         }
 
-        private byte[] UInt32ToBigEndianBytes(UInt32 x)
+        private byte[] UInt32ToBigEndianBytes(uint x)
         {
-            return new[] {
-                (byte)((x >> 24) & 0xff),
-                (byte)((x >> 16) & 0xff),
-                (byte)((x >> 8) & 0xff),
-                (byte)(x & 0xff)
+            return new[]
+            {
+                (byte) ((x >> 24) & 0xff),
+                (byte) ((x >> 16) & 0xff),
+                (byte) ((x >> 8) & 0xff),
+                (byte) (x & 0xff)
             };
         }
     }

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using IFramework.Message;
 using ZeroMQ;
-using IFramework.Infrastructure;
-using IFramework.Message;
 
 namespace IFramework.MessageQueue.ZeroMQ
 {
@@ -17,9 +12,9 @@ namespace IFramework.MessageQueue.ZeroMQ
 
         public static Frame GetFrame(this IMessageContext message)
         {
-            return message.GetFrame((short)MessageCode.Message);
+            return message.GetFrame((short) MessageCode.Message);
         }
-  
+
         public static short GetMessageCode(this Frame frame)
         {
             return frame.Buffer.GetMessageCode();

@@ -1,12 +1,8 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Web.Mvc;
 using IFramework.IoC;
 using Microsoft.Practices.Unity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Mvc;
 
 namespace IFramework.Unity.Mvc
 {
@@ -23,7 +19,7 @@ namespace IFramework.Unity.Mvc
         {
             try
             {
-                return this.container.Resolve(serviceType);
+                return container.Resolve(serviceType);
             }
             catch (ResolutionFailedException)
             {
@@ -33,7 +29,7 @@ namespace IFramework.Unity.Mvc
 
         public IEnumerable<object> GetServices(Type serviceType)
         {
-            return this.container.ResolveAll(serviceType);
+            return container.ResolveAll(serviceType);
         }
     }
 }

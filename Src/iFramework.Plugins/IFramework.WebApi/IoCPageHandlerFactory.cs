@@ -1,19 +1,14 @@
-﻿using IFramework.Infrastructure;
-using IFramework.IoC;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
+using IFramework.IoC;
 
 namespace IFramework.AspNet
 {
     public class IoCPageHandlerFactory : PageHandlerFactory
     {
-
         private static object GetInstance(Type type)
         {
             // Change this line if you're not using the CSL,
@@ -30,24 +25,21 @@ namespace IFramework.AspNet
                 base.GetHandler(context, requestType, virtualPath, path);
 
             if (page != null)
-            {
                 InjectDependencies(page);
-            }
 
             return page;
         }
 
         private static void InjectDependencies(object page)
         {
-            Type pageType = page.GetType().BaseType;
+            var pageType = page.GetType().BaseType;
 
             var ctor = GetInjectableConstructor(pageType);
 
             if (ctor != null)
-            {
                 try
                 {
-                    object[] arguments =
+                    var arguments =
                         GetConstructorArguments(ctor);
 
                     ctor.Invoke(page, arguments);
@@ -58,7 +50,6 @@ namespace IFramework.AspNet
                         "The type {0} could not be initialized. {1}",
                         pageType, ex.Message), ex);
                 }
-            }
         }
 
         private static object[] GetConstructorArguments(
@@ -66,13 +57,11 @@ namespace IFramework.AspNet
         {
             var parameters = ctor.GetParameters();
 
-            object[] arguments = new object[parameters.Length];
+            var arguments = new object[parameters.Length];
 
-            for (int i = 0; i < parameters.Length; i++)
-            {
+            for (var i = 0; i < parameters.Length; i++)
                 arguments[i] =
                     GetInstance(parameters[i].ParameterType);
-            }
 
             return arguments;
         }
@@ -86,14 +75,10 @@ namespace IFramework.AspNet
                 select ctor).ToArray();
 
             if (overloadedPublicConstructors.Length == 0)
-            {
                 return null;
-            }
 
             if (overloadedPublicConstructors.Length == 1)
-            {
                 return overloadedPublicConstructors[0];
-            }
 
             throw new Exception(string.Format(
                 "The type {0} has multiple public overloaded " +

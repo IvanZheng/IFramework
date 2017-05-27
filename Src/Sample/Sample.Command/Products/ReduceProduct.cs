@@ -1,9 +1,5 @@
-﻿using IFramework.Command.Impl;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using IFramework.Command.Impl;
 
 namespace Sample.Command
 {
@@ -11,6 +7,7 @@ namespace Sample.Command
     {
         [LinearKey]
         public Guid ProductId { get; set; }
+
         public int ReduceCount { get; set; }
     }
 }

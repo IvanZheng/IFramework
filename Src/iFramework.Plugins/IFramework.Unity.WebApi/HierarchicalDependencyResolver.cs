@@ -1,45 +1,37 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Web.Http.Dependencies;
+
 namespace IFramework.IoC.WebApi
 {
-    using IFramework.IoC;
     //using Microsoft.Practices.Unity;
-    using System;
-    using System.Collections.Generic;
-    using System.Web.Http.Dependencies;
 
     public sealed class HierarchicalDependencyResolver : IDependencyResolver, IDependencyScope, IDisposable
     {
-        private IContainer container;
+        private readonly IContainer container;
 
         public HierarchicalDependencyResolver(IContainer container)
         {
             if (container == null)
-            {
                 throw new ArgumentNullException("container");
-            }
             this.container = container.CreateChildContainer();
-        }
-
-        public void RegisterComponents(Action<IContainer> registerComponets)
-        {
-            registerComponets(container);
         }
 
         public IDependencyScope BeginScope()
         {
-            return new UnityHierarchicalDependencyScope(this.container);
+            return new UnityHierarchicalDependencyScope(container);
         }
 
         public void Dispose()
         {
-            this.container.Dispose();
+            container.Dispose();
         }
 
         public object GetService(Type serviceType)
         {
             try
             {
-                return this.container.Resolve(serviceType);
+                return container.Resolve(serviceType);
             }
             catch (Exception)
             {
@@ -51,7 +43,7 @@ namespace IFramework.IoC.WebApi
         {
             try
             {
-                return this.container.ResolveAll(serviceType);
+                return container.ResolveAll(serviceType);
             }
             catch (Exception)
             {
@@ -59,28 +51,33 @@ namespace IFramework.IoC.WebApi
             }
         }
 
+        public void RegisterComponents(Action<IContainer> registerComponets)
+        {
+            registerComponets(container);
+        }
+
         private sealed class UnityHierarchicalDependencyScope : IDependencyScope, IDisposable
         {
-            private IContainer container;
+            private readonly IContainer container;
 
             public UnityHierarchicalDependencyScope(IContainer parentContainer)
             {
-                this.container = parentContainer.CreateChildContainer();
+                container = parentContainer.CreateChildContainer();
             }
 
             public void Dispose()
             {
-                this.container.Dispose();
+                container.Dispose();
             }
 
             public object GetService(Type serviceType)
             {
-                return this.container.Resolve(serviceType);
+                return container.Resolve(serviceType);
             }
 
             public IEnumerable<object> GetServices(Type serviceType)
             {
-                return this.container.ResolveAll(serviceType);
+                return container.ResolveAll(serviceType);
             }
         }
     }

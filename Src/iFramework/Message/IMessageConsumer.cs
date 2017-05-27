@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace IFramework.Message
+﻿namespace IFramework.Message
 {
     public interface IMessageConsumer
     {
+        decimal MessageCount { get; }
         void Start();
         void Stop();
         string GetStatus();
-        decimal MessageCount { get; }
     }
 }

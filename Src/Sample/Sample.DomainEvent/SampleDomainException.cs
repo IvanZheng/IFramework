@@ -1,11 +1,6 @@
-﻿using IFramework.Message;
+﻿using System.Runtime.Serialization;
 using IFramework.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.Serialization;
+using IFramework.Message;
 
 namespace Sample.DomainEvents
 {
@@ -15,18 +10,16 @@ namespace Sample.DomainEvents
         public SampleDomainException(object errorCode, string message)
             : base(errorCode, message)
         {
-
         }
+
         public SampleDomainException(object errorCode, params string[] args)
             : base(errorCode, args)
         {
-
         }
 
         protected SampleDomainException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-
         }
     }
 }

@@ -1,70 +1,66 @@
-﻿@{
+﻿@using IFramework.Infrastructure
+@{
     Layout = null;
 }
-@using IFramework.Infrastructure;
 
 <!DOCTYPE html>
 
 <html>
 <head>
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width"/>
     <title>Index</title>
     @Scripts.Render("~/Scripts/jquery-1.8.2.min.js")
     @Scripts.Render("~/Scripts/jquery.json-2.2.min.js")
     @Scripts.Render("~/Scripts/jquery.cookie.min.js")
     <script>
-        var showResult = function(result)
-        {
+        var showResult = function(result) {
             $("#result").prepend(result + "<br>");
         }
-        var doSaga = function (commandName, command) {
+        var doSaga = function(commandName, command) {
             $.ajax({
                 cache: false,
                 contentType: "application/command+form;command=" + commandName,
                 type: "POST",
                 url: '@Url.Content("~/api/SagaApi")',
                 data: command,
-                success: function (data) {
+                success: function(data) {
                     if (data.errorCode == 0) {
                         showResult($.toJSON(data));
-                    }
-                    else {
+                    } else {
                         showResult(data.errorCode + " " + data.message);
                     }
                 }
             });
         };
 
-        var doCommand = function (commandName, command) {
+        var doCommand = function(commandName, command) {
             $.ajax({
                 cache: false,
                 contentType: "application/command+form;command=" + commandName,
                 type: "POST",
                 url: '@Url.Content("~/api/Command")',
                 data: command,
-                success: function (data) {
+                success: function(data) {
                     if (data.errorCode == 0) {
                         showResult($.toJSON(data));
-                    }
-                    else {
+                    } else {
                         showResult(data.errorCode + " " + data.message);
                     }
                 }
             });
         };
 
-        var batchCommandTest = function (commandName, command, batchCount) {
-            $.cookie("batchCount", batchCount, {path:"/"});
+        var batchCommandTest = function(commandName, command, batchCount) {
+            $.cookie("batchCount", batchCount, { path: "/" });
             $.ajax({
                 cache: false,
                 type: "POST",
                 url: '@Url.Content("~/api/BatchCommand/")' + commandName,
                 data: command,
-                success: function (data) {
+                success: function(data) {
                     if (data.ErrorCode == 0) {
                         showResult(data);
-                    }
-                    else {
+                    } else {
                         showResult(data.Message);
                     }
                 }
@@ -72,8 +68,8 @@
             });
         };
 
-        $(function () {
-            $("#loginCommandSaga").click(function () {
+        $(function() {
+            $("#loginCommandSaga").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
 
@@ -84,14 +80,14 @@
                 doSaga("Login", loginCommand);
             });
 
-            $("#batchRegisterCommand").click(function () {
+            $("#batchRegisterCommand").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
                 var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
                 batchCommandTest("Register", registerCommand, $("#batchCount").val());
             });
 
-            $("#batchLoginCommand").click(function () {
+            $("#batchLoginCommand").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
                 var loginCommand = { UserName: username, Password: password };
@@ -99,7 +95,7 @@
             });
 
 
-            $("#modifyCommand").click(function () {
+            $("#modifyCommand").click(function() {
                 var username = $("#username").val();
                 var email = $("#email").val();
 
@@ -110,7 +106,7 @@
                 doCommand("Modify", modifyCommand);
             });
 
-            $("#registerCommand").click(function () {
+            $("#registerCommand").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
                 var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
@@ -118,7 +114,7 @@
             });
 
 
-            $("#loginCommand").click(function () {
+            $("#loginCommand").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
 
@@ -129,49 +125,51 @@
                 doCommand("Login", loginCommand);
             });
 
-            $("#btnRefreshCommandDistributorStatus").click(function () {
-                refreshCommandDistributorStatus();
-            })
-            .click();
+            $("#btnRefreshCommandDistributorStatus").click(function() {
+                    refreshCommandDistributorStatus();
+                })
+                .click();
         });
-        var refreshCommandDistributorStatus = function () {
-            $.get("@Url.Content("~/Test/CommandDistributorStatus")", null, function (result) {
-                $("#commandDistributorStatus").html(result);
-            });
+        var refreshCommandDistributorStatus = function() {
+            $.get("@Url.Content("~/Test/CommandDistributorStatus")",
+                null,
+                function(result) {
+                    $("#commandDistributorStatus").html(result);
+                });
         };
 
     </script>
 </head>
 <body>
-    <a href="@Url.Action("SignOut")">logoff</a>
-    <input type="button" value="RefreshCommandDistributorStatus" id="btnRefreshCommandDistributorStatus" />
-    @(Guid.NewGuid().ToString().GetUniqueCode())
-    <div id="commandDistributorStatus">
+<a href="@Url.Action("SignOut")">logoff</a>
+<input type="button" value="RefreshCommandDistributorStatus" id="btnRefreshCommandDistributorStatus"/>
+@(Guid.NewGuid().ToString().GetUniqueCode())
+<div id="commandDistributorStatus">
 
-    </div>
-    <br />
+</div>
+<br/>
 
-    <input type="text" value="1000" id="batchCount" />
-    <input type="text" value="ivan" id="username" />
-    <input type="password" value="123456" id="password" />
+<input type="text" value="1000" id="batchCount"/>
+<input type="text" value="ivan" id="username"/>
+<input type="password" value="123456" id="password"/>
 
-    <input id="registerCommand" type="button" value="RegisterCommand" />
-    <input id="loginCommand" type="button" value="LoginCommand" />
-    <input id="loginCommandSaga" type="button" value="LoginCommandSaga" />
+<input id="registerCommand" type="button" value="RegisterCommand"/>
+<input id="loginCommand" type="button" value="LoginCommand"/>
+<input id="loginCommandSaga" type="button" value="LoginCommandSaga"/>
 
 
-    <div>
-        <input id="batchRegisterCommand" type="button" value="BatchRegisterCommand" />
-        <input id="batchLoginCommand" type="button" value="BatchLoginCommand" />
-    </div>
+<div>
+    <input id="batchRegisterCommand" type="button" value="BatchRegisterCommand"/>
+    <input id="batchLoginCommand" type="button" value="BatchLoginCommand"/>
+</div>
 
-    <div>
-        <input type="text" value="email" id="email" />
-        <input id="modifyCommand" type="button" value="ModifyCommand" />
-    </div>
-    <div id="result">
+<div>
+    <input type="text" value="email" id="email"/>
+    <input id="modifyCommand" type="button" value="ModifyCommand"/>
+</div>
+<div id="result">
 
-    </div>
+</div>
 </body>
 </html>
 

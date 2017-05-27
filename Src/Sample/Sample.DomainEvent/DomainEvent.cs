@@ -1,35 +1,12 @@
 ﻿using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Sample.DomainEvents
 {
     [Topic("DomainEvent")]
     public class DomainEvent : IDomainEvent
     {
-        public int Version { get; set; }
-        public object AggregateRootID
-        {
-            get;
-            private set;
-        }
-
-        public string AggregateRootName
-        {
-            get;
-            set;
-        }
-
-        public string ID
-        {
-            get;
-            set;
-        }
-
         public DomainEvent()
         {
             ID = ObjectId.GenerateNewId().ToString();
@@ -41,10 +18,15 @@ namespace Sample.DomainEvents
             AggregateRootID = aggregateRootID;
             Key = aggregateRootID.ToString();
         }
-        
-        public virtual string Key
-        {
-            get;set;
-        }
+
+        public int Version { get; set; }
+
+        public object AggregateRootID { get; }
+
+        public string AggregateRootName { get; set; }
+
+        public string ID { get; set; }
+
+        public virtual string Key { get; set; }
     }
 }

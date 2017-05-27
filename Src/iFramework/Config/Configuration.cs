@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Xml.Linq;
 using System.Configuration;
-using IFramework.Command;
-using IFramework.Event;
-using IFramework.Message;
+using System.IO;
+using System.Linq;
 using System.Web.Configuration;
-using IFramework.IoC;
-using IFramework.Infrastructure.Logging;
+using System.Xml.Linq;
+using IFramework.Event;
 using IFramework.Event.Impl;
-using IFramework.Message.Impl;
 using IFramework.Infrastructure.Caching;
 using IFramework.Infrastructure.Caching.Impl;
+using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
+using IFramework.Message;
+using IFramework.Message.Impl;
 
 namespace IFramework.Config
 {
@@ -22,10 +19,14 @@ namespace IFramework.Config
     {
         public static readonly Configuration Instance = new Configuration();
 
-        Configuration()
+        private Configuration()
         {
-           
         }
+
+        public bool NeedMessageStore { get; protected set; }
+
+
+        private bool CommitPerMessage { get; set; }
 
         public Configuration RegisterCommonComponents()
         {
@@ -38,11 +39,6 @@ namespace IFramework.Config
             return this;
         }
 
-        public bool NeedMessageStore
-        {
-            get;protected set;
-        }
-
 
         public Configuration UseMemoryCahce(Lifetime lifetime = Lifetime.Hierarchical)
         {
@@ -51,7 +47,7 @@ namespace IFramework.Config
         }
 
         public Configuration UseMessageStore<TMessageStore>(Lifetime lifetime = Lifetime.Hierarchical)
-        where TMessageStore : IMessageStore
+            where TMessageStore : IMessageStore
         {
             NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
             IoCFactory.Instance.CurrentContainer.RegisterType<IMessageStore, TMessageStore>(lifetime);
@@ -61,8 +57,8 @@ namespace IFramework.Config
         public Configuration UseNoneLogger()
         {
             IoCFactory.Instance.CurrentContainer
-                            .RegisterInstance(typeof(ILoggerFactory)
-                                       , new MockLoggerFactory());
+                .RegisterInstance(typeof(ILoggerFactory)
+                    , new MockLoggerFactory());
             return this;
         }
 
@@ -78,13 +74,11 @@ namespace IFramework.Config
             return this;
         }
 
-
-
-        bool CommitPerMessage { get; set; }
         public bool GetCommitPerMessage()
         {
             return CommitPerMessage;
         }
+
         public Configuration SetCommitPerMessage(bool commitPerMessage = false)
         {
             CommitPerMessage = commitPerMessage;
@@ -99,52 +93,45 @@ namespace IFramework.Config
 
         public static T GetAppConfig<T>(string key)
         {
-            T val = default(T);
+            var val = default(T);
             try
             {
                 var value = GetAppConfig(key);
                 if (typeof(T).IsEquivalentTo(typeof(Guid)))
-                {
-                    val = (T)Convert.ChangeType(new Guid(value), typeof(T));
-                }
+                    val = (T) Convert.ChangeType(new Guid(value), typeof(T));
                 else
-                {
-                    val = (T)Convert.ChangeType(value, typeof(T));
-                }
+                    val = (T) Convert.ChangeType(value, typeof(T));
             }
             catch (Exception)
             {
-               
             }
             return val;
         }
 
         public static string GetAppConfig(string keyname, string configPath = "Config")
         {
-            var config = System.Configuration.ConfigurationManager.AppSettings[keyname];
+            var config = ConfigurationManager.AppSettings[keyname];
             try
             {
                 if (string.IsNullOrWhiteSpace(config))
                 {
-                    string filePath = Path.Combine(System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase, configPath);
+                    var filePath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase, configPath);
                     if (File.Exists(filePath))
-                    {
                         using (TextReader reader = new StreamReader(filePath))
                         {
-                            XElement xml = XElement.Load(filePath);
+                            var xml = XElement.Load(filePath);
                             if (xml != null)
                             {
-                                var element = xml.Elements().SingleOrDefault(e => e.Attribute("key") != null && e.Attribute("key").Value.Equals(keyname));
+                                var element = xml.Elements()
+                                    .SingleOrDefault(e => e.Attribute("key") != null &&
+                                                          e.Attribute("key").Value.Equals(keyname));
                                 if (element != null)
-                                {
                                     config = element.Attribute("value").Value;
-                                }
                             }
                         }
-                    }
                 }
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 config = string.Empty;
             }

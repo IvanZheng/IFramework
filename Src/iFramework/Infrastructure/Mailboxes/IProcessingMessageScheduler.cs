@@ -1,9 +1,6 @@
-﻿using IFramework.Infrastructure.Mailboxes.Impl;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
+using IFramework.Infrastructure.Mailboxes.Impl;
 
 namespace IFramework.Infrastructure.Mailboxes
 {

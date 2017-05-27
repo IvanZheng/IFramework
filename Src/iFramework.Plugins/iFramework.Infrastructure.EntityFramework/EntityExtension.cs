@@ -1,13 +1,11 @@
-﻿using IFramework.Domain;
-using IFramework.Infrastructure;
-using IFramework.IoC;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
+using IFramework.Domain;
+using IFramework.Infrastructure;
 
 namespace IFramework.EntityFramework
 {
@@ -15,50 +13,42 @@ namespace IFramework.EntityFramework
     {
         public static TContext GetDbContext<TContext>(this Entity entity) where TContext : class
         {
-            TContext context = entity.GetValueByKey<TContext>("DomainContext");
+            var context = entity.GetValueByKey<TContext>("DomainContext");
             return context;
         }
 
         public static DbEntityEntry<TEntity> GetDbEntityEntry<TEntity>(this TEntity entity)
             where TEntity : Entity
         {
-            return entity.GetDbContext<MSDbContext>()?.Entry<TEntity>(entity);
+            return entity.GetDbContext<MSDbContext>()?.Entry(entity);
         }
 
         public static void MarkAsDeleted(this Entity entity)
         {
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 entry.State = EntityState.Deleted;
-            }
         }
 
         public static void MarkAsAdded(this Entity entity)
         {
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 entry.State = EntityState.Added;
-            }
         }
 
         public static void MarkAsModified(this Entity entity)
         {
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 entry.State = EntityState.Modified;
-            }
         }
 
         public static void MarkAsUnchanged(this Entity entity)
         {
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 entry.State = EntityState.Unchanged;
-            }
         }
 
         public static IQueryable<TElement> GetQueryable<TElement>(this Entity entity, string collectionName)
@@ -67,56 +57,48 @@ namespace IFramework.EntityFramework
             IQueryable<TElement> query = null;
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 query = entry.Collection(collectionName).Query().Cast<TElement>();
-            }
             return query;
         }
 
-        public static IQueryable<TElement> GetQueryable<TEntity, TElement>(this TEntity entity, Expression<Func<TEntity, ICollection<TElement>>> navigationProperty)
+        public static IQueryable<TElement> GetQueryable<TEntity, TElement>(this TEntity entity,
+            Expression<Func<TEntity, ICollection<TElement>>> navigationProperty)
             where TEntity : Entity
             where TElement : class
         {
             IQueryable<TElement> query = null;
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 query = entry.Collection(navigationProperty).Query().Cast<TElement>();
-            }
             return query;
         }
 
-        public static void ReferenceLoad<TEntity, TProperty>(this TEntity entity, Expression<Func<TEntity, TProperty>> navigationProperty)
+        public static void ReferenceLoad<TEntity, TProperty>(this TEntity entity,
+            Expression<Func<TEntity, TProperty>> navigationProperty)
             where TEntity : Entity
             where TProperty : class
         {
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 entity.GetDbEntityEntry().Reference(navigationProperty).Load();
-            }
         }
 
         public static void ReferenceLoad<TProperty>(this Entity entity, string navigationPropertyName)
-
             where TProperty : class
         {
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 entity.GetDbEntityEntry().Reference(navigationPropertyName).Load();
-            }
         }
 
-        public static void CollectionLoad<TEntity, TElement>(this TEntity entity, Expression<Func<TEntity, ICollection<TElement>>> navigationProperty)
+        public static void CollectionLoad<TEntity, TElement>(this TEntity entity,
+            Expression<Func<TEntity, ICollection<TElement>>> navigationProperty)
             where TEntity : Entity
             where TElement : class
         {
-            var entry = entity.GetDbEntityEntry<TEntity>();
+            var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 entity.GetDbEntityEntry().Collection(navigationProperty).Load();
-            }
         }
 
         public static void CollectionLoad<TElement>(this Entity entity, string navigationPropertyName)
@@ -124,9 +106,7 @@ namespace IFramework.EntityFramework
         {
             var entry = entity.GetDbEntityEntry();
             if (entry != null)
-            {
                 entity.GetDbEntityEntry().Collection(navigationPropertyName).Load();
-            }
         }
 
         public static void RemoveEntity<T>(this ICollection<T> collection, T entity)

@@ -1,35 +1,141 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using IFramework.Message;
-using IFramework.MessageQueue.MSKafka.MessageFormat;
-using System.Collections.Concurrent;
-using Kafka.Client.Producers;
+using IFramework.Config;
+using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
-using IFramework.Infrastructure;
-using Kafka.Client.Cfg;
-using IFramework.Config;
-using System.Threading;
-using Kafka.Client.Helper;
-using IFramework.MessageQueue.MSKafka.Config;
-using Kafka.Client.Consumers;
+using IFramework.Message;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue.MSKafka.Config;
+using IFramework.MessageQueue.MSKafka.MessageFormat;
+using Kafka.Client.Cfg;
+using Kafka.Client.Consumers;
+using Kafka.Client.Helper;
+using Kafka.Client.Producers;
 
 namespace IFramework.MessageQueue.MSKafka
 {
     public class KafkaClient : IMessageQueueClient
     {
+        protected bool _disposed;
+        protected ILogger _logger;
         protected ConcurrentDictionary<string, KafkaProducer> _queueClients;
-        protected ConcurrentDictionary<string, KafkaProducer> _topicClients;
-        protected List<KafkaConsumer> _subscriptionClients;
         protected List<KafkaConsumer> _queueConsumers;
+        protected List<KafkaConsumer> _subscriptionClients;
+        protected ConcurrentDictionary<string, KafkaProducer> _topicClients;
         protected string _zkConnectionString;
-        protected ILogger _logger = null;
+
+
+        public KafkaClient(string zkConnectionString)
+        {
+            _zkConnectionString = zkConnectionString;
+            _queueClients = new ConcurrentDictionary<string, KafkaProducer>();
+            _topicClients = new ConcurrentDictionary<string, KafkaProducer>();
+            _subscriptionClients = new List<KafkaConsumer>();
+            _queueConsumers = new List<KafkaConsumer>();
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
+        }
+
+
+        //public void CompleteMessage(IMessageContext messageContext)
+        //{
+        //    (messageContext as MessageContext).Complete();
+        //    _logger.Debug($"complete message {messageContext.Message.ToJson()}");
+        //}
+
+
+        public void Publish(IMessageContext messageContext, string topic)
+        {
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
+            var topicClient = GetTopicClient(topic);
+            var jsonValue = ((MessageContext) messageContext).KafkaMessage.ToJson();
+            var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
+            var producerData =
+                new ProducerData<string, Kafka.Client.Messages.Message>(topic, messageContext.Key, message);
+            topicClient.Send(producerData);
+        }
+
+        public void Send(IMessageContext messageContext, string queue)
+        {
+            queue = Configuration.Instance.FormatMessageQueueName(queue);
+            var queueClient = GetQueueClient(queue);
+
+            var jsonValue = ((MessageContext) messageContext).KafkaMessage.ToJson();
+            var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
+            var producerData =
+                new ProducerData<string, Kafka.Client.Messages.Message>(queue, messageContext.Key, message);
+            queueClient.Send(producerData);
+        }
+
+        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId,
+            OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        {
+            commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
+            consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
+            var queueConsumer = CreateQueueConsumer(commandQueueName, onMessagesReceived, consumerId,
+                Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
+            _queueConsumers.Add(queueConsumer);
+            return queueConsumer;
+        }
+
+        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId,
+            OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        {
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
+            subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
+            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, consumerId,
+                Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
+            _subscriptionClients.Add(subscriptionClient);
+            return subscriptionClient;
+        }
+
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null,
+            string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null,
+            string producer = null)
+        {
+            var messageContext = new MessageContext(message, messageId);
+            messageContext.Producer = producer;
+            messageContext.IP = Utility.GetLocalIPV4()?.ToString();
+            if (!string.IsNullOrEmpty(correlationId))
+                messageContext.CorrelationID = correlationId;
+            if (!string.IsNullOrEmpty(topic))
+                messageContext.Topic = topic;
+            if (!string.IsNullOrEmpty(key))
+                messageContext.Key = key;
+            if (!string.IsNullOrEmpty(replyEndPoint))
+                messageContext.ReplyToEndPoint = replyEndPoint;
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+                messageContext.SagaInfo = sagaInfo;
+            return messageContext;
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _topicClients.Values.ForEach(client => client.Stop());
+                _queueClients.Values.ForEach(client => client.Stop());
+                ZookeeperConsumerConnector.zkClientStatic?.Dispose();
+                _disposed = true;
+            }
+        }
+
+        private void StopQueueClients()
+        {
+            _queueConsumers.ForEach(client => client.Stop());
+        }
+
+        private void StopSubscriptionClients()
+        {
+            _subscriptionClients.ForEach(client => client.Stop());
+        }
 
         #region private methods
-        KafkaProducer GetTopicClient(string topic)
+
+        private KafkaProducer GetTopicClient(string topic)
         {
             KafkaProducer topicClient = null;
             _topicClients.TryGetValue(topic, out topicClient);
@@ -41,9 +147,9 @@ namespace IFramework.MessageQueue.MSKafka
             return topicClient;
         }
 
-        KafkaProducer GetQueueClient(string queue)
+        private KafkaProducer GetQueueClient(string queue)
         {
-            KafkaProducer queueClient = _queueClients.TryGetValue(queue);
+            var queueClient = _queueClients.TryGetValue(queue);
             if (queueClient == null)
             {
                 queueClient = CreateQueueClient(queue);
@@ -52,9 +158,9 @@ namespace IFramework.MessageQueue.MSKafka
             return queueClient;
         }
 
-        bool TopicExsits(string topic)
+        private bool TopicExsits(string topic)
         {
-            var managerConfig = new KafkaSimpleManagerConfiguration()
+            var managerConfig = new KafkaSimpleManagerConfiguration
             {
                 FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
                 BufferSize = KafkaSimpleManagerConfiguration.DefaultBufferSize,
@@ -75,26 +181,27 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        internal static ZooKeeperConfiguration GetZooKeeperConfiguration(string connectString, int sessionTimeout = 30000, int connectionTimeout = 4000, int syncTimeout = 8000)
+        internal static ZooKeeperConfiguration GetZooKeeperConfiguration(string connectString,
+            int sessionTimeout = 30000, int connectionTimeout = 4000, int syncTimeout = 8000)
         {
             return new ZooKeeperConfiguration(connectString, sessionTimeout, connectionTimeout, syncTimeout);
         }
 
         public void CreateTopic(string topic)
         {
-            ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
+            var producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 RequiredAcks = -1,
                 TotalNumPartitions = 3,
                 ZooKeeper = GetZooKeeperConfiguration(_zkConnectionString)
             };
-            using (Producer producer = new Producer(producerConfiguration))
+            using (var producer = new Producer(producerConfiguration))
             {
                 while (true)
-                {
                     try
                     {
-                        var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty, new Kafka.Client.Messages.Message(new byte[0]));
+                        var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty,
+                            new Kafka.Client.Messages.Message(new byte[0]));
                         producer.Send(data);
                         break;
                     }
@@ -103,53 +210,50 @@ namespace IFramework.MessageQueue.MSKafka
                         _logger.Error($"Create topic {topic} failed", ex);
                         Task.Delay(2000).Wait();
                     }
-                }
             }
         }
 
-        void CreateTopicIfNotExists(string topic)
+        private void CreateTopicIfNotExists(string topic)
         {
             if (!TopicExsits(topic))
-            {
                 CreateTopic(topic);
-            }
         }
 
-        KafkaConsumer CreateQueueConsumer(string queue, OnMessagesReceived onMessagesReceived,
-                                          string consumerId = null, int backOffIncrement = 30,
-                                          int fullLoadThreshold = 1000, int waitInterval = 1000)
+        private KafkaConsumer CreateQueueConsumer(string queue, OnMessagesReceived onMessagesReceived,
+            string consumerId = null, int backOffIncrement = 30,
+            int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(queue);
             var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{queue}.consumer", consumerId,
-                                                  BuildOnKafkaMessageReceived(onMessagesReceived),
-                                                  backOffIncrement, fullLoadThreshold, waitInterval);
+                BuildOnKafkaMessageReceived(onMessagesReceived),
+                backOffIncrement, fullLoadThreshold, waitInterval);
             return queueConsumer;
         }
 
-        KafkaProducer CreateQueueClient(string queue)
+        private KafkaProducer CreateQueueClient(string queue)
         {
             CreateTopicIfNotExists(queue);
             var queueClient = new KafkaProducer(queue, _zkConnectionString);
             return queueClient;
         }
 
-        KafkaProducer CreateTopicClient(string topic)
+        private KafkaProducer CreateTopicClient(string topic)
         {
             CreateTopicIfNotExists(topic);
             return new KafkaProducer(topic, _zkConnectionString);
         }
 
-        KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName,
-                                               OnMessagesReceived onMessagesReceived,
-                                               string consumerId = null, int backOffIncrement = 30,
-                                               int fullLoadThreshold = 1000, int waitInterval = 1000)
+        private KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName,
+            OnMessagesReceived onMessagesReceived,
+            string consumerId = null, int backOffIncrement = 30,
+            int fullLoadThreshold = 1000, int waitInterval = 1000)
         {
             CreateTopicIfNotExists(topic);
             return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId,
-                                     BuildOnKafkaMessageReceived(onMessagesReceived), backOffIncrement, fullLoadThreshold, waitInterval);
+                BuildOnKafkaMessageReceived(onMessagesReceived), backOffIncrement, fullLoadThreshold, waitInterval);
         }
 
-        OnKafkaMessageReceived BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)
+        private OnKafkaMessageReceived BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)
         {
             return (consumer, message) =>
             {
@@ -160,116 +264,5 @@ namespace IFramework.MessageQueue.MSKafka
         }
 
         #endregion
-
-
-        public KafkaClient(string zkConnectionString)
-        {
-            _zkConnectionString = zkConnectionString;
-            _queueClients = new ConcurrentDictionary<string, KafkaProducer>();
-            _topicClients = new ConcurrentDictionary<string, KafkaProducer>();
-            _subscriptionClients = new List<KafkaConsumer>();
-            _queueConsumers = new List<KafkaConsumer>();
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType().Name);
-        }
-
-
-
-        //public void CompleteMessage(IMessageContext messageContext)
-        //{
-        //    (messageContext as MessageContext).Complete();
-        //    _logger.Debug($"complete message {messageContext.Message.ToJson()}");
-        //}
-
-
-        public void Publish(IMessageContext messageContext, string topic)
-        {
-            topic = Configuration.Instance.FormatMessageQueueName(topic);
-            var topicClient = GetTopicClient(topic);
-            var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
-            var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
-            var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(topic, messageContext.Key, message);
-            topicClient.Send(producerData);
-        }
-
-        public void Send(IMessageContext messageContext, string queue)
-        {
-            queue = Configuration.Instance.FormatMessageQueueName(queue);
-            var queueClient = GetQueueClient(queue);
-
-            var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
-            var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
-            var producerData = new ProducerData<string, Kafka.Client.Messages.Message>(queue, messageContext.Key, message);
-            queueClient.Send(producerData);
-        }
-
-        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
-        {
-            commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
-            consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
-            var queueConsumer = CreateQueueConsumer(commandQueueName, onMessagesReceived, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
-            _queueConsumers.Add(queueConsumer);
-            return queueConsumer;
-        }
-
-        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
-        {
-            topic = Configuration.Instance.FormatMessageQueueName(topic);
-            subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
-            var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, consumerId, Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
-            _subscriptionClients.Add(subscriptionClient);
-            return subscriptionClient;
-        }
-
-        void StopQueueClients()
-        {
-            _queueConsumers.ForEach(client => client.Stop());
-        }
-
-        void StopSubscriptionClients()
-        {
-            _subscriptionClients.ForEach(client => client.Stop());
-        }
-
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, 
-            string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null,
-            string producer = null)
-        {
-            var messageContext = new MessageContext(message, messageId);
-            messageContext.Producer = producer;
-            messageContext.IP = Utility.GetLocalIPV4()?.ToString();
-            if (!string.IsNullOrEmpty(correlationId))
-            {
-                messageContext.CorrelationID = correlationId;
-            }
-            if (!string.IsNullOrEmpty(topic))
-            {
-                messageContext.Topic = topic;
-            }
-            if (!string.IsNullOrEmpty(key))
-            {
-                messageContext.Key = key;
-            }
-            if (!string.IsNullOrEmpty(replyEndPoint))
-            {
-                messageContext.ReplyToEndPoint = replyEndPoint;
-            }
-            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
-            {
-                messageContext.SagaInfo = sagaInfo;
-            }
-            return messageContext;
-        }
-
-        protected bool _disposed = false;
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _topicClients.Values.ForEach(client => client.Stop());
-                _queueClients.Values.ForEach(client => client.Stop());
-                ZookeeperConsumerConnector.zkClientStatic?.Dispose();
-                _disposed = true;
-            }
-        }
     }
 }

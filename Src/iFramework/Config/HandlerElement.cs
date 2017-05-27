@@ -1,5 +1,4 @@
-﻿using IFramework.Message;
-using System.Configuration;
+﻿using System.Configuration;
 
 namespace IFramework.Config
 {
@@ -8,22 +7,22 @@ namespace IFramework.Config
         [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
         public string Name
         {
-            get { return (string)base["name"]; }
-            set { base["name"] = value; }
+            get => (string) base["name"];
+            set => base["name"] = value;
         }
 
         [ConfigurationProperty("sourceType", IsRequired = true)]
         public HandlerSourceType SourceType
         {
-            get { return (HandlerSourceType)base["sourceType"]; }
-            set { base["sourceType"] = value; }
+            get => (HandlerSourceType) base["sourceType"];
+            set => base["sourceType"] = value;
         }
 
         [ConfigurationProperty("source", IsRequired = true)]
         public string Source
         {
-            get { return (string)base["source"]; }
-            set { base["source"] = value; }
+            get => (string) base["source"];
+            set => base["source"] = value;
         }
     }
 }

@@ -1,31 +1,19 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
     public class ProcessingMailbox<TMessage>
-            where TMessage : class
+        where TMessage : class
     {
-        readonly IProcessingMessageScheduler<TMessage> _scheduler;
-        internal ConcurrentQueue<TMessage> MessageQueue { get; private set; }
-        Func<TMessage, Task> _processMessage;
-        Action<ProcessingMailbox<TMessage>> _handleMailboxEmpty;
-        public string Key { get; private set; }
+        private static int _processedCount;
+        private readonly IProcessingMessageScheduler<TMessage> _scheduler;
+        private readonly int _batchCount;
+        private readonly Action<ProcessingMailbox<TMessage>> _handleMailboxEmpty;
         private volatile int _isHandlingMessage;
-        private int _batchCount;
-        static int _processedCount;
-        public static int ProcessedCount
-        {
-            get
-            {
-                return _processedCount;
-            }
-        }
+        private readonly Func<TMessage, Task> _processMessage;
 
         public ProcessingMailbox(string key,
             IProcessingMessageScheduler<TMessage> scheduler,
@@ -40,6 +28,11 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             Key = key;
             MessageQueue = new ConcurrentQueue<TMessage>();
         }
+
+        internal ConcurrentQueue<TMessage> MessageQueue { get; }
+        public string Key { get; }
+
+        public static int ProcessedCount => _processedCount;
 
 
         public void EnqueueMessage(TMessage processingMessage)
@@ -56,30 +49,22 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         internal async Task Run()
         {
             TMessage processingMessage = null;
-            int processedCount = 0;
+            var processedCount = 0;
             while (processedCount < _batchCount)
-            {
                 try
                 {
                     processingMessage = null;
                     if (MessageQueue.TryDequeue(out processingMessage))
-                    {
                         await _processMessage(processingMessage).ConfigureAwait(false);
-                    }
                     else
-                    {
                         break;
-                    }
                 }
                 finally
                 {
                     processedCount++;
                     if (processingMessage != null)
-                    {
                         Interlocked.Add(ref _processedCount, 1);
-                    }
                 }
-            }
             ExitHandlingMessage();
         }
 
@@ -94,9 +79,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             else
             {
                 if (_handleMailboxEmpty != null)
-                {
                     _handleMailboxEmpty(this);
-                }
             }
         }
 
@@ -104,6 +87,5 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         {
             _scheduler.ScheduleMailbox(this);
         }
-
     }
 }

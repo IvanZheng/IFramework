@@ -4,13 +4,15 @@ using log4net;
 
 namespace IFramework.Log4Net
 {
-    /// <summary>Log4Net based logger implementation.
+    /// <summary>
+    ///     Log4Net based logger implementation.
     /// </summary>
     public class Log4NetLogger : ILogger
     {
         private readonly ILog _log;
 
-        /// <summary>Parameterized constructor.
+        /// <summary>
+        ///     Parameterized constructor.
         /// </summary>
         /// <param name="log"></param>
         public Log4NetLogger(ILog log)
@@ -22,23 +24,17 @@ namespace IFramework.Log4Net
 
         /// <summary>
         /// </summary>
-        public bool IsDebugEnabled
-        {
-            get
-            {
-                return _log.IsDebugEnabled;
-            }
-        }
+        public bool IsDebugEnabled => _log.IsDebugEnabled;
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
         public void Debug(object message)
         {
             if (_log.IsDebugEnabled)
-            {
                 _log.Debug(message);
-            }
         }
+
         /// <summary>
         /// </summary>
         /// <param name="format"></param>
@@ -46,10 +42,9 @@ namespace IFramework.Log4Net
         public void DebugFormat(string format, params object[] args)
         {
             if (_log.IsDebugEnabled)
-            {
                 _log.DebugFormat(format, args);
-            }
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -57,10 +52,9 @@ namespace IFramework.Log4Net
         public void Debug(object message, Exception exception)
         {
             if (_log.IsDebugEnabled)
-            {
                 _log.Debug(message, exception);
-            }
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -68,6 +62,7 @@ namespace IFramework.Log4Net
         {
             _log.Info(message);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="format"></param>
@@ -76,6 +71,7 @@ namespace IFramework.Log4Net
         {
             _log.InfoFormat(format, args);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -84,6 +80,7 @@ namespace IFramework.Log4Net
         {
             _log.Info(message, exception);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -91,6 +88,7 @@ namespace IFramework.Log4Net
         {
             _log.Error(message);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="format"></param>
@@ -99,6 +97,7 @@ namespace IFramework.Log4Net
         {
             _log.ErrorFormat(format, args);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -107,6 +106,7 @@ namespace IFramework.Log4Net
         {
             _log.Error(message, exception);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -114,6 +114,7 @@ namespace IFramework.Log4Net
         {
             _log.Warn(message);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="format"></param>
@@ -122,6 +123,7 @@ namespace IFramework.Log4Net
         {
             _log.WarnFormat(format, args);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -130,6 +132,7 @@ namespace IFramework.Log4Net
         {
             _log.Warn(message, exception);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -137,6 +140,7 @@ namespace IFramework.Log4Net
         {
             _log.Fatal(message);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="format"></param>
@@ -145,6 +149,7 @@ namespace IFramework.Log4Net
         {
             _log.FatalFormat(format, args);
         }
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>

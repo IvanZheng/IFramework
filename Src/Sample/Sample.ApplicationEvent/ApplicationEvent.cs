@@ -1,27 +1,19 @@
 ﻿using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Sample.ApplicationEvent
 {
     [Topic("AppEvent")]
     public class ApplicationEvent : IApplicationEvent
     {
-        public string ID
-        {
-            get;
-            set;
-        }
-
-        public string Key { get; set; }
-
         public ApplicationEvent()
         {
             ID = ObjectId.GenerateNewId().ToString();
         }
+
+        public string ID { get; set; }
+
+        public string Key { get; set; }
     }
 }

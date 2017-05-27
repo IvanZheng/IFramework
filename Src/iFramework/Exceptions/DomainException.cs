@@ -1,35 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using IFramework.Infrastructure;
 using System.ComponentModel;
+using System.Runtime.Serialization;
 using IFramework.Event;
+using IFramework.Infrastructure;
 
 namespace IFramework.Exceptions
 {
     public class ErrorCodeDictionary
     {
-        private static Dictionary<object, string> _errorcodeDic = new Dictionary<object, string>();
+        private static readonly Dictionary<object, string> _errorcodeDic = new Dictionary<object, string>();
 
         public static string GetErrorMessage(object errorcode, params object[] args)
         {
-            string errorMessage = _errorcodeDic.TryGetValue(errorcode, string.Empty);
+            var errorMessage = _errorcodeDic.TryGetValue(errorcode, string.Empty);
             if (string.IsNullOrEmpty(errorMessage))
             {
                 errorMessage = errorcode.GetCustomAttribute<DescriptionAttribute>()?.Description;
                 if (string.IsNullOrEmpty(errorMessage))
-                {
                     errorMessage = errorcode.ToString();
-                }
             }
 
             if (args != null && args.Length > 0)
-            {
                 return string.Format(errorMessage, args);
-            }
             return errorMessage;
         }
 
@@ -38,27 +31,19 @@ namespace IFramework.Exceptions
             dictionary.ForEach(p =>
             {
                 if (_errorcodeDic.ContainsKey(p.Key))
-                {
                     throw new Exception($"ErrorCode dictionary has already had the key {p.Key}");
-                }
                 _errorcodeDic.Add(p.Key, p.Value);
             });
         }
-
     }
 
     public class DomainException : Exception, IEvent
     {
-        public object ErrorCode { get; set; }
-
-        public string ID { get; set; }
-
-        public string Key { get; set; }
-
         public DomainException()
         {
             ID = ObjectId.GenerateNewId().ToString();
         }
+
         protected DomainException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -66,6 +51,7 @@ namespace IFramework.Exceptions
             Key = info.GetValue("Key", typeof(string)) as string;
             ErrorCode = info.GetValue("ErrorCode", typeof(object));
         }
+
         public DomainException(object errorCode, string message = null)
             : base(message ?? ErrorCodeDictionary.GetErrorMessage(errorCode))
         {
@@ -79,6 +65,12 @@ namespace IFramework.Exceptions
             ID = ObjectId.GenerateNewId().ToString();
             ErrorCode = errorCode;
         }
+
+        public object ErrorCode { get; set; }
+
+        public string ID { get; set; }
+
+        public string Key { get; set; }
 
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {

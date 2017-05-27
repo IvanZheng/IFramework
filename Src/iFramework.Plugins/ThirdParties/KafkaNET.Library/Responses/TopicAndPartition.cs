@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
-
-namespace Kafka.Client.Responses
+﻿namespace Kafka.Client.Responses
 {
     public class TopicAndPartition
     {
@@ -11,8 +8,8 @@ namespace Kafka.Client.Responses
             PartitionId = partitionId;
         }
 
-        public string Topic { get; private set; }
-        public int PartitionId { get; private set; }
+        public string Topic { get; }
+        public int PartitionId { get; }
 
         public override int GetHashCode()
         {
@@ -23,7 +20,7 @@ namespace Kafka.Client.Responses
         {
             if (obj is TopicAndPartition)
             {
-                var tp = (TopicAndPartition)obj;
+                var tp = (TopicAndPartition) obj;
                 return Topic.Equals(tp.Topic) && PartitionId.Equals(tp.PartitionId);
             }
 
@@ -32,7 +29,7 @@ namespace Kafka.Client.Responses
 
         public override string ToString()
         {
-            return string.Format("Topic:{0} PartitionID:{1}", this.Topic, this.PartitionId);
+            return string.Format("Topic:{0} PartitionID:{1}", Topic, PartitionId);
         }
     }
 }

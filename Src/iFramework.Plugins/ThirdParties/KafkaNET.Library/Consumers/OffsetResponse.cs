@@ -1,46 +1,44 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using Kafka.Client.Responses;
+using Kafka.Client.Serialization;
+using Kafka.Client.Utils;
 
 namespace Kafka.Client.Consumers
 {
-    using Kafka.Client.Responses;
-    using Kafka.Client.Serialization;
-    using Kafka.Client.Utils;
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Text;
-
     public class OffsetResponse
     {
-        public int CorrelationId { get; private set; }
-        public Dictionary<string, List<PartitionOffsetsResponse>> ResponseMap { get; private set; }
-
         public OffsetResponse(int correlationId, Dictionary<string, List<PartitionOffsetsResponse>> responseMap)
         {
             CorrelationId = correlationId;
             ResponseMap = responseMap;
         }
 
+        public int CorrelationId { get; }
+        public Dictionary<string, List<PartitionOffsetsResponse>> ResponseMap { get; }
+
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder(1024);
-            sb.AppendFormat("OffsetResponse.CorrelationId:{0},ResponseMap Count={1}", this.CorrelationId, this.ResponseMap.Count);
+            var sb = new StringBuilder(1024);
+            sb.AppendFormat("OffsetResponse.CorrelationId:{0},ResponseMap Count={1}", CorrelationId, ResponseMap.Count);
 
-            int i = 0;
-            foreach (var v in this.ResponseMap)
+            var i = 0;
+            foreach (var v in ResponseMap)
             {
-                sb.AppendFormat(",ResponseMap[{0}].Key:{1},PartitionOffsetsResponse Count={2}", i, v.Key, v.Value.Count);
-                int j = 0;
+                sb.AppendFormat(",ResponseMap[{0}].Key:{1},PartitionOffsetsResponse Count={2}", i, v.Key,
+                    v.Value.Count);
+                var j = 0;
                 foreach (var o in v.Value)
                 {
-                    sb.AppendFormat(",PartitionOffsetsResponse[{0}]:{1}", j, o.ToString());
+                    sb.AppendFormat(",PartitionOffsetsResponse[{0}]:{1}", j, o);
                     j++;
                 }
                 i++;
             }
 
-            string s = sb.ToString();
+            var s = sb.ToString();
             sb.Length = 0;
             return s;
         }
@@ -53,15 +51,13 @@ namespace Kafka.Client.Consumers
                 var correlationId = reader.ReadInt32();
                 var numTopics = reader.ReadInt32();
                 var responseMap = new Dictionary<string, List<PartitionOffsetsResponse>>();
-                for (int i = 0; i < numTopics; ++i)
+                for (var i = 0; i < numTopics; ++i)
                 {
                     var topic = reader.ReadShortString();
                     var numPartitions = reader.ReadInt32();
                     var responses = new List<PartitionOffsetsResponse>();
-                    for (int p = 0; p < numPartitions; ++p)
-                    {
+                    for (var p = 0; p < numPartitions; ++p)
                         responses.Add(PartitionOffsetsResponse.ReadFrom(reader));
-                    }
 
                     responseMap[topic] = responses;
                 }
@@ -73,10 +69,6 @@ namespace Kafka.Client.Consumers
 
     public class PartitionOffsetsResponse
     {
-        public int PartitionId { get; private set; }
-        public ErrorMapping Error { get; private set; }
-        public List<long> Offsets { get; private set; }
-
         public PartitionOffsetsResponse(int partitionId, ErrorMapping error, List<long> offsets)
         {
             PartitionId = partitionId;
@@ -84,19 +76,24 @@ namespace Kafka.Client.Consumers
             Offsets = offsets;
         }
 
+        public int PartitionId { get; }
+        public ErrorMapping Error { get; }
+        public List<long> Offsets { get; }
+
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder(1024);
+            var sb = new StringBuilder(1024);
 
-            sb.AppendFormat("PartitionOffsetsResponse.PartitionId:{0},Error:{1},Offsets Count={2}", this.PartitionId, this.Error, this.Offsets.Count);
-            int i = 0;
-            foreach (var o in this.Offsets)
+            sb.AppendFormat("PartitionOffsetsResponse.PartitionId:{0},Error:{1},Offsets Count={2}", PartitionId, Error,
+                Offsets.Count);
+            var i = 0;
+            foreach (var o in Offsets)
             {
-                sb.AppendFormat("Offsets[{0}]:{1}", i, o.ToString());
+                sb.AppendFormat("Offsets[{0}]:{1}", i, o);
                 i++;
             }
 
-            string s = sb.ToString();
+            var s = sb.ToString();
             sb.Length = 0;
             return s;
         }
@@ -107,13 +104,11 @@ namespace Kafka.Client.Consumers
             var error = reader.ReadInt16();
             var numOffsets = reader.ReadInt32();
             var offsets = new List<long>();
-            for (int o = 0; o < numOffsets; ++o)
-            {
+            for (var o = 0; o < numOffsets; ++o)
                 offsets.Add(reader.ReadInt64());
-            }
 
             return new PartitionOffsetsResponse(partitionId,
-                (ErrorMapping)Enum.Parse(typeof(ErrorMapping), error.ToString(CultureInfo.InvariantCulture)),
+                (ErrorMapping) Enum.Parse(typeof(ErrorMapping), error.ToString(CultureInfo.InvariantCulture)),
                 offsets);
         }
     }

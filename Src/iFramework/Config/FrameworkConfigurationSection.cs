@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Configuration;
+﻿using System.Configuration;
 
 namespace IFramework.Config
 {
@@ -10,20 +6,20 @@ namespace IFramework.Config
     public class FrameworkConfigurationSection : ConfigurationSection
     {
         /// <summary>
-        /// Gets or sets the configuration settings for handlers.
+        ///     Gets or sets the configuration settings for handlers.
         /// </summary>
         [ConfigurationProperty("handlers", IsRequired = false)]
         public HandlerElementCollection Handlers
         {
-            get { return (HandlerElementCollection)base["handlers"]; }
-            set { base["handlers"] = value; }
+            get => (HandlerElementCollection) base["handlers"];
+            set => base["handlers"] = value;
         }
 
-        [ConfigurationProperty("messageEndpointMappings", IsRequired=false)]
+        [ConfigurationProperty("messageEndpointMappings", IsRequired = false)]
         public MessageEndpointElementCollection MessageEndpointMappings
         {
-            get { return (MessageEndpointElementCollection)base["messageEndpointMappings"];}
-            set { base["messageEndpointMappings"] = value;}
+            get => (MessageEndpointElementCollection) base["messageEndpointMappings"];
+            set => base["messageEndpointMappings"] = value;
         }
     }
 }

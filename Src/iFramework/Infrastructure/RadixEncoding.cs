@@ -8,49 +8,39 @@ namespace IFramework.Infrastructure
     {
         /// <summary>Least Significant Bit order (lsb)</summary>
         /// <remarks>Right-to-Left</remarks>
-        /// <see cref="BitConverter.IsLittleEndian"/>
+        /// <see cref="BitConverter.IsLittleEndian" />
         Little,
+
         /// <summary>Most Significant Bit order (msb)</summary>
         /// <remarks>Left-to-Right</remarks>
-        Big,
-    };
+        Big
+    }
 
     /// <summary>Encodes/decodes bytes to/from a string</summary>
     /// <remarks>
-    /// Encoded string is always in big-endian ordering
-    /// 
-    /// <p>Encode and Decode take a <b>includeProceedingZeros</b> parameter which acts as a work-around
-    /// for an edge case with our BigInteger implementation.
-    /// MSDN says BigInteger byte arrays are in LSB->MSB ordering. So a byte buffer with zeros at the 
-    /// end will have those zeros ignored in the resulting encoded radix string.
-    /// If such a loss in precision absolutely cannot occur pass true to <b>includeProceedingZeros</b>
-    /// and for a tiny bit of extra processing it will handle the padding of zero digits (encoding)
-    /// or bytes (decoding).</p>
-    /// <p>Note: doing this for decoding <b>may</b> add an extra byte more than what was originally 
-    /// given to Encode.</p>
+    ///     Encoded string is always in big-endian ordering
+    ///     <p>
+    ///         Encode and Decode take a <b>includeProceedingZeros</b> parameter which acts as a work-around
+    ///         for an edge case with our BigInteger implementation.
+    ///         MSDN says BigInteger byte arrays are in LSB->MSB ordering. So a byte buffer with zeros at the
+    ///         end will have those zeros ignored in the resulting encoded radix string.
+    ///         If such a loss in precision absolutely cannot occur pass true to <b>includeProceedingZeros</b>
+    ///         and for a tiny bit of extra processing it will handle the padding of zero digits (encoding)
+    ///         or bytes (decoding).
+    ///     </p>
+    ///     <p>
+    ///         Note: doing this for decoding <b>may</b> add an extra byte more than what was originally
+    ///         given to Encode.
+    ///     </p>
     /// </remarks>
     // Based on the answers from http://codereview.stackexchange.com/questions/14084/base-36-encoding-of-a-byte-array/
     public class RadixEncoding
     {
-        const int kByteBitCount = 8;
+        private const int kByteBitCount = 8;
+        private readonly double kBitsPerDigit;
 
-        readonly string kDigits;
-        readonly double kBitsPerDigit;
-        readonly BigInteger kRadixBig;
-        readonly EndianFormat kEndian;
-        readonly bool kIncludeProceedingZeros;
-
-        /// <summary>Numerial base of this encoding</summary>
-        public int Radix { get { return kDigits.Length; } }
-        /// <summary>Endian ordering of bytes input to Encode and output by Decode</summary>
-        public EndianFormat Endian { get { return kEndian; } }
-        /// <summary>True if we want ending zero bytes to be encoded</summary>
-        public bool IncludeProceedingZeros { get { return kIncludeProceedingZeros; } }
-
-        public override string ToString()
-        {
-            return string.Format("Base-{0} {1}", Radix.ToString(), kDigits);
-        }
+        private readonly string kDigits;
+        private readonly BigInteger kRadixBig;
 
         /// <summary>Create a radix encoder using the given characters as the digits in the radix</summary>
         /// <param name="digits">Digits to use for the radix-encoded string</param>
@@ -60,30 +50,45 @@ namespace IFramework.Infrastructure
             EndianFormat bytesEndian = EndianFormat.Little, bool includeProceedingZeros = false)
         {
             //Contract.Requires<ArgumentNullException>(digits != null);
-            int radix = digits.Length;
+            var radix = digits.Length;
 
             kDigits = digits;
-            kBitsPerDigit = System.Math.Log(radix, 2);
+            kBitsPerDigit = Math.Log(radix, 2);
             kRadixBig = new BigInteger(radix);
-            kEndian = bytesEndian;
-            kIncludeProceedingZeros = includeProceedingZeros;
+            Endian = bytesEndian;
+            IncludeProceedingZeros = includeProceedingZeros;
+        }
+
+        /// <summary>Numerial base of this encoding</summary>
+        public int Radix => kDigits.Length;
+
+        /// <summary>Endian ordering of bytes input to Encode and output by Decode</summary>
+        public EndianFormat Endian { get; }
+
+        /// <summary>True if we want ending zero bytes to be encoded</summary>
+        public bool IncludeProceedingZeros { get; }
+
+        public override string ToString()
+        {
+            return string.Format("Base-{0} {1}", Radix, kDigits);
         }
 
         // Number of characters needed for encoding the specified number of bytes
-        int EncodingCharsCount(int bytesLength)
+        private int EncodingCharsCount(int bytesLength)
         {
-            return (int)Math.Ceiling((bytesLength * kByteBitCount) / kBitsPerDigit);
+            return (int) Math.Ceiling(bytesLength * kByteBitCount / kBitsPerDigit);
         }
+
         // Number of bytes needed to decoding the specified number of characters
-        int DecodingBytesCount(int charsCount)
+        private int DecodingBytesCount(int charsCount)
         {
-            return (int)Math.Ceiling((charsCount * kBitsPerDigit) / kByteBitCount);
+            return (int) Math.Ceiling(charsCount * kBitsPerDigit / kByteBitCount);
         }
 
         /// <summary>Encode a byte array into a radix-encoded string</summary>
         /// <param name="bytes">byte array to encode</param>
         /// <returns>The bytes in encoded into a radix-encoded string</returns>
-        /// <remarks>If <paramref name="bytes"/> is zero length, returns an empty string</remarks>
+        /// <remarks>If <paramref name="bytes" /> is zero length, returns an empty string</remarks>
         public string Encode(byte[] bytes)
         {
             //Contract.Requires<ArgumentNullException>(bytes != null);
@@ -95,7 +100,7 @@ namespace IFramework.Infrastructure
 
             // if the array ends with zeros, having the capacity set to this will help us know how much
             // 'padding' we will need to add
-            int result_length = EncodingCharsCount(bytes.Length);
+            var result_length = EncodingCharsCount(bytes.Length);
             // List<> has a(n in-place) Reverse method. StringBuilder doesn't. That's why.
             var result = new List<char>(result_length);
 
@@ -111,37 +116,59 @@ namespace IFramework.Infrastructure
             {
                 BigInteger remainder;
                 dividend = BigInteger.DivRem(dividend, kRadixBig, out remainder);
-                int digit_index = System.Math.Abs((int)remainder);
+                var digit_index = Math.Abs((int) remainder);
                 result.Add(kDigits[digit_index]);
             }
 
-            if (kIncludeProceedingZeros)
-                for (int x = result.Count; x < result.Capacity; x++)
+            if (IncludeProceedingZeros)
+                for (var x = result.Count; x < result.Capacity; x++)
                     result.Add(kDigits[0]); // pad with the character that represents 'zero'
 
             // orientate the characters in big-endian ordering
-            if (kEndian == EndianFormat.Little)
+            if (Endian == EndianFormat.Little)
                 result.Reverse();
             // If we didn't end up adding padding, ToArray will end up returning a TrimExcess'd array, 
             // so nothing wasted
             return new string(result.ToArray());
         }
 
-        void DecodeImplPadResult(ref byte[] result, int padCount)
+        private void DecodeImplPadResult(ref byte[] result, int padCount)
         {
             if (padCount > 0)
             {
-                int new_length = result.Length + DecodingBytesCount(padCount);
+                var new_length = result.Length + DecodingBytesCount(padCount);
                 Array.Resize(ref result, new_length); // new bytes will be zero, just the way we want it
             }
         }
+
+        /// <summary>Decode a radix-encoded string into a byte array</summary>
+        /// <param name="radixChars">radix string</param>
+        /// <returns>The decoded bytes, or null if an invalid character is encountered</returns>
+        /// <remarks>
+        ///     If <paramref name="radixChars" /> is an empty string, returns a zero length array
+        ///     Using <paramref name="IncludeProceedingZeros" /> has the potential to return a buffer with an
+        ///     additional zero byte that wasn't in the input. So a 4 byte buffer was encoded, this could end up
+        ///     returning a 5 byte buffer, with the extra byte being null.
+        /// </remarks>
+        public byte[] Decode(string radixChars)
+        {
+            //Contract.Requires<ArgumentNullException>(radixChars != null);
+
+            if (Endian == EndianFormat.Big)
+                return IncludeProceedingZeros
+                    ? DecodeImplReversedWithPadding(radixChars)
+                    : DecodeImplReversed(radixChars);
+            return IncludeProceedingZeros ? DecodeImplWithPadding(radixChars) : DecodeImpl(radixChars);
+        }
+
         #region Decode (Little Endian)
-        byte[] DecodeImpl(string chars, int startIndex = 0)
+
+        private byte[] DecodeImpl(string chars, int startIndex = 0)
         {
             var bi = new BigInteger();
-            for (int x = startIndex; x < chars.Length; x++)
+            for (var x = startIndex; x < chars.Length; x++)
             {
-                int i = kDigits.IndexOf(chars[x]);
+                var i = kDigits.IndexOf(chars[x]);
                 if (i < 0) return null; // invalid character
                 bi *= kRadixBig;
                 bi += i;
@@ -149,10 +176,11 @@ namespace IFramework.Infrastructure
 
             return bi.ToByteArray();
         }
-        byte[] DecodeImplWithPadding(string chars)
+
+        private byte[] DecodeImplWithPadding(string chars)
         {
-            int pad_count = 0;
-            for (int x = 0; x < chars.Length; x++, pad_count++)
+            var pad_count = 0;
+            for (var x = 0; x < chars.Length; x++, pad_count++)
                 if (chars[x] != kDigits[0]) break;
 
             var result = DecodeImpl(chars, pad_count);
@@ -160,14 +188,17 @@ namespace IFramework.Infrastructure
 
             return result;
         }
+
         #endregion
+
         #region Decode (Big Endian)
-        byte[] DecodeImplReversed(string chars, int startIndex = 0)
+
+        private byte[] DecodeImplReversed(string chars, int startIndex = 0)
         {
             var bi = new BigInteger();
-            for (int x = (chars.Length - 1) - startIndex; x >= 0; x--)
+            for (var x = chars.Length - 1 - startIndex; x >= 0; x--)
             {
-                int i = kDigits.IndexOf(chars[x]);
+                var i = kDigits.IndexOf(chars[x]);
                 if (i < 0) return null; // invalid character
                 bi *= kRadixBig;
                 bi += i;
@@ -175,10 +206,11 @@ namespace IFramework.Infrastructure
 
             return bi.ToByteArray();
         }
-        byte[] DecodeImplReversedWithPadding(string chars)
+
+        private byte[] DecodeImplReversedWithPadding(string chars)
         {
-            int pad_count = 0;
-            for (int x = chars.Length - 1; x >= 0; x--, pad_count++)
+            var pad_count = 0;
+            for (var x = chars.Length - 1; x >= 0; x--, pad_count++)
                 if (chars[x] != kDigits[0]) break;
 
             var result = DecodeImplReversed(chars, pad_count);
@@ -186,26 +218,7 @@ namespace IFramework.Infrastructure
 
             return result;
         }
+
         #endregion
-        /// <summary>Decode a radix-encoded string into a byte array</summary>
-        /// <param name="radixChars">radix string</param>
-        /// <returns>The decoded bytes, or null if an invalid character is encountered</returns>
-        /// <remarks>
-        /// If <paramref name="radixChars"/> is an empty string, returns a zero length array
-        /// 
-        /// Using <paramref name="IncludeProceedingZeros"/> has the potential to return a buffer with an
-        /// additional zero byte that wasn't in the input. So a 4 byte buffer was encoded, this could end up
-        /// returning a 5 byte buffer, with the extra byte being null.
-        /// </remarks>
-        public byte[] Decode(string radixChars)
-        {
-            //Contract.Requires<ArgumentNullException>(radixChars != null);
-
-            if (kEndian == EndianFormat.Big)
-                return kIncludeProceedingZeros ? DecodeImplReversedWithPadding(radixChars) : DecodeImplReversed(radixChars);
-            else
-                return kIncludeProceedingZeros ? DecodeImplWithPadding(radixChars) : DecodeImpl(radixChars);
-        }
-    };
+    }
 }
-

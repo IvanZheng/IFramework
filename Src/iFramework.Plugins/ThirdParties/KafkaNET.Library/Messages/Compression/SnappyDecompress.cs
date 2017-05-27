@@ -1,25 +1,8 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+using System;
+using System.IO;
 
 namespace Kafka.Client.Messages.Compression
 {
-    using System;
-    using System.IO;
-
     public static class SnappyDecompress
     {
         public static int DecompressedSize(ByteBuffer compressedBytes, out int length)
@@ -30,32 +13,32 @@ namespace Kafka.Client.Messages.Compression
             if (offset >= limit) goto error;
             var b = buf[offset];
             offset++;
-            var result = (uint)(b & 127);
+            var result = (uint) (b & 127);
             if (b < 128) goto done;
             if (offset >= limit) goto error;
             b = buf[offset];
             offset++;
-            result |= ((uint)(b & 127) << 7);
+            result |= (uint) (b & 127) << 7;
             if (b < 128) goto done;
             if (offset >= limit) goto error;
             b = buf[offset];
             offset++;
-            result |= ((uint)(b & 127) << 14);
+            result |= (uint) (b & 127) << 14;
             if (b < 128) goto done;
             if (offset >= limit) goto error;
             b = buf[offset];
             offset++;
-            result |= ((uint)(b & 127) << 21);
+            result |= (uint) (b & 127) << 21;
             if (b < 128) goto done;
             if (offset >= limit) goto error;
             b = buf[offset];
             offset++;
-            result |= ((uint)(b & 127) << 28);
+            result |= (uint) (b & 127) << 28;
             if (b >= 16) goto error;
-        done:
+            done:
             length = offset - compressedBytes.Offset;
-            return (int)result;
-        error:
+            return (int) result;
+            error:
             length = 0;
             return -1;
         }
@@ -67,7 +50,8 @@ namespace Kafka.Client.Messages.Compression
             if (decompressedSize < 0) throw new InvalidDataException();
             var dst = new byte[decompressedSize];
             var dstBuf = ByteBuffer.NewAsync(dst);
-            if (!DecompressRaw(dstBuf, ByteBuffer.NewSync(compressedBytes.Buffer, compressedBytes.Offset + ofs, compressedBytes.Length - ofs)))
+            if (!DecompressRaw(dstBuf,
+                ByteBuffer.NewSync(compressedBytes.Buffer, compressedBytes.Offset + ofs, compressedBytes.Length - ofs)))
                 throw new InvalidDataException();
             return dstBuf;
         }
@@ -80,8 +64,8 @@ namespace Kafka.Client.Messages.Compression
             var d = dstBuf.Offset;
             var sL = srcBuf.Length;
             var dL = dstBuf.Length;
-            int len = 0;
-            int o = 0;
+            var len = 0;
+            var o = 0;
             while (sL > 0)
             {
                 var b = src[s];
@@ -135,7 +119,7 @@ namespace Kafka.Client.Messages.Compression
                     case 1:
                         if (sL < 1) return false;
                         len = 4 + ((b >> 2) & 7);
-                        o = (b & 0xe0) << 3 | src[s];
+                        o = ((b & 0xe0) << 3) | src[s];
                         s++;
                         sL--;
                         break;
@@ -154,9 +138,7 @@ namespace Kafka.Client.Messages.Compression
                 if (o > d || len > dL)
                     return false;
                 for (; d < end; d++)
-                {
                     dst[d] = dst[d - o];
-                }
                 dL -= len;
             }
 

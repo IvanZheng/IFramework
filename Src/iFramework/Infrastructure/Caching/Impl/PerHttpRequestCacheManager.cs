@@ -1,39 +1,25 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
 namespace IFramework.Infrastructure.Caching.Impl
 {
-    public partial class PerHttpRequestCacheManager : ICacheManager
+    public class PerHttpRequestCacheManager : ICacheManager
     {
         private readonly HttpContextBase _context;
 
         /// <summary>
-        /// Ctor
+        ///     Ctor
         /// </summary>
         /// <param name="context">Context</param>
         public PerHttpRequestCacheManager(HttpContextBase context)
         {
-            this._context = context;
+            _context = context;
         }
 
         /// <summary>
-        /// Creates a new instance of the NopRequestCache class
-        /// </summary>
-        protected virtual IDictionary GetItems()
-        {
-            if (_context != null)
-                return _context.Items;
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets or sets the value associated with the specified key.
+        ///     Gets or sets the value associated with the specified key.
         /// </summary>
         /// <typeparam name="T">Type</typeparam>
         /// <param name="key">The key of the value to get.</param>
@@ -44,11 +30,11 @@ namespace IFramework.Infrastructure.Caching.Impl
             if (items == null)
                 return default(T);
 
-            return (T)items[key];
+            return (T) items[key];
         }
 
         /// <summary>
-        /// Adds the specified key and object to the cache.
+        ///     Adds the specified key and object to the cache.
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
@@ -60,16 +46,14 @@ namespace IFramework.Infrastructure.Caching.Impl
                 return;
 
             if (data != null)
-            {
                 if (items.Contains(key))
                     items[key] = data;
                 else
                     items.Add(key, data);
-            }
         }
 
         /// <summary>
-        /// Gets a value indicating whether the value associated with the specified key is cached
+        ///     Gets a value indicating whether the value associated with the specified key is cached
         /// </summary>
         /// <param name="key">key</param>
         /// <returns>Result</returns>
@@ -79,11 +63,11 @@ namespace IFramework.Infrastructure.Caching.Impl
             if (items == null)
                 return false;
 
-            return (items[key] != null);
+            return items[key] != null;
         }
 
         /// <summary>
-        /// Removes the value with the specified key from the cache
+        ///     Removes the value with the specified key from the cache
         /// </summary>
         /// <param name="key">/key</param>
         public virtual void Remove(string key)
@@ -96,7 +80,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         }
 
         /// <summary>
-        /// Removes items by pattern
+        ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
         public virtual void RemoveByPattern(string pattern)
@@ -107,23 +91,17 @@ namespace IFramework.Infrastructure.Caching.Impl
 
             var enumerator = items.GetEnumerator();
             var regex = new Regex(pattern, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            var keysToRemove = new List<String>();
+            var keysToRemove = new List<string>();
             while (enumerator.MoveNext())
-            {
                 if (regex.IsMatch(enumerator.Key.ToString()))
-                {
                     keysToRemove.Add(enumerator.Key.ToString());
-                }
-            }
 
-            foreach (string key in keysToRemove)
-            {
+            foreach (var key in keysToRemove)
                 items.Remove(key);
-            }
         }
 
         /// <summary>
-        /// Clear all cache data
+        ///     Clear all cache data
         /// </summary>
         public virtual void Clear()
         {
@@ -132,16 +110,23 @@ namespace IFramework.Infrastructure.Caching.Impl
                 return;
 
             var enumerator = items.GetEnumerator();
-            var keysToRemove = new List<String>();
+            var keysToRemove = new List<string>();
             while (enumerator.MoveNext())
-            {
                 keysToRemove.Add(enumerator.Key.ToString());
-            }
 
-            foreach (string key in keysToRemove)
-            {
+            foreach (var key in keysToRemove)
                 items.Remove(key);
-            }
+        }
+
+        /// <summary>
+        ///     Creates a new instance of the NopRequestCache class
+        /// </summary>
+        protected virtual IDictionary GetItems()
+        {
+            if (_context != null)
+                return _context.Items;
+
+            return null;
         }
     }
 }

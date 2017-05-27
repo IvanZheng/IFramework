@@ -1,32 +1,30 @@
-﻿using IFramework.MessageQueue.MSKafka;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using IFramework.MessageQueue.MSKafka.MessageFormat;
-using IFramework.Config;
-using Sample.Command;
-using IFramework.Command;
-using IFramework.IoC;
-using Sample.DTO;
-using IFramework.Infrastructure;
 using System.Threading;
-using System.Diagnostics;
+using IFramework.Command;
+using IFramework.Config;
+using IFramework.Infrastructure;
+using IFramework.IoC;
+using IFramework.MessageQueue.MSKafka;
 using Kafka.Client.Consumers;
+using Kafka.Client.Messages;
+using Kafka.Client.Producers;
+using Sample.Command;
+using Sample.DTO;
 
 namespace MSKafka.Test
 {
-    class Program
+    internal class Program
     {
-        static string commandQueue = "iframework.groupcommandqueue";
-        static string zkConnectionString = "localhost:2181";
+        private static readonly string commandQueue = "iframework.groupcommandqueue";
+        private static readonly string zkConnectionString = "localhost:2181";
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Configuration.Instance
-                         .UseUnityContainer()
-                         .UseLog4Net("log4net.config");
+                .UseUnityContainer()
+                .UseLog4Net("log4net.config");
             GroupConsuemrTest();
             IoCFactory.Instance.CurrentContainer.Dispose();
         }
@@ -37,20 +35,20 @@ namespace MSKafka.Test
             {
                 var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
                 var sendTime = DateTime.Parse(message.Split('@')[1]);
-                Console.WriteLine($"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                Console.WriteLine(
+                    $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
                 kafkaConsumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
             };
-            var consumer = new KafkaConsumer(zkConnectionString, commandQueue, $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
+            var consumer = new KafkaConsumer(zkConnectionString, commandQueue,
+                $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
             return consumer;
         }
 
-        static void GroupConsuemrTest()
+        private static void GroupConsuemrTest()
         {
             var consumers = new List<KafkaConsumer>();
-            for (int i = 0; i < 1; i++)
-            {
+            for (var i = 0; i < 1; i++)
                 consumers.Add(CreateConsumer(commandQueue, i.ToString()));
-            }
             var queueClient = new KafkaProducer(commandQueue, zkConnectionString);
             while (true)
             {
@@ -63,10 +61,9 @@ namespace MSKafka.Test
                     break;
                 }
                 message = $"{message} @{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}";
-                var kafkaMessage = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(message));
-                var data = new Kafka.Client.Producers.ProducerData<string, Kafka.Client.Messages.Message>(commandQueue, message, kafkaMessage);
+                var kafkaMessage = new Message(Encoding.UTF8.GetBytes(message));
+                var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
                 while (true)
-                {
                     try
                     {
                         queueClient.Send(data);
@@ -78,14 +75,12 @@ namespace MSKafka.Test
                         Console.WriteLine("send message failed");
                         Thread.Sleep(2000);
                     }
-                }
-
             }
         }
 
-        static void ServiceTest()
+        private static void ServiceTest()
         {
-            ReduceProduct reduceProduct = new ReduceProduct
+            var reduceProduct = new ReduceProduct
             {
                 ProductId = new Guid("2B6FDE83-A319-433B-9FA5-399D382D0CD3"),
                 ReduceCount = 1
@@ -100,7 +95,7 @@ namespace MSKafka.Test
 
             var products = _commandBus.SendAsync(new GetProducts
             {
-                ProductIds = new List<Guid> { reduceProduct.ProductId }
+                ProductIds = new List<Guid> {reduceProduct.ProductId}
             }, true).Result.ReadAsAsync<List<Project>>().Result;
 
             Console.WriteLine(products.ToJson());

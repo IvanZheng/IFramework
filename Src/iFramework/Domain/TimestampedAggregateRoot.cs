@@ -1,9 +1,4 @@
-﻿using IFramework.Domain;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace IFramework.Domain
 {
@@ -15,12 +10,6 @@ namespace IFramework.Domain
 #else
         public byte[] Version
 #endif
-        {
-            get;
-            private set;
-        }
-
-
+        { get; private set; }
     }
-
 }

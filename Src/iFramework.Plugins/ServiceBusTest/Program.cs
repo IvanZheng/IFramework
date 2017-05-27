@@ -1,11 +1,10 @@
-﻿using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.ServiceBus;
+using Microsoft.ServiceBus.Messaging;
 
 namespace ServiceBusTest
 {
@@ -16,12 +15,11 @@ namespace ServiceBusTest
     }
 
 
-
-    class Program
+    internal class Program
     {
         public static BlockingCollection<BrokeredMessage> Messages = new BlockingCollection<BrokeredMessage>();
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var namespaceManager = NamespaceManager.Create();
             var messageFactory = MessagingFactory.Create();
@@ -29,7 +27,7 @@ namespace ServiceBusTest
             var queueName = "ServiceBusTest";
             if (!namespaceManager.QueueExists(queueName))
             {
-                QueueDescription queueDescription = new QueueDescription(queueName)
+                var queueDescription = new QueueDescription(queueName)
                 {
                     EnableDeadLetteringOnMessageExpiration = true,
                     RequiresSession = false
@@ -37,23 +35,20 @@ namespace ServiceBusTest
                 namespaceManager.CreateQueue(queueDescription);
                 //namespaceManager.DeleteQueue(queueName);
             }
-          
+
             var queueClient = messageFactory.CreateQueueClient(queueName);
-            List<BrokeredMessage> toSendMessages = new List<BrokeredMessage>();
-            for (int i = 0; i < 10; i++)
-            {
-                toSendMessages.Add(new BrokeredMessage(new Payload { Id = i, Time = DateTime.Now }));
-            }
+            var toSendMessages = new List<BrokeredMessage>();
+            for (var i = 0; i < 10; i++)
+                toSendMessages.Add(new BrokeredMessage(new Payload {Id = i, Time = DateTime.Now}));
             queueClient.SendBatch(toSendMessages);
             IEnumerable<BrokeredMessage> brokeredMessages = null;
             long sequenceNumber = 0;
-            bool needPeek = true;
+            var needPeek = true;
             Task.Run(() =>
             {
-                while (needPeek && (brokeredMessages = queueClient.PeekBatch(sequenceNumber, 5)) != null && brokeredMessages.Count() > 0)
-                {
+                while (needPeek && (brokeredMessages = queueClient.PeekBatch(sequenceNumber, 5)) != null &&
+                       brokeredMessages.Count() > 0)
                     foreach (var message in brokeredMessages)
-                    {
                         try
                         {
                             if (message.State != MessageState.Deferred)
@@ -68,15 +63,11 @@ namespace ServiceBusTest
                         {
                             Console.WriteLine(ex.GetBaseException().Message);
                         }
-                    }
-                }
 
 
-
-                while ((brokeredMessages = queueClient.ReceiveBatch(2, new TimeSpan(0, 0, 5))) != null && brokeredMessages.Count() > 0)
-                {
+                while ((brokeredMessages = queueClient.ReceiveBatch(2, new TimeSpan(0, 0, 5))) != null &&
+                       brokeredMessages.Count() > 0)
                     foreach (var message in brokeredMessages)
-                    {
                         try
                         {
                             message.Defer();
@@ -87,16 +78,13 @@ namespace ServiceBusTest
                         {
                             Console.WriteLine(ex.GetBaseException().Message);
                         }
-                    }
-                }
-
             });
 
             Task.Run(() =>
             {
                 while (true)
                 {
-                    BrokeredMessage message = Messages.Take();
+                    var message = Messages.Take();
                     try
                     {
                         var payload = message.GetBody<Payload>();

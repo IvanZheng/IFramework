@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using IFramework.Infrastructure;
-using System.Collections;
-using Newtonsoft.Json;
 using IFramework.Message;
-using ZeroMQ;
 using IFramework.Message.Impl;
+using Newtonsoft.Json;
 
 namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
 {
     public class MessageContext : IMessageContext
     {
+        private object _Message;
+
         public MessageContext()
         {
             Headers = new Dictionary<string, object>();
@@ -34,9 +32,7 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
             MessageID = message.ID;
             var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
             if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
-            {
                 Topic = topicAttribute.Topic;
-            }
         }
 
         public MessageContext(IMessage message, string key)
@@ -57,66 +53,55 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
             FromEndPoint = fromEndPoint;
         }
 
-        public IDictionary<string, object> Headers
+        public string FromEndPoint
         {
-            get;
-            set;
+            get => (string) Headers["FromEndPoint"];
+            set => Headers["FromEndPoint"] = value;
         }
+
+        [JsonIgnore]
+        public List<IMessageContext> ToBeSentMessageContexts { get; set; }
+
+        public IDictionary<string, object> Headers { get; set; }
 
         public string Key
         {
-            get { return (string)Headers["Key"]; }
-            set { Headers["Key"] = value; }
+            get => (string) Headers["Key"];
+            set => Headers["Key"] = value;
         }
 
         public string CorrelationID
         {
-            get { return (string)Headers["CorrelationID"]; }
-            set { Headers["CorrelationID"] = value; }
+            get => (string) Headers["CorrelationID"];
+            set => Headers["CorrelationID"] = value;
         }
 
         public string MessageID
         {
-            get { return (string)Headers["MessageID"]; }
-            set { Headers["MessageID"] = value; }
+            get => (string) Headers["MessageID"];
+            set => Headers["MessageID"] = value;
         }
 
         public string ReplyToEndPoint
         {
-            get { return (string)Headers["ReplyToEndPoint"]; }
-            set { Headers["ReplyToEndPoint"] = value; }
+            get => (string) Headers["ReplyToEndPoint"];
+            set => Headers["ReplyToEndPoint"] = value;
         }
 
-        public object Reply
-        {
-            get;
-            set;
-        }
+        public object Reply { get; set; }
 
-        public string FromEndPoint
-        {
-            get { return (string)Headers["FromEndPoint"]; }
-            set { Headers["FromEndPoint"] = value; }
-        }
-
-        object _Message;
         [JsonIgnore]
         public object Message
         {
             get
             {
                 if (_Message != null)
-                {
                     return _Message;
-                }
                 object messageType = null;
                 object messageBody = null;
                 if (Headers.TryGetValue("MessageType", out messageType) && messageType != null
-                   && Headers.TryGetValue("Message", out messageBody) && messageBody != null)
-                {
+                    && Headers.TryGetValue("Message", out messageBody) && messageBody != null)
                     _Message = messageBody.ToString().ToJsonObject(Type.GetType(messageType.ToString()));
-
-                }
                 return _Message;
             }
             set
@@ -130,45 +115,27 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
 
         public DateTime SentTime
         {
-            get { return (DateTime)Headers["SentTime"]; }
-            set { Headers["SentTime"] = value; }
+            get => (DateTime) Headers["SentTime"];
+            set => Headers["SentTime"] = value;
         }
 
-        [JsonIgnore]
-        public List<IMessageContext> ToBeSentMessageContexts { get; set; }
 
+        public string Topic { get; set; }
 
-        public string Topic
-        {
-            get;
-            set;
-        }
+        public long Offset => throw new NotImplementedException();
 
-        public long Offset
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public SagaInfo SagaInfo
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public SagaInfo SagaInfo => throw new NotImplementedException();
 
         public string IP
         {
-            get { return (string)Headers.TryGetValue("IP"); }
-            set { Headers["IP"] = value; }
+            get => (string) Headers.TryGetValue("IP");
+            set => Headers["IP"] = value;
         }
+
         public string Producer
         {
-            get { return (string)Headers.TryGetValue("Producer"); }
-            set { Headers["Producer"] = value; }
+            get => (string) Headers.TryGetValue("Producer");
+            set => Headers["Producer"] = value;
         }
     }
 }

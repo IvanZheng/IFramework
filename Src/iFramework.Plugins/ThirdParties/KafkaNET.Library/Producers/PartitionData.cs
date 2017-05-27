@@ -1,29 +1,12 @@
-﻿/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+﻿using System.Collections.Generic;
+using Kafka.Client.Messages;
+using Kafka.Client.Serialization;
+using Kafka.Client.Utils;
 
 namespace Kafka.Client.Producers
 {
-    using Kafka.Client.Serialization;
-    using Messages;
-    using System.Collections.Generic;
-    using Utils;
-
     /// <summary>
-    /// PartitionData, contains buffered messageset
+    ///     PartitionData, contains buffered messageset
     /// </summary>
     public class PartitionData
     {
@@ -32,10 +15,10 @@ namespace Kafka.Client.Producers
 
         public PartitionData(int partition, ErrorMapping error, BufferedMessageSet messages)
         {
-            this.Partition = partition;
-            this.MessageSet = messages;
-            this.Error = error;
-            this.HighWaterMark = messages.HighwaterOffset;
+            Partition = partition;
+            MessageSet = messages;
+            Error = error;
+            HighWaterMark = messages.HighwaterOffset;
         }
 
         public PartitionData(int partition, BufferedMessageSet messages)
@@ -43,14 +26,12 @@ namespace Kafka.Client.Producers
         {
         }
 
-        public int Partition { get; private set; }
-        public BufferedMessageSet MessageSet { get; private set; }
-        public long HighWaterMark { get; private set; }
-        public ErrorMapping Error { get; private set; }
-        public int SizeInBytes
-        {
-            get { return DefaultPartitionIdSize + DefaultMessagesSizeSize + this.MessageSet.SetSize; }
-        }
+        public int Partition { get; }
+        public BufferedMessageSet MessageSet { get; }
+        public long HighWaterMark { get; }
+        public ErrorMapping Error { get; }
+
+        public int SizeInBytes => DefaultPartitionIdSize + DefaultMessagesSizeSize + MessageSet.SetSize;
 
         internal static PartitionData ParseFrom(KafkaBinaryReader reader)
         {
@@ -64,12 +45,10 @@ namespace Kafka.Client.Producers
 
         public List<MessageAndOffset> GetMessageAndOffsets()
         {
-            List<MessageAndOffset> listMessageAndOffsets = new List<MessageAndOffset>();
+            var listMessageAndOffsets = new List<MessageAndOffset>();
             //Seemly the MessageSet can only do traverse for one time.
-            foreach (MessageAndOffset m in this.MessageSet)
-            {
+            foreach (var m in MessageSet)
                 listMessageAndOffsets.Add(m);
-            }
             return listMessageAndOffsets;
         }
     }

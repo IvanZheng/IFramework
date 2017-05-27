@@ -1,46 +1,40 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 
 namespace IFramework.Infrastructure
 {
     public class FastInvoke
     {
         public delegate object FastInvokeHandler(object target, object[] paramters);
-        static Hashtable FastInvokeHandlers = new Hashtable();
+
+        private static readonly Hashtable FastInvokeHandlers = new Hashtable();
 
         public static FastInvokeHandler GetMethodInvoker(MethodInfo methodInfo)
         {
-            FastInvokeHandler invoder = FastInvokeHandlers[methodInfo] as FastInvokeHandler;
+            var invoder = FastInvokeHandlers[methodInfo] as FastInvokeHandler;
             if (invoder == null)
-            {
                 lock (FastInvokeHandlers)
                 {
                     invoder = FastInvokeHandlers[methodInfo] as FastInvokeHandler;
                     if (invoder == null)
                     {
-                        DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module, true);
-                        ILGenerator il = dynamicMethod.GetILGenerator();
-                        ParameterInfo[] ps = methodInfo.GetParameters();
-                        Type[] paramTypes = new Type[ps.Length];
-                        for (int i = 0; i < paramTypes.Length; i++)
-                        {
+                        var dynamicMethod = new DynamicMethod(string.Empty, typeof(object),
+                            new[] {typeof(object), typeof(object[])}, methodInfo.DeclaringType.Module, true);
+                        var il = dynamicMethod.GetILGenerator();
+                        var ps = methodInfo.GetParameters();
+                        var paramTypes = new Type[ps.Length];
+                        for (var i = 0; i < paramTypes.Length; i++)
                             if (ps[i].ParameterType.IsByRef)
                                 paramTypes[i] = ps[i].ParameterType.GetElementType();
                             else
                                 paramTypes[i] = ps[i].ParameterType;
-                        }
-                        LocalBuilder[] locals = new LocalBuilder[paramTypes.Length];
+                        var locals = new LocalBuilder[paramTypes.Length];
 
-                        for (int i = 0; i < paramTypes.Length; i++)
-                        {
+                        for (var i = 0; i < paramTypes.Length; i++)
                             locals[i] = il.DeclareLocal(paramTypes[i], true);
-                        }
-                        for (int i = 0; i < paramTypes.Length; i++)
+                        for (var i = 0; i < paramTypes.Length; i++)
                         {
                             il.Emit(OpCodes.Ldarg_1);
                             EmitFastInt(il, i);
@@ -49,16 +43,12 @@ namespace IFramework.Infrastructure
                             il.Emit(OpCodes.Stloc, locals[i]);
                         }
                         if (!methodInfo.IsStatic)
-                        {
                             il.Emit(OpCodes.Ldarg_0);
-                        }
-                        for (int i = 0; i < paramTypes.Length; i++)
-                        {
+                        for (var i = 0; i < paramTypes.Length; i++)
                             if (ps[i].ParameterType.IsByRef)
                                 il.Emit(OpCodes.Ldloca_S, locals[i]);
                             else
                                 il.Emit(OpCodes.Ldloc, locals[i]);
-                        }
                         if (methodInfo.IsStatic)
                             il.EmitCall(OpCodes.Call, methodInfo, null);
                         else
@@ -68,8 +58,7 @@ namespace IFramework.Infrastructure
                         else
                             EmitBoxIfNeeded(il, methodInfo.ReturnType);
 
-                        for (int i = 0; i < paramTypes.Length; i++)
-                        {
+                        for (var i = 0; i < paramTypes.Length; i++)
                             if (ps[i].ParameterType.IsByRef)
                             {
                                 il.Emit(OpCodes.Ldarg_1);
@@ -79,23 +68,19 @@ namespace IFramework.Infrastructure
                                     il.Emit(OpCodes.Box, locals[i].LocalType);
                                 il.Emit(OpCodes.Stelem_Ref);
                             }
-                        }
 
                         il.Emit(OpCodes.Ret);
-                        invoder = (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
+                        invoder = (FastInvokeHandler) dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
                         FastInvokeHandlers.Add(methodInfo, invoder);
                     }
                 }
-            }
             return invoder;
         }
 
-        private static void EmitBoxIfNeeded(ILGenerator il, System.Type type)
+        private static void EmitBoxIfNeeded(ILGenerator il, Type type)
         {
             if (type.IsValueType)
-            {
                 il.Emit(OpCodes.Box, type);
-            }
         }
 
         private static void EmitFastInt(ILGenerator il, int value)
@@ -135,26 +120,17 @@ namespace IFramework.Infrastructure
             }
 
             if (value > -129 && value < 128)
-            {
-                il.Emit(OpCodes.Ldc_I4_S, (SByte)value);
-            }
+                il.Emit(OpCodes.Ldc_I4_S, (sbyte) value);
             else
-            {
                 il.Emit(OpCodes.Ldc_I4, value);
-            }
         }
 
-        private static void EmitCastToReference(ILGenerator il, System.Type type)
+        private static void EmitCastToReference(ILGenerator il, Type type)
         {
             if (type.IsValueType)
-            {
                 il.Emit(OpCodes.Unbox_Any, type);
-            }
             else
-            {
                 il.Emit(OpCodes.Castclass, type);
-            }
         }
-
     }
 }

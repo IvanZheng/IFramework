@@ -1,8 +1,4 @@
 ﻿using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace IFramework.Event.Impl
 {
@@ -10,12 +6,10 @@ namespace IFramework.Event.Impl
     {
         public void Start()
         {
-            
         }
 
         public void Stop()
         {
-            
         }
 
         public string GetStatus()
@@ -23,9 +17,6 @@ namespace IFramework.Event.Impl
             return string.Empty;
         }
 
-        public decimal MessageCount
-        {
-            get { return 0; }
-        }
+        public decimal MessageCount => 0;
     }
 }

@@ -1,49 +1,22 @@
-﻿using IFramework.Command;
-using System;
+﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using IFramework.Infrastructure;
-using System.Reflection;
 using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using IFramework.Infrastructure;
 
 namespace IFramework.Command.Impl
 {
-    class NullPropertyInfo : _MemberInfo
+    internal class NullPropertyInfo : _MemberInfo
     {
-        public Type DeclaringType
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public Type DeclaringType => throw new NotImplementedException();
 
-        public MemberTypes MemberType
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public MemberTypes MemberType => throw new NotImplementedException();
 
-        public string Name
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public string Name => throw new NotImplementedException();
 
-        public Type ReflectedType
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public Type ReflectedType => throw new NotImplementedException();
 
         public object[] GetCustomAttributes(bool inherit)
         {
@@ -70,7 +43,8 @@ namespace IFramework.Command.Impl
             throw new NotImplementedException();
         }
 
-        public void Invoke(uint dispIdMember, ref Guid riid, uint lcid, short wFlags, IntPtr pDispParams, IntPtr pVarResult, IntPtr pExcepInfo, IntPtr puArgErr)
+        public void Invoke(uint dispIdMember, ref Guid riid, uint lcid, short wFlags, IntPtr pDispParams,
+            IntPtr pVarResult, IntPtr pExcepInfo, IntPtr puArgErr)
         {
             throw new NotImplementedException();
         }
@@ -80,55 +54,51 @@ namespace IFramework.Command.Impl
             throw new NotImplementedException();
         }
     }
+
     public class LinearCommandManager : ILinearCommandManager
     {
-        Hashtable LinearFuncs = new Hashtable();
-        ConcurrentDictionary<Type, _MemberInfo> CommandLinerKeys = new ConcurrentDictionary<Type, _MemberInfo>();
-        public LinearCommandManager()
-        {
-        }
+        private readonly ConcurrentDictionary<Type, _MemberInfo> CommandLinerKeys =
+            new ConcurrentDictionary<Type, _MemberInfo>();
+
+        private readonly Hashtable LinearFuncs = new Hashtable();
 
         public object GetLinearKey(ILinearCommand command)
         {
-            return this.InvokeGenericMethod(command.GetType(), "GetLinearKeyImpl", new object[] { command });
+            return this.InvokeGenericMethod(command.GetType(), "GetLinearKeyImpl", new object[] {command});
+        }
+
+        public void RegisterLinearCommand<TLinearCommand>(Func<TLinearCommand, object> func)
+            where TLinearCommand : ILinearCommand
+        {
+            LinearFuncs.Add(typeof(TLinearCommand), func);
         }
 
         public object GetLinearKeyImpl<TLinearCommand>(TLinearCommand command) where TLinearCommand : ILinearCommand
         {
             object linearKey = null;
-            Func<TLinearCommand, object> func = LinearFuncs[typeof(TLinearCommand)] as Func<TLinearCommand, object>;
+            var func = LinearFuncs[typeof(TLinearCommand)] as Func<TLinearCommand, object>;
             if (func != null)
             {
                 linearKey = func(command);
             }
             else
             {
-                var propertyWithKeyAttribute = CommandLinerKeys.GetOrAdd(command.GetType(), (type) => {
+                var propertyWithKeyAttribute = CommandLinerKeys.GetOrAdd(command.GetType(), type =>
+                {
                     var keyProperty = command.GetType().GetProperties()
-                                                  .Where(p => p.GetCustomAttribute<LinearKeyAttribute>() != null)
-                                                  .FirstOrDefault() as _MemberInfo;
+                        .Where(p => p.GetCustomAttribute<LinearKeyAttribute>() != null)
+                        .FirstOrDefault() as _MemberInfo;
                     if (keyProperty == null)
-                    {
                         keyProperty = new NullPropertyInfo();
-                    }
                     return keyProperty;
                 });
 
                 if (propertyWithKeyAttribute is NullPropertyInfo)
-                {
                     linearKey = typeof(TLinearCommand).Name;
-                }
                 else
-                {
-                   linearKey = command.GetValueByKey(propertyWithKeyAttribute.Name);
-                }
+                    linearKey = command.GetValueByKey(propertyWithKeyAttribute.Name);
             }
             return linearKey;
-        }
-
-        public void RegisterLinearCommand<TLinearCommand>(Func<TLinearCommand, object> func) where TLinearCommand : ILinearCommand
-        {
-            LinearFuncs.Add(typeof(TLinearCommand), func);
         }
     }
 }

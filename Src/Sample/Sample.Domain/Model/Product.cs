@@ -1,34 +1,33 @@
-﻿using IFramework.Domain;
+﻿using System;
+using IFramework.Domain;
 using IFramework.Event;
 using IFramework.Message;
-using IFramework.Exceptions;
+using Sample.DomainEvents;
 using Sample.DomainEvents.Products;
 using Sample.DTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sample.DomainEvents;
 
 namespace Sample.Domain.Model
 {
     public class Product : TimestampedAggregateRoot,
-       IEventSubscriber<ProductCreated>
+        IEventSubscriber<ProductCreated>
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public int Count { get; set; }
-        public DateTime CreateTime { get; set; }
-        public Product() { }
+        public Product()
+        {
+        }
+
         public Product(Guid id, string name, int count)
         {
             OnEvent(new ProductCreated(id, name, count, DateTime.Now));
         }
 
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public int Count { get; set; }
+        public DateTime CreateTime { get; set; }
+
         void IMessageHandler<ProductCreated>.Handle(ProductCreated @event)
         {
-            Id = (Guid)@event.AggregateRootID;
+            Id = (Guid) @event.AggregateRootID;
             Name = @event.Name;
             Count = @event.Count;
             CreateTime = @event.CreateTime;
@@ -43,11 +42,7 @@ namespace Sample.Domain.Model
         {
             Count = Count - reduceCount;
             if (Count < 0)
-            {
-                throw new SampleDomainException(DTO.ErrorCode.CountNotEnougth);
-            }
+                throw new SampleDomainException(ErrorCode.CountNotEnougth);
         }
-
-
     }
 }

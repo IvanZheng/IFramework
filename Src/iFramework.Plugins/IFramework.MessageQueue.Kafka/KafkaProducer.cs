@@ -1,25 +1,24 @@
-﻿using IFramework.Infrastructure.Logging;
+﻿using System;
+using System.Collections.Generic;
+using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using Kafka.Client.Cfg;
-using Kafka.Client.Consumers;
 using Kafka.Client.Producers;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace IFramework.MessageQueue.MSKafka
 {
     public class KafkaProducer
     {
-        Producer<string, Kafka.Client.Messages.Message> _producer;
-        string _topic;
-        ZooKeeperConfiguration _zooKeeperConfiguration;
-        ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaProducer).Name);
+        private readonly ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaProducer).Name);
+        private readonly Producer<string, Kafka.Client.Messages.Message> _producer;
+        private readonly string _topic;
+        private readonly ZooKeeperConfiguration _zooKeeperConfiguration;
+
         public KafkaProducer(string topic, string zkConnectionString)
         {
             _topic = topic;
             _zooKeeperConfiguration = KafkaClient.GetZooKeeperConfiguration(zkConnectionString);
-            ProducerConfiguration producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
+            var producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 AckTimeout = 30000,
                 RequiredAcks = -1,
@@ -33,9 +32,7 @@ namespace IFramework.MessageQueue.MSKafka
             try
             {
                 if (_producer != null)
-                {
                     _producer.Dispose();
-                }
             }
             catch (Exception ex)
             {

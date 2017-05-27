@@ -1,4 +1,6 @@
-﻿using IFramework.Config;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
@@ -6,26 +8,21 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using IFramework.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IFramework.EntityFramework
 {
     public class AppUnitOfWork : UnitOfWork, IAppUnitOfWork
     {
-        protected IMessagePublisher _messagePublisher;
-        protected IMessageStore _messageStore;
-        protected IMessageQueueClient _messageQueueClient;
         protected List<MessageState> _eventMessageStates;
+        protected IMessagePublisher _messagePublisher;
+        protected IMessageQueueClient _messageQueueClient;
+        protected IMessageStore _messageStore;
 
         public AppUnitOfWork(IEventBus eventBus,
-                             ILoggerFactory loggerFactory,
-                             IMessagePublisher eventPublisher,
-                             IMessageQueueClient messageQueueClient,
-                             IMessageStore messageStore)
+            ILoggerFactory loggerFactory,
+            IMessagePublisher eventPublisher,
+            IMessageQueueClient messageQueueClient,
+            IMessageStore messageStore)
             : base(eventBus, loggerFactory)
         {
             _dbContexts = new List<MSDbContext>();
@@ -64,9 +61,7 @@ namespace IFramework.EntityFramework
             try
             {
                 if (_messagePublisher != null && _eventMessageStates.Count > 0)
-                {
                     _messagePublisher.SendAsync(_eventMessageStates.ToArray());
-                }
             }
             catch (Exception ex)
             {

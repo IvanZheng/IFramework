@@ -1,10 +1,5 @@
 ﻿using IFramework.Config;
 using IFramework.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IFramework.Message.Impl
 {
@@ -15,13 +10,9 @@ namespace IFramework.Message.Impl
             string topic = null;
             var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
             if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
-            {
                 topic = topicAttribute.Topic;
-            }
             if (string.IsNullOrEmpty(topic))
-            {
                 topic = Configuration.Instance.GetDefaultTopic();
-            }
             return topic;
         }
 
@@ -29,9 +20,7 @@ namespace IFramework.Message.Impl
         {
             var topic = message.GetTopic();
             if (!string.IsNullOrEmpty(topic))
-            {
                 topic = Configuration.Instance.FormatAppName(topic);
-            }
             return topic;
         }
     }

@@ -1,49 +1,44 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Data.Entity;
-using IFramework.Specifications;
-using System.Linq.Expressions;
-using IFramework.Infrastructure;
-using IFramework.UnitOfWork;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
-using IFramework.Repositories;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using IFramework.Infrastructure;
+using IFramework.Repositories;
+using IFramework.Specifications;
+using IFramework.UnitOfWork;
 
 namespace IFramework.EntityFramework.Repositories
 {
     public class Repository<TEntity> : BaseRepository<TEntity>, IMergeOptionChangable
-     where TEntity : class
+        where TEntity : class
     {
-        UnitOfWork _UnitOfWork;
+        internal DbContext _Container;
+        private DbSet<TEntity> _objectSet;
+        private readonly UnitOfWork _UnitOfWork;
 
         public Repository(MSDbContext dbContext, IUnitOfWork unitOfWork)
         {
             _UnitOfWork = unitOfWork as UnitOfWork;
             if (dbContext == null)
-            {
                 throw new Exception("repository could not work without dbContext");
-            }
             // dbContext.Configuration.AutoDetectChangesEnabled = false;
             if (_UnitOfWork != null)
-            {
                 _UnitOfWork.RegisterDbContext(dbContext);
-            }
             _Container = dbContext;
         }
 
-        internal DbContext _Container;
+        private DbSet<TEntity> DbSet => _objectSet ?? (_objectSet = _Container.Set<TEntity>());
 
-        DbSet<TEntity> DbSet
+        public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class
         {
-            get
-            {
-                return _objectSet ?? (_objectSet = _Container.Set<TEntity>());
-            }
+            var objectContext = ((IObjectContextAdapter) _Container).ObjectContext;
+            var set = objectContext.CreateObjectSet<TMergeOptionEntity>();
+            set.MergeOption = mergeOption;
         }
-        DbSet<TEntity> _objectSet;
-
 
 
         protected override void DoAdd(TEntity entity)
@@ -55,10 +50,12 @@ namespace IFramework.EntityFramework.Repositories
         {
             return Count(specification.GetExpression()) > 0;
         }
-        protected async override Task<bool> DoExistsAsync(ISpecification<TEntity> specification)
+
+        protected override async Task<bool> DoExistsAsync(ISpecification<TEntity> specification)
         {
             return await CountAsync(specification.GetExpression()) > 0;
         }
+
         protected override TEntity DoFind(ISpecification<TEntity> specification)
         {
             return DbSet.Where(specification.GetExpression()).FirstOrDefault();
@@ -89,7 +86,8 @@ namespace IFramework.EntityFramework.Repositories
             _Container.Entry(entity).State = EntityState.Modified;
         }
 
-        protected override IQueryable<TEntity> DoFindAll(ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
+        protected override IQueryable<TEntity> DoFindAll(ISpecification<TEntity> specification,
+            params OrderExpression[] orderExpressions)
         {
             return DbSet.FindAll(specification, orderExpressions);
             //IQueryable<TEntity> query = DbSet.Where(specification.GetExpression());
@@ -102,7 +100,8 @@ namespace IFramework.EntityFramework.Repositories
             //return query;
         }
 
-        protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize, ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
+        protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize,
+            ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
         {
             //checking arguments for this query 
             if (pageIndex < 0)
@@ -114,22 +113,22 @@ namespace IFramework.EntityFramework.Repositories
             if (orderExpressions == null || orderExpressions.Length == 0)
                 throw new ArgumentNullException("OrderByExpressionCannotBeNull");
 
-            if (specification == (ISpecification<TEntity>)null)
-            {
+            if (specification == null)
                 specification = new AllSpecification<TEntity>();
-            }
             var query = DoFindAll(specification, orderExpressions);
             return query.GetPageElements(pageIndex, pageSize);
         }
 
-        protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize, ISpecification<TEntity> specification, ref long totalCount, params OrderExpression[] orderExpressions)
+        protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize,
+            ISpecification<TEntity> specification, ref long totalCount, params OrderExpression[] orderExpressions)
         {
             var query = DoPageFind(pageIndex, pageSize, specification, orderExpressions);
             totalCount = Count(specification.GetExpression());
             return query;
         }
 
-        protected async override Task<Tuple<IQueryable<TEntity>, long>> DoPageFindAsync(int pageIndex, int pageSize, ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
+        protected override async Task<Tuple<IQueryable<TEntity>, long>> DoPageFindAsync(int pageIndex, int pageSize,
+            ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
         {
             var query = DoPageFind(pageIndex, pageSize, specification, orderExpressions);
             var totalCount = await CountAsync(specification.GetExpression());
@@ -139,9 +138,7 @@ namespace IFramework.EntityFramework.Repositories
         protected override void DoAdd(IEnumerable<TEntity> entities)
         {
             foreach (var entity in entities)
-            {
                 DoAdd(entity);
-            }
         }
 
         protected override long DoCount(ISpecification<TEntity> specification)
@@ -162,13 +159,6 @@ namespace IFramework.EntityFramework.Repositories
         protected override Task<long> DoCountAsync(Expression<Func<TEntity, bool>> specification)
         {
             return DbSet.LongCountAsync(specification);
-        }
-
-        public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class
-        {
-            ObjectContext objectContext = ((IObjectContextAdapter)_Container).ObjectContext;
-            ObjectSet<TMergeOptionEntity> set = objectContext.CreateObjectSet<TMergeOptionEntity>();
-            set.MergeOption = mergeOption;
         }
     }
 }

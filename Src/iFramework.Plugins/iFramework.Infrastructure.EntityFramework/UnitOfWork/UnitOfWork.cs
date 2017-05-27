@@ -1,16 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Transactions;
-using IFramework.UnitOfWork;
-using IFramework.Infrastructure;
-using IFramework.Domain;
-using IFramework.Event;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity.Infrastructure;
-using System.Threading.Tasks;
-using IFramework.Infrastructure.Logging;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Transactions;
+using IFramework.Domain;
+using IFramework.Event;
+using IFramework.Infrastructure;
+using IFramework.Infrastructure.Logging;
+using IFramework.UnitOfWork;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace IFramework.EntityFramework
 {
@@ -18,36 +20,48 @@ namespace IFramework.EntityFramework
     {
         protected List<MSDbContext> _dbContexts;
         protected IEventBus _eventBus;
+
         protected ILogger _logger;
         // IEventPublisher _eventPublisher;
 
-        public UnitOfWork(IEventBus eventBus, ILoggerFactory loggerFactory)//,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
+        public UnitOfWork(IEventBus eventBus,
+            ILoggerFactory loggerFactory) //,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
         {
             _dbContexts = new List<MSDbContext>();
             _eventBus = eventBus;
-            _logger = loggerFactory.Create(this.GetType().Name);
+            _logger = loggerFactory.Create(GetType().Name);
             //  _eventPublisher = eventPublisher;
         }
+
+        public void Dispose()
+        {
+            _dbContexts.ForEach(_dbCtx => _dbCtx.Dispose());
+        }
+
+        public void Rollback()
+        {
+            _dbContexts.ForEach(dbCtx => { dbCtx.Rollback(); });
+            _eventBus.ClearMessages();
+        }
+
         #region IUnitOfWork Members
 
         protected virtual void BeforeCommit()
         {
-
         }
 
         protected virtual void AfterCommit()
         {
-
         }
 
         public virtual void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                   TransactionScopeOption scopOption = TransactionScopeOption.Required)
+            TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
             try
             {
-                using (TransactionScope scope = new TransactionScope(scopOption,
-                                                                     new TransactionOptions { IsolationLevel = isolationLevel },
-                                                                     TransactionScopeAsyncFlowOption.Enabled))
+                using (var scope = new TransactionScope(scopOption,
+                    new TransactionOptions {IsolationLevel = isolationLevel},
+                    TransactionScopeAsyncFlowOption.Enabled))
                 {
                     _dbContexts.ForEach(dbContext =>
                     {
@@ -55,9 +69,7 @@ namespace IFramework.EntityFramework
                         dbContext.ChangeTracker.Entries().ForEach(e =>
                         {
                             if (e.Entity is AggregateRoot)
-                            {
                                 _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
-                            }
                         });
                     });
                     BeforeCommit();
@@ -68,32 +80,34 @@ namespace IFramework.EntityFramework
             catch (DbUpdateConcurrencyException ex)
             {
                 Rollback();
-                throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
+                throw new OptimisticConcurrencyException(ex.Message, ex);
             }
             catch (DbEntityValidationException ex)
             {
                 var errorMessage = string.Join(";", ex.EntityValidationErrors
-                                                      .SelectMany(eve => eve.ValidationErrors
-                                                                            .Select(e => new { Entry = eve.Entry, Error = e })
-                                                      .Select(e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                    .SelectMany(eve => eve.ValidationErrors
+                        .Select(e => new {eve.Entry, Error = e})
+                        .Select(
+                            e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
                 throw new Exception(errorMessage, ex);
             }
         }
 
-        public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, TransactionScopeOption scopeOption = TransactionScopeOption.Required)
+        public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+            TransactionScopeOption scopeOption = TransactionScopeOption.Required)
         {
             return CommitAsync(CancellationToken.None, isolationLevel, scopeOption);
         }
 
-        public async virtual Task CommitAsync(CancellationToken cancellationToken, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                              TransactionScopeOption scopOption = TransactionScopeOption.Required)
+        public virtual async Task CommitAsync(CancellationToken cancellationToken,
+            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+            TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
-
             try
             {
-                using (TransactionScope scope = new TransactionScope(scopOption,
-                                                             new TransactionOptions { IsolationLevel = isolationLevel },
-                                                             TransactionScopeAsyncFlowOption.Enabled))
+                using (var scope = new TransactionScope(scopOption,
+                    new TransactionOptions {IsolationLevel = isolationLevel},
+                    TransactionScopeAsyncFlowOption.Enabled))
                 {
                     foreach (var dbContext in _dbContexts)
                     {
@@ -101,9 +115,7 @@ namespace IFramework.EntityFramework
                         dbContext.ChangeTracker.Entries().ForEach(e =>
                         {
                             if (e.Entity is AggregateRoot)
-                            {
                                 _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
-                            }
                         });
                     }
                     BeforeCommit();
@@ -114,14 +126,15 @@ namespace IFramework.EntityFramework
             catch (DbUpdateConcurrencyException ex)
             {
                 Rollback();
-                throw new System.Data.OptimisticConcurrencyException(ex.Message, ex);
+                throw new OptimisticConcurrencyException(ex.Message, ex);
             }
             catch (DbEntityValidationException ex)
             {
                 var errorMessage = string.Join(";", ex.EntityValidationErrors
-                                                      .SelectMany(eve => eve.ValidationErrors
-                                                                            .Select(e => new { Entry = eve.Entry, Error = e })
-                                                      .Select(e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                    .SelectMany(eve => eve.ValidationErrors
+                        .Select(e => new {eve.Entry, Error = e})
+                        .Select(
+                            e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
                 throw new Exception(errorMessage, ex);
             }
         }
@@ -129,25 +142,9 @@ namespace IFramework.EntityFramework
         internal void RegisterDbContext(MSDbContext dbContext)
         {
             if (!_dbContexts.Exists(dbCtx => dbCtx.Equals(dbContext)))
-            {
                 _dbContexts.Add(dbContext);
-            }
         }
 
         #endregion
-
-        public void Dispose()
-        {
-            _dbContexts.ForEach(_dbCtx => _dbCtx.Dispose());
-        }
-
-        public void Rollback()
-        {
-            _dbContexts.ForEach(dbCtx =>
-            {
-                dbCtx.Rollback();
-            });
-            _eventBus.ClearMessages();
-        }
     }
 }

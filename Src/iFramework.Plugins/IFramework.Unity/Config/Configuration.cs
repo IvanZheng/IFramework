@@ -1,30 +1,29 @@
-﻿using IFramework.Config;
-using IFramework.Infrastructure;
-using IFramework.Infrastructure.Logging;
+﻿using System;
 using IFramework.IoC;
 using IFramework.Unity;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
-using System;
 
 namespace IFramework.Config
 {
     public static class FrameworkConfigurationExtension
     {
-        static readonly string LifetimeManagerKeyFormat = "IoC.{0}";
+        private static readonly string LifetimeManagerKeyFormat = "IoC.{0}";
+
         public static string GetLifetimeManagerKey(this Configuration configuration, Lifetime lifetime)
         {
             return string.Format(LifetimeManagerKeyFormat, lifetime);
         }
-        /// <summary>Use Log4Net as the logger for the enode framework.
+
+        /// <summary>
+        ///     Use Log4Net as the logger for the enode framework.
         /// </summary>
         /// <returns></returns>
-        public static Configuration UseUnityContainer(this Configuration configuration, IUnityContainer unityContainer = null)
+        public static Configuration UseUnityContainer(this Configuration configuration,
+            IUnityContainer unityContainer = null)
         {
             if (IoCFactory.IsInit())
-            {
                 return configuration;
-            }
             if (unityContainer == null)
             {
                 unityContainer = new UnityContainer();
@@ -39,9 +38,14 @@ namespace IFramework.Config
             }
 
             #region register lifetimemanager
-            unityContainer.RegisterType<LifetimeManager, ContainerControlledLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Singleton));
-            unityContainer.RegisterType<LifetimeManager, HierarchicalLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Hierarchical));
-            unityContainer.RegisterType<LifetimeManager, TransientLifetimeManager>(configuration.GetLifetimeManagerKey(Lifetime.Transient));
+
+            unityContainer.RegisterType<LifetimeManager, ContainerControlledLifetimeManager>(
+                configuration.GetLifetimeManagerKey(Lifetime.Singleton));
+            unityContainer.RegisterType<LifetimeManager, HierarchicalLifetimeManager>(
+                configuration.GetLifetimeManagerKey(Lifetime.Hierarchical));
+            unityContainer.RegisterType<LifetimeManager, TransientLifetimeManager>(
+                configuration.GetLifetimeManagerKey(Lifetime.Transient));
+
             #endregion
 
             var container = new ObjectContainer(unityContainer);

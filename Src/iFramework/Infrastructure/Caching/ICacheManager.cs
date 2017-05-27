@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace IFramework.Infrastructure.Caching
+﻿namespace IFramework.Infrastructure.Caching
 {
     /// Cache manager interface
     /// </summary>
     public interface ICacheManager
     {
         /// <summary>
-        /// Gets or sets the value associated with the specified key.
+        ///     Gets or sets the value associated with the specified key.
         /// </summary>
         /// <typeparam name="T">Type</typeparam>
         /// <param name="key">The key of the value to get.</param>
@@ -18,7 +13,7 @@ namespace IFramework.Infrastructure.Caching
         T Get<T>(string key);
 
         /// <summary>
-        /// Adds the specified key and object to the cache.
+        ///     Adds the specified key and object to the cache.
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
@@ -26,26 +21,26 @@ namespace IFramework.Infrastructure.Caching
         void Set(string key, object data, int cacheTime);
 
         /// <summary>
-        /// Gets a value indicating whether the value associated with the specified key is cached
+        ///     Gets a value indicating whether the value associated with the specified key is cached
         /// </summary>
         /// <param name="key">key</param>
         /// <returns>Result</returns>
         bool IsSet(string key);
 
         /// <summary>
-        /// Removes the value with the specified key from the cache
+        ///     Removes the value with the specified key from the cache
         /// </summary>
         /// <param name="key">/key</param>
         void Remove(string key);
 
         /// <summary>
-        /// Removes items by pattern
+        ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
         void RemoveByPattern(string pattern);
 
         /// <summary>
-        /// Clear all cache data
+        ///     Clear all cache data
         /// </summary>
         void Clear();
     }

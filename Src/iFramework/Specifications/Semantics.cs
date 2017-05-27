@@ -1,44 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace IFramework
+﻿namespace IFramework
 {
     /// <summary>
-    /// Represents the type of semantics.
+    ///     Represents the type of semantics.
     /// </summary>
     public enum Semantics
     {
         #region Members
+
         /// <summary>
-        /// ANY semantics.
+        ///     ANY semantics.
         /// </summary>
         Any,
+
         /// <summary>
-        /// NONE semantics.
+        ///     NONE semantics.
         /// </summary>
         None,
+
         /// <summary>
-        /// AND semantics.
+        ///     AND semantics.
         /// </summary>
         And,
+
         /// <summary>
-        /// OR semantics.
+        ///     OR semantics.
         /// </summary>
         Or,
+
         /// <summary>
-        /// NOT semantics.
+        ///     NOT semantics.
         /// </summary>
         Not,
+
         /// <summary>
-        /// AND NOT semantics.
+        ///     AND NOT semantics.
         /// </summary>
         AndNot,
+
         /// <summary>
-        /// ALL semantics.
+        ///     ALL semantics.
         /// </summary>
         All
+
         #endregion
     }
 }

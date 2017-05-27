@@ -1,23 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using IFramework.Infrastructure;
-using System.Collections;
-using Newtonsoft.Json;
 using IFramework.Message;
+using IFramework.Message.Impl;
 using Microsoft.ServiceBus.Messaging;
 using Newtonsoft.Json.Linq;
-using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.ServiceBus.MessageFormat
 {
     public class MessageContext : IMessageContext
     {
-        public BrokeredMessage BrokeredMessage { get; protected set; }
-        public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
-        public Action Complete { get; protected set; }
-        public long Offset { get; protected set; }
+        private object _Message;
+
+        private SagaInfo _sagaInfo;
+
         public MessageContext(BrokeredMessage brokeredMessage, Action complete = null)
         {
             BrokeredMessage = brokeredMessage;
@@ -33,27 +29,18 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             SentTime = DateTime.Now;
             Message = message;
             if (!string.IsNullOrEmpty(id))
-            {
                 MessageID = id;
-            }
             else if (message is IMessage)
-            {
                 MessageID = (message as IMessage).ID;
-            }
             else
-            {
                 MessageID = ObjectId.GenerateNewId().ToString();
-            }
             ToBeSentMessageContexts = new List<IMessageContext>();
             if (message != null)
             {
                 var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
                 if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
-                {
                     Topic = topicAttribute.Topic;
-                }
             }
-
         }
 
 
@@ -69,12 +56,13 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             ReplyToEndPoint = replyToEndPoint;
         }
 
-        public IDictionary<string, object> Headers
-        {
-            get { return BrokeredMessage.Properties; }
-        }
+        public BrokeredMessage BrokeredMessage { get; protected set; }
+        public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
+        public Action Complete { get; protected set; }
+        public long Offset { get; protected set; }
 
-        SagaInfo _sagaInfo;
+        public IDictionary<string, object> Headers => BrokeredMessage.Properties;
+
         public SagaInfo SagaInfo
         {
             get
@@ -83,66 +71,56 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
                 {
                     var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
                     if (sagaInfoJson != null)
-                    {
                         try
                         {
-                            _sagaInfo = ((JObject)Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
+                            _sagaInfo = ((JObject) Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
                         }
                         catch (Exception)
                         {
                         }
-                    }
                 }
                 return _sagaInfo;
             }
-            set { Headers["SagaInfo"] = _sagaInfo = value; }
+            set => Headers["SagaInfo"] = _sagaInfo = value;
         }
 
         public string Key
         {
-            get { return (string)Headers.TryGetValue("Key"); }
-            set { Headers["Key"] = value; }
+            get => (string) Headers.TryGetValue("Key");
+            set => Headers["Key"] = value;
         }
 
         public string CorrelationID
         {
-            get { return BrokeredMessage.CorrelationId; }
-            set { BrokeredMessage.CorrelationId = value; }
+            get => BrokeredMessage.CorrelationId;
+            set => BrokeredMessage.CorrelationId = value;
         }
 
         public string MessageID
         {
-            get { return BrokeredMessage.MessageId; }
-            set { BrokeredMessage.MessageId = value; }
+            get => BrokeredMessage.MessageId;
+            set => BrokeredMessage.MessageId = value;
         }
 
         public string ReplyToEndPoint
         {
-            get { return BrokeredMessage.ReplyTo; }
-            set { BrokeredMessage.ReplyTo = value; }
+            get => BrokeredMessage.ReplyTo;
+            set => BrokeredMessage.ReplyTo = value;
         }
 
-        public object Reply
-        {
-            get;
-            set;
-        }
+        public object Reply { get; set; }
 
-        object _Message;
         public object Message
         {
             get
             {
                 if (_Message != null)
-                {
                     return _Message;
-                }
                 object messageType = null;
                 if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
                 {
                     var jsonValue = BrokeredMessage.GetBody<string>();
                     _Message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
-
                 }
                 return _Message;
             }
@@ -150,33 +128,32 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             {
                 _Message = value;
                 if (value != null)
-                {
                     Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
-                }
             }
         }
 
         public DateTime SentTime
         {
-            get { return (DateTime)Headers.TryGetValue("SentTime"); }
-            set { Headers["SentTime"] = value; }
+            get => (DateTime) Headers.TryGetValue("SentTime");
+            set => Headers["SentTime"] = value;
         }
 
         public string Topic
         {
-            get { return (string)Headers.TryGetValue("Topic"); }
-            set { Headers["Topic"] = value; }
+            get => (string) Headers.TryGetValue("Topic");
+            set => Headers["Topic"] = value;
         }
 
         public string IP
         {
-            get { return (string)Headers.TryGetValue("IP"); }
-            set { Headers["IP"] = value; }
+            get => (string) Headers.TryGetValue("IP");
+            set => Headers["IP"] = value;
         }
+
         public string Producer
         {
-            get { return (string)Headers.TryGetValue("Producer"); }
-            set { Headers["Producer"] = value; }
+            get => (string) Headers.TryGetValue("Producer");
+            set => Headers["Producer"] = value;
         }
     }
 }

@@ -1,20 +1,18 @@
-﻿
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using IFramework.Message;
 using IFramework.MessageQueue.EQueue.MessageFormat;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using EQueueMessages = EQueue.Protocols;
 using EQueueConsumers = EQueue.Clients.Consumers;
-using System.Net;
-using System.Threading.Tasks;
-using System.Text;
 
 namespace IFramework.MessageQueue.EQueue
 {
@@ -22,33 +20,18 @@ namespace IFramework.MessageQueue.EQueue
 
     public class EQueueConsumer : ICommitOffsetable
     {
-        public string ClusterName { get; protected set; }
-        public List<IPEndPoint> NameServerList { get; protected set; }
-        public string Topic { get; protected set; }
-        public string GroupId { get; protected set; }
-        public string ConsumerId { get; protected set; }
-        public ConcurrentDictionary<int, SlidingDoor> SlidingDoors { get; protected set; }
-        protected EQueueConsumers.Consumer Consumer { get; set; }
-        protected int _fullLoadThreshold;
-        protected int _waitInterval;
         protected CancellationTokenSource _cancellationTokenSource;
         protected Task _consumerTask;
-        OnEQueueMessageReceived _onMessageReceived;
+        protected int _fullLoadThreshold;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(EQueueConsumer).Name);
-
-        public string Id
-        {
-            get
-            {
-                return $"{GroupId}.{Topic}.{ConsumerId}";
-            }
-        }
+        private readonly OnEQueueMessageReceived _onMessageReceived;
+        protected int _waitInterval;
 
         public EQueueConsumer(string clusterName, List<IPEndPoint> nameServerList,
-                              string topic, string groupId, string consumerId,
-                              OnEQueueMessageReceived onMessageReceived,
-                              int fullLoadThreshold = 1000, int waitInterval = 1000,
-                              bool start = true)
+            string topic, string groupId, string consumerId,
+            OnEQueueMessageReceived onMessageReceived,
+            int fullLoadThreshold = 1000, int waitInterval = 1000,
+            bool start = true)
         {
             _onMessageReceived = onMessageReceived;
             ClusterName = clusterName;
@@ -60,10 +43,18 @@ namespace IFramework.MessageQueue.EQueue
             GroupId = groupId;
             ConsumerId = consumerId ?? string.Empty;
             if (start)
-            {
                 Start();
-            }
         }
+
+        public string ClusterName { get; protected set; }
+        public List<IPEndPoint> NameServerList { get; protected set; }
+        public string Topic { get; protected set; }
+        public string GroupId { get; protected set; }
+        public string ConsumerId { get; protected set; }
+        public ConcurrentDictionary<int, SlidingDoor> SlidingDoors { get; protected set; }
+        protected EQueueConsumers.Consumer Consumer { get; set; }
+
+        public string Id => $"{GroupId}.{Topic}.{ConsumerId}";
 
         public void Start()
         {
@@ -75,15 +66,15 @@ namespace IFramework.MessageQueue.EQueue
                 NameServerList = NameServerList
             };
             Consumer = new EQueueConsumers.Consumer(GroupId, setting)
-                                          .Subscribe(Topic)
-                                          .Start();
+                .Subscribe(Topic)
+                .Start();
             _cancellationTokenSource = new CancellationTokenSource();
-            _consumerTask = Task.Factory.StartNew((cs) => ReceiveMessages(cs as CancellationTokenSource,
-                                                                          _onMessageReceived),
-                                                     _cancellationTokenSource,
-                                                     _cancellationTokenSource.Token,
-                                                     TaskCreationOptions.LongRunning,
-                                                     TaskScheduler.Default);
+            _consumerTask = Task.Factory.StartNew(cs => ReceiveMessages(cs as CancellationTokenSource,
+                    _onMessageReceived),
+                _cancellationTokenSource,
+                _cancellationTokenSource.Token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
         }
 
         public void Stop()
@@ -91,6 +82,12 @@ namespace IFramework.MessageQueue.EQueue
             Consumer?.Stop();
             _cancellationTokenSource.Cancel(true);
             _consumerTask.Wait(5000);
+        }
+
+        public void CommitOffset(IMessageContext messageContext)
+        {
+            var message = messageContext as MessageContext;
+            RemoveMessage(message.Partition, message.Offset);
         }
 
         public void BlockIfFullLoad()
@@ -102,18 +99,18 @@ namespace IFramework.MessageQueue.EQueue
             }
         }
 
-        void ReceiveMessages(CancellationTokenSource cancellationTokenSource, OnEQueueMessageReceived onMessageReceived)
+        private void ReceiveMessages(CancellationTokenSource cancellationTokenSource,
+            OnEQueueMessageReceived onMessageReceived)
         {
             IEnumerable<EQueueMessages.QueueMessage> messages = null;
 
             #region peek messages that not been consumed since last time
+
             while (!cancellationTokenSource.IsCancellationRequested)
-            {
                 try
                 {
                     messages = PullMessages(100, 2000, cancellationTokenSource.Token);
                     foreach (var message in messages)
-                    {
                         try
                         {
                             AddMessage(message);
@@ -131,12 +128,9 @@ namespace IFramework.MessageQueue.EQueue
                         catch (Exception ex)
                         {
                             if (message.Body != null)
-                            {
                                 RemoveMessage(message.QueueId, message.QueueOffset);
-                            }
                             _logger.Error(ex.GetBaseException().Message, ex);
                         }
-                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -154,7 +148,7 @@ namespace IFramework.MessageQueue.EQueue
                         _logger.Error(ex.GetBaseException().Message, ex);
                     }
                 }
-            }
+
             #endregion
         }
 
@@ -163,9 +157,9 @@ namespace IFramework.MessageQueue.EQueue
             var slidingDoor = SlidingDoors.GetOrAdd(message.QueueId, partition =>
             {
                 return new SlidingDoor(CommitOffset,
-                                       message.BrokerName,
-                                       partition,
-                                       Configuration.Instance.GetCommitPerMessage());
+                    message.BrokerName,
+                    partition,
+                    Configuration.Instance.GetCommitPerMessage());
             });
             slidingDoor.AddOffset(message.QueueOffset);
         }
@@ -174,19 +168,12 @@ namespace IFramework.MessageQueue.EQueue
         {
             var slidingDoor = SlidingDoors.TryGetValue(partition);
             if (slidingDoor == null)
-            {
                 throw new Exception("partition slidingDoor not exists");
-            }
             slidingDoor.RemoveOffset(offset);
         }
 
-        public void CommitOffset(IMessageContext messageContext)
-        {
-            var message = (messageContext as MessageContext);
-            RemoveMessage(message.Partition, message.Offset);
-        }
-
-        public IEnumerable<EQueueMessages.QueueMessage> PullMessages(int maxCount, int timeoutMilliseconds, CancellationToken cancellationToken)
+        public IEnumerable<EQueueMessages.QueueMessage> PullMessages(int maxCount, int timeoutMilliseconds,
+            CancellationToken cancellationToken)
         {
             return Consumer.PullMessages(maxCount, timeoutMilliseconds, cancellationToken);
         }
@@ -196,6 +183,5 @@ namespace IFramework.MessageQueue.EQueue
         {
             Consumer.CommitConsumeOffset(broker, Topic, partition, offset);
         }
-
     }
 }

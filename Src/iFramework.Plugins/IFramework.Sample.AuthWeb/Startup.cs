@@ -1,7 +1,9 @@
-﻿using Microsoft.Owin;
+﻿using IFramework.Sample.AuthWeb;
+using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartupAttribute(typeof(IFramework.Sample.AuthWeb.Startup))]
+[assembly: OwinStartup(typeof(Startup))]
+
 namespace IFramework.Sample.AuthWeb
 {
     public partial class Startup

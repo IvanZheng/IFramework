@@ -1,52 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Data;
-using System.Text;
+﻿using System.Collections;
 using System.Configuration;
-using System.Collections;
 using IFramework.Infrastructure;
 
 namespace IFramework.Config
 {
     public sealed class ConfigurationReader
     {
-        private static readonly ConfigurationReader _Instance = new ConfigurationReader();
+        private readonly Hashtable Configs = new Hashtable();
+
         /// <summary>
-        /// Initializes a new instance of <c>Configuration Reader</c> class.
+        ///     Initializes a new instance of <c>Configuration Reader</c> class.
         /// </summary>
-         private ConfigurationReader()
-         {
-         }
+        private ConfigurationReader()
+        {
+        }
 
-         public static ConfigurationReader Instance { get { return _Instance; } }
+        public static ConfigurationReader Instance { get; } = new ConfigurationReader();
 
+        public TConfigurationSection GetConfigurationSection<TConfigurationSection>(string name = null)
+            where TConfigurationSection : ConfigurationSection
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                var configSectionNameAttr = typeof(TConfigurationSection)
+                    .GetCustomAttribute<ConfigurationSectionNameAttribute>();
+                if (configSectionNameAttr != null)
+                    name = configSectionNameAttr.Name;
+                if (string.IsNullOrEmpty(name))
+                    name = typeof(TConfigurationSection).Name;
+            }
 
-         Hashtable Configs = new Hashtable();
-
-         public TConfigurationSection GetConfigurationSection<TConfigurationSection>(string name = null) 
-             where TConfigurationSection : ConfigurationSection
-         {
-             if (string.IsNullOrEmpty(name))
-             {
-                 var configSectionNameAttr = typeof(TConfigurationSection).GetCustomAttribute<ConfigurationSectionNameAttribute>();
-                 if (configSectionNameAttr != null)
-                 {
-                     name = configSectionNameAttr.Name;
-                 }
-                 if (string.IsNullOrEmpty(name))
-                 {
-                     name = typeof(TConfigurationSection).Name;
-                 }
-             }
-
-             var configSection = Configs[name] as TConfigurationSection;
-             if (configSection == null)
-             {
-                 configSection = ConfigurationManager.GetSection(name) as TConfigurationSection;
-                 Configs[name] = configSection;
-             }
-             return configSection;
-         }
+            var configSection = Configs[name] as TConfigurationSection;
+            if (configSection == null)
+            {
+                configSection = ConfigurationManager.GetSection(name) as TConfigurationSection;
+                Configs[name] = configSection;
+            }
+            return configSection;
+        }
     }
 }

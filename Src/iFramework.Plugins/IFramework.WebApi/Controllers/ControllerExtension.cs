@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace IFramework.AspNet
@@ -16,16 +12,13 @@ namespace IFramework.AspNet
                 var cookieValue = defaultValue;
                 var cookie = controller.Request.Cookies[key];
                 if (cookie != null)
-                {
                     cookieValue = cookie.Value;
-                }
                 return cookieValue;
             }
             catch (Exception)
             {
                 return defaultValue;
             }
-            
         }
     }
 }

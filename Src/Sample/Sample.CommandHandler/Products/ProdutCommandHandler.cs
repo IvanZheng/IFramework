@@ -1,14 +1,12 @@
-﻿using IFramework.Command;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using IFramework.Command;
 using IFramework.Message;
 using IFramework.UnitOfWork;
 using Sample.Command;
 using Sample.Domain.Model;
+using Sample.DTO;
 using Sample.Persistence.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sample.CommandHandler.Products
 {
@@ -16,36 +14,30 @@ namespace Sample.CommandHandler.Products
         ICommandAsyncHandler<ReduceProduct>,
         ICommandHandler<GetProducts>
     {
-     //   IEventBus _EventBus;
-        IMessageContext _CommandContext;
-        CommunityRepository _DomainRepository;
-        IUnitOfWork _UnitOfWork;
+        //   IEventBus _EventBus;
+        private readonly IMessageContext _CommandContext;
+
+        private readonly CommunityRepository _DomainRepository;
+        private readonly IUnitOfWork _UnitOfWork;
+
         public ProdutCommandHandler(IUnitOfWork unitOfWork,
-                                       CommunityRepository domainRepository,
-                                      // IEventBus eventBus,
-                                       IMessageContext commandContext)
+            CommunityRepository domainRepository,
+            // IEventBus eventBus,
+            IMessageContext commandContext)
         {
             _UnitOfWork = unitOfWork;
             _DomainRepository = domainRepository;
             _CommandContext = commandContext;
-           // _EventBus = eventBus;
-        }
-
-        public void Handle(GetProducts command)
-        {
-            var products = _DomainRepository.FindAll<Product>(p => command.ProductIds.Contains(p.Id))
-                                           .Select(p => new Sample.DTO.Project { Id = p.Id, Name = p.Name, Count = p.Count })
-                                           .ToList();
-            _CommandContext.Reply = products;
+            // _EventBus = eventBus;
         }
 
         public async Task Handle(ReduceProduct command)
         {
             var product = await _DomainRepository.GetByKeyAsync<Product>(command.ProductId)
-                                                 .ConfigureAwait(false);
+                .ConfigureAwait(false);
             product.ReduceCount(command.ReduceCount);
             await _UnitOfWork.CommitAsync()
-                             .ConfigureAwait(false);
+                .ConfigureAwait(false);
             _CommandContext.Reply = product.Count;
         }
 
@@ -56,6 +48,12 @@ namespace Sample.CommandHandler.Products
             _UnitOfWork.Commit();
         }
 
-
+        public void Handle(GetProducts command)
+        {
+            var products = _DomainRepository.FindAll<Product>(p => command.ProductIds.Contains(p.Id))
+                .Select(p => new Project {Id = p.Id, Name = p.Name, Count = p.Count})
+                .ToList();
+            _CommandContext.Reply = products;
+        }
     }
 }

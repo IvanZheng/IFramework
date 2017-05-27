@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Configuration;
+﻿using System.Configuration;
 using IFramework.Infrastructure;
 
 namespace IFramework.Config
@@ -10,8 +6,6 @@ namespace IFramework.Config
     public class BaseConfigurationElementCollection<TConfigurationElement> : ConfigurationElementCollection
         where TConfigurationElement : ConfigurationElement, new()
     {
-        string ConfigurationElementKey { get; set; }
-
         public BaseConfigurationElementCollection()
         {
             foreach (var p in typeof(TConfigurationElement).GetProperties())
@@ -25,43 +19,29 @@ namespace IFramework.Config
             }
         }
 
+        private string ConfigurationElementKey { get; }
+
         public TConfigurationElement this[int idx]
         {
-            get
-            {
-                return base.BaseGet(idx) as TConfigurationElement;
-            }
+            get => BaseGet(idx) as TConfigurationElement;
             set
             {
-                if (base.BaseGet(idx) != null)
-                {
-                    base.BaseRemoveAt(idx);
-                }
-                base.BaseAdd(idx, value);
+                if (BaseGet(idx) != null)
+                    BaseRemoveAt(idx);
+                BaseAdd(idx, value);
             }
         }
 
 
+        public override ConfigurationElementCollectionType CollectionType =>
+            ConfigurationElementCollectionType.BasicMap;
 
-        public override ConfigurationElementCollectionType CollectionType
-        {
-            get
-            {
-                return ConfigurationElementCollectionType.BasicMap;
-            }
-        }
+        protected override string ElementName => this.GetCustomAttribute<ConfigurationCollectionAttribute>()
+            .AddItemName;
 
         protected override ConfigurationElement CreateNewElement()
         {
             return new TConfigurationElement();
-        }
-
-        protected override string ElementName
-        {
-            get
-            {
-                return this.GetCustomAttribute<ConfigurationCollectionAttribute>().AddItemName;
-            }
         }
 
         protected override object GetElementKey(ConfigurationElement element)

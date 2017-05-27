@@ -1,26 +1,23 @@
-﻿using IFramework.Event;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace IFramework.Domain
 {
     public class VersionedAggregateRoot : AggregateRoot
     {
-        int _newVersion;
-        int NewVersion
+        private int _newVersion;
+
+        private int NewVersion
         {
             get
             {
                 if (_newVersion == 0)
-                {
                     _newVersion = Version + 1;
-                }
                 return _newVersion;
             }
         }
+
+        [ConcurrencyCheck]
+        public int Version { get; private set; }
 
         public override void Rollback()
         {
@@ -28,18 +25,11 @@ namespace IFramework.Domain
             base.Rollback();
         }
 
-        [ConcurrencyCheck]
-        public int Version
-        {
-            get;
-            private set;
-        }
-
         protected override void OnEvent<TDomainEvent>(TDomainEvent @event)
         {
             @event.Version = NewVersion;
             Version = NewVersion;
-            base.OnEvent<TDomainEvent>(@event);
+            base.OnEvent(@event);
         }
     }
 }

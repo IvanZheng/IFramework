@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ServiceModel.Description;
-using System.ServiceModel;
 using System.Collections.ObjectModel;
+using System.ServiceModel;
 using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 
 namespace IFramework.IoC
@@ -25,16 +22,10 @@ namespace IFramework.IoC
             ServiceHostBase serviceHostBase)
         {
             foreach (ChannelDispatcher cd in serviceHostBase.ChannelDispatchers)
-            {
-                foreach (EndpointDispatcher ed in cd.Endpoints)
-                {
-                    if (!ed.IsSystemEndpoint)
-                    {
-                        ed.DispatchRuntime.InstanceProvider =
-                            new IocInstanceProvider(serviceDescription.ServiceType);
-                    }
-                }
-            }
+            foreach (var ed in cd.Endpoints)
+                if (!ed.IsSystemEndpoint)
+                    ed.DispatchRuntime.InstanceProvider =
+                        new IocInstanceProvider(serviceDescription.ServiceType);
         }
 
         public void Validate(ServiceDescription serviceDescription,

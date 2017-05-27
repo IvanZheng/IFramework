@@ -1,6 +1,6 @@
-﻿using IFramework.Message.Impl;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using IFramework.Message.Impl;
 
 namespace IFramework.Message
 {

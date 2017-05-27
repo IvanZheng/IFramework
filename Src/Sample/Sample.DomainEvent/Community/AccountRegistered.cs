@@ -1,26 +1,17 @@
-﻿using IFramework.Event;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 
 namespace Sample.DomainEvents.Community
 {
     public class ItemRegisted : DomainEvent
     {
         public ItemRegisted(Guid id)
-            :base(id)
+            : base(id)
         {
-
         }
     }
 
     public class PeopleRegisted : ItemRegisted
     {
-        public string UserName { get; private set; }
-        public string Password { get; private set; }
-        public DateTime RegisterTime { get; private set; }
-
         public PeopleRegisted(Guid accountID, string username, string password, DateTime registerTime)
             : base(accountID)
         {
@@ -28,27 +19,32 @@ namespace Sample.DomainEvents.Community
             Password = password;
             RegisterTime = registerTime;
         }
+
+        public string UserName { get; }
+        public string Password { get; }
+        public DateTime RegisterTime { get; }
     }
+
     public class AccountRegistered : PeopleRegisted
     {
-        public string Email { get; private set; }
-
         public AccountRegistered(Guid accountID, string username, string password,
-                                 string email, DateTime registerTime)
+            string email, DateTime registerTime)
             : base(accountID, username, password, registerTime)
         {
             Email = email;
         }
+
+        public string Email { get; }
     }
 
     public class AccountModified : DomainEvent
     {
-        public string Email { get; private set; }
-
         public AccountModified(Guid accountId, string email)
-            :base(accountId)
+            : base(accountId)
         {
             Email = email;
         }
+
+        public string Email { get; }
     }
 }

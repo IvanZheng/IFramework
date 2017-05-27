@@ -1,15 +1,8 @@
-﻿using IFramework.Infrastructure;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
-using IFramework.Message;
-using IFramework.MessageQueue;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using IFramework.IoC;
+using IFramework.MessageQueue;
 
 namespace IFramework.Message.Impl
 {
@@ -19,9 +12,7 @@ namespace IFramework.Message.Impl
             : base(messageQueueClient, defaultTopic)
         {
             if (string.IsNullOrEmpty(defaultTopic))
-            {
                 throw new Exception("message sender must have a default topic.");
-            }
         }
 
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
@@ -29,12 +20,13 @@ namespace IFramework.Message.Impl
             using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
             using (var messageStore = scope.Resolve<IMessageStore>())
             {
-                return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationID, replyEndPoint, sagaInfo, producer) =>
-                                        _messageQueueClient.WrapMessage(message, key: message.Key,
-                                                                        topic: topic, messageId: messageId,
-                                                                        correlationId: correlationID,
-                                                                        replyEndPoint: replyEndPoint,
-                                                                        sagaInfo: sagaInfo, producer:producer));
+                return messageStore.GetAllUnPublishedEvents(
+                    (messageId, message, topic, correlationID, replyEndPoint, sagaInfo, producer) =>
+                        _messageQueueClient.WrapMessage(message, key: message.Key,
+                            topic: topic, messageId: messageId,
+                            correlationId: correlationID,
+                            replyEndPoint: replyEndPoint,
+                            sagaInfo: sagaInfo, producer: producer));
             }
         }
 
@@ -46,11 +38,10 @@ namespace IFramework.Message.Impl
         protected override void CompleteSendingMessage(MessageState messageState)
         {
             messageState.SendTaskCompletionSource?
-                        .TrySetResult(new MessageResponse(messageState.MessageContext,
-                                         null,
-                                         false));
+                .TrySetResult(new MessageResponse(messageState.MessageContext,
+                    null,
+                    false));
             if (_needMessageStore)
-            {
                 Task.Run(() =>
                 {
                     using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
@@ -59,8 +50,6 @@ namespace IFramework.Message.Impl
                         messageStore.RemovePublishedEvent(messageState.MessageID);
                     }
                 });
-            }
-
         }
     }
 }

@@ -1,21 +1,15 @@
-﻿
+﻿using System;
+using System.Data;
+using System.Threading.Tasks;
+using IFramework.Config;
+using IFramework.Exceptions;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
-using IFramework.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure
 {
     public class ApiResult
     {
-        public bool Success { get; set; }
-        public object ErrorCode { get; set; }
-        public string Message { get; set; }
-
         public ApiResult()
         {
             Success = true;
@@ -24,38 +18,44 @@ namespace IFramework.Infrastructure
 
         public ApiResult(object errorCode, string message = null)
         {
-            this.ErrorCode = errorCode;
-            this.Message = message;
+            ErrorCode = errorCode;
+            Message = message;
             Success = false;
         }
 
+        public bool Success { get; set; }
+        public object ErrorCode { get; set; }
+        public string Message { get; set; }
     }
 
     public class ApiResult<TResult> : ApiResult
     {
-        public TResult Result { get; set; }
-
         public ApiResult()
         {
             Success = true;
         }
+
         public ApiResult(TResult result)
             : this()
         {
-            this.Result = result;
+            Result = result;
         }
 
         public ApiResult(object errorCode, string message = null)
             : base(errorCode, message)
         {
-
         }
+
+        public TResult Result { get; set; }
     }
 
     public static class ExceptionManager
     {
-        static ILogger _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager)) : null;
-        static string _UnKnownMessage = ErrorCode.UnknownError.ToString();
+        private static readonly ILogger _logger = IoCFactory.IsInit()
+            ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager))
+            : null;
+
+        private static string _UnKnownMessage = ErrorCode.UnknownError.ToString();
 
         public static void SetUnKnownMessage(string unknownMessage)
         {
@@ -63,28 +63,26 @@ namespace IFramework.Infrastructure
         }
 
 
-        static string GetUnknownErrorMessage(Exception ex)
+        private static string GetUnknownErrorMessage(Exception ex)
         {
             var unknownErrorMessage = _UnKnownMessage;
-            var compliationSection = Config.Configuration.GetCompliationSection();
+            var compliationSection = Configuration.GetCompliationSection();
             if (compliationSection != null && compliationSection.Debug)
-            {
                 unknownErrorMessage = ex.Message;
-            }
             return unknownErrorMessage;
         }
 
 
-        static string GetExceptionMessage(Exception ex)
+        private static string GetExceptionMessage(Exception ex)
         {
             return GetUnknownErrorMessage(ex);
         }
 
         public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
-                                                               bool continueOnCapturedContext = false,
-                                                               bool needRetry = false,
-                                                               int retryCount = 50,
-                                                               Func<Exception, string> getExceptionMessage = null)
+            bool continueOnCapturedContext = false,
+            bool needRetry = false,
+            int retryCount = 50,
+            Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -120,6 +118,7 @@ namespace IFramework.Infrastructure
             return apiResult;
 
             #region Old Method for .net 4
+
             /*
              * old method for .net 4
             return func().ContinueWith<Task<ApiResult<T>>>(t =>
@@ -160,14 +159,15 @@ namespace IFramework.Infrastructure
                 return Task.FromResult(apiResult);
             }).Unwrap();
             */
+
             #endregion
         }
 
         public static async Task<ApiResult> ProcessAsync(Func<Task> func,
-                                                         bool continueOnCapturedContext = false,
-                                                         bool needRetry = false,
-                                                         int retryCount = 50,
-                                                         Func<Exception, string> getExceptionMessage = null)
+            bool continueOnCapturedContext = false,
+            bool needRetry = false,
+            int retryCount = 50,
+            Func<Exception, string> getExceptionMessage = null)
         {
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
             ApiResult apiResult = null;
@@ -201,6 +201,7 @@ namespace IFramework.Infrastructure
             return apiResult;
 
             #region Old Method for .net 4
+
             //return func().ContinueWith<Task<ApiResult>>(t =>
             //{
             //    ApiResult apiResult = null;
@@ -238,10 +239,12 @@ namespace IFramework.Infrastructure
 
             //    return Task.FromResult(apiResult);
             //}).Unwrap();
+
             #endregion
         }
 
-        public static ApiResult Process(Action action, bool needRetry = false, int retryCount = 50, Func<Exception, string> getExceptionMessage = null)
+        public static ApiResult Process(Action action, bool needRetry = false, int retryCount = 50,
+            Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -255,7 +258,6 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-
                     if (!(ex is OptimisticConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
@@ -272,12 +274,12 @@ namespace IFramework.Infrastructure
                         needRetry = false;
                     }
                 }
-            }
-            while (needRetry && retryCount-- > 0);
+            } while (needRetry && retryCount-- > 0);
             return apiResult;
         }
 
-        public static ApiResult<T> Process<T>(Func<T> func, bool needRetry = false, int retryCount = 50, Func<Exception, string> getExceptionMessage = null)
+        public static ApiResult<T> Process<T>(Func<T> func, bool needRetry = false, int retryCount = 50,
+            Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -288,13 +290,9 @@ namespace IFramework.Infrastructure
                     var result = func();
                     needRetry = false;
                     if (result != null)
-                    {
                         apiResult = new ApiResult<T>(result);
-                    }
                     else
-                    {
                         apiResult = new ApiResult<T>();
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -314,8 +312,7 @@ namespace IFramework.Infrastructure
                         needRetry = false;
                     }
                 }
-            }
-            while (needRetry && retryCount-- > 0);
+            } while (needRetry && retryCount-- > 0);
             return apiResult;
         }
     }

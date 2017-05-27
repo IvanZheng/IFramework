@@ -1,75 +1,62 @@
-﻿using Sample.Command;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Net.Http.Headers;
-using IFramework.Command;
 using IFramework.AspNet;
+using IFramework.Command;
 using IFramework.Infrastructure;
+using Sample.DTO;
 
 namespace Sample.CommandService.Controllers
 {
     public class CommandController : ApiController
     {
-        ICommandBus _CommandBus { get; set; }
-
         public CommandController(ICommandBus commandBus)
         {
             _CommandBus = commandBus;
         }
 
-        public async Task<ApiResult> Post([FromBody]ICommand command)
+        private ICommandBus _CommandBus { get; }
+
+        public async Task<ApiResult> Post([FromBody] ICommand command)
         {
             if (ModelState.IsValid)
-            {
                 return await ExceptionManager.ProcessAsync(async () =>
                 {
-                    return await _CommandBus.ExecuteAsync(command);//, TimeSpan.FromMilliseconds(2000));
+                    return await _CommandBus.ExecuteAsync(command); //, TimeSpan.FromMilliseconds(2000));
                     //var messageResponse = await _CommandBus.SendAsync(command, TimeSpan.FromSeconds(5));
                     //return await messageResponse.Reply.Timeout(TimeSpan.FromMilliseconds(2000));
                 });
-            }
-            else
-            {
-                return
-                    new ApiResult
-                    {
-                        ErrorCode = DTO.ErrorCode.CommandInvalid,
-                        Message = string.Join(",", ModelState.Values
-                                                       .SelectMany(v => v.Errors
-                                                                         .Select(e => e.ErrorMessage)))
-                    };
-            }
+            return
+                new ApiResult
+                {
+                    ErrorCode = ErrorCode.CommandInvalid,
+                    Message = string.Join(",", ModelState.Values
+                        .SelectMany(v => v.Errors
+                            .Select(e => e.ErrorMessage)))
+                };
         }
 
 
-        public Task<ApiResult> Put([FromBody]ICommand command)
+        public Task<ApiResult> Put([FromBody] ICommand command)
         {
             if (ModelState.IsValid)
-            {
-                using (HttpClient client = new HttpClient())
+                using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(string.Format("{0}://{1}/api/command",
-                       Request.RequestUri.Scheme,
-                       Request.RequestUri.Authority));
+                        Request.RequestUri.Scheme,
+                        Request.RequestUri.Authority));
                     return client.DoCommand<ApiResult>(command, null);
                 }
-            }
-            else
-            {
-                return Task.Factory.StartNew<ApiResult>(() =>
-                    new ApiResult
-                    {
-                        ErrorCode = DTO.ErrorCode.CommandInvalid,
-                        Message = string.Join(",", ModelState.Values
-                                                       .SelectMany(v => v.Errors
-                                                                         .Select(e => e.ErrorMessage)))
-                    });
-            }
+            return Task.Factory.StartNew(() =>
+                new ApiResult
+                {
+                    ErrorCode = ErrorCode.CommandInvalid,
+                    Message = string.Join(",", ModelState.Values
+                        .SelectMany(v => v.Errors
+                            .Select(e => e.ErrorMessage)))
+                });
         }
     }
 }

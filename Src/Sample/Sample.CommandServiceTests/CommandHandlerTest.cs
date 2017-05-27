@@ -1,9 +1,8 @@
-﻿using IFramework.Command;
-using IFramework.Infrastructure;
+﻿using System.Threading.Tasks;
+using IFramework.Command;
 using IFramework.IoC;
 using IFramework.Message;
 using IFramework.Message.Impl;
-using System.Threading.Tasks;
 
 namespace Sample.CommandServiceTests
 {
@@ -16,7 +15,7 @@ namespace Sample.CommandServiceTests
             {
                 scope.RegisterInstance(typeof(IMessageContext), commandContext);
                 var commandHandler = scope.Resolve<TCommandHanlder>();
-                ((dynamic)commandHandler).Handle((dynamic)command);
+                ((dynamic) commandHandler).Handle((dynamic) command);
                 var result = commandContext.Reply;
 
                 return result;
@@ -29,7 +28,7 @@ namespace Sample.CommandServiceTests
             {
                 scope.RegisterInstance(typeof(IMessageContext), commandContext);
                 var commandHandler = scope.Resolve<TCommandHanlder>();
-                await Task.Run(((dynamic)commandHandler).Handle((dynamic)commandContext.Message));
+                await Task.Run(((dynamic) commandHandler).Handle((dynamic) commandContext.Message));
                 var result = commandContext.Reply;
             }
         }

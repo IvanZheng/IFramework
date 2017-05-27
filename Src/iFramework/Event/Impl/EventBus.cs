@@ -1,23 +1,19 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using IFramework.Infrastructure;
 using IFramework.Command;
-using IFramework.IoC;
+using IFramework.Infrastructure;
 
 namespace IFramework.Event.Impl
 {
     public class EventBus : IEventBus
     {
         protected List<ICommand> CommandQueue;
-        protected List<object> SagaResultQueue;
         protected List<IEvent> EventQueue;
+        protected List<object> SagaResultQueue;
         protected List<IEvent> ToPublishAnywayEventQueue;
 
         //protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
-        public EventBus(/*IEventSubscriberProvider provider*/)
+        public EventBus( /*IEventSubscriberProvider provider*/)
         {
             //EventSubscriberProvider = provider;
             EventQueue = new List<IEvent>();
@@ -47,7 +43,6 @@ namespace IFramework.Event.Impl
 
         public virtual void Dispose()
         {
-
         }
 
         public IEnumerable<IEvent> GetEvents()
@@ -78,6 +73,7 @@ namespace IFramework.Event.Impl
         {
             return ToPublishAnywayEventQueue;
         }
+
         public void SendCommand(ICommand command)
         {
             CommandQueue.Add(command);

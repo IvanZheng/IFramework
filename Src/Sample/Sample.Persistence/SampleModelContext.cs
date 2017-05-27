@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Entity;
-using Sample.Domain.Model;
-using IFramework.EntityFramework;
+﻿using System.Data.Entity;
 using IFramework.MessageStoring;
+using Sample.Domain.Model;
 
 namespace Sample.Persistence
 {
@@ -24,9 +19,12 @@ namespace Sample.Persistence
             Database.SetInitializer(new SampleModelContextCreateDatabaseIfNotExists());
         }
 
-        public SampleModelContext() : base("SampleModelContext") 
+        public SampleModelContext() : base("SampleModelContext")
         {
         }
+
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         protected override void Dispose(bool disposing)
         {
@@ -36,19 +34,15 @@ namespace Sample.Persistence
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>()
-                        .ToTable("Accounts")
-                        .HasMany<ProductId>(a => a.ProductIds)
-                        .WithRequired()
-                        .HasForeignKey(pid => pid.AccountId);
+                .ToTable("Accounts")
+                .HasMany(a => a.ProductIds)
+                .WithRequired()
+                .HasForeignKey(pid => pid.AccountId);
 
             modelBuilder.Entity<ProductId>()
-                        .HasKey(p => new { p.Value, p.AccountId });
+                .HasKey(p => new {p.Value, p.AccountId});
 
             base.OnModelCreating(modelBuilder);
         }
-
-        public DbSet<Account> Accounts { get; set; }
-        public DbSet<Product> Products { get; set; }
     }
-
 }

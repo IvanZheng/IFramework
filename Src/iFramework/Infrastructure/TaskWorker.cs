@@ -1,11 +1,8 @@
-﻿using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 
 namespace IFramework.Infrastructure
 {
@@ -17,38 +14,61 @@ namespace IFramework.Infrastructure
         Completed,
         Canceled
     }
+
     public class TaskWorker
     {
-        ILogger _logger;
-        public string Id { get; set; }
-        protected Task _task;
+        public delegate void WorkDelegate();
+
+        protected volatile bool _canceled;
+        protected CancellationTokenSource _cancellationTokenSource;
+        private readonly ILogger _logger;
         protected object _mutex = new object();
         protected Semaphore _semaphore = new Semaphore(0, 1);
-        protected CancellationTokenSource _cancellationTokenSource;
+        protected volatile bool _suspend;
+        protected Task _task;
 
-        protected volatile bool _toExit = false;
-        protected volatile bool _suspend = false;
-        protected volatile bool _canceled = false;
-        public delegate void WorkDelegate();
+        protected volatile bool _toExit;
         protected WorkDelegate _workDelegate;
 
-        protected int _workInterval = 0;
-        public int WorkInterval
-        {
-            get { return _workInterval; }
-            set { _workInterval = value; }
-        }
+        protected int _workInterval;
 
         public TaskWorker(string id = null)
         {
             Id = id;
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(this.GetType()) : null;
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType()) : null;
         }
 
         public TaskWorker(WorkDelegate run, string id = null)
             : this(id)
         {
             _workDelegate = run;
+        }
+
+        public string Id { get; set; }
+
+        public int WorkInterval
+        {
+            get => _workInterval;
+            set => _workInterval = value;
+        }
+
+        public WorkerStatus Status
+        {
+            get
+            {
+                WorkerStatus status;
+                if (_canceled)
+                    status = WorkerStatus.Canceled;
+                else if (_task == null)
+                    status = WorkerStatus.NotStarted;
+                else if (_suspend)
+                    status = WorkerStatus.Suspended;
+                else if (_task.Status == TaskStatus.RanToCompletion)
+                    status = WorkerStatus.Completed;
+                else
+                    status = WorkerStatus.Running;
+                return status;
+            }
         }
 
 
@@ -60,12 +80,10 @@ namespace IFramework.Infrastructure
 
         protected virtual void RunPrepare()
         {
-
         }
 
         protected virtual void RunCompleted()
         {
-
         }
 
         protected virtual void Run()
@@ -74,7 +92,6 @@ namespace IFramework.Infrastructure
             {
                 RunPrepare();
                 while (!_toExit)
-                {
                     try
                     {
                         _cancellationTokenSource.Token.ThrowIfCancellationRequested();
@@ -85,18 +102,12 @@ namespace IFramework.Infrastructure
                         }
                         _cancellationTokenSource.Token.ThrowIfCancellationRequested();
                         if (_workDelegate != null)
-                        {
                             _workDelegate.Invoke();
-                        }
                         else
-                        {
                             Work();
-                        }
                         _cancellationTokenSource.Token.ThrowIfCancellationRequested();
                         if (WorkInterval > 0)
-                        {
                             Sleep(WorkInterval);
-                        }
                     }
                     catch (OperationCanceledException)
                     {
@@ -106,11 +117,10 @@ namespace IFramework.Infrastructure
                     {
                         break;
                     }
-                    catch (System.Exception ex)
+                    catch (Exception ex)
                     {
                         Console.Write(ex.Message);
                     }
-                }
                 RunCompleted();
             }
             catch (Exception ex)
@@ -123,7 +133,6 @@ namespace IFramework.Infrastructure
 
         protected virtual void Work()
         {
-
         }
 
 
@@ -142,7 +151,6 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception)
                 {
-
                 }
             }
         }
@@ -152,18 +160,19 @@ namespace IFramework.Infrastructure
             lock (_mutex)
             {
                 if (Status == WorkerStatus.Canceled
-                 || Status == WorkerStatus.Completed
-                 || Status == WorkerStatus.NotStarted)
+                    || Status == WorkerStatus.Completed
+                    || Status == WorkerStatus.NotStarted)
                 {
                     _canceled = false;
                     _suspend = false;
                     _toExit = false;
                     _cancellationTokenSource = new CancellationTokenSource();
-                    _task = Task.Factory.StartNew(Run, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                    _task = Task.Factory.StartNew(Run, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning,
+                        TaskScheduler.Default);
                 }
                 else
                 {
-                    throw new InvalidOperationException("can not start when task is " + Status.ToString());
+                    throw new InvalidOperationException("can not start when task is " + Status);
                 }
             }
             return this;
@@ -172,13 +181,9 @@ namespace IFramework.Infrastructure
         public virtual void Wait(int millionSecondsTimeout = 0)
         {
             if (millionSecondsTimeout > 0)
-            {
-                Task.WaitAll(new Task[] { _task }, millionSecondsTimeout);
-            }
+                Task.WaitAll(new[] {_task}, millionSecondsTimeout);
             else
-            {
                 Task.WaitAll(_task);
-            }
         }
 
         protected virtual void Complete()
@@ -194,45 +199,12 @@ namespace IFramework.Infrastructure
                 {
                     _toExit = true;
                     if (_suspend)
-                    {
                         Resume();
-                    }
                     if (forcibly)
-                    {
                         _cancellationTokenSource.Cancel(true);
-                    }
                     _canceled = true;
                     _task = null;
                 }
-            }
-        }
-
-        public WorkerStatus Status
-        {
-            get
-            {
-                WorkerStatus status;
-                if (_canceled)
-                {
-                    status = WorkerStatus.Canceled;
-                }
-                else if (_task == null)
-                {
-                    status = WorkerStatus.NotStarted;
-                }
-                else if (_suspend)
-                {
-                    status = WorkerStatus.Suspended;
-                }
-                else if (_task.Status == TaskStatus.RanToCompletion)
-                {
-                    status = WorkerStatus.Completed;
-                }
-                else
-                {
-                    status = WorkerStatus.Running;
-                }
-                return status;
             }
         }
     }

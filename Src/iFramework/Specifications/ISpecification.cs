@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Linq.Expressions;
 
 namespace IFramework.Specifications
 {
     /// <summary>
-    /// Represents a generic version that the implemented classes are specifications.
+    ///     Represents a generic version that the implemented classes are specifications.
     /// </summary>
     /// <typeparam name="T">The type of the entity.</typeparam>
     public interface ISpecification<T>
-     //   where T : class, IEntity
+        //   where T : class, IEntity
     {
         /// <summary>
-        /// Returns a boolean value which indicates that the specification
-        /// is satisfied by the given entity.
+        ///     Returns a boolean value which indicates that the specification
+        ///     is satisfied by the given entity.
         /// </summary>
         /// <param name="obj">The entity to check against the specification.</param>
         /// <returns>True if the specification is satisfied, otherwise false.</returns>

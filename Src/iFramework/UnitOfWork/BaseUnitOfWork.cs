@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using IFramework.Bus;
-using IFramework.Repositories;
-using IFramework.Infrastructure;
-using IFramework.Domain;
-using IFramework.Event;
-using IFramework.Message;
-using IFramework.Config;
-using System.Transactions;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using System.Threading;
+using System.Transactions;
 
 namespace IFramework.UnitOfWork
 {
     public abstract class BaseUnitOfWork : IUnitOfWork
     {
+        public virtual void Dispose()
+        {
+        }
+
+        public abstract void Rollback();
         //public static readonly Type UnitOfWorkLifetimeManagerType = GetUnitOfWorkLifetimeManagerType();
         //static Type GetUnitOfWorkLifetimeManagerType()
         //{
@@ -40,6 +34,7 @@ namespace IFramework.UnitOfWork
         //EventBus = domainEventBus;
         //MessageStore = messageStore;
         // }
+
         #region IUnitOfWork Members
 
         //protected IEventBus EventBus
@@ -49,19 +44,15 @@ namespace IFramework.UnitOfWork
         //}
 
         public abstract void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                    TransactionScopeOption scopOption = TransactionScopeOption.Required);
+            TransactionScopeOption scopOption = TransactionScopeOption.Required);
+
         public abstract Task CommitAsync(CancellationToken cancellationToken,
-                                         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                         TransactionScopeOption scopeOption = TransactionScopeOption.Required);
+            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+            TransactionScopeOption scopeOption = TransactionScopeOption.Required);
 
         public abstract Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                         TransactionScopeOption scopOption = TransactionScopeOption.Required);
+            TransactionScopeOption scopOption = TransactionScopeOption.Required);
+
         #endregion
-
-        public virtual void Dispose()
-        {
-        }
-
-        public abstract void Rollback();
     }
 }

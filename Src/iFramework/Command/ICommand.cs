@@ -1,8 +1,4 @@
 ﻿using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace IFramework.Command
 {
@@ -13,6 +9,5 @@ namespace IFramework.Command
 
     public interface ILinearCommand : ICommand
     {
-        
     }
 }

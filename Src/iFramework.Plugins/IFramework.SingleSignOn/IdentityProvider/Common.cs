@@ -6,5 +6,4 @@
         public const string SigningCertificateName = "SigningCertificateName";
         public const string EncryptingCertificateName = "EncryptingCertificateName";
     }
-
 }
