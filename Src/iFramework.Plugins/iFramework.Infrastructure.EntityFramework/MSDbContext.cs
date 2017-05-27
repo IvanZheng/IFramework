@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
-using System.Linq;
-using IFramework.Domain;
-using IFramework.Infrastructure;
 using System.Data.Entity.Validation;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EntityKey = System.Data.Entity.Core.EntityKey;
-using EntityState = System.Data.Entity.EntityState;
+using IFramework.Domain;
+using IFramework.Infrastructure;
+using OptimisticConcurrencyException = System.Data.OptimisticConcurrencyException;
 
 namespace IFramework.EntityFramework
 {
@@ -18,14 +17,14 @@ namespace IFramework.EntityFramework
     {
         public static void InitializeQueryableCollections(this MSDbContext context, object entity)
         {
-            var dbEntity = entity as Entity;
-            if (dbEntity != null)
-                ((dynamic)dbEntity).DomainContext = context;
+            (entity as Entity)?.SetDomainContext(context);
         }
     }
 
     public class MSDbContext : DbContext
     {
+        private ObjectContext _objectContext;
+
         public MSDbContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
         {
@@ -45,8 +44,6 @@ namespace IFramework.EntityFramework
             //}
         }
 
-        private ObjectContext _objectContext;
-
         protected void InitObjectContext()
         {
             _objectContext = (this as IObjectContextAdapter).ObjectContext;
@@ -63,10 +60,7 @@ namespace IFramework.EntityFramework
                 .Where(e => e.State == EntityState.Modified || e.State == EntityState.Unchanged)
                 .Select(c => c.Entity);
             _objectContext.Refresh(RefreshMode.StoreWins, refreshableObjects);
-            ChangeTracker.Entries().ForEach(e =>
-            {
-                (e.Entity as AggregateRoot)?.Rollback();
-            });
+            ChangeTracker.Entries().ForEach(e => { (e.Entity as AggregateRoot)?.Rollback(); });
         }
 
         public EntityKey GetEntityKey<T>(T entity)
@@ -75,9 +69,7 @@ namespace IFramework.EntityFramework
             ObjectStateEntry ose;
             if (null != entity && _objectContext.ObjectStateManager
                     .TryGetObjectStateEntry(entity, out ose))
-            {
                 return ose.EntityKey;
-            }
             return null;
         }
 
@@ -93,11 +85,8 @@ namespace IFramework.EntityFramework
             try
             {
                 ChangeTracker.Entries()
-                             .Where(e => e.State == EntityState.Added)
-                             .ForEach(e =>
-                             {
-                                 this.InitializeQueryableCollections(e.Entity);
-                             });
+                    .Where(e => e.State == EntityState.Added)
+                    .ForEach(e => { this.InitializeQueryableCollections(e.Entity); });
                 return base.SaveChanges();
             }
             catch (DbUpdateConcurrencyException ex)
@@ -109,7 +98,7 @@ namespace IFramework.EntityFramework
             {
                 var errorMessage = string.Join(";", ex.EntityValidationErrors
                     .SelectMany(eve => eve.ValidationErrors
-                        .Select(e => new { eve.Entry, Error = e })
+                        .Select(e => new {eve.Entry, Error = e})
                         .Select(
                             e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
                 throw new Exception(errorMessage, ex);
@@ -127,10 +116,7 @@ namespace IFramework.EntityFramework
             {
                 ChangeTracker.Entries()
                     .Where(e => e.State == EntityState.Added)
-                    .ForEach(e =>
-                    {
-                        this.InitializeQueryableCollections(e.Entity);
-                    });
+                    .ForEach(e => { this.InitializeQueryableCollections(e.Entity); });
                 return await base.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
@@ -142,7 +128,7 @@ namespace IFramework.EntityFramework
             {
                 var errorMessage = string.Join(";", ex.EntityValidationErrors
                     .SelectMany(eve => eve.ValidationErrors
-                        .Select(e => new { eve.Entry, Error = e })
+                        .Select(e => new {eve.Entry, Error = e})
                         .Select(
                             e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
                 throw new Exception(errorMessage, ex);
