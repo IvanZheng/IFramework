@@ -70,45 +70,67 @@ namespace IFramework.MessageQueue.MSKafka
             queueClient.Send(producerData);
         }
 
-        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId,
-            OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartQueueClient(string commandQueueName,
+                                                  string consumerId,
+                                                  OnMessagesReceived onMessagesReceived,
+                                                  int fullLoadThreshold = 1000,
+                                                  int waitInterval = 1000)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
             var queueConsumer = CreateQueueConsumer(commandQueueName, onMessagesReceived, consumerId,
-                Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
+                                                    Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             _queueConsumers.Add(queueConsumer);
             return queueConsumer;
         }
 
-        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId,
-            OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartSubscriptionClient(string topic,
+                                                         string subscriptionName,
+                                                         string consumerId,
+                                                         OnMessagesReceived onMessagesReceived,
+                                                         int fullLoadThreshold = 1000,
+                                                         int waitInterval = 1000)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, consumerId,
-                Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
+                                                              Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
             _subscriptionClients.Add(subscriptionClient);
             return subscriptionClient;
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null,
-            string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null,
-            string producer = null)
+        public IMessageContext WrapMessage(object message,
+                                           string correlationId = null,
+                                           string topic = null,
+                                           string key = null,
+                                           string replyEndPoint = null,
+                                           string messageId = null,
+                                           SagaInfo sagaInfo = null,
+                                           string producer = null)
         {
             var messageContext = new MessageContext(message, messageId);
             messageContext.Producer = producer;
             messageContext.IP = Utility.GetLocalIPV4()?.ToString();
             if (!string.IsNullOrEmpty(correlationId))
+            {
                 messageContext.CorrelationID = correlationId;
+            }
             if (!string.IsNullOrEmpty(topic))
+            {
                 messageContext.Topic = topic;
+            }
             if (!string.IsNullOrEmpty(key))
+            {
                 messageContext.Key = key;
+            }
             if (!string.IsNullOrEmpty(replyEndPoint))
+            {
                 messageContext.ReplyToEndPoint = replyEndPoint;
+            }
             if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            {
                 messageContext.SagaInfo = sagaInfo;
+            }
             return messageContext;
         }
 
@@ -182,7 +204,9 @@ namespace IFramework.MessageQueue.MSKafka
         }
 
         internal static ZooKeeperConfiguration GetZooKeeperConfiguration(string connectString,
-            int sessionTimeout = 30000, int connectionTimeout = 4000, int syncTimeout = 8000)
+                                                                         int sessionTimeout = 30000,
+                                                                         int connectionTimeout = 4000,
+                                                                         int syncTimeout = 8000)
         {
             return new ZooKeeperConfiguration(connectString, sessionTimeout, connectionTimeout, syncTimeout);
         }
@@ -195,13 +219,13 @@ namespace IFramework.MessageQueue.MSKafka
                 TotalNumPartitions = 3,
                 ZooKeeper = GetZooKeeperConfiguration(_zkConnectionString)
             };
-            using (var producer = new Producer(producerConfiguration))
+            while (true)
             {
-                while (true)
+                using (var producer = new Producer(producerConfiguration))
+                {
                     try
                     {
-                        var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty,
-                            new Kafka.Client.Messages.Message(new byte[0]));
+                        var data = new ProducerData<string, Kafka.Client.Messages.Message>(topic, string.Empty, new Kafka.Client.Messages.Message(new byte[0]));
                         producer.Send(data);
                         break;
                     }
@@ -210,23 +234,29 @@ namespace IFramework.MessageQueue.MSKafka
                         _logger.Error($"Create topic {topic} failed", ex);
                         Task.Delay(2000).Wait();
                     }
+                }
             }
         }
 
         private void CreateTopicIfNotExists(string topic)
         {
             if (!TopicExsits(topic))
+            {
                 CreateTopic(topic);
+            }
         }
 
-        private KafkaConsumer CreateQueueConsumer(string queue, OnMessagesReceived onMessagesReceived,
-            string consumerId = null, int backOffIncrement = 30,
-            int fullLoadThreshold = 1000, int waitInterval = 1000)
+        private KafkaConsumer CreateQueueConsumer(string queue,
+                                                  OnMessagesReceived onMessagesReceived,
+                                                  string consumerId = null,
+                                                  int backOffIncrement = 30,
+                                                  int fullLoadThreshold = 1000,
+                                                  int waitInterval = 1000)
         {
             CreateTopicIfNotExists(queue);
             var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{queue}.consumer", consumerId,
-                BuildOnKafkaMessageReceived(onMessagesReceived),
-                backOffIncrement, fullLoadThreshold, waitInterval);
+                                                  BuildOnKafkaMessageReceived(onMessagesReceived),
+                                                  backOffIncrement, fullLoadThreshold, waitInterval);
             return queueConsumer;
         }
 
@@ -243,14 +273,17 @@ namespace IFramework.MessageQueue.MSKafka
             return new KafkaProducer(topic, _zkConnectionString);
         }
 
-        private KafkaConsumer CreateSubscriptionClient(string topic, string subscriptionName,
-            OnMessagesReceived onMessagesReceived,
-            string consumerId = null, int backOffIncrement = 30,
-            int fullLoadThreshold = 1000, int waitInterval = 1000)
+        private KafkaConsumer CreateSubscriptionClient(string topic,
+                                                       string subscriptionName,
+                                                       OnMessagesReceived onMessagesReceived,
+                                                       string consumerId = null,
+                                                       int backOffIncrement = 30,
+                                                       int fullLoadThreshold = 1000,
+                                                       int waitInterval = 1000)
         {
             CreateTopicIfNotExists(topic);
             return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId,
-                BuildOnKafkaMessageReceived(onMessagesReceived), backOffIncrement, fullLoadThreshold, waitInterval);
+                                     BuildOnKafkaMessageReceived(onMessagesReceived), backOffIncrement, fullLoadThreshold, waitInterval);
         }
 
         private OnKafkaMessageReceived BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)
