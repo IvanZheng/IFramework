@@ -103,6 +103,10 @@ namespace IFramework.EntityFramework
                             e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
                 throw new Exception(errorMessage, ex);
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.GetBaseException().Message, ex);
+            }
         }
 
         public override Task<int> SaveChangesAsync()
@@ -132,6 +136,10 @@ namespace IFramework.EntityFramework
                         .Select(
                             e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
                 throw new Exception(errorMessage, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.GetBaseException().Message, ex);
             }
         }
     }
