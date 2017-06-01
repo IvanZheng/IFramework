@@ -7,7 +7,5 @@ namespace IFramework.Command
     /// </summary>
     /// <typeparam name="TCommand"></typeparam>
     public interface ICommandAsyncHandler<in TCommand> :
-        IMessageAsyncHandler<TCommand> where TCommand : class, ICommand
-    {
-    }
+        IMessageAsyncHandler<TCommand> where TCommand : class, ICommand { }
 }

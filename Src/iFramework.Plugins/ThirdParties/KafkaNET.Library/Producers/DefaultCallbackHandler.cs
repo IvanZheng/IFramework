@@ -33,15 +33,15 @@ namespace Kafka.Client.Producers
         private int correlationId;
 
         public DefaultCallbackHandler(ProducerConfiguration config,
-            IPartitioner<TK> partitioner,
-            IEncoder<TV> encoder,
-            IBrokerPartitionInfo brokerPartitionInfo,
-            ISyncProducerPool syncProducerPool)
+                                      IPartitioner<TK> partitioner,
+                                      IEncoder<TV> encoder,
+                                      IBrokerPartitionInfo brokerPartitionInfo,
+                                      ISyncProducerPool syncProducerPool)
         {
             producerConfig = config;
             this.partitioner = partitioner;
             Logger.DebugFormat("partitioner  {0}",
-                this.partitioner == null ? "Null" : this.partitioner.GetType().ToString());
+                               this.partitioner == null ? "Null" : this.partitioner.GetType().ToString());
             this.encoder = encoder;
             this.syncProducerPool = syncProducerPool;
             this.brokerPartitionInfo = brokerPartitionInfo;
@@ -59,15 +59,18 @@ namespace Kafka.Client.Producers
 
             var brokers = producerConfig.Brokers;
             if (producerConfig.Verbose)
+            {
                 Logger.DebugFormat("Handle,producerConfig.Brokers.Count={0},broker[0]={1}", brokers.Count,
-                    brokers.Any() ? brokers[0].ToString() : "NO broker");
+                                   brokers.Any() ? brokers[0].ToString() : "NO broker");
+            }
 
             while (remainingRetries > 0 && outstandingProduceRequests.HasDataNeedDispatch)
+            {
                 try
                 {
                     var currentOutstandingRequests =
                         DispatchSerializedData(outstandingProduceRequests.FailedProducerDatas,
-                            remainingRetries > 1 ? false : true);
+                                               remainingRetries > 1 ? false : true);
                     outstandingProduceRequests = currentOutstandingRequests;
                     if (outstandingProduceRequests.HasDataNeedDispatch)
                     {
@@ -84,32 +87,37 @@ namespace Kafka.Client.Producers
                 {
                     remainingRetries--;
                     if (remainingRetries > 0)
+                    {
                         continue;
+                    }
                     var allCount = events.Count();
                     var remainFailedCount = outstandingProduceRequests.FailedProducerDatas.ToList().Count;
                     var message = FailedToSendMessageException<TK>.BuildExceptionMessage(new List<Exception> {e},
-                        producerConfig.ProducerRetries, allCount, remainFailedCount, outstandingProduceRequests);
+                                                                                         producerConfig.ProducerRetries, allCount, remainFailedCount, outstandingProduceRequests);
                     Logger.Error(message);
                     throw new FailedToSendMessageException<TK>(message, new List<Exception> {e},
-                        outstandingProduceRequests, allCount, remainFailedCount);
+                                                               outstandingProduceRequests, allCount, remainFailedCount);
                 }
+            }
 
             if (outstandingProduceRequests.HasDataNeedDispatch)
             {
                 var allCount = events.Count();
                 var remainFailedCount = outstandingProduceRequests.FailedProducerDatas.ToList().Count;
                 var message = FailedToSendMessageException<TK>.BuildExceptionMessage(new List<Exception>(),
-                    producerConfig.ProducerRetries, allCount, remainFailedCount, outstandingProduceRequests);
+                                                                                     producerConfig.ProducerRetries, allCount, remainFailedCount, outstandingProduceRequests);
                 Logger.Error(message);
                 throw new FailedToSendMessageException<TK>(message, new List<Exception>(), outstandingProduceRequests,
-                    allCount, remainFailedCount);
+                                                           allCount, remainFailedCount);
             }
         }
 
         public void Dispose()
         {
             if (syncProducerPool != null)
+            {
                 syncProducerPool.Dispose();
+            }
         }
 
         private int ExponentialRetry(int currentRetryMs)
@@ -121,12 +129,13 @@ namespace Kafka.Client.Producers
         private IEnumerable<ProducerData<TK, Message>> Serialize(IEnumerable<ProducerData<TK, TV>> events)
         {
             return events.Select(
-                e => new ProducerData<TK, Message>(e.Topic, e.Key, e.IsKeyNull,
-                    e.Data.Select(m => encoder.ToMessage(m))));
+                                 e => new ProducerData<TK, Message>(e.Topic, e.Key, e.IsKeyNull,
+                                                                    e.Data.Select(m => encoder.ToMessage(m))));
         }
 
         private ProduceDispatchSeralizeResult<TK> DispatchSerializedData(
-            IEnumerable<ProducerData<TK, Message>> messages, bool lastRetry)
+            IEnumerable<ProducerData<TK, Message>> messages,
+            bool lastRetry)
         {
             List<ProducerData<TK, Message>> failedProduceRequests = null;
             List<Tuple<int, TopicAndPartition, ProducerResponseStatus>> failedDetail = null;
@@ -141,8 +150,10 @@ namespace Kafka.Client.Producers
                     var eventsPerBrokerMap = keyValuePair.Value;
                     var messageSetPerBroker = GroupMessagesToSet(eventsPerBrokerMap);
                     if (producerConfig.Verbose)
+                    {
                         Logger.DebugFormat("ProducerDispatchSeralizeResult,brokerId={0},partitionData.Count={1}",
-                            brokerId, partitionedData.Count());
+                                           brokerId, partitionedData.Count());
+                    }
 
                     var failedTopicResponse = Send(brokerId, messageSetPerBroker);
                     if (!failedTopicResponse.Success || failedTopicResponse.ReturnVal != null &&
@@ -158,19 +169,25 @@ namespace Kafka.Client.Producers
 
                         foreach (var topic in failedTopicResponse.ReturnVal.Select(e => e.Item1.Topic).Distinct())
                             // update the metadata in case that the failure caused by kafka broker failover
+                        {
                             brokerPartitionInfo.UpdateInfo(producerConfig.VersionId, NextCorrelationId,
-                                producerConfig.ClientId, topic);
+                                                           producerConfig.ClientId, topic);
+                        }
 
                         if (lastRetry)
                         {
                             failedDetail = new List<Tuple<int, TopicAndPartition, ProducerResponseStatus>>();
                             foreach (var failedTopic in failedTopicResponse.ReturnVal)
+                            {
                                 failedDetail.Add(new Tuple<int, TopicAndPartition, ProducerResponseStatus>(brokerId,
-                                    failedTopic.Item1, failedTopic.Item2));
+                                                                                                           failedTopic.Item1, failedTopic.Item2));
+                            }
                         }
                     }
                     if (failedTopicResponse.Exception != null)
+                    {
                         exceptions.Add(failedTopicResponse.Exception);
+                    }
                 }
             }
             catch (Exception)
@@ -180,7 +197,7 @@ namespace Kafka.Client.Producers
             }
 
             return new ProduceDispatchSeralizeResult<TK>(exceptions, failedProduceRequests, failedDetail,
-                hasDataNeedReprocess);
+                                                         hasDataNeedReprocess);
         }
 
         /// <summary>
@@ -190,22 +207,24 @@ namespace Kafka.Client.Producers
         /// <param name="messagesPerTopic"></param>
         /// <returns></returns>
         private ProducerSendResult<IEnumerable<Tuple<TopicAndPartition, ProducerResponseStatus>>> Send(int brokerId,
-            IDictionary<TopicAndPartition, BufferedMessageSet> messagesPerTopic)
+                                                                                                       IDictionary<TopicAndPartition, BufferedMessageSet> messagesPerTopic)
         {
             try
             {
                 if (brokerId < 0)
+                {
                     throw new NoLeaderForPartitionException(
-                        string.Format(
-                            "No leader for some partition(s).  And it try write to on invalid broker {0}.  The assigned TopicAndPartition for the data is :{1} ",
-                            brokerId, messagesPerTopic.Any() ? messagesPerTopic.First().Key.ToString() : "(null)"));
+                                                            string.Format(
+                                                                          "No leader for some partition(s).  And it try write to on invalid broker {0}.  The assigned TopicAndPartition for the data is :{1} ",
+                                                                          brokerId, messagesPerTopic.Any() ? messagesPerTopic.First().Key.ToString() : "(null)"));
+                }
                 if (messagesPerTopic.Any())
                 {
                     var producerRequest = new ProducerRequest(NextCorrelationId,
-                        producerConfig.ClientId,
-                        producerConfig.RequiredAcks,
-                        producerConfig.AckTimeout,
-                        messagesPerTopic);
+                                                              producerConfig.ClientId,
+                                                              producerConfig.RequiredAcks,
+                                                              producerConfig.AckTimeout,
+                                                              messagesPerTopic);
                     ISyncProducer syncProducer = null;
                     try
                     {
@@ -218,7 +237,7 @@ namespace Kafka.Client.Producers
                         // A new producer should be added to the pool, creating a TCP connection to the broker.
                         var broker =
                             brokerPartitionInfo.GetBrokerPartitionLeaders(messagesPerTopic.Keys.First().Topic)
-                                .Values.FirstOrDefault(b => b.Id == brokerId);
+                                               .Values.FirstOrDefault(b => b.Id == brokerId);
                         if (broker != null)
                         {
                             syncProducerPool.AddProducer(broker);
@@ -227,13 +246,15 @@ namespace Kafka.Client.Producers
                     }
 
                     if (producerConfig.Verbose)
+                    {
                         Logger.DebugFormat("Kafka producer before sent messages for topics {0} to broker {1}",
-                            messagesPerTopic, brokerId);
+                                           messagesPerTopic, brokerId);
+                    }
                     var response = syncProducer.Send(producerRequest);
                     if (producerConfig.Verbose)
                     {
                         var msg = string.Format("Kafka producer sent messages for topics {0} to broker {1} on {2}:{3}",
-                            messagesPerTopic, brokerId, syncProducer.Config.Host, syncProducer.Config.Port);
+                                                messagesPerTopic, brokerId, syncProducer.Config.Host, syncProducer.Config.Port);
                         Logger.Debug(msg);
                     }
 
@@ -249,22 +270,22 @@ namespace Kafka.Client.Producers
                         {
                             var sb = new StringBuilder();
                             sb.AppendFormat("Incomplete response count {0} for producer request count {1}. ",
-                                statusCount, requestCount);
+                                            statusCount, requestCount);
                             sb.AppendFormat(" Broker {0} on {1}:{2}", brokerId, syncProducer.Config.Host,
-                                syncProducer.Config.Port);
+                                            syncProducer.Config.Port);
                             sb.Append(" Message detail:");
                             sb.Append(string.Join(",",
-                                messagesPerTopic.Select(
-                                    r => string.Format("{0},{1}", r.Key.Topic, r.Key.PartitionId))));
+                                                  messagesPerTopic.Select(
+                                                                          r => string.Format("{0},{1}", r.Key.Topic, r.Key.PartitionId))));
                             sb.Append(" Response status detail which has error:");
                             sb.Append(string.Join(",",
-                                response.Statuses.Where(r => r.Value.Error != (short) ErrorMapping.NoError)
-                                    .Select(r => r.ToString())));
+                                                  response.Statuses.Where(r => r.Value.Error != (short) ErrorMapping.NoError)
+                                                          .Select(r => r.ToString())));
                             throw new FailedToSendMessageException<TK>(sb.ToString());
                         }
                         return new ProducerSendResult<IEnumerable<Tuple<TopicAndPartition, ProducerResponseStatus>>>(
-                            response.Statuses.Where(s => s.Value.Error != (short) ErrorMapping.NoError)
-                                .Select(s => new Tuple<TopicAndPartition, ProducerResponseStatus>(s.Key, s.Value)));
+                                                                                                                     response.Statuses.Where(s => s.Value.Error != (short) ErrorMapping.NoError)
+                                                                                                                             .Select(s => new Tuple<TopicAndPartition, ProducerResponseStatus>(s.Key, s.Value)));
                     }
                 }
             }
@@ -272,21 +293,21 @@ namespace Kafka.Client.Producers
             {
                 Logger.Error(ExceptionUtil.GetExceptionDetailInfo(e));
                 return new ProducerSendResult<IEnumerable<Tuple<TopicAndPartition, ProducerResponseStatus>>>(
-                    messagesPerTopic.Keys.Select(
-                        s => new Tuple<TopicAndPartition, ProducerResponseStatus>(s,
-                            new ProducerResponseStatus {Error = ErrorMapping.NotLeaderForPartitionCode})), e);
+                                                                                                             messagesPerTopic.Keys.Select(
+                                                                                                                                          s => new Tuple<TopicAndPartition, ProducerResponseStatus>(s,
+                                                                                                                                                                                                    new ProducerResponseStatus {Error = ErrorMapping.NotLeaderForPartitionCode})), e);
             }
             catch (Exception e)
             {
                 Logger.Error(ExceptionUtil.GetExceptionDetailInfo(e));
                 return new ProducerSendResult<IEnumerable<Tuple<TopicAndPartition, ProducerResponseStatus>>>(
-                    messagesPerTopic.Keys.Select(
-                        s => new Tuple<TopicAndPartition, ProducerResponseStatus>(s,
-                            new ProducerResponseStatus {Error = ErrorMapping.UnknownCode})), e);
+                                                                                                             messagesPerTopic.Keys.Select(
+                                                                                                                                          s => new Tuple<TopicAndPartition, ProducerResponseStatus>(s,
+                                                                                                                                                                                                    new ProducerResponseStatus {Error = ErrorMapping.UnknownCode})), e);
             }
 
             return new ProducerSendResult<IEnumerable<Tuple<TopicAndPartition, ProducerResponseStatus>>>(Enumerable
-                .Empty<Tuple<TopicAndPartition, ProducerResponseStatus>>());
+                                                                                                             .Empty<Tuple<TopicAndPartition, ProducerResponseStatus>>());
         }
 
         /// <summary>
@@ -304,11 +325,13 @@ namespace Kafka.Client.Producers
                 var leaderBrokerId = producerConfig.Brokers[0].BrokerId;
                 var dataPerBroker = new Dictionary<TopicAndPartition, List<ProducerData<TK, Message>>>();
                 dataPerBroker.Add(new TopicAndPartition(events.First().Topic, producerConfig.ForceToPartition),
-                    events.ToList());
+                                  events.ToList());
                 if (producerConfig.Verbose)
+                {
                     Logger.DebugFormat(
-                        "PartitionAndCollate ForceToPartition ,totalNumPartitions={0},ForceToPartition={1},leaderBrokerId={2}",
-                        0, producerConfig.ForceToPartition, leaderBrokerId);
+                                       "PartitionAndCollate ForceToPartition ,totalNumPartitions={0},ForceToPartition={1},leaderBrokerId={2}",
+                                       0, producerConfig.ForceToPartition, leaderBrokerId);
+                }
                 ret.Add(leaderBrokerId, dataPerBroker);
             }
             else
@@ -321,25 +344,29 @@ namespace Kafka.Client.Producers
                     // when the total number of partitions is specified in the ProducerConf, do not check for the number of active partitions again,
                     // this ensures the partition selected per the pre-determined number of partitions, instead of actually number of partitions checked at run-time
                     var totalNumPartitions = producerConfig.TotalNumPartitions == 0
-                        ? topicPartitionsList.Count
-                        : producerConfig.TotalNumPartitions;
+                                                 ? topicPartitionsList.Count
+                                                 : producerConfig.TotalNumPartitions;
                     var partitionIndex = GetPartition(eventItem.Key, eventItem.IsKeyNull, totalNumPartitions);
 
                     // when the total number of partition is specified, this.GetPartitionListForTopic() returns only one partition corresponding to the partitionIndex
                     var brokerPartition = producerConfig.TotalNumPartitions == 0
-                        ? topicPartitionsList.ElementAt(partitionIndex)
-                        : topicPartitionsList[0];
+                                              ? topicPartitionsList.ElementAt(partitionIndex)
+                                              : topicPartitionsList[0];
                     var leaderBrokerId = brokerPartition.Leader != null
-                        ? brokerPartition.Leader.BrokerId
-                        : -1; // postpone the failure until the send operation, so that requests for other brokers are handled correctly
+                                             ? brokerPartition.Leader.BrokerId
+                                             : -1; // postpone the failure until the send operation, so that requests for other brokers are handled correctly
                     if (producerConfig.Verbose)
+                    {
                         Logger.DebugFormat(
-                            "PartitionAndCollate,totalNumPartitions={0},eventItem.Key={1},partitionIndex={2},brokerPartition={3},leaderBrokerId={4}",
-                            totalNumPartitions, eventItem.Key, partitionIndex, brokerPartition, leaderBrokerId);
+                                           "PartitionAndCollate,totalNumPartitions={0},eventItem.Key={1},partitionIndex={2},brokerPartition={3},leaderBrokerId={4}",
+                                           totalNumPartitions, eventItem.Key, partitionIndex, brokerPartition, leaderBrokerId);
+                    }
 
                     if (leaderBrokerId == -1)
+                    {
                         Logger.WarnFormat("No leader for partition {0} brokerPartition:{1} ", partitionIndex,
-                            brokerPartition.ToString());
+                                          brokerPartition.ToString());
+                    }
 
                     Dictionary<TopicAndPartition, List<ProducerData<TK, Message>>> dataPerBroker = null;
                     if (ret.ContainsKey(leaderBrokerId))
@@ -393,7 +420,7 @@ namespace Kafka.Client.Producers
             else if (producerConfig.TotalNumPartitions == 0)
             {
                 topicPartitionsList = brokerPartitionInfo.GetBrokerPartitionInfo(producerConfig.VersionId,
-                    producerConfig.ClientId, NextCorrelationId, pd.Topic);
+                                                                                 producerConfig.ClientId, NextCorrelationId, pd.Topic);
             }
             else
             {
@@ -409,29 +436,37 @@ namespace Kafka.Client.Producers
                 };
             }
             if (producerConfig.Verbose)
+            {
                 Logger.DebugFormat("GetPartitionListForTopic,Broker partitions registered for topic: {0} are {1}",
-                    pd.Topic,
-                    string.Join(",", topicPartitionsList.Select(p => p.PartId.ToString(CultureInfo.InvariantCulture))));
+                                   pd.Topic,
+                                   string.Join(",", topicPartitionsList.Select(p => p.PartId.ToString(CultureInfo.InvariantCulture))));
+            }
 
             if (!topicPartitionsList.Any())
+            {
                 throw new NoBrokersForPartitionException("Partition = " + pd.Key);
+            }
             return topicPartitionsList;
         }
 
         private int GetPartition(TK key, bool isKeyNull, int numPartitions)
         {
             if (numPartitions <= 0)
+            {
                 throw new InvalidPartitionException(
-                    string.Format("Invalid number of partitions: {0}. Valid values are > 0", numPartitions));
+                                                    string.Format("Invalid number of partitions: {0}. Valid values are > 0", numPartitions));
+            }
 
             //TODO: In java version, if key is null, will cache one partition for the topic.
             var partition = key == null || isKeyNull
-                ? random.Next(numPartitions)
-                : partitioner.Partition(key, numPartitions);
+                                ? random.Next(numPartitions)
+                                : partitioner.Partition(key, numPartitions);
             if (partition < 0 || partition >= numPartitions)
+            {
                 throw new InvalidPartitionException(
-                    string.Format("Invalid partition id : {0}. Valid values are in the range inclusive [0, {1}]",
-                        partition, numPartitions - 1));
+                                                    string.Format("Invalid partition id : {0}. Valid values are in the range inclusive [0, {1}]",
+                                                                  partition, numPartitions - 1));
+            }
             return partition;
         }
 
@@ -449,8 +484,8 @@ namespace Kafka.Client.Producers
                 {
                     case CompressionCodecs.NoCompressionCodec:
                         messagesPerTopicPartition.Add(topicAndPartition,
-                            new BufferedMessageSet(CompressionCodecs.NoCompressionCodec, messages,
-                                topicAndPartition.PartitionId));
+                                                      new BufferedMessageSet(CompressionCodecs.NoCompressionCodec, messages,
+                                                                             topicAndPartition.PartitionId));
                         break;
                     default:
                         byte magic = 0;
@@ -463,15 +498,21 @@ namespace Kafka.Client.Producers
                         }
                         if (!producerConfig.CompressedTopics.Any() ||
                             producerConfig.CompressedTopics.Contains(topicAndPartition.Topic))
+                        {
                             messagesPerTopicPartition.Add(topicAndPartition,
-                                new BufferedMessageSet(producerConfig.CompressionCodec, messages,
-                                    topicAndPartition.PartitionId));
+                                                          new BufferedMessageSet(producerConfig.CompressionCodec, messages,
+                                                                                 topicAndPartition.PartitionId));
+                        }
                         else
+                        {
                             messagesPerTopicPartition.Add(topicAndPartition,
-                                new BufferedMessageSet(CompressionCodecs.NoCompressionCodec, messages,
-                                    topicAndPartition.PartitionId));
+                                                          new BufferedMessageSet(CompressionCodecs.NoCompressionCodec, messages,
+                                                                                 topicAndPartition.PartitionId));
+                        }
                         foreach (var m in messages)
+                        {
                             m.RestoreMagicAndAttributesAfterCompress(magic, attributes);
+                        }
                         break;
                 }
             }
@@ -483,12 +524,13 @@ namespace Kafka.Client.Producers
     public class FailedToSendMessageException<K> : Exception
     {
         public FailedToSendMessageException(string s)
-            : base(s)
-        {
-        }
+            : base(s) { }
 
-        public FailedToSendMessageException(string s, List<Exception> exceptions,
-            ProduceDispatchSeralizeResult<K> outstandingProduceRequests, int all, int failed)
+        public FailedToSendMessageException(string s,
+                                            List<Exception> exceptions,
+                                            ProduceDispatchSeralizeResult<K> outstandingProduceRequests,
+                                            int all,
+                                            int failed)
             : base(s)
         {
             ProduceDispatchSeralizeResult = outstandingProduceRequests;
@@ -518,13 +560,16 @@ namespace Kafka.Client.Producers
             return message + " All internal Exceptions(" + count + ") : " + builder;
         }
 
-        internal static string BuildExceptionMessage(List<Exception> exceptions, int retry, int allCount,
-            int remainFailedCount, ProduceDispatchSeralizeResult<K> outstandingProduceRequests)
+        internal static string BuildExceptionMessage(List<Exception> exceptions,
+                                                     int retry,
+                                                     int allCount,
+                                                     int remainFailedCount,
+                                                     ProduceDispatchSeralizeResult<K> outstandingProduceRequests)
         {
             var sb = new StringBuilder();
             sb.AppendFormat(
-                "Failed to send messages after {0} tries. FailedProducerDatas not empty. Success Count:{1} Failed Count: {2}.",
-                retry, allCount - remainFailedCount, remainFailedCount);
+                            "Failed to send messages after {0} tries. FailedProducerDatas not empty. Success Count:{1} Failed Count: {2}.",
+                            retry, allCount - remainFailedCount, remainFailedCount);
 
             if (exceptions != null && exceptions.Any())
             {
@@ -543,17 +588,17 @@ namespace Kafka.Client.Producers
             {
                 sb.Append("\r\n================Failed sent message key: ");
                 sb.Append(string.Join(",", outstandingProduceRequests.FailedProducerDatas.Select(r => string.Format(
-                    "Topic: {0} Key: {1}"
-                    , r.Topic
-                    , r.Key))));
+                                                                                                                    "Topic: {0} Key: {1}"
+                                                                                                                    , r.Topic
+                                                                                                                    , r.Key))));
             }
 
             if (outstandingProduceRequests.FailedDetail != null)
             {
                 sb.Append("\r\n================Failed Detail: ");
                 sb.Append(string.Join(",",
-                    outstandingProduceRequests.FailedDetail.Select(r => string.Format("Broker:{0},{1},{2} \t", r.Item1,
-                        r.Item2, r.Item3))));
+                                      outstandingProduceRequests.FailedDetail.Select(r => string.Format("Broker:{0},{1},{2} \t", r.Item1,
+                                                                                                        r.Item2, r.Item3))));
             }
 
             if (outstandingProduceRequests.Exceptions != null && outstandingProduceRequests.Exceptions.Any())
@@ -567,7 +612,7 @@ namespace Kafka.Client.Producers
                     count++;
                 }
                 sb.AppendFormat("\r\n================ProduceDispatchSeralizeResult Internal exceptions: {0}   {1} ",
-                    count, builder);
+                                count, builder);
             }
 
             return sb.ToString();

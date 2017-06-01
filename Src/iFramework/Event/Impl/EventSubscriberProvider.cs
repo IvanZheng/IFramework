@@ -9,21 +9,19 @@ namespace IFramework.Event.Impl
         private Type[] _HandlerGenericTypes;
 
         public EventSubscriberProvider(params string[] assemblies)
-            : base(assemblies)
-        {
-        }
+            : base(assemblies) { }
 
         protected override Type[] HandlerGenericTypes
         {
             get
             {
                 return _HandlerGenericTypes ?? (_HandlerGenericTypes = new[]
-                           {
-                               typeof(IEventSubscriber<IEvent>),
-                               typeof(IEventAsyncSubscriber<IEvent>)
-                           }
-                           .Select(ht => ht.GetGenericTypeDefinition())
-                           .ToArray());
+                                                    {
+                                                        typeof(IEventSubscriber<IEvent>),
+                                                        typeof(IEventAsyncSubscriber<IEvent>)
+                                                    }
+                                                    .Select(ht => ht.GetGenericTypeDefinition())
+                                                    .ToArray());
             }
         }
     }

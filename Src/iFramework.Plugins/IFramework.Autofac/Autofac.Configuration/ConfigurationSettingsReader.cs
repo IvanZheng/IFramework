@@ -7,18 +7,20 @@ namespace Autofac.Configuration
 {
     public class ConfigurationSettingsReader : ConfigurationModule
     {
-        public ConfigurationSettingsReader() : this("autofac")
-        {
-        }
+        public ConfigurationSettingsReader() : this("autofac") { }
 
         public ConfigurationSettingsReader(string sectionName)
         {
             if (sectionName == null)
+            {
                 throw new ArgumentNullException("sectionName");
+            }
             SectionHandler = (SectionHandler) ConfigurationManager.GetSection(sectionName);
             if (SectionHandler == null)
+            {
                 throw new ConfigurationErrorsException(string.Format(CultureInfo.CurrentCulture,
-                    ConfigurationSettingsReaderResources.SectionNotFound, sectionName));
+                                                                     ConfigurationSettingsReaderResources.SectionNotFound, sectionName));
+            }
         }
 
         public ConfigurationSettingsReader(string sectionName, string configurationFile)

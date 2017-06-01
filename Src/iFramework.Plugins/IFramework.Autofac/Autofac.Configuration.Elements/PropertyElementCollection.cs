@@ -7,9 +7,7 @@ namespace Autofac.Configuration.Elements
 {
     public class PropertyElementCollection : NamedConfigurationElementCollection<PropertyElement>
     {
-        public PropertyElementCollection() : base("property", "name")
-        {
-        }
+        public PropertyElementCollection() : base("property", "name") { }
 
         public IEnumerable<Parameter> ToParameters()
         {
@@ -25,7 +23,7 @@ namespace Autofac.Configuration.Elements
                     PropertyInfo memberInfo = null;
                     pi.TryGetDeclaringProperty(out memberInfo);
                     return TypeManipulation.ChangeToCompatibleType(localParameter.CoerceValue(), pi.ParameterType,
-                        memberInfo);
+                                                                   memberInfo);
                 });
             }
         }

@@ -1,8 +1,6 @@
 ﻿namespace IFramework.IoC
 {
-    public interface Injection
-    {
-    }
+    public interface Injection { }
 
     public class ConstructInjection : Injection
     {

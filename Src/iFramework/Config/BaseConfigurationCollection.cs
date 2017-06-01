@@ -27,7 +27,9 @@ namespace IFramework.Config
             set
             {
                 if (BaseGet(idx) != null)
+                {
                     BaseRemoveAt(idx);
+                }
                 BaseAdd(idx, value);
             }
         }
@@ -37,7 +39,7 @@ namespace IFramework.Config
             ConfigurationElementCollectionType.BasicMap;
 
         protected override string ElementName => this.GetCustomAttribute<ConfigurationCollectionAttribute>()
-            .AddItemName;
+                                                     .AddItemName;
 
         protected override ConfigurationElement CreateNewElement()
         {

@@ -14,11 +14,17 @@ namespace Kafka.Client.Messages.Compression
             var d = dstBuf.Offset;
             var sL = srcBuf.Length;
             var dL = dstBuf.Length;
-            if (dL < 5) return -1;
+            if (dL < 5)
+            {
+                return -1;
+            }
             EmitLength(dst, ref d, ref dL, sL);
             if (sL <= 4)
             {
-                if (!EmitLiteral(dst, ref d, ref dL, src, s, sL)) return -1;
+                if (!EmitLiteral(dst, ref d, ref dL, src, s, sL))
+                {
+                    return -1;
+                }
                 return d - dstBuf.Offset;
             }
 
@@ -32,7 +38,9 @@ namespace Kafka.Client.Messages.Compression
 
             var table = new int[tableSize];
             for (var i = 0; i < tableSize; i++)
+            {
                 table[i] = -1;
+            }
 
             var lit = s;
             while (sL > 3)
@@ -55,7 +63,12 @@ namespace Kafka.Client.Messages.Compression
                 }
 
                 if (lit != s)
-                    if (!EmitLiteral(dst, ref d, ref dL, src, lit, s - lit)) return -1;
+                {
+                    if (!EmitLiteral(dst, ref d, ref dL, src, lit, s - lit))
+                    {
+                        return -1;
+                    }
+                }
 
                 var s0 = s;
                 s += 4;
@@ -68,13 +81,21 @@ namespace Kafka.Client.Messages.Compression
                     t++;
                 }
 
-                if (!EmitCopy(dst, ref d, ref dL, s - t, s - s0)) return -1;
+                if (!EmitCopy(dst, ref d, ref dL, s - t, s - s0))
+                {
+                    return -1;
+                }
                 lit = s;
             }
 
             s += sL;
             if (lit != s)
-                if (!EmitLiteral(dst, ref d, ref dL, src, lit, s - lit)) return -1;
+            {
+                if (!EmitLiteral(dst, ref d, ref dL, src, lit, s - lit))
+                {
+                    return -1;
+                }
+            }
 
             return d - dstBuf.Offset;
         }
@@ -83,7 +104,10 @@ namespace Kafka.Client.Messages.Compression
         {
             var compressed = ByteBuffer.NewAsync(new byte[data.Length * (long) maxSizeInPercent / 100]);
             var compressedLength = Compress(compressed, data);
-            if (compressedLength < 0) return false;
+            if (compressedLength < 0)
+            {
+                return false;
+            }
             data = ByteBuffer.NewAsync(compressed.Buffer, 0, compressedLength);
             return true;
         }
@@ -100,14 +124,20 @@ namespace Kafka.Client.Messages.Compression
         {
             if (sL < 61)
             {
-                if (sL + 1 > dL) return false;
+                if (sL + 1 > dL)
+                {
+                    return false;
+                }
                 dst[d] = (byte) ((sL - 1) << 2);
                 d++;
                 dL--;
             }
             else if (sL <= 0x100)
             {
-                if (sL + 2 > dL) return false;
+                if (sL + 2 > dL)
+                {
+                    return false;
+                }
                 dst[d] = 60 << 2;
                 dst[d + 1] = (byte) (sL - 1);
                 d += 2;
@@ -115,7 +145,10 @@ namespace Kafka.Client.Messages.Compression
             }
             else if (sL <= 0x10000)
             {
-                if (sL + 3 > dL) return false;
+                if (sL + 3 > dL)
+                {
+                    return false;
+                }
                 dst[d] = 61 << 2;
                 dst[d + 1] = (byte) (sL - 1);
                 dst[d + 2] = (byte) ((sL - 1) >> 8);
@@ -124,7 +157,10 @@ namespace Kafka.Client.Messages.Compression
             }
             else if (sL <= 0x1000000)
             {
-                if (sL + 4 > dL) return false;
+                if (sL + 4 > dL)
+                {
+                    return false;
+                }
                 dst[d] = 62 << 2;
                 dst[d + 1] = (byte) (sL - 1);
                 dst[d + 2] = (byte) ((sL - 1) >> 8);
@@ -134,7 +170,10 @@ namespace Kafka.Client.Messages.Compression
             }
             else
             {
-                if (sL + 5 > dL) return false;
+                if (sL + 5 > dL)
+                {
+                    return false;
+                }
                 dst[d] = 63 << 2;
                 dst[d + 1] = (byte) (sL - 1);
                 dst[d + 2] = (byte) ((sL - 1) >> 8);
@@ -157,7 +196,10 @@ namespace Kafka.Client.Messages.Compression
                 var x = length - 4;
                 if (0 <= x && x < 8 && offset < 1 << 11)
                 {
-                    if (dL < 2) return false;
+                    if (dL < 2)
+                    {
+                        return false;
+                    }
                     dst[d] = (byte) (((offset >> 3) & 0xe0) | (x << 2) | 1);
                     dst[d + 1] = (byte) offset;
                     d += 2;
@@ -167,8 +209,13 @@ namespace Kafka.Client.Messages.Compression
 
                 x = length;
                 if (x > 1 << 6)
+                {
                     x = 1 << 6;
-                if (dL < 3) return false;
+                }
+                if (dL < 3)
+                {
+                    return false;
+                }
                 dst[d] = (byte) (((x - 1) << 2) | 2);
                 dst[d + 1] = (byte) offset;
                 dst[d + 2] = (byte) (offset >> 8);

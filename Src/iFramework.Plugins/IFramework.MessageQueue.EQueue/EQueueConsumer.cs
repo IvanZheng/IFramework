@@ -20,18 +20,22 @@ namespace IFramework.MessageQueue.EQueue
 
     public class EQueueConsumer : ICommitOffsetable
     {
+        private readonly OnEQueueMessageReceived _onMessageReceived;
         protected CancellationTokenSource _cancellationTokenSource;
         protected Task _consumerTask;
         protected int _fullLoadThreshold;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(EQueueConsumer).Name);
-        private readonly OnEQueueMessageReceived _onMessageReceived;
         protected int _waitInterval;
 
-        public EQueueConsumer(string clusterName, List<IPEndPoint> nameServerList,
-            string topic, string groupId, string consumerId,
-            OnEQueueMessageReceived onMessageReceived,
-            int fullLoadThreshold = 1000, int waitInterval = 1000,
-            bool start = true)
+        public EQueueConsumer(string clusterName,
+                              List<IPEndPoint> nameServerList,
+                              string topic,
+                              string groupId,
+                              string consumerId,
+                              OnEQueueMessageReceived onMessageReceived,
+                              int fullLoadThreshold = 1000,
+                              int waitInterval = 1000,
+                              bool start = true)
         {
             _onMessageReceived = onMessageReceived;
             ClusterName = clusterName;
@@ -43,7 +47,9 @@ namespace IFramework.MessageQueue.EQueue
             GroupId = groupId;
             ConsumerId = consumerId ?? string.Empty;
             if (start)
+            {
                 Start();
+            }
         }
 
         public string ClusterName { get; protected set; }
@@ -70,11 +76,11 @@ namespace IFramework.MessageQueue.EQueue
                 .Start();
             _cancellationTokenSource = new CancellationTokenSource();
             _consumerTask = Task.Factory.StartNew(cs => ReceiveMessages(cs as CancellationTokenSource,
-                    _onMessageReceived),
-                _cancellationTokenSource,
-                _cancellationTokenSource.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                                                                        _onMessageReceived),
+                                                  _cancellationTokenSource,
+                                                  _cancellationTokenSource.Token,
+                                                  TaskCreationOptions.LongRunning,
+                                                  TaskScheduler.Default);
         }
 
         public void Stop()
@@ -100,17 +106,19 @@ namespace IFramework.MessageQueue.EQueue
         }
 
         private void ReceiveMessages(CancellationTokenSource cancellationTokenSource,
-            OnEQueueMessageReceived onMessageReceived)
+                                     OnEQueueMessageReceived onMessageReceived)
         {
             IEnumerable<EQueueMessages.QueueMessage> messages = null;
 
             #region peek messages that not been consumed since last time
 
             while (!cancellationTokenSource.IsCancellationRequested)
+            {
                 try
                 {
                     messages = PullMessages(100, 2000, cancellationTokenSource.Token);
                     foreach (var message in messages)
+                    {
                         try
                         {
                             AddMessage(message);
@@ -128,9 +136,12 @@ namespace IFramework.MessageQueue.EQueue
                         catch (Exception ex)
                         {
                             if (message.Body != null)
+                            {
                                 RemoveMessage(message.QueueId, message.QueueOffset);
+                            }
                             _logger.Error(ex.GetBaseException().Message, ex);
                         }
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -148,6 +159,7 @@ namespace IFramework.MessageQueue.EQueue
                         _logger.Error(ex.GetBaseException().Message, ex);
                     }
                 }
+            }
 
             #endregion
         }
@@ -157,9 +169,9 @@ namespace IFramework.MessageQueue.EQueue
             var slidingDoor = SlidingDoors.GetOrAdd(message.QueueId, partition =>
             {
                 return new SlidingDoor(CommitOffset,
-                    message.BrokerName,
-                    partition,
-                    Configuration.Instance.GetCommitPerMessage());
+                                       message.BrokerName,
+                                       partition,
+                                       Configuration.Instance.GetCommitPerMessage());
             });
             slidingDoor.AddOffset(message.QueueOffset);
         }
@@ -168,12 +180,15 @@ namespace IFramework.MessageQueue.EQueue
         {
             var slidingDoor = SlidingDoors.TryGetValue(partition);
             if (slidingDoor == null)
+            {
                 throw new Exception("partition slidingDoor not exists");
+            }
             slidingDoor.RemoveOffset(offset);
         }
 
-        public IEnumerable<EQueueMessages.QueueMessage> PullMessages(int maxCount, int timeoutMilliseconds,
-            CancellationToken cancellationToken)
+        public IEnumerable<EQueueMessages.QueueMessage> PullMessages(int maxCount,
+                                                                     int timeoutMilliseconds,
+                                                                     CancellationToken cancellationToken)
         {
             return Consumer.PullMessages(maxCount, timeoutMilliseconds, cancellationToken);
         }

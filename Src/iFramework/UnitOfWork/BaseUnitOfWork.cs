@@ -6,9 +6,7 @@ namespace IFramework.UnitOfWork
 {
     public abstract class BaseUnitOfWork : IUnitOfWork
     {
-        public virtual void Dispose()
-        {
-        }
+        public virtual void Dispose() { }
 
         public abstract void Rollback();
         //public static readonly Type UnitOfWorkLifetimeManagerType = GetUnitOfWorkLifetimeManagerType();
@@ -44,14 +42,14 @@ namespace IFramework.UnitOfWork
         //}
 
         public abstract void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-            TransactionScopeOption scopOption = TransactionScopeOption.Required);
+                                    TransactionScopeOption scopOption = TransactionScopeOption.Required);
 
         public abstract Task CommitAsync(CancellationToken cancellationToken,
-            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-            TransactionScopeOption scopeOption = TransactionScopeOption.Required);
+                                         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+                                         TransactionScopeOption scopeOption = TransactionScopeOption.Required);
 
         public abstract Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-            TransactionScopeOption scopOption = TransactionScopeOption.Required);
+                                         TransactionScopeOption scopOption = TransactionScopeOption.Required);
 
         #endregion
     }

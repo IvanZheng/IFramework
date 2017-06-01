@@ -28,11 +28,15 @@ namespace IFramework.AspNet.MediaTypeFormatters
             return false;
         }
 
-        public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content,
-            IFormatterLogger formatterLogger)
+        public override Task<object> ReadFromStreamAsync(Type type,
+                                                         Stream readStream,
+                                                         HttpContent content,
+                                                         IFormatterLogger formatterLogger)
         {
             if (!content.IsMimeMultipartContent())
+            {
                 throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
+            }
 
             var parts = content.ReadAsMultipartAsync();
             return Task.Factory.StartNew(() =>
@@ -40,6 +44,7 @@ namespace IFramework.AspNet.MediaTypeFormatters
                 object data = null;
                 var valueCollection = new List<KeyValuePair<string, string>>();
                 foreach (var partContent in parts.Result.Contents)
+                {
                     if (partContent.Headers.ContentType == null)
                     {
                         var value = partContent.ReadAsStringAsync().Result;
@@ -54,9 +59,14 @@ namespace IFramework.AspNet.MediaTypeFormatters
                         data = JsonConvert.DeserializeObject(partBody, type);
                         break;
                     }
+                }
                 if (data == null)
+                {
                     if (valueCollection.Count > 0)
+                    {
                         data = new FormDataCollection(valueCollection).ConvertToObject(type);
+                    }
+                }
                 return data;
             });
         }

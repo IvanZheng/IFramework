@@ -34,10 +34,14 @@ namespace Autofac.Configuration
         public static SectionHandler Deserialize(XmlReader reader)
         {
             if (reader == null)
+            {
                 throw new ArgumentNullException("reader");
+            }
             reader.MoveToContent();
             if (reader.EOF)
+            {
                 throw new ConfigurationErrorsException(ConfigurationSettingsReaderResources.NoXmlInConfiguration);
+            }
             var sectionHandler = new SectionHandler();
             sectionHandler.DeserializeElement(reader, false);
             return sectionHandler;
@@ -53,7 +57,9 @@ namespace Autofac.Configuration
         public static SectionHandler Deserialize(string configurationFile, string configurationSection)
         {
             if (string.IsNullOrWhiteSpace(configurationSection))
+            {
                 configurationSection = "autofac";
+            }
             configurationFile = NormalizeConfigurationFilePath(configurationFile);
             var exeConfigurationFileMap = new ExeConfigurationFileMap();
             exeConfigurationFileMap.ExeConfigFilename = configurationFile;
@@ -62,7 +68,7 @@ namespace Autofac.Configuration
             {
                 configuration =
                     ConfigurationManager.OpenMappedExeConfiguration(exeConfigurationFileMap,
-                        ConfigurationUserLevel.None);
+                                                                    ConfigurationUserLevel.None);
             }
             catch (ConfigurationErrorsException)
             {
@@ -74,28 +80,36 @@ namespace Autofac.Configuration
             }
             var sectionHandler = (SectionHandler) configuration.GetSection(configurationSection);
             if (sectionHandler == null)
+            {
                 throw new ConfigurationErrorsException(string.Format(CultureInfo.CurrentCulture,
-                    ConfigurationSettingsReaderResources.SectionNotFound, configurationSection));
+                                                                     ConfigurationSettingsReaderResources.SectionNotFound, configurationSection));
+            }
             return sectionHandler;
         }
 
         private static string NormalizeConfigurationFilePath(string configurationFile)
         {
             if (configurationFile == null)
+            {
                 throw new ArgumentNullException("configurationFile");
+            }
             if (configurationFile.Length == 0)
+            {
                 throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                        ConfigurationSettingsReaderResources.ArgumentMayNotBeEmpty, "configurationFile"),
-                    "configurationFile");
+                                            string.Format(CultureInfo.CurrentCulture,
+                                                          ConfigurationSettingsReaderResources.ArgumentMayNotBeEmpty, "configurationFile"),
+                                            "configurationFile");
+            }
             if (!Path.IsPathRooted(configurationFile))
             {
                 var directoryName = Path.GetDirectoryName(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
                 configurationFile = Path.Combine(directoryName, configurationFile);
             }
             if (!File.Exists(configurationFile))
+            {
                 throw new FileNotFoundException(ConfigurationSettingsReaderResources.ConfigurationFileNotFound,
-                    configurationFile);
+                                                configurationFile);
+            }
             return configurationFile;
         }
     }

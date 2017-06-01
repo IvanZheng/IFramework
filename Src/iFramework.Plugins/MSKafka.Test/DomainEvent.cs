@@ -5,9 +5,7 @@ namespace MSKafka.Test
 {
     public class DomainEvent : IDomainEvent
     {
-        public DomainEvent()
-        {
-        }
+        public DomainEvent() { }
 
         public DomainEvent(string body)
         {

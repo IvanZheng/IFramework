@@ -13,14 +13,16 @@ namespace Kafka.Client.Consumers
     public class KafkaMessageStream<TData> : IKafkaMessageStream<TData>
     {
         private readonly int consumerTimeoutMs;
-        private readonly BlockingCollection<FetchedDataChunk> queue;
 
         private readonly IDecoder<TData> decoder;
+        private readonly BlockingCollection<FetchedDataChunk> queue;
 
         private readonly string topic;
 
-        internal KafkaMessageStream(string topic, BlockingCollection<FetchedDataChunk> queue, int consumerTimeoutMs,
-            IDecoder<TData> decoder)
+        internal KafkaMessageStream(string topic,
+                                    BlockingCollection<FetchedDataChunk> queue,
+                                    int consumerTimeoutMs,
+                                    IDecoder<TData> decoder)
         {
             this.topic = topic;
             this.consumerTimeoutMs = consumerTimeoutMs;
@@ -29,8 +31,11 @@ namespace Kafka.Client.Consumers
             iterator = new ConsumerIterator<TData>(this.topic, this.queue, this.consumerTimeoutMs, this.decoder);
         }
 
-        internal KafkaMessageStream(string topic, BlockingCollection<FetchedDataChunk> queue, int consumerTimeoutMs,
-            IDecoder<TData> decoder, CancellationToken token)
+        internal KafkaMessageStream(string topic,
+                                    BlockingCollection<FetchedDataChunk> queue,
+                                    int consumerTimeoutMs,
+                                    IDecoder<TData> decoder,
+                                    CancellationToken token)
         {
             this.topic = topic;
             this.consumerTimeoutMs = consumerTimeoutMs;

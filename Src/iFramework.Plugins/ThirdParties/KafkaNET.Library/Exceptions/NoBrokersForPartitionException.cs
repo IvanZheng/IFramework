@@ -5,17 +5,11 @@ namespace Kafka.Client.Exceptions
 {
     public class NoBrokersForPartitionException : Exception
     {
-        public NoBrokersForPartitionException()
-        {
-        }
+        public NoBrokersForPartitionException() { }
 
         public NoBrokersForPartitionException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
-        public NoBrokersForPartitionException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public NoBrokersForPartitionException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

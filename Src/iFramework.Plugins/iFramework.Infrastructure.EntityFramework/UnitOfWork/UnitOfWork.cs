@@ -19,7 +19,7 @@ namespace IFramework.EntityFramework
         // IEventPublisher _eventPublisher;
 
         public UnitOfWork(IEventBus eventBus,
-            ILoggerFactory loggerFactory) //,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
+                          ILoggerFactory loggerFactory) //,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
         {
             _dbContexts = new List<MSDbContext>();
             _eventBus = eventBus;
@@ -40,29 +40,28 @@ namespace IFramework.EntityFramework
 
         #region IUnitOfWork Members
 
-        protected virtual void BeforeCommit()
-        {
-        }
+        protected virtual void BeforeCommit() { }
 
-        protected virtual void AfterCommit()
-        {
-        }
+        protected virtual void AfterCommit() { }
 
         public virtual void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-            TransactionScopeOption scopOption = TransactionScopeOption.Required)
+                                   TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
             using (var scope = new TransactionScope(scopOption,
-                new TransactionOptions {IsolationLevel = isolationLevel},
-                TransactionScopeAsyncFlowOption.Enabled))
+                                                    new TransactionOptions {IsolationLevel = isolationLevel},
+                                                    TransactionScopeAsyncFlowOption.Enabled))
             {
                 _dbContexts.ForEach(dbContext =>
                 {
                     dbContext.SaveChanges();
-                    dbContext.ChangeTracker.Entries().ForEach(e =>
-                    {
-                        if (e.Entity is AggregateRoot)
-                            _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
-                    });
+                    dbContext.ChangeTracker.Entries()
+                             .ForEach(e =>
+                             {
+                                 if (e.Entity is AggregateRoot)
+                                 {
+                                     _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
+                                 }
+                             });
                 });
                 BeforeCommit();
                 scope.Complete();
@@ -71,27 +70,30 @@ namespace IFramework.EntityFramework
         }
 
         public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-            TransactionScopeOption scopeOption = TransactionScopeOption.Required)
+                                TransactionScopeOption scopeOption = TransactionScopeOption.Required)
         {
             return CommitAsync(CancellationToken.None, isolationLevel, scopeOption);
         }
 
         public virtual async Task CommitAsync(CancellationToken cancellationToken,
-            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-            TransactionScopeOption scopOption = TransactionScopeOption.Required)
+                                              IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+                                              TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
             using (var scope = new TransactionScope(scopOption,
-                new TransactionOptions {IsolationLevel = isolationLevel},
-                TransactionScopeAsyncFlowOption.Enabled))
+                                                    new TransactionOptions {IsolationLevel = isolationLevel},
+                                                    TransactionScopeAsyncFlowOption.Enabled))
             {
                 foreach (var dbContext in _dbContexts)
                 {
                     await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                    dbContext.ChangeTracker.Entries().ForEach(e =>
-                    {
-                        if (e.Entity is AggregateRoot)
-                            _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
-                    });
+                    dbContext.ChangeTracker.Entries()
+                             .ForEach(e =>
+                             {
+                                 if (e.Entity is AggregateRoot)
+                                 {
+                                     _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
+                                 }
+                             });
                 }
                 BeforeCommit();
                 scope.Complete();
@@ -102,7 +104,9 @@ namespace IFramework.EntityFramework
         internal void RegisterDbContext(MSDbContext dbContext)
         {
             if (!_dbContexts.Exists(dbCtx => dbCtx.Equals(dbContext)))
+            {
                 _dbContexts.Add(dbContext);
+            }
         }
 
         #endregion

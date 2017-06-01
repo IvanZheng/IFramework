@@ -35,7 +35,9 @@ namespace IFramework.Infrastructure.WebAuthentication
 
                 // check for missing cookie or header
                 if (cookieToken == null || headerToken == null)
+                {
                     return false;
+                }
 
                 // ensure that the cookie matches the header
 

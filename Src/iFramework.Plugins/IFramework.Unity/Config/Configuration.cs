@@ -20,10 +20,12 @@ namespace IFramework.Config
         /// </summary>
         /// <returns></returns>
         public static Configuration UseUnityContainer(this Configuration configuration,
-            IUnityContainer unityContainer = null)
+                                                      IUnityContainer unityContainer = null)
         {
             if (IoCFactory.IsInit())
+            {
                 return configuration;
+            }
             if (unityContainer == null)
             {
                 unityContainer = new UnityContainer();
@@ -40,11 +42,11 @@ namespace IFramework.Config
             #region register lifetimemanager
 
             unityContainer.RegisterType<LifetimeManager, ContainerControlledLifetimeManager>(
-                configuration.GetLifetimeManagerKey(Lifetime.Singleton));
+                                                                                             configuration.GetLifetimeManagerKey(Lifetime.Singleton));
             unityContainer.RegisterType<LifetimeManager, HierarchicalLifetimeManager>(
-                configuration.GetLifetimeManagerKey(Lifetime.Hierarchical));
+                                                                                      configuration.GetLifetimeManagerKey(Lifetime.Hierarchical));
             unityContainer.RegisterType<LifetimeManager, TransientLifetimeManager>(
-                configuration.GetLifetimeManagerKey(Lifetime.Transient));
+                                                                                   configuration.GetLifetimeManagerKey(Lifetime.Transient));
 
             #endregion
 

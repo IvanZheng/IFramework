@@ -5,9 +5,7 @@ namespace Kafka.Client.Exceptions
 {
     public class NoLeaderForPartitionException : Exception
     {
-        public NoLeaderForPartitionException()
-        {
-        }
+        public NoLeaderForPartitionException() { }
 
         public NoLeaderForPartitionException(int partitionId)
         {
@@ -15,13 +13,9 @@ namespace Kafka.Client.Exceptions
         }
 
         public NoLeaderForPartitionException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
-        public NoLeaderForPartitionException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public NoLeaderForPartitionException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
         public int? PartitionId { get; set; }
     }

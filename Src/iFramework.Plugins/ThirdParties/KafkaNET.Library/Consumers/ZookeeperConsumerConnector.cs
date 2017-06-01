@@ -30,6 +30,8 @@ namespace Kafka.Client.Consumers
         private static readonly int DefaultWaitTimeForInitialRebalanceInSeconds = 60;
 
         private readonly ConsumerConfiguration config;
+
+        private readonly EventHandler consumerRebalanceHandler;
         private readonly bool enableFetcher;
 
         private readonly IDictionary<Tuple<string, string>, BlockingCollection<FetchedDataChunk>> queues =
@@ -37,14 +39,15 @@ namespace Kafka.Client.Consumers
 
         private readonly KafkaScheduler scheduler = new KafkaScheduler();
         private readonly object shuttingDownLock = new object();
+        private readonly List<Action> stopAsyncRebalancing = new List<Action>();
 
         private readonly IDictionary<string, IDictionary<int, PartitionTopicInfo>> topicRegistry =
             new ConcurrentDictionary<string, IDictionary<int, PartitionTopicInfo>>();
 
-        private readonly EventHandler consumerRebalanceHandler;
+        private readonly EventHandler zkSessionDisconnectedHandler;
+        private readonly EventHandler zkSessionExpiredHandler;
         private volatile bool disposed;
         private Fetcher fetcher;
-        private readonly List<Action> stopAsyncRebalancing = new List<Action>();
 
         internal ConcurrentBag<Tuple<string, IZooKeeperChildListener>> subscribedChildCollection =
             new ConcurrentBag<Tuple<string, IZooKeeperChildListener>>();
@@ -56,8 +59,6 @@ namespace Kafka.Client.Consumers
             new ConcurrentBag<IZooKeeperStateListener>();
 
         private volatile IZooKeeperClient zkClientInternal;
-        private readonly EventHandler zkSessionDisconnectedHandler;
-        private readonly EventHandler zkSessionExpiredHandler;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ZookeeperConsumerConnector" /> class.
@@ -70,13 +71,15 @@ namespace Kafka.Client.Consumers
         ///     Indicates whether fetchers should be enabled
         /// </param>
         public ZookeeperConsumerConnector(ConsumerConfiguration config,
-            bool enableFetcher,
-            EventHandler rebalanceHandler = null,
-            EventHandler zkDisconnectedHandler = null,
-            EventHandler zkExpiredHandler = null)
+                                          bool enableFetcher,
+                                          EventHandler rebalanceHandler = null,
+                                          EventHandler zkDisconnectedHandler = null,
+                                          EventHandler zkExpiredHandler = null)
         {
             if (string.IsNullOrEmpty(config.GroupId))
+            {
                 throw new ArgumentNullException("GroupId of ConsumerConfiguration should not be empty.");
+            }
             Logger.Info("Enter ZookeeperConsumerConnector ...");
             try
             {
@@ -96,7 +99,7 @@ namespace Kafka.Client.Consumers
                 {
                     Logger.InfoFormat("starting auto committer every {0} ms", this.config.AutoCommitInterval);
                     scheduler.ScheduleWithRate(AutoCommit, this.config.AutoCommitInterval,
-                        this.config.AutoCommitInterval);
+                                               this.config.AutoCommitInterval);
                 }
             }
             catch (Exception ex)
@@ -127,7 +130,9 @@ namespace Kafka.Client.Consumers
         {
             EnsuresNotDisposed();
             if (GetZkClient() == null)
+            {
                 return;
+            }
             try
             {
                 foreach (var topic in topicRegistry)
@@ -145,24 +150,26 @@ namespace Kafka.Client.Consumers
                                 //skip only if we are trying to commit the same offset
 
                                 if (newOffset != partition.Value.CommitedOffset)
+                                {
                                     try
                                     {
                                         ZkUtils.UpdatePersistentPath(GetZkClient(),
-                                            topicDirs.ConsumerOffsetDir + "/" +
-                                            partition.Value.PartitionId, newOffset.ToString());
+                                                                     topicDirs.ConsumerOffsetDir + "/" +
+                                                                     partition.Value.PartitionId, newOffset.ToString());
                                         partition.Value.CommitedOffset = newOffset;
                                     }
                                     catch (Exception ex)
                                     {
                                         Logger.ErrorFormat("error in CommitOffsets UpdatePersistentPath : {0}",
-                                            ex.FormatException());
+                                                           ex.FormatException());
                                     }
+                                }
                             }
                             else
                             {
                                 Logger.InfoFormat(
-                                    "Skip committing offset {0} for topic {1} because it is invalid (ZK session is disconnected)",
-                                    newOffset, partition);
+                                                  "Skip committing offset {0} for topic {1} because it is invalid (ZK session is disconnected)",
+                                                  newOffset, partition);
                             }
                         }
                         catch (Exception ex)
@@ -208,21 +215,26 @@ namespace Kafka.Client.Consumers
         {
             EnsuresNotDisposed();
             if (GetZkClient() == null)
+            {
                 return;
+            }
             if (config.AutoCommit)
+            {
                 throw new ArgumentException(
-                    "When do commit offset with desired partition and offset, must set AutoCommit of ConsumerConfiguration as false!");
+                                            "When do commit offset with desired partition and offset, must set AutoCommit of ConsumerConfiguration as false!");
+            }
             try
             {
                 var topicPartitionInfo = topicRegistry[topic];
                 var topicDirs = new ZKGroupTopicDirs(config.GroupId, topic);
                 var partitionTopicInfo = topicPartitionInfo[partition];
                 if (partitionTopicInfo.ConsumeOffsetValid)
+                {
                     try
                     {
                         ZkUtils.UpdatePersistentPath(GetZkClient(),
-                            topicDirs.ConsumerOffsetDir + "/" +
-                            partitionTopicInfo.PartitionId, offset.ToString());
+                                                     topicDirs.ConsumerOffsetDir + "/" +
+                                                     partitionTopicInfo.PartitionId, offset.ToString());
                         partitionTopicInfo.CommitedOffset = offset;
                         if (setPosition)
                         {
@@ -234,10 +246,13 @@ namespace Kafka.Client.Consumers
                     {
                         Logger.ErrorFormat("error in CommitOffsets UpdatePersistentPath : {0}", ex.FormatException());
                     }
+                }
                 else
+                {
                     Logger.InfoFormat(
-                        "Skip committing offset {0} for topic {1} because it is invalid (ZK session is disconnected)",
-                        offset, partitionTopicInfo);
+                                      "Skip committing offset {0} for topic {1} because it is invalid (ZK session is disconnected)",
+                                      offset, partitionTopicInfo);
+                }
 
                 //if (Logger.IsDebugEnabled)
                 {
@@ -247,7 +262,7 @@ namespace Kafka.Client.Consumers
             catch (Exception ex)
             {
                 Logger.ErrorFormat("exception during CommitOffsets: Topic:{0}  Partition:{1} offset:{2} Exception:{3} ",
-                    topic, partition, offset, ex.FormatException());
+                                   topic, partition, offset, ex.FormatException());
             }
         }
 
@@ -270,22 +285,22 @@ namespace Kafka.Client.Consumers
                     foreach (var partition in item.Value.Keys)
                     {
                         var partitionOwnerPath = ZkUtils.GetConsumerPartitionOwnerPath(config.GroupId, topic,
-                            partition.ToString());
+                                                                                       partition.ToString());
                         Logger.InfoFormat("Consumer {0} will delete ZK path {1} topic:{2} partition:{3} ",
-                            consumerIdString, partitionOwnerPath, topic, partition);
+                                          consumerIdString, partitionOwnerPath, topic, partition);
                         try
                         {
                             GetZkClient().SlimLock.EnterWriteLock();
                             ZkUtils.DeletePath(GetZkClient(), partitionOwnerPath);
                             Logger.InfoFormat(
-                                "Consumer {0} SUCC delete ZK path {1} topic:{2} partition:{3}  succsessfully.",
-                                consumerIdString, partitionOwnerPath, topic, partition);
+                                              "Consumer {0} SUCC delete ZK path {1} topic:{2} partition:{3}  succsessfully.",
+                                              consumerIdString, partitionOwnerPath, topic, partition);
                         }
                         catch (Exception ex)
                         {
                             Logger.ErrorFormat(
-                                "Consumer {0} FAILED delete ZK path {1} topic:{2} partition:{3}  error:{4}.",
-                                consumerIdString, partitionOwnerPath, topic, partition, ex.FormatException());
+                                               "Consumer {0} FAILED delete ZK path {1} topic:{2} partition:{3}  error:{4}.",
+                                               consumerIdString, partitionOwnerPath, topic, partition, ex.FormatException());
                         }
                         finally
                         {
@@ -315,20 +330,22 @@ namespace Kafka.Client.Consumers
         ///     Explicitly triggers load balancing for this consumer
         /// </remarks>
         public IDictionary<string, IList<KafkaMessageStream<TData>>> CreateMessageStreams<TData>(
-            IDictionary<string, int> topicCountDict, IDecoder<TData> decoder)
+            IDictionary<string, int> topicCountDict,
+            IDecoder<TData> decoder)
         {
             EnsuresNotDisposed();
             return Consume(topicCountDict, decoder);
         }
 
         IDictionary<string, IList<IKafkaMessageStream<TData>>> IZookeeperConsumerConnector.CreateMessageStreams<TData>(
-            IDictionary<string, int> topicCountDict, IDecoder<TData> decoder)
+            IDictionary<string, int> topicCountDict,
+            IDecoder<TData> decoder)
         {
             return CreateMessageStreams(topicCountDict, decoder)
                 .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => (IList<IKafkaMessageStream<TData>>) kvp.Value.Cast<IKafkaMessageStream<TData>>().ToList()
-                );
+                              kvp => kvp.Key,
+                              kvp => (IList<IKafkaMessageStream<TData>>) kvp.Value.Cast<IKafkaMessageStream<TData>>().ToList()
+                             );
         }
 
         public Dictionary<int, long> GetOffset(string topic)
@@ -336,14 +353,16 @@ namespace Kafka.Client.Consumers
             var offsets = new Dictionary<int, long>();
             EnsuresNotDisposed();
             if (GetZkClient() == null)
+            {
                 throw new ArgumentNullException(string.Format("zkClient {0} has not been initialized!",
-                    config.ZooKeeper.ZkConnect));
+                                                              config.ZooKeeper.ZkConnect));
+            }
             var topicDirs = new ZKGroupTopicDirs(config.GroupId, topic);
             if (!GetZkClient().Exists(topicDirs.ConsumerOffsetDir))
             {
                 Logger.ErrorFormat(
-                    "Path {0} not exists on zookeeper {1}, maybe the consumer group hasn't commit once yet. ",
-                    topicDirs.ConsumerOffsetDir, config.ZooKeeper.ZkConnect);
+                                   "Path {0} not exists on zookeeper {1}, maybe the consumer group hasn't commit once yet. ",
+                                   topicDirs.ConsumerOffsetDir, config.ZooKeeper.ZkConnect);
                 return offsets;
             }
 
@@ -361,10 +380,14 @@ namespace Kafka.Client.Consumers
         protected override void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             if (disposed)
+            {
                 return;
+            }
 
             Logger.Info("ZookeeperConsumerConnector shutting down and dispose ...");
 
@@ -375,19 +398,25 @@ namespace Kafka.Client.Consumers
                 if (UseSharedStaticZookeeperClient)
                 {
                     Logger.InfoFormat(
-                        "will call Unsubscribe since use static zkClient. subscribedChildCollection:{0} , subscribedZookeeperStateCollection:{1} subscribedZookeeperDataCollection:{2} "
-                        , subscribedChildCollection.Count, subscribedZookeeperStateCollection.Count,
-                        subscribedZookeeperDataCollection.Count);
+                                      "will call Unsubscribe since use static zkClient. subscribedChildCollection:{0} , subscribedZookeeperStateCollection:{1} subscribedZookeeperDataCollection:{2} "
+                                      , subscribedChildCollection.Count, subscribedZookeeperStateCollection.Count,
+                                      subscribedZookeeperDataCollection.Count);
                     if (GetZkClient() != null)
                     {
                         foreach (var t in subscribedChildCollection)
+                        {
                             GetZkClient().Unsubscribe(t.Item1, t.Item2);
+                        }
 
                         foreach (var t in subscribedZookeeperStateCollection)
+                        {
                             GetZkClient().Unsubscribe(t);
+                        }
 
                         foreach (var t in subscribedZookeeperDataCollection)
+                        {
                             GetZkClient().Unsubscribe(t.Item1, t.Item2);
+                        }
                     }
                     else
                     {
@@ -398,9 +427,9 @@ namespace Kafka.Client.Consumers
                     subscribedZookeeperStateCollection = new ConcurrentBag<IZooKeeperStateListener>();
                     subscribedZookeeperDataCollection = new ConcurrentBag<Tuple<string, IZooKeeperDataListener>>();
                     Logger.InfoFormat(
-                        "Finish call Unsubscribe since use static zkClient. collection have been clean up. subscribedChildCollection:{0} , subscribedZookeeperStateCollection:{1} subscribedZookeeperDataCollection:{2} "
-                        , subscribedChildCollection.Count, subscribedZookeeperStateCollection.Count,
-                        subscribedZookeeperDataCollection.Count);
+                                      "Finish call Unsubscribe since use static zkClient. collection have been clean up. subscribedChildCollection:{0} , subscribedZookeeperStateCollection:{1} subscribedZookeeperDataCollection:{2} "
+                                      , subscribedChildCollection.Count, subscribedZookeeperStateCollection.Count,
+                                      subscribedZookeeperDataCollection.Count);
                 }
                 else
                 {
@@ -410,21 +439,29 @@ namespace Kafka.Client.Consumers
                 }
 
                 if (scheduler != null)
+                {
                     scheduler.Dispose();
+                }
 
                 Thread.Sleep(1000);
 
                 if (fetcher != null)
+                {
                     fetcher.Dispose();
+                }
 
                 SendShutdownToAllQueues();
                 if (config.AutoCommit)
+                {
                     CommitOffsets();
+                }
 
                 lock (shuttingDownLock)
                 {
                     if (disposed)
+                    {
                         return;
+                    }
                     disposed = true;
                 }
 
@@ -440,7 +477,9 @@ namespace Kafka.Client.Consumers
                 {
                     Logger.Info("will call  this.zkClient.Dispose(); ");
                     if (GetZkClient() != null)
+                    {
                         GetZkClient().Dispose();
+                    }
                 }
             }
             catch (Exception exc)
@@ -491,15 +530,15 @@ namespace Kafka.Client.Consumers
                             zkClientStatic.GetClientState() != KeeperState.SyncConnected)
                         {
                             Logger.InfoFormat("zkClientStatic: {0}   will create one ...",
-                                zkClientStatic == null ? "null" : "not null");
+                                              zkClientStatic == null ? "null" : "not null");
                             Logger.InfoFormat("Connecting to zookeeper instance at {0}  STATIC",
-                                config.ZooKeeper.ZkConnect);
+                                              config.ZooKeeper.ZkConnect);
                             zkClientStatic = new ZooKeeperClient(config.ZooKeeper.ZkConnect,
-                                config.ZooKeeper.ZkSessionTimeoutMs, ZooKeeperStringSerializer.Serializer,
-                                config.ZooKeeper.ZkConnectionTimeoutMs);
+                                                                 config.ZooKeeper.ZkSessionTimeoutMs, ZooKeeperStringSerializer.Serializer,
+                                                                 config.ZooKeeper.ZkConnectionTimeoutMs);
                             zkClientStatic.Connect();
                             Logger.InfoFormat("Connecting to zookeeper instance at {0}  STATIC. Done",
-                                config.ZooKeeper.ZkConnect);
+                                              config.ZooKeeper.ZkConnect);
                         }
 
                         Logger.Info("release lock ... ");
@@ -508,7 +547,9 @@ namespace Kafka.Client.Consumers
 
                 Logger.InfoFormat("zkClientStatic: {0}", zkClientStatic == null ? "null" : "not null");
                 if (zkClientStatic != null)
+                {
                     Logger.InfoFormat("zkClientStatic.ClientState: {0}", zkClientStatic.GetClientState());
+                }
             }
             else
             {
@@ -519,7 +560,7 @@ namespace Kafka.Client.Consumers
                     zkClientInternal = null;
                 }
                 zkClientInternal = new ZooKeeperClient(config.ZooKeeper.ZkConnect, config.ZooKeeper.ZkSessionTimeoutMs,
-                    ZooKeeperStringSerializer.Serializer, config.ZooKeeper.ZkConnectionTimeoutMs);
+                                                       ZooKeeperStringSerializer.Serializer, config.ZooKeeper.ZkConnectionTimeoutMs);
                 zkClientInternal.Connect();
             }
         }
@@ -527,16 +568,21 @@ namespace Kafka.Client.Consumers
         private void CreateFetcher()
         {
             if (enableFetcher)
+            {
                 fetcher = new Fetcher(config, GetZkClient());
+            }
         }
 
         private IDictionary<string, IList<KafkaMessageStream<TData>>> Consume<TData>(
-            IDictionary<string, int> topicCountDict, IDecoder<TData> decoder)
+            IDictionary<string, int> topicCountDict,
+            IDecoder<TData> decoder)
         {
             Logger.Debug("entering consume");
 
             if (topicCountDict == null)
+            {
                 throw new ArgumentNullException();
+            }
 
             var dirs = new ZKGroupDirs(config.GroupId);
             var result = new Dictionary<string, IList<KafkaMessageStream<TData>>>();
@@ -562,18 +608,20 @@ namespace Kafka.Client.Consumers
 
             // listener to consumer and partition changes
             var loadBalancerListener = new ZKRebalancerListener<TData>(
-                config,
-                consumerIdString,
-                topicRegistry,
-                GetZkClient(),
-                this,
-                queues,
-                fetcher,
-                result,
-                topicCount);
+                                                                       config,
+                                                                       consumerIdString,
+                                                                       topicRegistry,
+                                                                       GetZkClient(),
+                                                                       this,
+                                                                       queues,
+                                                                       fetcher,
+                                                                       result,
+                                                                       topicCount);
 
             if (consumerRebalanceHandler != null)
+            {
                 loadBalancerListener.ConsumerRebalance += consumerRebalanceHandler;
+            }
 
             stopAsyncRebalancing.Add(loadBalancerListener.StopRebalance);
             RegisterConsumerInZk(dirs, consumerIdString, topicCount);
@@ -582,17 +630,21 @@ namespace Kafka.Client.Consumers
             var zkSessionExpireListener =
                 new ZKSessionExpireListener<TData>(dirs, consumerIdString, topicCount, loadBalancerListener, this);
             if (zkSessionDisconnectedHandler != null)
+            {
                 zkSessionExpireListener.ZKSessionDisconnected += zkSessionDisconnectedHandler;
+            }
 
             if (zkSessionExpiredHandler != null)
+            {
                 zkSessionExpireListener.ZKSessionExpired += zkSessionExpiredHandler;
+            }
 
             GetZkClient().Subscribe(zkSessionExpireListener);
             subscribedZookeeperStateCollection.Add(zkSessionExpireListener);
 
             GetZkClient().Subscribe(dirs.ConsumerRegistryDir, loadBalancerListener);
             subscribedChildCollection.Add(
-                new Tuple<string, IZooKeeperChildListener>(dirs.ConsumerRegistryDir, loadBalancerListener));
+                                          new Tuple<string, IZooKeeperChildListener>(dirs.ConsumerRegistryDir, loadBalancerListener));
 
             result.ForEach(topicAndStreams =>
             {
@@ -602,7 +654,7 @@ namespace Kafka.Client.Consumers
                 {
                     GetZkClient().Subscribe(partitionPath, loadBalancerListener);
                     subscribedChildCollection.Add(
-                        new Tuple<string, IZooKeeperChildListener>(partitionPath, loadBalancerListener));
+                                                  new Tuple<string, IZooKeeperChildListener>(partitionPath, loadBalancerListener));
                     // Create a mapping of all topic partitions and their current leaders
                     var topicsAndPartitions =
                         ZkUtils.GetPartitionsForTopics(GetZkClient(), new[] {topicAndStreams.Key});
@@ -626,7 +678,7 @@ namespace Kafka.Client.Consumers
                         var partitionStatePath = partitionPath + "/partitions/" + partitionId + "/state";
                         GetZkClient().Subscribe(partitionStatePath, leaderListener);
                         subscribedZookeeperDataCollection.Add(
-                            new Tuple<string, IZooKeeperDataListener>(partitionStatePath, leaderListener));
+                                                              new Tuple<string, IZooKeeperDataListener>(partitionStatePath, leaderListener));
                     }
                 }
                 else
@@ -639,9 +691,9 @@ namespace Kafka.Client.Consumers
             Logger.Info("Performing rebalancing. A new consumer has been added to consumer group: " +
                         dirs.ConsumerRegistryDir + ", consumer: " + consumerIdString);
             Logger.InfoFormat(
-                "Subscribe count: subscribedChildCollection:{0} , subscribedZookeeperStateCollection:{1} subscribedZookeeperDataCollection:{2} "
-                , subscribedChildCollection.Count, subscribedZookeeperStateCollection.Count,
-                subscribedZookeeperDataCollection.Count);
+                              "Subscribe count: subscribedChildCollection:{0} , subscribedZookeeperStateCollection:{1} subscribedZookeeperDataCollection:{2} "
+                              , subscribedChildCollection.Count, subscribedZookeeperStateCollection.Count,
+                              subscribedZookeeperDataCollection.Count);
 
             //// When a new consumer join, need wait for rebalance finish to make sure Fetcher thread started.
             loadBalancerListener.AsyncRebalance(DefaultWaitTimeForInitialRebalanceInSeconds * 1000);
@@ -674,13 +726,13 @@ namespace Kafka.Client.Consumers
             {
                 GetZkClient().SlimLock.EnterWriteLock();
                 ZkUtils.CreateEphemeralPathExpectConflict(GetZkClient(),
-                    dirs.ConsumerRegistryDir + "/" + consumerIdString, topicCount.ToJsonString());
+                                                          dirs.ConsumerRegistryDir + "/" + consumerIdString, topicCount.ToJsonString());
                 Logger.InfoFormat("successfully registering consumer {0} in ZK", consumerIdString);
             }
             catch (Exception ex)
             {
                 Logger.ErrorFormat("error in RegisterConsumerInZk CreateEphemeralPathExpectConflict : {0}",
-                    ex.FormatException());
+                                   ex.FormatException());
             }
             finally
             {
@@ -694,13 +746,17 @@ namespace Kafka.Client.Consumers
         private void EnsuresNotDisposed()
         {
             if (disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
         }
 
         private IZooKeeperClient GetZkClient()
         {
             if (UseSharedStaticZookeeperClient)
+            {
                 return zkClientStatic;
+            }
             return zkClientInternal;
         }
     }

@@ -57,7 +57,8 @@ namespace Kafka.Client.Cfg
         }
 
         public ProducerConfiguration(ProducerConfiguration producerConfigTemplate,
-            List<BrokerConfiguration> brokersConfig, int partitionID)
+                                     List<BrokerConfiguration> brokersConfig,
+                                     int partitionID)
         {
             Brokers = brokersConfig;
             ForceToPartition = partitionID;
@@ -125,7 +126,9 @@ namespace Kafka.Client.Cfg
             get
             {
                 if (string.IsNullOrEmpty(partitionerClass))
+                {
                     return DefaultPartitioner;
+                }
 
                 return partitionerClass;
             }
@@ -140,7 +143,9 @@ namespace Kafka.Client.Cfg
             get
             {
                 if (string.IsNullOrEmpty(serializerClass))
+                {
                     return DefaultSerializer;
+                }
 
                 return serializerClass;
             }

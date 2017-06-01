@@ -7,8 +7,8 @@ using Sample.DomainEvents.Community;
 namespace Sample.Domain.Model
 {
     public class Account : People,
-        IEventSubscriber<AccountRegistered>,
-        IEventSubscriber<AccountModified>
+                           IEventSubscriber<AccountRegistered>,
+                           IEventSubscriber<AccountModified>
     {
         //public byte[] Version { get; protected set; }
 
@@ -21,7 +21,7 @@ namespace Sample.Domain.Model
         {
             ProductIds = new HashSet<ProductId>();
             OnEvent(new AccountRegistered(Guid.NewGuid(), username,
-                password, email, DateTime.Now));
+                                          password, email, DateTime.Now));
         }
 
         public string Email { get; private set; }

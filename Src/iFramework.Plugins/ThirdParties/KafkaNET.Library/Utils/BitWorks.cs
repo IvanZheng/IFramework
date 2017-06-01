@@ -86,7 +86,9 @@ namespace Kafka.Client.Utils
         {
             var size = reader.ReadInt16();
             if (size < 0)
+            {
                 return null;
+            }
             var bytes = reader.ReadBytes(size);
             var encoder = Encoding.GetEncoding(encoding);
             return encoder.GetString(bytes);

@@ -20,8 +20,8 @@ namespace MSKafka.Test
         public void Initialize()
         {
             Configuration.Instance.UseUnityContainer()
-                .MessageQueueUseMachineNameFormat(false)
-                .UseLog4Net("log4net.config");
+                         .MessageQueueUseMachineNameFormat(false)
+                         .UseLog4Net("log4net.config");
         }
 
         [TestMethod]
@@ -30,7 +30,7 @@ namespace MSKafka.Test
             try
             {
                 var client = new KafkaClient(_zkConnection);
-                client.CreateTopic("testtopic1");
+                client.CreateTopic("testtopic3");
             }
             catch (Exception ex)
             {

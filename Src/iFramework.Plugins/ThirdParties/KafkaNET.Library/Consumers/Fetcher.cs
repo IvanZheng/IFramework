@@ -50,12 +50,16 @@ namespace Kafka.Client.Consumers
         public void Dispose()
         {
             if (_disposed)
+            {
                 return;
+            }
 
             lock (_shuttingDownLock)
             {
                 if (_disposed)
+                {
                     return;
+                }
 
                 _disposed = true;
             }
@@ -78,10 +82,16 @@ namespace Kafka.Client.Consumers
             if (_fetcherWorkerObjects != null)
             {
                 foreach (var fetcherRunnable in _fetcherWorkerObjects)
+                {
                     if (fetcherRunnable == null)
+                    {
                         Logger.Error("Fetch Runnable is null!");
+                    }
                     else
+                    {
                         fetcherRunnable.Shutdown();
+                    }
+                }
 
                 var threadsStillRunning = 0;
                 var stopWatch = Stopwatch.StartNew();
@@ -92,6 +102,7 @@ namespace Kafka.Client.Consumers
                     Thread.Sleep(500);
                     threadsStillRunning = 0;
                     foreach (var fetcherThread in _fetcherThreads)
+                    {
                         if (fetcherThread == null)
                         {
                             Logger.Error("Fetch thread is null!");
@@ -99,10 +110,15 @@ namespace Kafka.Client.Consumers
                         else
                         {
                             if (fetcherThread.IsAlive)
+                            {
                                 threadsStillRunning++;
+                            }
                         }
+                    }
                     if (stopWatch.ElapsedMilliseconds >= _config.ShutdownTimeout)
+                    {
                         shutdownTimeout = true;
+                    }
                 } while (threadsStillRunning > 0 && !shutdownTimeout);
 
                 stopWatch.Stop();
@@ -111,13 +127,17 @@ namespace Kafka.Client.Consumers
                     // BUG:1482409 - added timeout watch and forceful aborting of lingering background threads.
                     // shutdown exceeded timeout
                     Logger.Warn(
-                        "All background fetcher threads did not shutdown in the specified amount of time. Raising abort exceptions to stop them.");
+                                "All background fetcher threads did not shutdown in the specified amount of time. Raising abort exceptions to stop them.");
                     foreach (var fetcherThread in _fetcherThreads)
                     {
                         if (fetcherThread == null)
+                        {
                             Logger.Error("Fetch thread is null!");
+                        }
                         if (fetcherThread.IsAlive)
+                        {
                             fetcherThread.Abort();
+                        }
                     }
                 }
 
@@ -129,20 +149,29 @@ namespace Kafka.Client.Consumers
             }
         }
 
-        public void ClearFetcherQueues<TData>(IList<PartitionTopicInfo> topicInfos, Cluster.Cluster cluster,
-            IEnumerable<BlockingCollection<FetchedDataChunk>> queuesToBeCleared,
-            IDictionary<string, IList<KafkaMessageStream<TData>>> kafkaMessageStreams)
+        public void ClearFetcherQueues<TData>(IList<PartitionTopicInfo> topicInfos,
+                                              Cluster.Cluster cluster,
+                                              IEnumerable<BlockingCollection<FetchedDataChunk>> queuesToBeCleared,
+                                              IDictionary<string, IList<KafkaMessageStream<TData>>> kafkaMessageStreams)
         {
             if (kafkaMessageStreams != null)
+            {
                 foreach (var kafkaMessageStream in kafkaMessageStreams)
                 foreach (var stream in kafkaMessageStream.Value)
+                {
                     stream.Clear();
+                }
+            }
 
             Logger.Info("Cleared the data chunks in all the consumer message iterators");
             // Clear all but the currently iterated upon chunk in the consumer thread's queue
             foreach (var queueToBeCleared in queuesToBeCleared)
+            {
                 while (queueToBeCleared.Count > 0)
+                {
                     queueToBeCleared.Take();
+                }
+            }
 
             Logger.Info("Cleared all relevant queues for this fetcher");
         }
@@ -164,15 +193,23 @@ namespace Kafka.Client.Consumers
             EnsuresNotDisposed();
             Shutdown();
             if (topicInfos == null)
+            {
                 return;
+            }
             var partitionTopicInfoMap = new Dictionary<int, List<PartitionTopicInfo>>();
 
             //// re-arrange by broker id
             foreach (var topicInfo in topicInfos)
+            {
                 if (!partitionTopicInfoMap.ContainsKey(topicInfo.BrokerId))
+                {
                     partitionTopicInfoMap.Add(topicInfo.BrokerId, new List<PartitionTopicInfo> {topicInfo});
+                }
                 else
+                {
                     partitionTopicInfoMap[topicInfo.BrokerId].Add(topicInfo);
+                }
+            }
 
             _leaderFinder = new PartitionLeaderFinder(_partitionsNeedingLeaders, cluster, _config, CreateFetchThread);
             _leaderFinderThread = new Thread(_leaderFinder.Start);
@@ -188,18 +225,22 @@ namespace Kafka.Client.Consumers
                 if (broker == null)
                 {
                     foreach (var p in item.Value)
+                    {
                         AddPartitionWithError(p);
+                    }
                     Logger.Error("Could not find broker associated with broker id: " + item.Key + " partitions: " +
                                  string.Join(",",
-                                     item.Value.Select(r => string.Format("Topic:{0} PartitionsID:{1} ", r.Topic,
-                                         r.PartitionId)).ToArray()) + " will repeat retry ...");
+                                             item.Value.Select(r => string.Format("Topic:{0} PartitionsID:{1} ", r.Topic,
+                                                                                  r.PartitionId))
+                                                 .ToArray()) + " will repeat retry ...");
                 }
                 else
                 {
                     Logger.Debug("Found broker associated with broker id: " + item.Key + " partitions: " +
                                  string.Join(",",
-                                     item.Value.Select(r => string.Format("Topic:{0} PartitionsID:{1} ", r.Topic,
-                                         r.PartitionId)).ToArray()) + " will create fetch threads ...");
+                                             item.Value.Select(r => string.Format("Topic:{0} PartitionsID:{1} ", r.Topic,
+                                                                                  r.PartitionId))
+                                                 .ToArray()) + " will create fetch threads ...");
                     CreateFetchThread(item.Value, broker);
                 }
                 i++;
@@ -209,7 +250,9 @@ namespace Kafka.Client.Consumers
         private void CreateFetchThread(PartitionTopicInfo partition, Broker broker)
         {
             if (_fetcherThreads == null)
+            {
                 return;
+            }
 
             CreateFetchThread(new List<PartitionTopicInfo> {partition}, broker);
         }
@@ -217,17 +260,19 @@ namespace Kafka.Client.Consumers
         private void CreateFetchThread(List<PartitionTopicInfo> partitions, Broker broker)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             Logger.DebugFormat("Creating Fetcher on broker {0} for partitions: {1}", broker.Id,
-                string.Join(",", partitions.Select(p => string.Format("{0}({1})", p.Topic, p.PartitionId))));
+                               string.Join(",", partitions.Select(p => string.Format("{0}({1})", p.Topic, p.PartitionId))));
             var fetcherRunnable = new FetcherRunnable("FetcherRunnable-" + _fetcherWorkerObjects.Count, _zkClient,
-                _config, broker, partitions, AddPartitionWithError);
+                                                      _config, broker, partitions, AddPartitionWithError);
             var threadStart = new ThreadStart(fetcherRunnable.Run);
             var fetcherThread = new Thread(threadStart);
             _fetcherWorkerObjects.Add(fetcherRunnable);
             fetcherThread.Name = string.Format("FetcherThread_broker_{0}_partitions_{1}", broker.Id,
-                string.Join(",", partitions.Select(p => string.Format("{0}({1})", p.Topic, p.PartitionId))));
+                                               string.Join(",", partitions.Select(p => string.Format("{0}({1})", p.Topic, p.PartitionId))));
             _fetcherThreads.Add(fetcherThread);
             fetcherThread.Start();
         }
@@ -243,7 +288,9 @@ namespace Kafka.Client.Consumers
         private void EnsuresNotDisposed()
         {
             if (_disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
         }
     }
 }

@@ -26,7 +26,10 @@ namespace Microsoft.KafkaNET.Library.Util
         public XmlExceptionFormatter(XmlWriter xmlWriter, Exception exception, Guid handlingInstanceId)
             : base(exception, handlingInstanceId)
         {
-            if (xmlWriter == null) throw new ArgumentNullException("xmlWriter");
+            if (xmlWriter == null)
+            {
+                throw new ArgumentNullException("xmlWriter");
+            }
 
             Writer = xmlWriter;
         }
@@ -44,7 +47,10 @@ namespace Microsoft.KafkaNET.Library.Util
         public XmlExceptionFormatter(TextWriter writer, Exception exception, Guid handlingInstanceId)
             : base(exception, handlingInstanceId)
         {
-            if (writer == null) throw new ArgumentNullException("writer");
+            if (writer == null)
+            {
+                throw new ArgumentNullException("writer");
+            }
 
             var textWriter = new XmlTextWriter(writer);
             textWriter.Formatting = Formatting.Indented;
@@ -66,9 +72,11 @@ namespace Microsoft.KafkaNET.Library.Util
         {
             Writer.WriteStartElement("Exception");
             if (HandlingInstanceId != Guid.Empty)
+            {
                 Writer.WriteAttributeString(
-                    "handlingInstanceId",
-                    HandlingInstanceId.ToString("D", CultureInfo.InvariantCulture));
+                                            "handlingInstanceId",
+                                            HandlingInstanceId.ToString("D", CultureInfo.InvariantCulture));
+            }
 
             base.Format();
 
@@ -82,7 +90,7 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WriteDateTime(DateTime datetime)
         {
             WriteSingleElement("DateTime",
-                datetime.ToUniversalTime().ToString("u", DateTimeFormatInfo.InvariantInfo));
+                               datetime.ToUniversalTime().ToString("u", DateTimeFormatInfo.InvariantInfo));
         }
 
         /// <summary>
@@ -100,7 +108,7 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WriteDescription()
         {
             WriteSingleElement("Description",
-                string.Format(CultureInfo.CurrentCulture, ExceptionWasCaught, Exception.GetType().FullName));
+                               string.Format(CultureInfo.CurrentCulture, ExceptionWasCaught, Exception.GetType().FullName));
         }
 
         /// <summary>
@@ -142,7 +150,9 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WriteExceptionType(Type exceptionType)
         {
             if (exceptionType == null)
+            {
                 throw new ArgumentException("Exception type cannot be null");
+            }
 
             WriteSingleElement("ExceptionType", exceptionType.AssemblyQualifiedName);
         }
@@ -176,12 +186,16 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WritePropertyInfo(PropertyInfo propertyInfo, object value)
         {
             if (propertyInfo == null)
+            {
                 throw new ArgumentException("Property info cannot be null");
+            }
 
             var propertyValueString = UndefinedValue;
 
             if (value != null)
+            {
                 propertyValueString = value.ToString();
+            }
 
             Writer.WriteStartElement("Property");
             Writer.WriteAttributeString("name", propertyInfo.Name);
@@ -197,15 +211,21 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WriteFieldInfo(FieldInfo fieldInfo, object value)
         {
             if (fieldInfo == null)
+            {
                 throw new ArgumentException("Field info cannot be null");
+            }
 
             if (value == null)
+            {
                 throw new ArgumentException("Value cannot be null");
+            }
 
             var fieldValueString = UndefinedValue;
 
             if (fieldValueString != null)
+            {
                 fieldValueString = value.ToString();
+            }
 
             Writer.WriteStartElement("Field");
             Writer.WriteAttributeString("name", fieldInfo.Name);
@@ -220,7 +240,9 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WriteAdditionalInfo(NameValueCollection additionalInformation)
         {
             if (additionalInformation == null)
+            {
                 throw new ArgumentException("Additional information cannot be null");
+            }
 
             Writer.WriteStartElement("additionalInfo");
 
@@ -259,9 +281,7 @@ namespace Microsoft.KafkaNET.Library.Util
         /// <param name="writer">The stream to write formatting information to.</param>
         /// <param name="exception">The exception to format.</param>
         public TextExceptionFormatter(TextWriter writer, Exception exception)
-            : this(writer, exception, Guid.Empty)
-        {
-        }
+            : this(writer, exception, Guid.Empty) { }
 
         /// <summary>
         ///     Initializes a new instance of the
@@ -275,7 +295,10 @@ namespace Microsoft.KafkaNET.Library.Util
         public TextExceptionFormatter(TextWriter writer, Exception exception, Guid handlingInstanceId)
             : base(exception, handlingInstanceId)
         {
-            if (writer == null) throw new ArgumentNullException("writer");
+            if (writer == null)
+            {
+                throw new ArgumentNullException("writer");
+            }
 
             Writer = writer;
         }
@@ -292,9 +315,11 @@ namespace Microsoft.KafkaNET.Library.Util
         public override void Format()
         {
             if (HandlingInstanceId != Guid.Empty)
+            {
                 Writer.WriteLine(
-                    "HandlingInstanceID: {0}",
-                    HandlingInstanceId.ToString("D", CultureInfo.InvariantCulture));
+                                 "HandlingInstanceID: {0}",
+                                 HandlingInstanceId.ToString("D", CultureInfo.InvariantCulture));
+            }
             base.Format();
         }
 
@@ -307,7 +332,7 @@ namespace Microsoft.KafkaNET.Library.Util
             // -------------------------------------------------
             // Workaround for TFS Bug # 752845, refer bug description for more information
             var line = string.Format(CultureInfo.CurrentCulture, "An exception of type '{0}' occurred and was caught.",
-                Exception.GetType().FullName);
+                                     Exception.GetType().FullName);
             Writer.WriteLine(line);
 
             var separator = new string('-', line.Length);
@@ -374,7 +399,9 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WriteExceptionType(Type exceptionType)
         {
             if (exceptionType == null)
+            {
                 throw new ArgumentException("Exception type cannot be null");
+            }
 
             IndentAndWriteLine(TypeString, exceptionType.AssemblyQualifiedName);
         }
@@ -419,7 +446,9 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WritePropertyInfo(PropertyInfo propertyInfo, object value)
         {
             if (propertyInfo == null)
+            {
                 throw new ArgumentException("Property info cannot be null");
+            }
 
             Indent();
             Writer.Write(propertyInfo.Name);
@@ -435,7 +464,9 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WriteFieldInfo(FieldInfo fieldInfo, object value)
         {
             if (fieldInfo == null)
+            {
                 throw new ArgumentException("Field info cannot be null");
+            }
 
             Indent();
             Writer.Write(fieldInfo.Name);
@@ -479,7 +510,9 @@ namespace Microsoft.KafkaNET.Library.Util
         protected override void WriteAdditionalInfo(NameValueCollection additionalInformation)
         {
             if (additionalInformation == null)
+            {
                 throw new ArgumentException("Additional information cannot be null");
+            }
 
             Writer.WriteLine(AdditionalInfoConst);
             Writer.WriteLine();
@@ -499,7 +532,9 @@ namespace Microsoft.KafkaNET.Library.Util
         private void Indent()
         {
             for (var i = 0; i < innerDepth; i++)
+            {
                 Writer.Write("\t");
+            }
         }
 
         private void IndentAndWriteLine(string format, params object[] arg)
@@ -532,7 +567,7 @@ namespace Microsoft.KafkaNET.Library.Util
         public const string UndefinedValue = "<undefined value>";
 
         private static readonly ArrayList IgnoredProperties = new ArrayList(
-            new[] {"Source", "Message", "HelpLink", "InnerException", "StackTrace"});
+                                                                            new[] {"Source", "Message", "HelpLink", "InnerException", "StackTrace"});
 
         private NameValueCollection additionalInfo;
 
@@ -544,7 +579,10 @@ namespace Microsoft.KafkaNET.Library.Util
         /// <param name="handlingInstanceId">The id of the handling chain.</param>
         protected ExceptionFormatter(Exception exception, Guid handlingInstanceId)
         {
-            if (exception == null) throw new ArgumentNullException("exception");
+            if (exception == null)
+            {
+                throw new ArgumentNullException("exception");
+            }
 
             Exception = exception;
             HandlingInstanceId = handlingInstanceId;
@@ -665,7 +703,10 @@ namespace Microsoft.KafkaNET.Library.Util
         /// </remarks>
         protected virtual void WriteException(Exception exceptionToFormat, Exception outerException)
         {
-            if (exceptionToFormat == null) throw new ArgumentNullException("exceptionToFormat");
+            if (exceptionToFormat == null)
+            {
+                throw new ArgumentNullException("exceptionToFormat");
+            }
 
             WriteExceptionType(exceptionToFormat.GetType());
             WriteMessage(exceptionToFormat.Message);
@@ -676,12 +717,16 @@ namespace Microsoft.KafkaNET.Library.Util
 
             // We only want additional information on the top most exception
             if (outerException == null)
+            {
                 WriteAdditionalInfo(AdditionalInfo);
+            }
 
             var inner = exceptionToFormat.InnerException;
 
             if (inner != null)
+            {
                 WriteException(inner, exceptionToFormat);
+            }
         }
 
         /// <summary>
@@ -701,7 +746,10 @@ namespace Microsoft.KafkaNET.Library.Util
         /// </remarks>
         protected void WriteReflectionInfo(Exception exceptionToFormat)
         {
-            if (exceptionToFormat == null) throw new ArgumentNullException("exceptionToFormat");
+            if (exceptionToFormat == null)
+            {
+                throw new ArgumentNullException("exceptionToFormat");
+            }
 
             var type = exceptionToFormat.GetType();
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
@@ -709,6 +757,7 @@ namespace Microsoft.KafkaNET.Library.Util
             object value;
 
             foreach (var property in properties)
+            {
                 if (property.CanRead && IgnoredProperties.IndexOf(property.Name) == -1 &&
                     property.GetIndexParameters().Length == 0)
                 {
@@ -722,6 +771,7 @@ namespace Microsoft.KafkaNET.Library.Util
                     }
                     WritePropertyInfo(property, value);
                 }
+            }
 
             foreach (var field in fields)
             {

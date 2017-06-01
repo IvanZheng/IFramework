@@ -16,9 +16,7 @@ namespace Autofac.Configuration
         private static ResourceManager resourceMan;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal ConfigurationSettingsReaderResources()
-        {
-        }
+        internal ConfigurationSettingsReaderResources() { }
 
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         internal static ResourceManager ResourceManager
@@ -29,7 +27,7 @@ namespace Autofac.Configuration
                 {
                     var resourceManager =
                         new ResourceManager("Autofac.Configuration.ConfigurationSettingsReaderResources",
-                            typeof(ConfigurationSettingsReaderResources).Assembly);
+                                            typeof(ConfigurationSettingsReaderResources).Assembly);
                     resourceMan = resourceManager;
                 }
                 return resourceMan;
@@ -42,31 +40,31 @@ namespace Autofac.Configuration
         internal static string ArgumentMayNotBeEmpty => ResourceManager.GetString("ArgumentMayNotBeEmpty", Culture);
 
         internal static string ConfigurationFileNotFound => ResourceManager.GetString("ConfigurationFileNotFound",
-            Culture);
+                                                                                      Culture);
 
         internal static string InitializeSectionHandler => ResourceManager.GetString("InitializeSectionHandler",
-            Culture);
+                                                                                     Culture);
 
         internal static string NoXmlInConfiguration => ResourceManager.GetString("NoXmlInConfiguration", Culture);
 
         internal static string SectionNotFound => ResourceManager.GetString("SectionNotFound", Culture);
 
         internal static string ServiceTypeMustBeSpecified => ResourceManager.GetString("ServiceTypeMustBeSpecified",
-            Culture);
+                                                                                       Culture);
 
         internal static string TypeConversionUnsupported => ResourceManager.GetString("TypeConversionUnsupported",
-            Culture);
+                                                                                      Culture);
 
         internal static string TypeConverterAttributeTypeNotConverter => ResourceManager.GetString(
-            "TypeConverterAttributeTypeNotConverter", Culture);
+                                                                                                   "TypeConverterAttributeTypeNotConverter", Culture);
 
         internal static string TypeNotFound => ResourceManager.GetString("TypeNotFound", Culture);
 
         internal static string UnrecognisedAutoActivate => ResourceManager.GetString("UnrecognisedAutoActivate",
-            Culture);
+                                                                                     Culture);
 
         internal static string UnrecognisedInjectProperties => ResourceManager.GetString("UnrecognisedInjectProperties",
-            Culture);
+                                                                                         Culture);
 
         internal static string UnrecognisedOwnership => ResourceManager.GetString("UnrecognisedOwnership", Culture);
 

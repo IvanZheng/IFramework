@@ -18,7 +18,9 @@ namespace IFramework.SingleSignOn.IdentityProvider
                 var siteCookie = HttpContext.Current.Request.Cookies[SiteCookieName];
 
                 if (siteCookie != null)
+                {
                     return siteCookie.Values.GetValues(SiteName);
+                }
             }
 
             return new string[0];
@@ -32,7 +34,9 @@ namespace IFramework.SingleSignOn.IdentityProvider
                 var siteCookie =
                     HttpContext.Current.Request.Cookies[SiteCookieName];
                 if (siteCookie == null)
+                {
                     siteCookie = new HttpCookie(SiteCookieName);
+                }
 
                 siteCookie.Values.Add(SiteName, siteUrl);
 

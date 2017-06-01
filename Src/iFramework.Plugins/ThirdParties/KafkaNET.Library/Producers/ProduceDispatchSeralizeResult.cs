@@ -8,8 +8,9 @@ namespace Kafka.Client.Producers
     public class ProduceDispatchSeralizeResult<K>
     {
         public ProduceDispatchSeralizeResult(IEnumerable<Exception> exceptions,
-            IEnumerable<ProducerData<K, Message>> failedProducerDatas,
-            List<Tuple<int, TopicAndPartition, ProducerResponseStatus>> failedDetail, bool hasDataNeedDispatch)
+                                             IEnumerable<ProducerData<K, Message>> failedProducerDatas,
+                                             List<Tuple<int, TopicAndPartition, ProducerResponseStatus>> failedDetail,
+                                             bool hasDataNeedDispatch)
         {
             Exceptions = exceptions;
             FailedProducerDatas = failedProducerDatas;

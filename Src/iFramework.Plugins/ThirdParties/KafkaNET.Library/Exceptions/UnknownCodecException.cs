@@ -5,17 +5,11 @@ namespace Kafka.Client.Exceptions
 {
     public class UnknownCodecException : Exception
     {
-        public UnknownCodecException()
-        {
-        }
+        public UnknownCodecException() { }
 
         public UnknownCodecException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
-        public UnknownCodecException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public UnknownCodecException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

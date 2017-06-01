@@ -211,7 +211,7 @@ namespace Kafka.Client.Consumers
             //if (Logger.IsDebugEnabled)
             {
                 Logger.DebugFormat("Set lastKnownGoodNextRequestOffset to {0}. {1}", lastKnownGoodNextRequestOffset,
-                    this);
+                                   this);
             }
         }
 
@@ -233,7 +233,7 @@ namespace Kafka.Client.Consumers
                 var offset = messages.Messages.Last().Offset;
 
                 Logger.InfoFormat("{2} : Updating fetch offset = {0} with value = {1}", fetchedOffset, offset,
-                    PartitionId);
+                                  PartitionId);
                 chunkQueue.Add(new FetchedDataChunk(messages, this, fetchedOffset));
                 Interlocked.Exchange(ref fetchedOffset, offset);
                 Logger.Debug("Updated fetch offset of " + this + " to " + offset);
@@ -245,7 +245,7 @@ namespace Kafka.Client.Consumers
         public override string ToString()
         {
             return string.Format("{0}:{1}: fetched offset = {2}: consumed offset = {3}", Topic, PartitionId,
-                fetchedOffset, consumedOffset);
+                                 fetchedOffset, consumedOffset);
         }
     }
 }

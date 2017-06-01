@@ -11,9 +11,7 @@
         ///     Initializes a new instance of the <see cref="ZooKeeperSessionCreatedEventArgs" /> class.
         /// </summary>
         protected ZooKeeperSessionCreatedEventArgs()
-            : base("New session created")
-        {
-        }
+            : base("New session created") { }
 
         /// <summary>
         ///     Gets the event type.

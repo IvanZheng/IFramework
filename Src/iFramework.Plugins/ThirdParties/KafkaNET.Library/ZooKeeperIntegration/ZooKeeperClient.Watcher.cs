@@ -49,18 +49,18 @@ namespace Kafka.Client.ZooKeeperIntegration
         ///     Used for testing purpose
         /// </remarks>
         public int? IdleTime => idleTime.HasValue
-            ? Convert.ToInt32((DateTime.Now - idleTime.Value).TotalMilliseconds)
-            : (int?) null;
+                                    ? Convert.ToInt32((DateTime.Now - idleTime.Value).TotalMilliseconds)
+                                    : (int?) null;
 
         public void Process(WatchedEvent e)
         {
             Logger.DebugFormat("Process called by handler. Received event, e.EventType:{0}  e.State: {1} e.Path :{2} ",
-                e.Type, e.State, e.Path);
+                               e.Type, e.State, e.Path);
             zooKeeperEventWorker = Thread.CurrentThread;
             if (shutdownTriggered)
             {
                 Logger.DebugFormat("Shutdown triggered. Ignoring event. Type: {0}, Path: {1}, State: {2} ", e.Type,
-                    e.Path ?? "null", e.State);
+                                   e.Path ?? "null", e.State);
                 return;
             }
 
@@ -76,17 +76,21 @@ namespace Kafka.Client.ZooKeeperIntegration
                     || e.Type == EventType.NodeChildrenChanged;
 
                 Logger.DebugFormat("Process called by handler. stateChanged:{0} znodeChanged:{1}  dataChanged:{2} ",
-                    stateChanged, znodeChanged, dataChanged);
+                                   stateChanged, znodeChanged, dataChanged);
 
                 lock (somethingChanged)
                 {
                     try
                     {
                         if (stateChanged)
+                        {
                             ProcessStateChange(e);
+                        }
 
                         if (dataChanged)
+                        {
                             ProcessDataOrChildChange(e);
+                        }
                     }
                     finally
                     {
@@ -105,18 +109,24 @@ namespace Kafka.Client.ZooKeeperIntegration
                                 }
 
                                 foreach (var path in childChangedHandlers.Keys)
+                                {
                                     Enqueue(new ZooKeeperChildChangedEventArgs(path));
+                                }
 
                                 foreach (var path in dataChangedHandlers.Keys)
+                                {
                                     Enqueue(new ZooKeeperDataChangedEventArgs(path));
+                                }
                             }
                         }
 
                         if (znodeChanged)
+                        {
                             lock (znodeChangedLock)
                             {
                                 Monitor.PulseAll(znodeChangedLock);
                             }
+                        }
                     }
 
                     Monitor.PulseAll(somethingChanged);
@@ -176,13 +186,13 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             childChangedHandlers.AddOrUpdate(
-                path,
-                new ChildChangedEventItem(listener.HandleChildChange),
-                (key, oldValue) =>
-                {
-                    oldValue.ChildChanged += listener.HandleChildChange;
-                    return oldValue;
-                });
+                                             path,
+                                             new ChildChangedEventItem(listener.HandleChildChange),
+                                             (key, oldValue) =>
+                                             {
+                                                 oldValue.ChildChanged += listener.HandleChildChange;
+                                                 return oldValue;
+                                             });
             WatchForChilds(path);
             Logger.Debug("Subscribed child changes handler " + listener.GetType().Name + " for path: " + path);
         }
@@ -203,13 +213,13 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             childChangedHandlers.AddOrUpdate(
-                path,
-                new ChildChangedEventItem(),
-                (key, oldValue) =>
-                {
-                    oldValue.ChildChanged -= listener.HandleChildChange;
-                    return oldValue;
-                });
+                                             path,
+                                             new ChildChangedEventItem(),
+                                             (key, oldValue) =>
+                                             {
+                                                 oldValue.ChildChanged -= listener.HandleChildChange;
+                                                 return oldValue;
+                                             });
             Logger.Debug("Unsubscribed child changes handler " + listener.GetType().Name + " for path: " + path);
         }
 
@@ -229,14 +239,14 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             dataChangedHandlers.AddOrUpdate(
-                path,
-                new DataChangedEventItem(listener.HandleDataChange, listener.HandleDataDelete),
-                (key, oldValue) =>
-                {
-                    oldValue.DataChanged += listener.HandleDataChange;
-                    oldValue.DataDeleted += listener.HandleDataDelete;
-                    return oldValue;
-                });
+                                            path,
+                                            new DataChangedEventItem(listener.HandleDataChange, listener.HandleDataDelete),
+                                            (key, oldValue) =>
+                                            {
+                                                oldValue.DataChanged += listener.HandleDataChange;
+                                                oldValue.DataDeleted += listener.HandleDataDelete;
+                                                return oldValue;
+                                            });
             WatchForData(path);
             Logger.Debug("Subscribed data changes handler " + listener.GetType().Name + " for path: " + path);
         }
@@ -257,14 +267,14 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             dataChangedHandlers.AddOrUpdate(
-                path,
-                new DataChangedEventItem(),
-                (key, oldValue) =>
-                {
-                    oldValue.DataChanged -= listener.HandleDataChange;
-                    oldValue.DataDeleted -= listener.HandleDataDelete;
-                    return oldValue;
-                });
+                                            path,
+                                            new DataChangedEventItem(),
+                                            (key, oldValue) =>
+                                            {
+                                                oldValue.DataChanged -= listener.HandleDataChange;
+                                                oldValue.DataDeleted -= listener.HandleDataDelete;
+                                                return oldValue;
+                                            });
             Logger.Debug("Unsubscribed data changes handler " + listener.GetType().Name + " for path: " + path);
         }
 
@@ -300,23 +310,27 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             if (zooKeeperEventWorker != null && Thread.CurrentThread == zooKeeperEventWorker)
+            {
                 throw new InvalidOperationException("Must not be done in the zookeeper event thread.");
+            }
 
             return RetryUntilConnected(
-                () =>
-                {
-                    Exists(path);
-                    try
-                    {
-                        return GetChildren(path);
-                    }
-                    catch (KeeperException e)
-                    {
-                        if (e.ErrorCode == KeeperException.Code.NONODE)
-                            return null;
-                        throw;
-                    }
-                });
+                                       () =>
+                                       {
+                                           Exists(path);
+                                           try
+                                           {
+                                               return GetChildren(path);
+                                           }
+                                           catch (KeeperException e)
+                                           {
+                                               if (e.ErrorCode == KeeperException.Code.NONODE)
+                                               {
+                                                   return null;
+                                               }
+                                               throw;
+                                           }
+                                       });
         }
 
         /// <summary>
@@ -331,7 +345,7 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             RetryUntilConnected(
-                () => Exists(path, true));
+                                () => Exists(path, true));
         }
 
         /// <summary>
@@ -396,12 +410,16 @@ namespace Kafka.Client.ZooKeeperIntegration
             ChildChangedEventItem childChanged;
             childChangedHandlers.TryGetValue(path, out childChanged);
             if (childChanged != null && childChanged.Count > 0)
+            {
                 return true;
+            }
 
             DataChangedEventItem dataChanged;
             dataChangedHandlers.TryGetValue(path, out dataChanged);
             if (dataChanged != null && dataChanged.TotalCount > 0)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -433,7 +451,9 @@ namespace Kafka.Client.ZooKeeperIntegration
             while (true)
             {
                 while (!eventsQueue.IsEmpty)
+                {
                     Dequeue();
+                }
 
                 lock (somethingChanged)
                 {
@@ -467,6 +487,7 @@ namespace Kafka.Client.ZooKeeperIntegration
                 ZooKeeperEventArgs e;
                 var success = eventsQueue.TryDequeue(out e);
                 if (success)
+                {
                     if (e != null)
                     {
                         Logger.Debug("Event dequeued: " + e);
@@ -488,6 +509,7 @@ namespace Kafka.Client.ZooKeeperIntegration
                                 throw new InvalidOperationException("Not supported event type");
                         }
                     }
+                }
             }
             catch (Exception exc)
             {
@@ -507,16 +529,20 @@ namespace Kafka.Client.ZooKeeperIntegration
             lock (stateChangedLock)
             {
                 Logger.InfoFormat("Current state:{0} in the lib:{1}", currentState,
-                    connection.GetInternalZKClient().State);
+                                  connection.GetInternalZKClient().State);
                 currentState = e.State;
             }
 
             if (shutdownTriggered)
+            {
                 return;
+            }
 
             Enqueue(new ZooKeeperStateChangedEventArgs(e.State));
             if (e.State == KeeperState.Expired)
+            {
                 while (true)
+                {
                     try
                     {
                         Reconnect(connection.Servers, connection.SessionTimeout);
@@ -528,6 +554,8 @@ namespace Kafka.Client.ZooKeeperIntegration
                         Logger.Error("Exception occurred while trying to reconnect to ZooKeeper", ex);
                         Thread.Sleep(1000);
                     }
+                }
+            }
         }
 
         /// <summary>
@@ -539,17 +567,23 @@ namespace Kafka.Client.ZooKeeperIntegration
         private void ProcessDataOrChildChange(WatchedEvent e)
         {
             if (shutdownTriggered)
+            {
                 return;
+            }
 
             if (e.Type == EventType.NodeChildrenChanged
                 || e.Type == EventType.NodeCreated
                 || e.Type == EventType.NodeDeleted)
+            {
                 Enqueue(new ZooKeeperChildChangedEventArgs(e.Path));
+            }
 
             if (e.Type == EventType.NodeDataChanged
                 || e.Type == EventType.NodeCreated
                 || e.Type == EventType.NodeDeleted)
+            {
                 Enqueue(new ZooKeeperDataChangedEventArgs(e.Path));
+            }
         }
 
         /// <summary>
@@ -564,10 +598,14 @@ namespace Kafka.Client.ZooKeeperIntegration
             {
                 var handlers = stateChangedHandlers;
                 if (handlers == null)
+                {
                     return;
+                }
 
                 foreach (var handler in handlers.GetInvocationList())
+                {
                     Logger.Debug(e + " sent to " + handler.Target);
+                }
 
                 handlers(e);
             }
@@ -587,10 +625,14 @@ namespace Kafka.Client.ZooKeeperIntegration
         {
             var handlers = sessionCreatedHandlers;
             if (handlers == null)
+            {
                 return;
+            }
 
             foreach (var handler in handlers.GetInvocationList())
+            {
                 Logger.Debug(e + " sent to " + handler.Target);
+            }
 
             handlers(e);
         }
@@ -606,7 +648,9 @@ namespace Kafka.Client.ZooKeeperIntegration
             ChildChangedEventItem handlers;
             childChangedHandlers.TryGetValue(e.Path, out handlers);
             if (handlers == null || handlers.Count == 0)
+            {
                 return;
+            }
 
             Exists(e.Path);
             try
@@ -616,9 +660,7 @@ namespace Kafka.Client.ZooKeeperIntegration
             }
             catch (KeeperException ex) // KeeperException.NoNodeException)
             {
-                if (ex.ErrorCode == KeeperException.Code.NONODE)
-                {
-                }
+                if (ex.ErrorCode == KeeperException.Code.NONODE) { }
                 else
                 {
                     throw;
@@ -639,7 +681,9 @@ namespace Kafka.Client.ZooKeeperIntegration
             DataChangedEventItem handlers;
             dataChangedHandlers.TryGetValue(e.Path, out handlers);
             if (handlers == null || handlers.TotalCount == 0)
+            {
                 return;
+            }
 
             try
             {
@@ -651,9 +695,13 @@ namespace Kafka.Client.ZooKeeperIntegration
             catch (KeeperException ex)
             {
                 if (ex.ErrorCode == KeeperException.Code.NONODE)
+                {
                     handlers.OnDataDeleted(e);
+                }
                 else
+                {
                     throw;
+                }
             }
         }
     }

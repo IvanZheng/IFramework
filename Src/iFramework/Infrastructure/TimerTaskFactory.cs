@@ -13,7 +13,9 @@ namespace IFramework.Infrastructure
         {
             // Short-circuit #1: infinite timeout or task already completed
             if (task.IsCompleted || timeout == Infinite)
+            {
                 return task;
+            }
 
             // tcs.Task will be returned as a proxy to the caller
             var tcs = new TaskCompletionSource<object>();
@@ -51,7 +53,9 @@ namespace IFramework.Infrastructure
         {
             // Short-circuit #1: infinite timeout or task already completed
             if (task.IsCompleted || timeout == Infinite)
+            {
                 return task;
+            }
 
             // tcs.Task will be returned as a proxy to the caller
             var tcs = new TaskCompletionSource<TResult>();
@@ -85,11 +89,13 @@ namespace IFramework.Infrastructure
         }
 
         public static Task<T2> ContinueWith<T1, T2>(this Task<T1> antecedentTask,
-            Func<Task<T1>, T2> continuationFunc,
-            TimeSpan timeout)
+                                                    Func<Task<T1>, T2> continuationFunc,
+                                                    TimeSpan timeout)
         {
             if (timeout == Infinite)
+            {
                 return antecedentTask.ContinueWith(t => continuationFunc(t));
+            }
 
             TaskCompletionSource<T2> taskCompletionSource = null;
             Timer timer = null;
@@ -103,23 +109,23 @@ namespace IFramework.Infrastructure
             taskCompletionSource = new TaskCompletionSource<T2>(timer);
 
             antecedentTask.ContinueWith(t =>
-                {
-                    timer.Change(timeout, DoNotRepeat);
-                    return continuationFunc(t);
-                })
-                .ContinueWith(t =>
-                {
-                    timer.Dispose();
-                    MarshalTaskResults(t, taskCompletionSource);
-                });
+                          {
+                              timer.Change(timeout, DoNotRepeat);
+                              return continuationFunc(t);
+                          })
+                          .ContinueWith(t =>
+                          {
+                              timer.Dispose();
+                              MarshalTaskResults(t, taskCompletionSource);
+                          });
             return taskCompletionSource.Task;
         }
 
         public static Task<T2> ContinueWith<T1, T2>(this Task<T1> antecedentTask,
-            Func<Task<T1>, T2> continuationFunc,
-            Func<Task<T1>, T2, bool> predicate,
-            TimeSpan pollInterval,
-            TimeSpan timeout)
+                                                    Func<Task<T1>, T2> continuationFunc,
+                                                    Func<Task<T1>, T2, bool> predicate,
+                                                    TimeSpan pollInterval,
+                                                    TimeSpan timeout)
         {
             Timer timer = null;
             TaskCompletionSource<T2> taskCompletionSource = null;
@@ -182,10 +188,10 @@ namespace IFramework.Infrastructure
                 case TaskStatus.RanToCompletion:
                     var castedSource = source as Task<TResult>;
                     proxy.TrySetResult(
-                        castedSource == null
-                            ? default(TResult)
-                            : // source is a Task
-                            castedSource.Result); // source is a Task<TResult>
+                                       castedSource == null
+                                           ? default(TResult)
+                                           : // source is a Task
+                                           castedSource.Result); // source is a Task<TResult>
                     break;
             }
         }
@@ -203,8 +209,11 @@ namespace IFramework.Infrastructure
         ///     The result returned by the specified function, or <see langword="null" /> if the result is not valid and the
         ///     task times out.
         /// </returns>
-        public static Task<T> StartNew<T>(Func<T> getResult, Func<T, bool> isResultValid, TimeSpan pollInterval,
-            TimeSpan timeout, bool immediatelyStart = true)
+        public static Task<T> StartNew<T>(Func<T> getResult,
+                                          Func<T, bool> isResultValid,
+                                          TimeSpan pollInterval,
+                                          TimeSpan timeout,
+                                          bool immediatelyStart = true)
         {
             Timer timer = null;
             TaskCompletionSource<T> taskCompletionSource = null;

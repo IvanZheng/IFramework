@@ -9,11 +9,9 @@ using Sample.DTO;
 namespace Sample.Domain.Model
 {
     public class Product : TimestampedAggregateRoot,
-        IEventSubscriber<ProductCreated>
+                           IEventSubscriber<ProductCreated>
     {
-        public Product()
-        {
-        }
+        public Product() { }
 
         public Product(Guid id, string name, int count)
         {
@@ -42,7 +40,9 @@ namespace Sample.Domain.Model
         {
             Count = Count - reduceCount;
             if (Count < 0)
+            {
                 throw new SampleDomainException(ErrorCode.CountNotEnougth);
+            }
         }
     }
 }

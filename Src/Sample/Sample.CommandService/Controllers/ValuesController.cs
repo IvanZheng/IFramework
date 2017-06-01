@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web.Http;
 using IFramework.AspNet;
 using IFramework.Infrastructure;
@@ -12,11 +11,7 @@ namespace Sample.CommandService.Controllers
         // GET api/<controller>
         public Task<ApiResult<string[]>> Get()
         {
-            return ProcessAsync(() =>
-            {
-                throw new Exception("test exception");
-                return Task.FromResult(new[] {"value1", "value2"});
-            });
+            return ProcessAsync(() => Task.FromResult(new[] {"value1", "value2"}));
         }
 
         // GET api/<controller>/5
@@ -26,18 +21,12 @@ namespace Sample.CommandService.Controllers
         }
 
         // POST api/<controller>
-        public void Post([FromBody] string value)
-        {
-        }
+        public void Post([FromBody] string value) { }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+        public void Put(int id, [FromBody] string value) { }
 
         // DELETE api/<controller>/5
-        public void Delete(int id)
-        {
-        }
+        public void Delete(int id) { }
     }
 }

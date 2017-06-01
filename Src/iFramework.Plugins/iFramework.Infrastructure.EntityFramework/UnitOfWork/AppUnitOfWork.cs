@@ -19,10 +19,10 @@ namespace IFramework.EntityFramework
         protected IMessageStore _messageStore;
 
         public AppUnitOfWork(IEventBus eventBus,
-            ILoggerFactory loggerFactory,
-            IMessagePublisher eventPublisher,
-            IMessageQueueClient messageQueueClient,
-            IMessageStore messageStore)
+                             ILoggerFactory loggerFactory,
+                             IMessagePublisher eventPublisher,
+                             IMessageQueueClient messageQueueClient,
+                             IMessageStore messageStore)
             : base(eventBus, loggerFactory)
         {
             _dbContexts = new List<MSDbContext>();
@@ -37,19 +37,21 @@ namespace IFramework.EntityFramework
         {
             base.BeforeCommit();
             _eventMessageStates.Clear();
-            _eventBus.GetEvents().ForEach(@event =>
-            {
-                var topic = @event.GetFormatTopic();
-                var eventContext = _messageQueueClient.WrapMessage(@event, null, topic, @event.Key);
-                _eventMessageStates.Add(new MessageState(eventContext));
-            });
+            _eventBus.GetEvents()
+                     .ForEach(@event =>
+                     {
+                         var topic = @event.GetFormatTopic();
+                         var eventContext = _messageQueueClient.WrapMessage(@event, null, topic, @event.Key);
+                         _eventMessageStates.Add(new MessageState(eventContext));
+                     });
 
-            _eventBus.GetToPublishAnywayMessages().ForEach(@event =>
-            {
-                var topic = @event.GetFormatTopic();
-                var eventContext = _messageQueueClient.WrapMessage(@event, null, topic, @event.Key);
-                _eventMessageStates.Add(new MessageState(eventContext));
-            });
+            _eventBus.GetToPublishAnywayMessages()
+                     .ForEach(@event =>
+                     {
+                         var topic = @event.GetFormatTopic();
+                         var eventContext = _messageQueueClient.WrapMessage(@event, null, topic, @event.Key);
+                         _eventMessageStates.Add(new MessageState(eventContext));
+                     });
             _messageStore.SaveCommand(null, null, _eventMessageStates.Select(s => s.MessageContext).ToArray());
         }
 
@@ -61,7 +63,9 @@ namespace IFramework.EntityFramework
             try
             {
                 if (_messagePublisher != null && _eventMessageStates.Count > 0)
+                {
                     _messagePublisher.SendAsync(_eventMessageStates.ToArray());
+                }
             }
             catch (Exception ex)
             {

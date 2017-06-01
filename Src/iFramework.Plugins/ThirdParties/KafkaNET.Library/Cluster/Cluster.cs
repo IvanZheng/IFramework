@@ -42,7 +42,9 @@ namespace Kafka.Client.Cluster
         public Cluster(IEnumerable<Broker> brokers) : this()
         {
             foreach (var broker in brokers)
+            {
                 Brokers.Add(broker.Id, broker);
+            }
         }
 
         /// <summary>
@@ -62,7 +64,9 @@ namespace Kafka.Client.Cluster
         public Broker GetBroker(int id)
         {
             if (Brokers.ContainsKey(id))
+            {
                 return Brokers[id];
+            }
 
             return null;
         }
@@ -77,7 +81,9 @@ namespace Kafka.Client.Cluster
         {
             int id;
             if (int.TryParse(node, NumberStyles.Integer, CultureInfo.InvariantCulture, out id))
+            {
                 return Broker.CreateBroker(id, brokerInfoString);
+            }
 
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "{0} is not a valid integer", node));
         }

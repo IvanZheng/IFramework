@@ -8,7 +8,7 @@ namespace Kafka.Client.Messages.Compression
         {
             var compressionArray = new byte[input.Length + 2];
             var compressedLength = SnappyCompress.Compress(ByteBuffer.NewSync(compressionArray),
-                ByteBuffer.NewSync(input));
+                                                           ByteBuffer.NewSync(input));
 
             var output = new byte[compressedLength];
 

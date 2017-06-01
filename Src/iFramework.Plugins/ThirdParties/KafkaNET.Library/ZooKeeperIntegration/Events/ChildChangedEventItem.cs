@@ -21,9 +21,7 @@ namespace Kafka.Client.ZooKeeperIntegration.Events
         /// <remarks>
         ///     Should use external logger to keep same format of all event logs
         /// </remarks>
-        public ChildChangedEventItem()
-        {
-        }
+        public ChildChangedEventItem() { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChildChangedEventItem" /> class.
@@ -70,10 +68,14 @@ namespace Kafka.Client.ZooKeeperIntegration.Events
         {
             var handlers = childChanged;
             if (handlers == null)
+            {
                 return;
+            }
 
             foreach (var handler in handlers.GetInvocationList())
+            {
                 Logger.Debug(e + " sent to " + handler.Target);
+            }
 
             handlers(e);
         }

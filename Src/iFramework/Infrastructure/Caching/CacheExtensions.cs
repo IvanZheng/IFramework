@@ -38,24 +38,33 @@ namespace IFramework.Infrastructure.Caching
             {
                 result = acquire();
                 if (cacheTime > 0)
+                {
                     cacheManager.Set(key, result, cacheTime);
+                }
             }
             return result;
         }
 
-        public static Task<T> GetAsync<T>(this ICacheManager cacheManager, string key, int cacheTime,
-            Func<Task<T>> acquire)
+        public static Task<T> GetAsync<T>(this ICacheManager cacheManager,
+                                          string key,
+                                          int cacheTime,
+                                          Func<Task<T>> acquire)
         {
             var taskResult = new Task<T>(() => cacheManager.Get<T>(key));
             taskResult.RunSynchronously();
             if (taskResult.Result == null)
-                taskResult = acquire().ContinueWith(t =>
-                {
-                    var result = t.Result;
-                    if (cacheTime > 0)
-                        cacheManager.Set(key, result, cacheTime);
-                    return result;
-                });
+            {
+                taskResult = acquire()
+                    .ContinueWith(t =>
+                    {
+                        var result = t.Result;
+                        if (cacheTime > 0)
+                        {
+                            cacheManager.Set(key, result, cacheTime);
+                        }
+                        return result;
+                    });
+            }
             return taskResult;
         }
     }

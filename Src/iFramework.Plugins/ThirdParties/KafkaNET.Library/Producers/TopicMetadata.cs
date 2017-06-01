@@ -34,7 +34,9 @@ namespace Kafka.Client.Producers
             {
                 var size = (int) BitWorks.GetShortStringLength(Topic, AbstractRequest.DefaultEncoding);
                 foreach (var partitionMetadata in PartitionsMetadata)
+                {
                     size += DefaultNumOfPartitionsSize + partitionMetadata.SizeInBytes;
+                }
                 return size;
             }
         }
@@ -56,7 +58,9 @@ namespace Kafka.Client.Producers
             writer.WriteShortString(Topic, AbstractRequest.DefaultEncoding);
             writer.Write(PartitionsMetadata.Count());
             foreach (var partitionMetadata in PartitionsMetadata)
+            {
                 partitionMetadata.WriteTo(writer);
+            }
         }
 
         internal static TopicMetadata ParseFrom(KafkaBinaryReader reader, Dictionary<int, Broker> brokers)
@@ -66,7 +70,9 @@ namespace Kafka.Client.Producers
             var numPartitions = reader.ReadInt32();
             var partitionsMetadata = new List<PartitionMetadata>();
             for (var i = 0; i < numPartitions; i++)
+            {
                 partitionsMetadata.Add(PartitionMetadata.ParseFrom(reader, brokers));
+            }
             return new TopicMetadata(topic, partitionsMetadata, ErrorMapper.ToError(errorCode));
         }
 
@@ -74,7 +80,7 @@ namespace Kafka.Client.Producers
         {
             var sb = new StringBuilder(1024);
             sb.AppendFormat("TopicMetaData.Topic:{0},Error:{1},PartitionMetaData Count={2}", Topic, Error,
-                PartitionsMetadata.Count());
+                            PartitionsMetadata.Count());
             sb.AppendLine();
 
             var j = 0;

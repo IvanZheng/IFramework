@@ -26,6 +26,7 @@ namespace Kafka.Client.Producers
 
         private readonly ICallbackHandler<TKey, TData> callbackHandler;
         private readonly object shuttingDownLock = new object();
+        private readonly SyncProducerPool syncProducerPool;
 
         private readonly IDictionary<string, TopicMetadata> topicPartitionInfo = new Dictionary<string, TopicMetadata>()
             ;
@@ -34,7 +35,6 @@ namespace Kafka.Client.Producers
             new Dictionary<string, DateTime>();
 
         private volatile bool disposed;
-        private readonly SyncProducerPool syncProducerPool;
 
         public Producer(ICallbackHandler<TKey, TData> callbackHandler)
         {
@@ -47,11 +47,11 @@ namespace Kafka.Client.Producers
 
             syncProducerPool = new SyncProducerPool(config);
             callbackHandler = new DefaultCallbackHandler<TKey, TData>(config,
-                ReflectionHelper.Instantiate<IPartitioner<TKey>>(config.PartitionerClass),
-                ReflectionHelper.Instantiate<IEncoder<TData>>(config.SerializerClass),
-                new BrokerPartitionInfo(syncProducerPool, topicPartitionInfo, topicPartitionInfoLastUpdateTime,
-                    Config.TopicMetaDataRefreshIntervalMS, syncProducerPool.zkClient),
-                syncProducerPool);
+                                                                      ReflectionHelper.Instantiate<IPartitioner<TKey>>(config.PartitionerClass),
+                                                                      ReflectionHelper.Instantiate<IEncoder<TData>>(config.SerializerClass),
+                                                                      new BrokerPartitionInfo(syncProducerPool, topicPartitionInfo, topicPartitionInfoLastUpdateTime,
+                                                                                              Config.TopicMetaDataRefreshIntervalMS, syncProducerPool.zkClient),
+                                                                      syncProducerPool);
         }
 
         public ProducerConfiguration Config { get; }
@@ -90,24 +90,34 @@ namespace Kafka.Client.Producers
         public override string ToString()
         {
             if (Config == null)
+            {
                 return "Producer: Config is null.";
+            }
             if (syncProducerPool == null)
+            {
                 return "Producer: syncProducerPool is null.";
+            }
             return "Producer: " + syncProducerPool;
         }
 
         protected override void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             if (disposed)
+            {
                 return;
+            }
 
             lock (shuttingDownLock)
             {
                 if (disposed)
+                {
                     return;
+                }
 
                 disposed = true;
             }
@@ -115,7 +125,9 @@ namespace Kafka.Client.Producers
             try
             {
                 if (callbackHandler != null)
+                {
                     callbackHandler.Dispose();
+                }
             }
             catch (Exception exc)
             {
@@ -129,7 +141,9 @@ namespace Kafka.Client.Producers
         private void EnsuresNotDisposed()
         {
             if (disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
         }
     }
 }

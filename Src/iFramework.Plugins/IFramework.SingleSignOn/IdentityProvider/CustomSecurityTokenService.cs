@@ -22,14 +22,16 @@ namespace IFramework.SingleSignOn.IdentityProvider
             : base(config)
         {
             var certificate = CertificateUtil.GetCertificate(StoreName.My, StoreLocation.LocalMachine,
-                WebConfigurationManager.AppSettings[Common.SigningCertificateName]);
+                                                             WebConfigurationManager.AppSettings[Common.SigningCertificateName]);
             _signingCreds = new X509SigningCredentials(certificate);
 
 
             if (!string.IsNullOrWhiteSpace(WebConfigurationManager.AppSettings[Common.EncryptingCertificateName]))
+            {
                 _encryptingCreds = new X509EncryptingCredentials(
-                    CertificateUtil.GetCertificate(StoreName.My, StoreLocation.LocalMachine,
-                        WebConfigurationManager.AppSettings[Common.EncryptingCertificateName]));
+                                                                 CertificateUtil.GetCertificate(StoreName.My, StoreLocation.LocalMachine,
+                                                                                                WebConfigurationManager.AppSettings[Common.EncryptingCertificateName]));
+            }
         }
 
         protected abstract ICustomIdentityObject GetCustomIdentity(string identity);
@@ -43,7 +45,8 @@ namespace IFramework.SingleSignOn.IdentityProvider
         /// <param name="scope">由之前通过GetScope方法返回的范围</param>
         /// <returns></returns>
         protected override ClaimsIdentity GetOutputClaimsIdentity(ClaimsPrincipal principal,
-            RequestSecurityToken request, Scope scope)
+                                                                  RequestSecurityToken request,
+                                                                  Scope scope)
         {
             //返回一个默认声明集，里面了包含自己想要的声明
             //这里你可以通过ClaimsPrincipal来验证用户，并通过它来返回正确的声明。
@@ -75,22 +78,34 @@ namespace IFramework.SingleSignOn.IdentityProvider
             if (Uri.IsWellFormedUriString(request.ReplyTo, UriKind.Absolute))
             {
                 if (request.AppliesTo.Uri.Host != new Uri(request.ReplyTo).Host)
+                {
                     scope.ReplyToAddress = request.AppliesTo.Uri.AbsoluteUri;
+                }
                 else
+                {
                     scope.ReplyToAddress = request.ReplyTo;
+                }
             }
             else
             {
                 Uri resultUri = null;
                 if (Uri.TryCreate(request.AppliesTo.Uri, request.ReplyTo, out resultUri))
+                {
                     scope.ReplyToAddress = resultUri.AbsoluteUri;
+                }
                 else
+                {
                     scope.ReplyToAddress = request.AppliesTo.Uri.ToString();
+                }
             }
             if (_encryptingCreds != null)
+            {
                 scope.EncryptingCredentials = _encryptingCreds;
+            }
             else
+            {
                 scope.TokenEncryptionRequired = false;
+            }
             return scope;
         }
 
@@ -122,7 +137,9 @@ namespace IFramework.SingleSignOn.IdentityProvider
             var items = new List<string>();
 
             foreach (string name in parameters)
+            {
                 items.Add(string.Concat(name, "=", HttpUtility.UrlEncode(parameters[name])));
+            }
 
             return string.Join("&", items.ToArray());
         }

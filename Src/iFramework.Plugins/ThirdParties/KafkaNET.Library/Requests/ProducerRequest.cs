@@ -42,8 +42,12 @@ namespace Kafka.Client.Requests
                                                AckTimeoutSize +
                                                NumberOfTopicsSize;
 
-        public ProducerRequest(short versionId, int correlationId, string clientId, short requiredAcks, int ackTimeout,
-            IEnumerable<TopicData> data)
+        public ProducerRequest(short versionId,
+                               int correlationId,
+                               string clientId,
+                               short requiredAcks,
+                               int ackTimeout,
+                               IEnumerable<TopicData> data)
         {
             VersionId = versionId;
             CorrelationId = correlationId;
@@ -64,11 +68,12 @@ namespace Kafka.Client.Requests
         /// <param name="requiredAcks"></param>
         /// <param name="ackTimeout"></param>
         /// <param name="data"></param>
-        public ProducerRequest(int correlationId, string clientId, short requiredAcks, int ackTimeout,
-            IEnumerable<TopicData> data)
-            : this(CurrentVersion, correlationId, clientId, requiredAcks, ackTimeout, data)
-        {
-        }
+        public ProducerRequest(int correlationId,
+                               string clientId,
+                               short requiredAcks,
+                               int ackTimeout,
+                               IEnumerable<TopicData> data)
+            : this(CurrentVersion, correlationId, clientId, requiredAcks, ackTimeout, data) { }
 
         /// <summary>
         ///     Based on messageset per topic/partition, group it by topic and send out.
@@ -81,8 +86,11 @@ namespace Kafka.Client.Requests
         /// <param name="requiredAcks"></param>
         /// <param name="ackTimeout"></param>
         /// <param name="messagesPerTopic"></param>
-        public ProducerRequest(int correlationId, string clientId, short requiredAcks, int ackTimeout,
-            IDictionary<TopicAndPartition, BufferedMessageSet> messagesPerTopic)
+        public ProducerRequest(int correlationId,
+                               string clientId,
+                               short requiredAcks,
+                               int ackTimeout,
+                               IDictionary<TopicAndPartition, BufferedMessageSet> messagesPerTopic)
         {
             var topicName = string.Empty;
             var partitionId = -1;
@@ -93,7 +101,9 @@ namespace Kafka.Client.Requests
                 partitionId = keyValuePair.Key.PartitionId;
                 var messagesSet = keyValuePair.Value;
                 if (!topics.ContainsKey(topicName))
+                {
                     topics.Add(topicName, new List<PartitionData>()); //create a new list for this topic
+                }
                 topics[topicName].Add(new PartitionData(partitionId, messagesSet));
             }
 

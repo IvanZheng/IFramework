@@ -11,12 +11,16 @@ namespace IFramework.Infrastructure.WebAuthentication
         public override void OnAuthorization(HttpActionContext actionContext)
         {
             if (actionContext.Request.RequestUri.Scheme != Uri.UriSchemeHttps)
+            {
                 actionContext.Response = new HttpResponseMessage(HttpStatusCode.Forbidden)
                 {
                     ReasonPhrase = "HTTPS Required"
                 };
+            }
             else
+            {
                 base.OnAuthorization(actionContext);
+            }
         }
     }
 }

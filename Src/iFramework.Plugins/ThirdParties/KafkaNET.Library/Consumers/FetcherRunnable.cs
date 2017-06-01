@@ -30,8 +30,12 @@ namespace Kafka.Client.Consumers
         private readonly IZooKeeperClient _zkClient;
         private volatile bool _shouldStop;
 
-        internal FetcherRunnable(string name, IZooKeeperClient zkClient, ConsumerConfiguration config, Broker broker,
-            List<PartitionTopicInfo> partitionTopicInfos, Action<PartitionTopicInfo> markPartitonWithError)
+        internal FetcherRunnable(string name,
+                                 IZooKeeperClient zkClient,
+                                 ConsumerConfiguration config,
+                                 Broker broker,
+                                 List<PartitionTopicInfo> partitionTopicInfos,
+                                 Action<PartitionTopicInfo> markPartitonWithError)
         {
             _name = name;
             _zkClient = zkClient;
@@ -49,16 +53,19 @@ namespace Kafka.Client.Consumers
         internal void Run()
         {
             foreach (var partitionTopicInfo in _partitionTopicInfos)
+            {
                 Logger.InfoFormat("{0} start fetching topic: {1} part: {2} offset: {3} from {4}:{5}",
-                    _name,
-                    partitionTopicInfo.Topic,
-                    partitionTopicInfo.PartitionId,
-                    partitionTopicInfo.NextRequestOffset,
-                    _broker.Host,
-                    _broker.Port);
+                                  _name,
+                                  partitionTopicInfo.Topic,
+                                  partitionTopicInfo.PartitionId,
+                                  partitionTopicInfo.NextRequestOffset,
+                                  _broker.Host,
+                                  _broker.Port);
+            }
 
             var reqId = 0;
             while (!_shouldStop && _partitionTopicInfos.Any())
+            {
                 try
                 {
                     var fetchablePartitionTopicInfos =
@@ -69,10 +76,12 @@ namespace Kafka.Client.Consumers
                     if (fetchablePartitionTopicInfos.Any())
                     {
                         var builder =
-                            new FetchRequestBuilder().CorrelationId(reqId).ClientId(_config.ConsumerId ?? _name)
-                                .MaxWait(_config.MaxFetchWaitMs).MinBytes(_config.FetchMinBytes);
+                            new FetchRequestBuilder().CorrelationId(reqId)
+                                                     .ClientId(_config.ConsumerId ?? _name)
+                                                     .MaxWait(_config.MaxFetchWaitMs)
+                                                     .MinBytes(_config.FetchMinBytes);
                         fetchablePartitionTopicInfos.ForEach(pti => builder.AddFetch(pti.Topic, pti.PartitionId,
-                            pti.NextRequestOffset, _config.FetchSize));
+                                                                                     pti.NextRequestOffset, _config.FetchSize));
 
                         var fetchRequest = builder.Build();
                         Logger.Debug("Sending fetch request: " + fetchRequest);
@@ -88,9 +97,9 @@ namespace Kafka.Client.Consumers
                                 case (short) ErrorMapping.UnknownTopicOrPartitionCode:
                                 case (short) ErrorMapping.NotLeaderForPartitionCode:
                                     Logger.ErrorFormat(
-                                        "Error returned from broker {2} for partition {0} : KafkaErrorCode: {1}",
-                                        partitionTopicInfo.PartitionId, messages.ErrorCode,
-                                        partitionTopicInfo.BrokerId);
+                                                       "Error returned from broker {2} for partition {0} : KafkaErrorCode: {1}",
+                                                       partitionTopicInfo.PartitionId, messages.ErrorCode,
+                                                       partitionTopicInfo.BrokerId);
                                     break;
                                 case (short) ErrorMapping.NoError:
                                     var bytesRead = partitionTopicInfo.Add(messages);
@@ -103,7 +112,7 @@ namespace Kafka.Client.Consumers
                                     else
                                     {
                                         Logger.DebugFormat("No message returned by FetchRequest: {0}",
-                                            fetchRequest.ToString());
+                                                           fetchRequest.ToString());
                                     }
                                     break;
                                 case (short) ErrorMapping.OffsetOutOfRangeCode:
@@ -111,7 +120,7 @@ namespace Kafka.Client.Consumers
                                     {
                                         Logger.InfoFormat("offset for {0} out of range", partitionTopicInfo);
                                         var resetOffset = ResetConsumerOffsets(partitionTopicInfo.Topic,
-                                            partitionTopicInfo.PartitionId);
+                                                                               partitionTopicInfo.PartitionId);
                                         if (resetOffset >= 0)
                                         {
                                             partitionTopicInfo.ResetOffset(resetOffset);
@@ -121,15 +130,15 @@ namespace Kafka.Client.Consumers
                                     catch (Exception ex)
                                     {
                                         Logger.ErrorFormat("Error getting offsets for partition {0} : {1}",
-                                            partitionTopicInfo.PartitionId, ex.FormatException());
+                                                           partitionTopicInfo.PartitionId, ex.FormatException());
                                         partitonsWithErrors.Add(partitionTopicInfo);
                                     }
                                     break;
                                 default:
                                     Logger.ErrorFormat(
-                                        "Error returned from broker {2} for partition {0} : KafkaErrorCode: {1}",
-                                        partitionTopicInfo.PartitionId, messages.ErrorCode,
-                                        partitionTopicInfo.BrokerId);
+                                                       "Error returned from broker {2} for partition {0} : KafkaErrorCode: {1}",
+                                                       partitionTopicInfo.PartitionId, messages.ErrorCode,
+                                                       partitionTopicInfo.BrokerId);
                                     //Console.WriteLine("------------------------Error returned from broker {2} for partition {0} : KafkaErrorCode: {1}", partitionTopicInfo.PartitionId, messages.ErrorCode, partitionTopicInfo.BrokerId);
                                     partitonsWithErrors.Add(partitionTopicInfo);
                                     break;
@@ -138,11 +147,15 @@ namespace Kafka.Client.Consumers
 
                         reqId = reqId == int.MaxValue ? 0 : reqId + 1;
                         if (partitonsWithErrors.Any())
+                        {
                             RemovePartitionsFromProessing(partitonsWithErrors);
+                        }
                     }
 
                     if (read > 0)
+                    {
                         Logger.Debug("Fetched bytes: " + read);
+                    }
 
                     if (read == 0)
                     {
@@ -153,10 +166,15 @@ namespace Kafka.Client.Consumers
                 catch (Exception ex)
                 {
                     if (_shouldStop)
+                    {
                         Logger.InfoFormat("FetcherRunnable {0} interrupted", this);
+                    }
                     else
+                    {
                         Logger.ErrorFormat("error in FetcherRunnable {0}", ex.FormatException());
+                    }
                 }
+            }
 
             Logger.InfoFormat("stopping fetcher {0} to host {1}", _name, _broker.Host);
             //Console.WriteLine("------------------------stopping fetcher {0} to host {1}---------------------", _name, _broker.Host);
@@ -200,9 +218,9 @@ namespace Kafka.Client.Consumers
             var topicDirs = new ZKGroupTopicDirs(_config.GroupId, topic);
             var offsetFound = offsets.ResponseMap[topic].First().Offsets[0];
             Logger.InfoFormat("updating partition {0} with {1} offset {2}", partitionId,
-                offset == OffsetRequest.EarliestTime ? "earliest" : "latest", offsetFound);
+                              offset == OffsetRequest.EarliestTime ? "earliest" : "latest", offsetFound);
             ZkUtils.UpdatePersistentPath(_zkClient, topicDirs.ConsumerOffsetDir + "/" + partitionId,
-                offsetFound.ToString(CultureInfo.InvariantCulture));
+                                         offsetFound.ToString(CultureInfo.InvariantCulture));
 
             return offsetFound;
         }
@@ -210,7 +228,9 @@ namespace Kafka.Client.Consumers
         ~FetcherRunnable()
         {
             if (_simpleConsumer != null)
+            {
                 _simpleConsumer.Dispose();
+            }
         }
     }
 }

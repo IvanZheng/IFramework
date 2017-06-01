@@ -25,7 +25,9 @@ namespace IFramework.AspNet.MediaTypeFormatters
             SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/x-www-form-urlencoded"));
             _useCamelCase = useCamelCase;
             if (_useCamelCase)
+            {
                 SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            }
         }
 
         public override bool CanReadType(Type type)
@@ -38,8 +40,11 @@ namespace IFramework.AspNet.MediaTypeFormatters
             return true;
         }
 
-        public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content,
-            TransportContext transportContext)
+        public override Task WriteToStreamAsync(Type type,
+                                                object value,
+                                                Stream writeStream,
+                                                HttpContent content,
+                                                TransportContext transportContext)
         {
             return base.WriteToStreamAsync(value.GetType(), value, writeStream, content, transportContext);
         }
@@ -48,13 +53,17 @@ namespace IFramework.AspNet.MediaTypeFormatters
         {
             var type = Type.GetType(commandType);
             if (type == null)
+            {
                 type = Type.GetType(string.Format(CommandTypeTemplate,
-                    commandType));
+                                                  commandType));
+            }
             return type;
         }
 
-        public override async Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content,
-            IFormatterLogger formatterLogger)
+        public override async Task<object> ReadFromStreamAsync(Type type,
+                                                               Stream readStream,
+                                                               HttpContent content,
+                                                               IFormatterLogger formatterLogger)
         {
             var commandType = type;
             if (type.IsAbstract || type.IsInterface)
@@ -62,17 +71,25 @@ namespace IFramework.AspNet.MediaTypeFormatters
                 var commandContentType =
                     content.Headers.ContentType.Parameters.FirstOrDefault(p => p.Name == "command");
                 if (commandContentType != null)
+                {
                     commandType = GetCommandType(HttpUtility.UrlDecode(commandContentType.Value));
+                }
                 else
+                {
                     commandType = GetCommandType(HttpContext.Current.Request.Url.Segments.Last());
+                }
             }
             var part = await content.ReadAsStringAsync();
             var mediaType = content.Headers.ContentType.MediaType;
             object command = null;
             if (mediaType == "application/x-www-form-urlencoded" || mediaType == "application/command+form")
+            {
                 command = new FormDataCollection(part).ConvertToObject(commandType);
+            }
             if (command == null)
+            {
                 command = part.ToJsonObject(commandType, useCamelCase: _useCamelCase);
+            }
             return command;
         }
     }

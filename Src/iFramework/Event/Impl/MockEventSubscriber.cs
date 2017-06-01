@@ -4,13 +4,9 @@ namespace IFramework.Event.Impl
 {
     public class MockEventSubscriber : IMessageConsumer
     {
-        public void Start()
-        {
-        }
+        public void Start() { }
 
-        public void Stop()
-        {
-        }
+        public void Stop() { }
 
         public string GetStatus()
         {

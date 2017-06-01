@@ -17,9 +17,7 @@ namespace IFramework.EntityFramework.Repositories
         /// </summary>
         /// <param name="context">The repository context being used by the repository.</param>
         public DomainRepository(object dbContext, IUnitOfWork unitOfWork, IContainer container)
-            : base(dbContext, unitOfWork, container)
-        {
-        }
+            : base(dbContext, unitOfWork, container) { }
 
         #endregion
 
@@ -27,7 +25,9 @@ namespace IFramework.EntityFramework.Repositories
         {
             var repository = GetRepository<TEntity>() as IMergeOptionChangable;
             if (repository != null)
+            {
                 repository.ChangeMergeOption<TEntity>(mergeOption);
+            }
         }
     }
 }

@@ -37,6 +37,7 @@ namespace IFramework.MessageQueue.ServiceBus
             var topicClient = GetTopicClient(topic);
             var brokeredMessage = ((MessageContext) messageContext).BrokeredMessage;
             while (true)
+            {
                 try
                 {
                     topicClient.Send(brokeredMessage);
@@ -46,6 +47,7 @@ namespace IFramework.MessageQueue.ServiceBus
                 {
                     brokeredMessage = brokeredMessage.Clone();
                 }
+            }
         }
 
         public void Send(IMessageContext messageContext, string queue)
@@ -57,8 +59,8 @@ namespace IFramework.MessageQueue.ServiceBus
             if (queuePartitionCount > 1)
             {
                 var keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey)
-                    ? commandKey.GetUniqueCode()
-                    : messageContext.MessageID.GetUniqueCode();
+                                        ? commandKey.GetUniqueCode()
+                                        : messageContext.MessageID.GetUniqueCode();
                 queue = $"{queue}.{Math.Abs(keyUniqueCode % queuePartitionCount)}";
             }
             else
@@ -68,6 +70,7 @@ namespace IFramework.MessageQueue.ServiceBus
             var queueClient = GetQueueClient(queue);
             var brokeredMessage = ((MessageContext) messageContext).BrokeredMessage;
             while (true)
+            {
                 try
                 {
                     queueClient.Send(brokeredMessage);
@@ -77,31 +80,49 @@ namespace IFramework.MessageQueue.ServiceBus
                 {
                     brokeredMessage = brokeredMessage.Clone();
                 }
+            }
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null,
-            string topic = null, string key = null,
-            string replyEndPoint = null, string messageId = null,
-            SagaInfo sagaInfo = null, string producer = null)
+        public IMessageContext WrapMessage(object message,
+                                           string correlationId = null,
+                                           string topic = null,
+                                           string key = null,
+                                           string replyEndPoint = null,
+                                           string messageId = null,
+                                           SagaInfo sagaInfo = null,
+                                           string producer = null)
         {
             var messageContext = new MessageContext(message, messageId);
             messageContext.Producer = producer;
             messageContext.IP = Utility.GetLocalIPV4()?.ToString();
             if (!string.IsNullOrEmpty(correlationId))
+            {
                 messageContext.CorrelationID = correlationId;
+            }
             if (!string.IsNullOrEmpty(topic))
+            {
                 messageContext.Topic = topic;
+            }
             if (!string.IsNullOrEmpty(key))
+            {
                 messageContext.Key = key;
+            }
             if (!string.IsNullOrEmpty(replyEndPoint))
+            {
                 messageContext.ReplyToEndPoint = replyEndPoint;
+            }
             if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            {
                 messageContext.SagaInfo = sagaInfo;
+            }
             return messageContext;
         }
 
-        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId,
-            OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartQueueClient(string commandQueueName,
+                                                  string consumerId,
+                                                  OnMessagesReceived onMessagesReceived,
+                                                  int fullLoadThreshold = 1000,
+                                                  int waitInterval = 1000)
         {
             commandQueueName = $"{commandQueueName}.{consumerId}";
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
@@ -109,8 +130,12 @@ namespace IFramework.MessageQueue.ServiceBus
             return new QueueConsumer(commandQueueName, onMessagesReceived, commandQueueClient);
         }
 
-        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId,
-            OnMessagesReceived onMessagesReceived, int fullLoadThreshold = 1000, int waitInterval = 1000)
+        public ICommitOffsetable StartSubscriptionClient(string topic,
+                                                         string subscriptionName,
+                                                         string consumerId,
+                                                         OnMessagesReceived onMessagesReceived,
+                                                         int fullLoadThreshold = 1000,
+                                                         int waitInterval = 1000)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
@@ -150,7 +175,9 @@ namespace IFramework.MessageQueue.ServiceBus
         private QueueClient CreateQueueClient(string queueName)
         {
             if (!_namespaceManager.QueueExists(queueName))
+            {
                 _namespaceManager.CreateQueue(queueName);
+            }
             return _messageFactory.CreateQueueClient(queueName);
         }
 
@@ -158,7 +185,9 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             var td = new TopicDescription(topicName);
             if (!_namespaceManager.TopicExists(topicName))
+            {
                 _namespaceManager.CreateTopic(td);
+            }
             return _messageFactory.CreateTopicClient(topicName);
         }
 
@@ -166,7 +195,9 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             var topicDescription = new TopicDescription(topicName);
             if (!_namespaceManager.TopicExists(topicName))
+            {
                 _namespaceManager.CreateTopic(topicDescription);
+            }
 
             if (!_namespaceManager.SubscriptionExists(topicDescription.Path, subscriptionName))
             {

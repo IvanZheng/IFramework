@@ -16,18 +16,26 @@ namespace Kafka.Client.Utils
         {
             //The IP at lease 1.0.0.0
             if (brokerId > BrokerIDisIP)
+            {
                 return string.Format("{0}.{1}.{2}.{3}({4})"
-                    , brokerId / 256 / 256 / 256
-                    , brokerId / 256 / 256 % 256
-                    , brokerId / 256 % 256
-                    , brokerId % 256
-                    , brokerId);
+                                     , brokerId / 256 / 256 / 256
+                                     , brokerId / 256 / 256 % 256
+                                     , brokerId / 256 % 256
+                                     , brokerId % 256
+                                     , brokerId);
+            }
             return brokerId.ToString(); //TODO: actually can get service.properties from all machine and cache
         }
 
-        public static void DumpDataToFile(bool dumpDataAsUTF8, bool dumpOriginalData, StreamWriter sw, FileStream fs
-            , List<MessageAndOffset> payload, long count, long offsetBase, ref int totalCountUTF8,
-            ref int totalCountOriginal)
+        public static void DumpDataToFile(bool dumpDataAsUTF8,
+                                          bool dumpOriginalData,
+                                          StreamWriter sw,
+                                          FileStream fs,
+                                          List<MessageAndOffset> payload,
+                                          long count,
+                                          long offsetBase,
+                                          ref int totalCountUTF8,
+                                          ref int totalCountOriginal)
         {
             var i = 0;
             if (dumpDataAsUTF8)
@@ -40,14 +48,18 @@ namespace Kafka.Client.Utils
                     var textKey = string.Empty;
 
                     if (v.Message.Key != null)
+                    {
                         textKey = Encoding.UTF8.GetString(v.Message.Key);
+                    }
 
                     sw.WriteLine("\tpayload[{0}],totalPayload={1}, OFFSET: {2} byteArraySize={3},key={4} text=\r\n{5}",
-                        offsetBase + i, payload.Count, v.MessageOffset, v.Message.Payload.Length, textKey, text);
+                                 offsetBase + i, payload.Count, v.MessageOffset, v.Message.Payload.Length, textKey, text);
                     i++;
                     totalCountUTF8++;
                     if (totalCountUTF8 >= count && count > 0)
+                    {
                         break;
+                    }
                 }
             }
 
@@ -58,16 +70,18 @@ namespace Kafka.Client.Utils
                 foreach (var v in payload)
                 {
                     sw.WriteLine("\tpayload[{0}],totalPayload={1}, OFFSET: {2} byteArraySize={3}\r\n==Binary start==",
-                        offsetBase + i, payload.Count, v.MessageOffset, v.Message.Payload.Length);
+                                 offsetBase + i, payload.Count, v.MessageOffset, v.Message.Payload.Length);
                     sw.Flush();
                     fs.Write(v.Message.Payload, 0, v.Message.Payload.Length);
                     fs.Flush();
                     sw.WriteLine("\r\n==Binary END==",
-                        offsetBase + i, payload.Count, v.Message.Payload.Length);
+                                 offsetBase + i, payload.Count, v.Message.Payload.Length);
                     i++;
                     totalCountOriginal++;
                     if (totalCountOriginal >= count && count > 0)
+                    {
                         break;
+                    }
                 }
             }
         }

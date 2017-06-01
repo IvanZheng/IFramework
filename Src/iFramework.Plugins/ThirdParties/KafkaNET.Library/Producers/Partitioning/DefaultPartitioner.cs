@@ -26,14 +26,16 @@ namespace Kafka.Client.Producers.Partitioning
         {
             Guard.Greater(numPartitions, 0, "numPartitions");
             if (key.GetType() == typeof(byte[]))
+            {
                 return key == null
-                    ? Randomizer.Next(numPartitions)
-                    : Abs(Encoding.UTF8.GetString((byte[]) Convert.ChangeType(key, typeof(byte[]))).GetHashCode()) %
-                      numPartitions;
+                           ? Randomizer.Next(numPartitions)
+                           : Abs(Encoding.UTF8.GetString((byte[]) Convert.ChangeType(key, typeof(byte[]))).GetHashCode()) %
+                             numPartitions;
+            }
 
             return key == null
-                ? Randomizer.Next(numPartitions)
-                : Abs(key.GetHashCode()) % numPartitions;
+                       ? Randomizer.Next(numPartitions)
+                       : Abs(key.GetHashCode()) % numPartitions;
         }
 
         private static int Abs(int n)

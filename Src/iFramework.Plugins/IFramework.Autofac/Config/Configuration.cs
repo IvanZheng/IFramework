@@ -12,7 +12,7 @@ namespace IFramework.Config
     public static class IFrameworkConfigurationExtension
     {
         public static Configuration RegisterAssemblyTypes(this Configuration configuration,
-            params string[] assemblyNames)
+                                                          params string[] assemblyNames)
         {
             if (assemblyNames != null && assemblyNames.Length > 0)
             {
@@ -23,7 +23,7 @@ namespace IFramework.Config
         }
 
         public static Configuration RegisterAssemblyTypes(this Configuration configuration,
-            params Assembly[] assemblies)
+                                                          params Assembly[] assemblies)
         {
             if (assemblies != null && assemblies.Length > 0)
             {
@@ -37,11 +37,14 @@ namespace IFramework.Config
         /// <summary>
         /// </summary>
         /// <returns></returns>
-        public static Configuration UseAutofacContainer(this Configuration configuration, IContainer container = null,
-            string configurationSector = "autofac")
+        public static Configuration UseAutofacContainer(this Configuration configuration,
+                                                        IContainer container = null,
+                                                        string configurationSector = "autofac")
         {
             if (IoCFactory.IsInit())
+            {
                 return configuration;
+            }
             var builder = new ContainerBuilder();
             if (container == null)
             {
@@ -49,7 +52,9 @@ namespace IFramework.Config
                 {
                     var settingsReader = new ConfigurationSettingsReader(configurationSector);
                     if (settingsReader != null)
+                    {
                         builder.RegisterModule(settingsReader);
+                    }
                 }
                 catch (Exception)
                 {

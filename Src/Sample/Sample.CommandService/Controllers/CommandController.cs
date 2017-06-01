@@ -22,19 +22,21 @@ namespace Sample.CommandService.Controllers
         public async Task<ApiResult> Post([FromBody] ICommand command)
         {
             if (ModelState.IsValid)
+            {
                 return await ExceptionManager.ProcessAsync(async () =>
                 {
                     return await _CommandBus.ExecuteAsync(command); //, TimeSpan.FromMilliseconds(2000));
                     //var messageResponse = await _CommandBus.SendAsync(command, TimeSpan.FromSeconds(5));
                     //return await messageResponse.Reply.Timeout(TimeSpan.FromMilliseconds(2000));
                 });
+            }
             return
                 new ApiResult
                 {
                     ErrorCode = ErrorCode.CommandInvalid,
                     Message = string.Join(",", ModelState.Values
-                        .SelectMany(v => v.Errors
-                            .Select(e => e.ErrorMessage)))
+                                                         .SelectMany(v => v.Errors
+                                                                           .Select(e => e.ErrorMessage)))
                 };
         }
 
@@ -42,21 +44,23 @@ namespace Sample.CommandService.Controllers
         public Task<ApiResult> Put([FromBody] ICommand command)
         {
             if (ModelState.IsValid)
+            {
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(string.Format("{0}://{1}/api/command",
-                        Request.RequestUri.Scheme,
-                        Request.RequestUri.Authority));
+                                                               Request.RequestUri.Scheme,
+                                                               Request.RequestUri.Authority));
                     return client.DoCommand<ApiResult>(command, null);
                 }
+            }
             return Task.Factory.StartNew(() =>
-                new ApiResult
-                {
-                    ErrorCode = ErrorCode.CommandInvalid,
-                    Message = string.Join(",", ModelState.Values
-                        .SelectMany(v => v.Errors
-                            .Select(e => e.ErrorMessage)))
-                });
+                                             new ApiResult
+                                             {
+                                                 ErrorCode = ErrorCode.CommandInvalid,
+                                                 Message = string.Join(",", ModelState.Values
+                                                                                      .SelectMany(v => v.Errors
+                                                                                                        .Select(e => e.ErrorMessage)))
+                                             });
         }
     }
 }

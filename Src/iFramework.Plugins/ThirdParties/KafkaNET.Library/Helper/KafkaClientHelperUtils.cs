@@ -59,23 +59,33 @@ namespace Kafka.Client.Consumers
         public static BrokerConfiguration ToBrokerConfig(string brokerAddr)
         {
             if (string.IsNullOrEmpty(brokerAddr))
+            {
                 return null;
+            }
 
             var brokerParams = brokerAddr.Split(',');
             if (brokerParams == null || brokerParams.Length != 2)
+            {
                 return null;
+            }
 
             var brokerId = -1;
             if (!int.TryParse(brokerParams[0], out brokerId))
+            {
                 return null;
+            }
 
             var hostParams = brokerParams[1].Split(':');
             if (hostParams == null || hostParams.Length != 2)
+            {
                 return null;
+            }
 
             var portNumber = -1;
             if (!int.TryParse(hostParams[1], out portNumber))
+            {
                 return null;
+            }
 
             var broker = new BrokerConfiguration {BrokerId = brokerId, Host = hostParams[0], Port = portNumber};
             return broker;
@@ -89,9 +99,11 @@ namespace Kafka.Client.Consumers
         public static string SyncProducerConfigToString(SyncProducerConfiguration syncConfig)
         {
             if (syncConfig == null)
+            {
                 return "(SyncProducerConfiguration is null)";
+            }
             return string.Format("BrokerId={0},Host={1}:Port={2}", syncConfig.BrokerId, syncConfig.Host,
-                syncConfig.Port);
+                                 syncConfig.Port);
         }
 
         /// <summary>
@@ -108,8 +120,8 @@ namespace Kafka.Client.Consumers
             if (string.IsNullOrEmpty(host) || port <= 0)
             {
                 Logger.ErrorFormat(
-                    "TryCreateSyncProducer invalid arguments,host=[{0}] must not be empty or port=[{1}] must be valid",
-                    host, port);
+                                   "TryCreateSyncProducer invalid arguments,host=[{0}] must not be empty or port=[{1}] must be valid",
+                                   host, port);
                 return null;
             }
 
@@ -121,8 +133,8 @@ namespace Kafka.Client.Consumers
             catch (Exception e)
             {
                 Logger.Error(
-                    string.Format("TryCreateSyncProducer exception,brokerId={0},host={1},port={2}", brokerId, host,
-                        port), e);
+                             string.Format("TryCreateSyncProducer exception,brokerId={0},host={1},port={2}", brokerId, host,
+                                           port), e);
                 syncProducer = null;
             }
 
@@ -132,20 +144,27 @@ namespace Kafka.Client.Consumers
         public static string GetRandomString(int lengh)
         {
             if (lengh <= 0)
+            {
                 return string.Empty;
+            }
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var stringChars = new char[lengh];
             var random = new Random();
 
             for (var i = 0; i < stringChars.Length; i++)
+            {
                 stringChars[i] = chars[random.Next(chars.Length)];
+            }
 
             var finalString = new string(stringChars);
             return finalString;
         }
 
-        public static long GetValidStartReadOffset(KafkaOffsetType offsetType, long earliest, long latest,
-            long offsetTimeStamp, int leastMessageCount)
+        public static long GetValidStartReadOffset(KafkaOffsetType offsetType,
+                                                   long earliest,
+                                                   long latest,
+                                                   long offsetTimeStamp,
+                                                   int leastMessageCount)
         {
             long offset = 0;
             ;
@@ -171,7 +190,9 @@ namespace Kafka.Client.Consumers
                 {
                     offset -= leastMessageCount;
                     if (offset < earliest)
+                    {
                         offset = earliest;
+                    }
                 }
             }
             else if (offsetType == KafkaOffsetType.Last
@@ -179,7 +200,9 @@ namespace Kafka.Client.Consumers
             {
                 offset -= leastMessageCount;
                 if (offset < earliest)
+                {
                     offset = earliest;
+                }
             }
             return offset;
         }

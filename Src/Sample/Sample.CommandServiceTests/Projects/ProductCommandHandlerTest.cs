@@ -16,14 +16,12 @@ namespace Sample.CommandServiceTests.Products
     [TestClass]
     public class ProductCommandHandlerTest : CommandHandlerProxy<ProdutCommandHandler>
     {
-        public List<CreateProduct> _createProducts;
         private readonly int batchCount = 50000;
         private readonly int productCount = 2;
+        public List<CreateProduct> _createProducts;
 
 
-        public ProductCommandHandlerTest()
-        {
-        }
+        public ProductCommandHandlerTest() { }
 
         public ProductCommandHandlerTest(int batchCount, int productCount)
         {
@@ -72,9 +70,11 @@ namespace Sample.CommandServiceTests.Products
             }) as List<Project>;
 
             for (var i = 0; i < _createProducts.Count; i++)
+            {
                 Assert.AreEqual(products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
-                        .Count,
-                    _createProducts[i].Count - batchCount);
+                                        .Count,
+                                _createProducts[i].Count - batchCount);
+            }
         }
 
         //[TestMethod]
@@ -146,9 +146,11 @@ namespace Sample.CommandServiceTests.Products
             }) as List<Project>;
 
             for (var i = 0; i < _createProducts.Count; i++)
+            {
                 Assert.AreEqual(products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
-                        .Count,
-                    _createProducts[i].Count - batchCount);
+                                        .Count,
+                                _createProducts[i].Count - batchCount);
+            }
         }
     }
 }

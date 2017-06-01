@@ -9,14 +9,17 @@ namespace IFramework.Message
         CommandHandledInfo GetCommandHandledInfo(string commandId);
         bool HasEventHandled(string eventId, string subscriptionName);
 
-        void HandleEvent(IMessageContext eventContext, string subscriptionName,
-            IEnumerable<IMessageContext> commandContexts,
-            IEnumerable<IMessageContext> messageContexts);
+        void HandleEvent(IMessageContext eventContext,
+                         string subscriptionName,
+                         IEnumerable<IMessageContext> commandContexts,
+                         IEnumerable<IMessageContext> messageContexts);
 
         void SaveEvent(IMessageContext eventContext);
 
-        void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e,
-            params IMessageContext[] messageContexts);
+        void SaveFailHandledEvent(IMessageContext eventContext,
+                                  string subscriptionName,
+                                  Exception e,
+                                  params IMessageContext[] messageContexts);
 
         /// <summary>
         ///     return event IMessageContext
@@ -25,8 +28,9 @@ namespace IFramework.Message
         /// <param name="eventContexts"></param>
         void SaveCommand(IMessageContext commandContext, object result = null, params IMessageContext[] eventContexts);
 
-        void SaveFailedCommand(IMessageContext commandContext, Exception ex = null,
-            params IMessageContext[] eventContexts);
+        void SaveFailedCommand(IMessageContext commandContext,
+                               Exception ex = null,
+                               params IMessageContext[] eventContexts);
 
         void RemoveSentCommand(string commandId);
         void RemovePublishedEvent(string eventId);

@@ -31,15 +31,15 @@ namespace IFramework.Config
         }
 
         public static Configuration UseEQueue(this Configuration configuration,
-            string nameServerAddresses = null,
-            string clusterName = "DefaultCluster")
+                                              string nameServerAddresses = null,
+                                              string clusterName = "DefaultCluster")
         {
             InitializeEqueue();
             IoCFactory.Instance.CurrentContainer
-                .RegisterType<IMessageQueueClient, EQueueClient>(Lifetime.Singleton,
-                    new ConstructInjection(new ParameterInjection("clusterName", clusterName),
-                        new ParameterInjection("nameAServerList", GetIPEndPoints(nameServerAddresses))
-                    ));
+                      .RegisterType<IMessageQueueClient, EQueueClient>(Lifetime.Singleton,
+                                                                       new ConstructInjection(new ParameterInjection("clusterName", clusterName),
+                                                                                              new ParameterInjection("nameAServerList", GetIPEndPoints(nameServerAddresses))
+                                                                                             ));
             return configuration;
         }
 
@@ -54,45 +54,56 @@ namespace IFramework.Config
         {
             var nameServerIPEndPoints = new List<IPEndPoint>();
             if (string.IsNullOrEmpty(addresses))
+            {
                 nameServerIPEndPoints.Add(new IPEndPoint(SocketUtils.GetLocalIPV4(), 9493));
+            }
             else
+            {
                 foreach (var address in addresses.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries))
+                {
                     try
                     {
                         var segments = address.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
                         if (segments.Length == 2)
+                        {
                             nameServerIPEndPoints.Add(new IPEndPoint(IPAddress.Parse(segments[0]),
-                                    int.Parse(segments[1])
-                                )
-                            );
+                                                                     int.Parse(segments[1])
+                                                                    )
+                                                     );
+                        }
                     }
-                    catch (Exception)
-                    {
-                    }
+                    catch (Exception) { }
+                }
+            }
             return nameServerIPEndPoints;
         }
 
 
         public static Configuration StartEqueueBroker(this Configuration configuration,
-            string clusterName = "DefaultCluster", string nameServerAddresses = null, int producerPort = 5000,
-            int consumerPort = 5001, int adminPort = 5002)
+                                                      string clusterName = "DefaultCluster",
+                                                      string nameServerAddresses = null,
+                                                      int producerPort = 5000,
+                                                      int consumerPort = 5001,
+                                                      int adminPort = 5002)
         {
             var nameServerIPEndPoints = GetIPEndPoints(nameServerAddresses).ToList();
             if (nameServerIPEndPoints.Count == 0)
+            {
                 throw new Exception("no avaliable equeue name server address");
+            }
 
             var setting = new BrokerSetting(
-                bool.Parse(ConfigurationManager.AppSettings["isMemoryMode"]),
-                ConfigurationManager.AppSettings["fileStoreRootPath"],
-                chunkCacheMaxPercent: 95,
-                chunkFlushInterval: int.Parse(ConfigurationManager.AppSettings["flushInterval"]),
-                messageChunkDataSize: int.Parse(ConfigurationManager.AppSettings["chunkSize"]) * 1024 * 1024,
-                chunkWriteBuffer: int.Parse(ConfigurationManager.AppSettings["chunkWriteBuffer"]) * 1024,
-                enableCache: bool.Parse(ConfigurationManager.AppSettings["enableCache"]),
-                chunkCacheMinPercent: int.Parse(ConfigurationManager.AppSettings["chunkCacheMinPercent"]),
-                syncFlush: bool.Parse(ConfigurationManager.AppSettings["syncFlush"]),
-                messageChunkLocalCacheSize: 30 * 10000,
-                queueChunkLocalCacheSize: 10000)
+                                            bool.Parse(ConfigurationManager.AppSettings["isMemoryMode"]),
+                                            ConfigurationManager.AppSettings["fileStoreRootPath"],
+                                            chunkCacheMaxPercent: 95,
+                                            chunkFlushInterval: int.Parse(ConfigurationManager.AppSettings["flushInterval"]),
+                                            messageChunkDataSize: int.Parse(ConfigurationManager.AppSettings["chunkSize"]) * 1024 * 1024,
+                                            chunkWriteBuffer: int.Parse(ConfigurationManager.AppSettings["chunkWriteBuffer"]) * 1024,
+                                            enableCache: bool.Parse(ConfigurationManager.AppSettings["enableCache"]),
+                                            chunkCacheMinPercent: int.Parse(ConfigurationManager.AppSettings["chunkCacheMinPercent"]),
+                                            syncFlush: bool.Parse(ConfigurationManager.AppSettings["syncFlush"]),
+                                            messageChunkLocalCacheSize: 30 * 10000,
+                                            queueChunkLocalCacheSize: 10000)
             {
                 NotifyWhenMessageArrived = bool.Parse(ConfigurationManager.AppSettings["notifyWhenMessageArrived"]),
                 MessageWriteQueueThreshold = int.Parse(ConfigurationManager.AppSettings["messageWriteQueueThreshold"])

@@ -9,8 +9,11 @@ namespace Kafka.Client.Responses
     {
         public static ILogger Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(FetchResponseWrapper));
 
-        public FetchResponseWrapper(List<MessageAndOffset> list, int size, int correlationid, string topic,
-            int partitionId)
+        public FetchResponseWrapper(List<MessageAndOffset> list,
+                                    int size,
+                                    int correlationid,
+                                    string topic,
+                                    int partitionId)
         {
             MessageAndOffsets = list;
             Size = size;

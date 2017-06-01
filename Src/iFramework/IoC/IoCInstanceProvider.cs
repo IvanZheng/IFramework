@@ -30,7 +30,9 @@ namespace IFramework.IoC
         public void ReleaseInstance(InstanceContext instanceContext, object instance)
         {
             if (instance is IDisposable)
+            {
                 ((IDisposable) instance).Dispose();
+            }
         }
 
         #endregion

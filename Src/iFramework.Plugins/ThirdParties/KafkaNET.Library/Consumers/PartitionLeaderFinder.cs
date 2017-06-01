@@ -28,7 +28,9 @@ namespace Kafka.Client.Consumers
         private volatile bool _stop;
 
         public PartitionLeaderFinder(ConcurrentQueue<PartitionTopicInfo> partitionsNeedingLeaders,
-            Cluster.Cluster brokers, ConsumerConfiguration config, Action<PartitionTopicInfo, Broker> createNewFetcher)
+                                     Cluster.Cluster brokers,
+                                     ConsumerConfiguration config,
+                                     Action<PartitionTopicInfo, Broker> createNewFetcher)
         {
             _partitionsNeedingLeader = partitionsNeedingLeaders;
             _brokers = brokers;
@@ -39,6 +41,7 @@ namespace Kafka.Client.Consumers
         public void Start()
         {
             while (!_stop)
+            {
                 try
                 {
                     if (_partitionsNeedingLeader.IsEmpty)
@@ -51,7 +54,7 @@ namespace Kafka.Client.Consumers
                     if (_partitionsNeedingLeader.TryDequeue(out partition))
                     {
                         Logger.DebugFormat("Finding new leader for topic {0}, partition {1}", partition.Topic,
-                            partition.PartitionId);
+                                           partition.PartitionId);
                         Broker newLeader = null;
                         foreach (var broker in _brokers.Brokers)
                         {
@@ -60,15 +63,16 @@ namespace Kafka.Client.Consumers
                             {
                                 var metaData =
                                     consumer.GetMetaData(
-                                        TopicMetadataRequest.Create(new[] {partition.Topic}, 1, 0, clientId));
+                                                         TopicMetadataRequest.Create(new[] {partition.Topic}, 1, 0, clientId));
                                 if (metaData != null && metaData.Any())
                                 {
-                                    var newPartitionData = metaData.First().PartitionsMetadata
-                                        .FirstOrDefault(p => p.PartitionId == partition.PartitionId);
+                                    var newPartitionData = metaData.First()
+                                                                   .PartitionsMetadata
+                                                                   .FirstOrDefault(p => p.PartitionId == partition.PartitionId);
                                     if (newPartitionData != null)
                                     {
                                         Logger.DebugFormat("New leader for {0} ({1}) is broker {2}", partition.Topic,
-                                            partition.PartitionId, newPartitionData.Leader.Id);
+                                                           partition.PartitionId, newPartitionData.Leader.Id);
                                         newLeader = newPartitionData.Leader;
                                         break;
                                     }
@@ -77,15 +81,19 @@ namespace Kafka.Client.Consumers
                             catch (Exception ex)
                             {
                                 Logger.WarnFormat("Error retrieving meta data from broker {0}: {1}", broker.Value.Id,
-                                    ex.FormatException());
+                                                  ex.FormatException());
                             }
                         }
 
                         if (newLeader == null)
+                        {
                             Logger.ErrorFormat("New leader information could not be retrieved for {0} ({1})",
-                                partition.Topic, partition.PartitionId);
+                                               partition.Topic, partition.PartitionId);
+                        }
                         else
+                        {
                             _createNewFetcher(partition, newLeader);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -93,6 +101,7 @@ namespace Kafka.Client.Consumers
                     Logger.ErrorFormat("PartitionLeaderFinder encountered an error: {0}", ex.FormatException());
                     Thread.Sleep(FailureRetryDelayMs);
                 }
+            }
 
             Logger.Info("Partition leader finder thread shutting down.");
         }

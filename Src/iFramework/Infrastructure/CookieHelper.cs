@@ -27,7 +27,9 @@ namespace IFramework.Infrastructure
         {
             var request = HttpContext.Current.Request;
             if (request != null)
+            {
                 return GetCookieValue(request.Cookies[cookieName], key);
+            }
             return "";
         }
 
@@ -40,10 +42,13 @@ namespace IFramework.Infrastructure
         public static string GetCookieValue(HttpCookie cookie, string key)
         {
             if (cookie != null)
+            {
                 if (!string.IsNullOrEmpty(key) && cookie.HasKeys)
+                {
                     return cookie.Values[key];
-                else
-                    return cookie.Value;
+                }
+                return cookie.Value;
+            }
             return "";
         }
 
@@ -56,7 +61,9 @@ namespace IFramework.Infrastructure
         {
             var request = HttpContext.Current.Request;
             if (request != null)
+            {
                 return request.Cookies[cookieName];
+            }
             return null;
         }
 
@@ -85,6 +92,7 @@ namespace IFramework.Infrastructure
             {
                 var cookie = response.Cookies[cookieName];
                 if (cookie != null)
+                {
                     if (!string.IsNullOrEmpty(key) && cookie.HasKeys)
                     {
                         cookie.Values.Remove(key);
@@ -94,6 +102,7 @@ namespace IFramework.Infrastructure
                         cookie.Expires = DateTime.Now.AddDays(-1);
                         response.Cookies.Add(cookie);
                     }
+                }
             }
         }
 
@@ -159,11 +168,17 @@ namespace IFramework.Infrastructure
                 if (cookie != null)
                 {
                     if (!string.IsNullOrEmpty(key) && cookie.HasKeys)
+                    {
                         cookie.Values.Set(key, value);
+                    }
                     else if (!string.IsNullOrEmpty(value))
+                    {
                         cookie.Value = value;
+                    }
                     if (expires != null)
+                    {
                         cookie.Expires = expires.Value;
+                    }
                     response.SetCookie(cookie);
                 }
             }
@@ -182,7 +197,9 @@ namespace IFramework.Infrastructure
         {
             var cookie = new HttpCookie(key, value);
             if (!string.IsNullOrWhiteSpace(domain))
+            {
                 cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 
@@ -197,7 +214,9 @@ namespace IFramework.Infrastructure
             var cookie = new HttpCookie(key, value);
             cookie.Expires = expires;
             if (!string.IsNullOrWhiteSpace(domain))
+            {
                 cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 
@@ -212,7 +231,9 @@ namespace IFramework.Infrastructure
             var cookie = new HttpCookie(cookieName);
             cookie.Values.Add(key, value);
             if (!string.IsNullOrWhiteSpace(domain))
+            {
                 cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 
@@ -226,7 +247,9 @@ namespace IFramework.Infrastructure
             var cookie = new HttpCookie(cookieName);
             cookie.Expires = expires;
             if (!string.IsNullOrWhiteSpace(domain))
+            {
                 cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 
@@ -237,14 +260,19 @@ namespace IFramework.Infrastructure
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="expires"></param>
-        public static void AddCookie(string cookieName, string key, string value, DateTime expires,
-            string domain = null)
+        public static void AddCookie(string cookieName,
+                                     string key,
+                                     string value,
+                                     DateTime expires,
+                                     string domain = null)
         {
             var cookie = new HttpCookie(cookieName);
             cookie.Expires = expires;
             cookie.Values.Add(key, value);
             if (!string.IsNullOrWhiteSpace(domain))
+            {
                 cookie.Domain = domain;
+            }
             AddCookie(cookie);
         }
 

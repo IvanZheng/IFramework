@@ -34,13 +34,15 @@ namespace IFramework.Message.Impl
         public virtual void Start()
         {
             if (_needMessageStore)
+            {
                 GetAllUnSentMessages().ForEach(eventContext => _messageStateQueue.Add(new MessageState(eventContext)));
+            }
             var cancellationTokenSource = new CancellationTokenSource();
             _sendMessageTask = Task.Factory.StartNew(cs => SendMessages(cs as CancellationTokenSource),
-                cancellationTokenSource,
-                cancellationTokenSource.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                                                     cancellationTokenSource,
+                                                     cancellationTokenSource.Token,
+                                                     TaskCreationOptions.LongRunning,
+                                                     TaskScheduler.Default);
         }
 
         public virtual void Stop()
@@ -62,15 +64,17 @@ namespace IFramework.Message.Impl
         {
             var sendTaskCompletionSource = new TaskCompletionSource<MessageResponse>();
             if (sendCancellationToken != CancellationToken.None)
+            {
                 sendCancellationToken.Register(OnSendCancel, sendTaskCompletionSource);
+            }
             var messageStates = messages.Select(message =>
-                {
-                    var topic = message.GetFormatTopic();
-                    return new MessageState(_messageQueueClient.WrapMessage(message, topic: topic, key: message.Key),
-                        sendTaskCompletionSource,
-                        false);
-                })
-                .ToArray();
+                                        {
+                                            var topic = message.GetFormatTopic();
+                                            return new MessageState(_messageQueueClient.WrapMessage(message, topic: topic, key: message.Key),
+                                                                    sendTaskCompletionSource,
+                                                                    false);
+                                        })
+                                        .ToArray();
             return SendAsync(messageStates);
         }
 
@@ -79,8 +83,8 @@ namespace IFramework.Message.Impl
         {
             messageStates.ForEach(messageState => { _messageStateQueue.Add(messageState); });
             return Task.WhenAll(messageStates.Where(s => s.SendTaskCompletionSource != null)
-                .Select(s => s.SendTaskCompletionSource.Task)
-                .ToArray());
+                                             .Select(s => s.SendTaskCompletionSource.Task)
+                                             .ToArray());
         }
 
         protected abstract IEnumerable<IMessageContext> GetAllUnSentMessages();
@@ -92,16 +96,20 @@ namespace IFramework.Message.Impl
         {
             var sendTaskCompletionSource = state as TaskCompletionSource<MessageResponse>;
             if (sendTaskCompletionSource != null)
+            {
                 sendTaskCompletionSource.TrySetCanceled();
+            }
         }
 
         private void SendMessages(CancellationTokenSource cancellationTokenSource)
         {
             while (!cancellationTokenSource.IsCancellationRequested)
+            {
                 try
                 {
                     var messageState = _messageStateQueue.Take(cancellationTokenSource.Token);
                     while (true)
+                    {
                         try
                         {
                             var messageContext = messageState.MessageContext;
@@ -114,6 +122,7 @@ namespace IFramework.Message.Impl
                             _logger?.Error(ex);
                             Thread.Sleep(2000);
                         }
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -127,6 +136,7 @@ namespace IFramework.Message.Impl
                 {
                     _logger?.Error(ex);
                 }
+            }
         }
     }
 }

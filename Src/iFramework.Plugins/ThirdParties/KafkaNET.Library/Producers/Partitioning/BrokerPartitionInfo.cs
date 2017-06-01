@@ -20,6 +20,8 @@ namespace Kafka.Client.Producers.Partitioning
         private readonly Dictionary<string, Dictionary<int, int[]>> topicDataInZookeeper =
             new Dictionary<string, Dictionary<int, int[]>>();
 
+        private readonly int topicMetaDataRefreshIntervalMS;
+
         private readonly IDictionary<string, TopicMetadata> topicPartitionInfo = new Dictionary<string, TopicMetadata>()
             ;
 
@@ -31,10 +33,12 @@ namespace Kafka.Client.Producers.Partitioning
 
         private readonly object updateLock = new object();
         private readonly ZooKeeperClient zkClient;
-        private readonly int topicMetaDataRefreshIntervalMS;
 
-        public BrokerPartitionInfo(ISyncProducerPool syncProducerPool, IDictionary<string, TopicMetadata> cache,
-            IDictionary<string, DateTime> lastUpdateTime, int topicMetaDataRefreshIntervalMS, ZooKeeperClient zkClient)
+        public BrokerPartitionInfo(ISyncProducerPool syncProducerPool,
+                                   IDictionary<string, TopicMetadata> cache,
+                                   IDictionary<string, DateTime> lastUpdateTime,
+                                   int topicMetaDataRefreshIntervalMS,
+                                   ZooKeeperClient zkClient)
         {
             this.syncProducerPool = syncProducerPool;
             topicPartitionInfo = cache;
@@ -65,18 +69,24 @@ namespace Kafka.Client.Producers.Partitioning
         public List<Partition> GetBrokerPartitionInfo(string topic)
         {
             if (!topicPartitionInfoList.ContainsKey(topic))
+            {
                 throw new KafkaException(string.Format("There is no  metadata  for topic {0} ", topic));
+            }
 
             var metadata = topicPartitionInfo[topic];
             if (metadata.Error != ErrorMapping.NoError)
+            {
                 throw new KafkaException(
-                    string.Format("The metadata status for topic {0} is abnormal, detail: ", topic), metadata.Error);
+                                         string.Format("The metadata status for topic {0} is abnormal, detail: ", topic), metadata.Error);
+            }
 
             return topicPartitionInfoList[topic];
         }
 
-        public IDictionary<int, Broker> GetBrokerPartitionLeaders(short versionId, string clientId, int correlationId,
-            string topic)
+        public IDictionary<int, Broker> GetBrokerPartitionLeaders(short versionId,
+                                                                  string clientId,
+                                                                  int correlationId,
+                                                                  string topic)
         {
             UpdateInfoInternal(versionId, correlationId, clientId, topic);
             return GetBrokerPartitionLeaders(topic);
@@ -86,8 +96,10 @@ namespace Kafka.Client.Producers.Partitioning
         {
             var metadata = topicPartitionInfo[topic];
             if (metadata.Error != ErrorMapping.NoError)
+            {
                 throw new KafkaException(
-                    string.Format("The metadata status for topic {0} is abnormal, detail: ", topic), metadata.Error);
+                                         string.Format("The metadata status for topic {0} is abnormal, detail: ", topic), metadata.Error);
+            }
 
             var partitionLeaders = new Dictionary<int, Broker>();
             foreach (var p in metadata.PartitionsMetadata)
@@ -96,12 +108,14 @@ namespace Kafka.Client.Producers.Partitioning
                 {
                     partitionLeaders.Add(p.PartitionId, p.Leader);
                     Logger.DebugFormat("Topic {0} partition {1} has leader {2}", topic,
-                        p.PartitionId, p.Leader.Id);
+                                       p.PartitionId, p.Leader.Id);
                 }
 
                 if (p.Leader == null)
+                {
                     Logger.DebugFormat("Topic {0} partition {1} does not have a leader yet", topic,
-                        p.PartitionId);
+                                       p.PartitionId);
+                }
             }
             return partitionLeaders;
         }
@@ -123,14 +137,15 @@ namespace Kafka.Client.Producers.Partitioning
                 try
                 {
                     var topicMetadataRequest = TopicMetadataRequest.Create(new List<string> {topic}, versionId,
-                        correlationId, clientId);
+                                                                           correlationId, clientId);
                     var topicMetadataList = producer.Send(topicMetadataRequest);
                     var topicMetadata = topicMetadataList.Any() ? topicMetadataList.First() : null;
                     if (topicMetadata != null)
+                    {
                         if (topicMetadata.Error != ErrorMapping.NoError)
                         {
                             Logger.WarnFormat("Try get metadata of topic {0} from {1}({2}) . Got error: {3}", topic,
-                                producer.Config.BrokerId, producer.Config.Host, topicMetadata.Error.ToString());
+                                              producer.Config.BrokerId, producer.Config.Host, topicMetadata.Error.ToString());
                         }
                         else
                         {
@@ -141,29 +156,31 @@ namespace Kafka.Client.Producers.Partitioning
                             //TODO:  For all partitions which has metadata, here return the sorted list.
                             //But sometimes kafka didn't return metadata for all topics.
                             topicPartitionInfoList[topic] = topicMetadata.PartitionsMetadata.Select(m =>
-                                {
-                                    var partition = new Partition(topic, m.PartitionId);
-                                    if (m.Leader != null)
-                                    {
-                                        var leaderReplica = new Replica(m.Leader.Id, topic);
-                                        partition.Leader = leaderReplica;
-                                        Logger.InfoFormat("Topic {0} partition {1} has leader {2}", topic,
-                                            m.PartitionId, m.Leader.Id);
+                                                                                                    {
+                                                                                                        var partition = new Partition(topic, m.PartitionId);
+                                                                                                        if (m.Leader != null)
+                                                                                                        {
+                                                                                                            var leaderReplica = new Replica(m.Leader.Id, topic);
+                                                                                                            partition.Leader = leaderReplica;
+                                                                                                            Logger.InfoFormat("Topic {0} partition {1} has leader {2}", topic,
+                                                                                                                              m.PartitionId, m.Leader.Id);
 
-                                        return partition;
-                                    }
+                                                                                                            return partition;
+                                                                                                        }
 
-                                    Logger.WarnFormat("Topic {0} partition {1} does not have a leader yet", topic,
-                                        m.PartitionId);
+                                                                                                        Logger.WarnFormat("Topic {0} partition {1} does not have a leader yet", topic,
+                                                                                                                          m.PartitionId);
 
-                                    return partition;
-                                }
-                            ).OrderBy(x => x.PartId).ToList();
+                                                                                                        return partition;
+                                                                                                    }
+                                                                                                   )
+                                                                         .OrderBy(x => x.PartId)
+                                                                         .ToList();
                             ;
                             hasFetchedInfo = true;
                             Logger.InfoFormat("Finish  Update  metadata info, topic {0}  Partitions:{1}  No leader:{2}",
-                                topic, topicPartitionInfoList[topic].Count,
-                                topicPartitionInfoList[topic].Where(r => r.Leader == null).Count());
+                                              topic, topicPartitionInfoList[topic].Count,
+                                              topicPartitionInfoList[topic].Where(r => r.Leader == null).Count());
 
                             //In very weired case, the kafka broker didn't return metadata of all broker. need break and retry.  https://issues.apache.org/jira/browse/KAFKA-1998
                             // http://qnalist.com/questions/5899394/topicmetadata-response-miss-some-partitions-information-sometimes
@@ -176,20 +193,21 @@ namespace Kafka.Client.Producers.Partitioning
                                     if (topicPartitionInfoList[topic].Count != topicMetaDataInZookeeper.Count)
                                     {
                                         Logger.ErrorFormat(
-                                            "NOT all partition has metadata.  Topic partition in zookeeper :{0} topics has partition metadata: {1}",
-                                            topicMetaDataInZookeeper.Count, topicPartitionInfoList[topic].Count);
+                                                           "NOT all partition has metadata.  Topic partition in zookeeper :{0} topics has partition metadata: {1}",
+                                                           topicMetaDataInZookeeper.Count, topicPartitionInfoList[topic].Count);
                                         throw new UnavailableProducerException(string.Format(
-                                            "Please make sure every partition at least has one broker running and retry again.   NOT all partition has metadata.  Topic partition in zookeeper :{0} topics has partition metadata: {1}",
-                                            topicMetaDataInZookeeper.Count, topicPartitionInfoList[topic].Count));
+                                                                                             "Please make sure every partition at least has one broker running and retry again.   NOT all partition has metadata.  Topic partition in zookeeper :{0} topics has partition metadata: {1}",
+                                                                                             topicMetaDataInZookeeper.Count, topicPartitionInfoList[topic].Count));
                                     }
                                 }
                             }
                         }
+                    }
                 }
                 catch (Exception e)
                 {
                     Logger.ErrorFormat("Try get metadata of topic {0} from {1}({2}) . Got error: {3}", topic,
-                        producer.Config.BrokerId, producer.Config.Host, e.FormatException());
+                                       producer.Config.BrokerId, producer.Config.Host, e.FormatException());
                 }
             }
         }
@@ -201,7 +219,9 @@ namespace Kafka.Client.Producers.Partitioning
             var needUpdateForNotExists = false;
             var needUpdateForExpire = false;
             if (!topicPartitionInfo.ContainsKey(topic) || topicPartitionInfo[topic].Error != ErrorMapping.NoError)
+            {
                 needUpdateForNotExists = true;
+            }
 
             if (topicPartitionInfoLastUpdateTime.ContainsKey(topic)
                 && (DateTime.UtcNow - topicPartitionInfoLastUpdateTime[topic]).TotalMilliseconds >
@@ -209,22 +229,24 @@ namespace Kafka.Client.Producers.Partitioning
             {
                 needUpdateForExpire = true;
                 Logger.InfoFormat("Will update metadata for topic:{0}  Last update time:{1}  Diff:{2} Config:{3} ",
-                    topic, topicPartitionInfoLastUpdateTime[topic]
-                    , (DateTime.UtcNow - topicPartitionInfoLastUpdateTime[topic]).TotalMilliseconds,
-                    topicMetaDataRefreshIntervalMS);
+                                  topic, topicPartitionInfoLastUpdateTime[topic]
+                                  , (DateTime.UtcNow - topicPartitionInfoLastUpdateTime[topic]).TotalMilliseconds,
+                                  topicMetaDataRefreshIntervalMS);
             }
 
             if (needUpdateForNotExists || needUpdateForExpire)
             {
                 Logger.InfoFormat(
-                    "Will update metadata for topic:{0} since: needUpdateForNotExists: {1}  needUpdateForExpire:{2} ",
-                    topic, needUpdateForNotExists, needUpdateForExpire);
+                                  "Will update metadata for topic:{0} since: needUpdateForNotExists: {1}  needUpdateForExpire:{2} ",
+                                  topic, needUpdateForNotExists, needUpdateForExpire);
                 lock (updateLock)
                 {
                     UpdateInfo(versionId, correlationId, clientId, topic);
                     if (!topicPartitionInfo.ContainsKey(topic))
+                    {
                         throw new KafkaException(
-                            string.Format("Failed to fetch topic metadata for topic: {0} ", topic));
+                                                 string.Format("Failed to fetch topic metadata for topic: {0} ", topic));
+                    }
                 }
             }
         }

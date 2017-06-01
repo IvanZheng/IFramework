@@ -28,7 +28,7 @@ namespace Kafka.Client.Consumers
             foreach (var v in ResponseMap)
             {
                 sb.AppendFormat(",ResponseMap[{0}].Key:{1},PartitionOffsetsResponse Count={2}", i, v.Key,
-                    v.Value.Count);
+                                v.Value.Count);
                 var j = 0;
                 foreach (var o in v.Value)
                 {
@@ -57,7 +57,9 @@ namespace Kafka.Client.Consumers
                     var numPartitions = reader.ReadInt32();
                     var responses = new List<PartitionOffsetsResponse>();
                     for (var p = 0; p < numPartitions; ++p)
+                    {
                         responses.Add(PartitionOffsetsResponse.ReadFrom(reader));
+                    }
 
                     responseMap[topic] = responses;
                 }
@@ -85,7 +87,7 @@ namespace Kafka.Client.Consumers
             var sb = new StringBuilder(1024);
 
             sb.AppendFormat("PartitionOffsetsResponse.PartitionId:{0},Error:{1},Offsets Count={2}", PartitionId, Error,
-                Offsets.Count);
+                            Offsets.Count);
             var i = 0;
             foreach (var o in Offsets)
             {
@@ -105,11 +107,13 @@ namespace Kafka.Client.Consumers
             var numOffsets = reader.ReadInt32();
             var offsets = new List<long>();
             for (var o = 0; o < numOffsets; ++o)
+            {
                 offsets.Add(reader.ReadInt64());
+            }
 
             return new PartitionOffsetsResponse(partitionId,
-                (ErrorMapping) Enum.Parse(typeof(ErrorMapping), error.ToString(CultureInfo.InvariantCulture)),
-                offsets);
+                                                (ErrorMapping) Enum.Parse(typeof(ErrorMapping), error.ToString(CultureInfo.InvariantCulture)),
+                                                offsets);
         }
     }
 }

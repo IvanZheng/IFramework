@@ -43,8 +43,14 @@ namespace IFramework.Command.Impl
             throw new NotImplementedException();
         }
 
-        public void Invoke(uint dispIdMember, ref Guid riid, uint lcid, short wFlags, IntPtr pDispParams,
-            IntPtr pVarResult, IntPtr pExcepInfo, IntPtr puArgErr)
+        public void Invoke(uint dispIdMember,
+                           ref Guid riid,
+                           uint lcid,
+                           short wFlags,
+                           IntPtr pDispParams,
+                           IntPtr pVarResult,
+                           IntPtr pExcepInfo,
+                           IntPtr puArgErr)
         {
             throw new NotImplementedException();
         }
@@ -85,18 +91,25 @@ namespace IFramework.Command.Impl
             {
                 var propertyWithKeyAttribute = CommandLinerKeys.GetOrAdd(command.GetType(), type =>
                 {
-                    var keyProperty = command.GetType().GetProperties()
-                        .Where(p => p.GetCustomAttribute<LinearKeyAttribute>() != null)
-                        .FirstOrDefault() as _MemberInfo;
+                    var keyProperty = command.GetType()
+                                             .GetProperties()
+                                             .Where(p => p.GetCustomAttribute<LinearKeyAttribute>() != null)
+                                             .FirstOrDefault() as _MemberInfo;
                     if (keyProperty == null)
+                    {
                         keyProperty = new NullPropertyInfo();
+                    }
                     return keyProperty;
                 });
 
                 if (propertyWithKeyAttribute is NullPropertyInfo)
+                {
                     linearKey = typeof(TLinearCommand).Name;
+                }
                 else
+                {
                     linearKey = command.GetValueByKey(propertyWithKeyAttribute.Name);
+                }
             }
             return linearKey;
         }

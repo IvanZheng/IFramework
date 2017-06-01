@@ -19,9 +19,7 @@ namespace Sample.Persistence
             Database.SetInitializer(new SampleModelContextCreateDatabaseIfNotExists());
         }
 
-        public SampleModelContext() : base("SampleModelContext")
-        {
-        }
+        public SampleModelContext() : base("SampleModelContext") { }
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Product> Products { get; set; }
@@ -34,13 +32,13 @@ namespace Sample.Persistence
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>()
-                .ToTable("Accounts")
-                .HasMany(a => a.ProductIds)
-                .WithRequired()
-                .HasForeignKey(pid => pid.AccountId);
+                        .ToTable("Accounts")
+                        .HasMany(a => a.ProductIds)
+                        .WithRequired()
+                        .HasForeignKey(pid => pid.AccountId);
 
             modelBuilder.Entity<ProductId>()
-                .HasKey(p => new {p.Value, p.AccountId});
+                        .HasKey(p => new {p.Value, p.AccountId});
 
             base.OnModelCreating(modelBuilder);
         }

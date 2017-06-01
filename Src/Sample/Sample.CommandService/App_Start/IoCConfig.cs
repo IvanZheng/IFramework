@@ -16,11 +16,11 @@ namespace Sample.CommandService.App_Start
         private static readonly Lazy<IContainer> container = new Lazy<IContainer>(() =>
         {
             Configuration.Instance
-                //.UseAutofacContainer()
-                //.RegisterAssemblyTypes("Sample.Web", "Sample.Application")
-                .UseUnityContainer()
-                .RegisterCommonComponents()
-                .UseUnityMvc();
+                         //.UseAutofacContainer()
+                         //.RegisterAssemblyTypes("Sample.Web", "Sample.Application")
+                         .UseUnityContainer()
+                         .RegisterCommonComponents()
+                         .UseUnityMvc();
 
             var container = IoCFactory.Instance.CurrentContainer;
             RegisterTypes(container, Lifetime.Hierarchical);
@@ -55,8 +55,8 @@ namespace Sample.CommandService.App_Start
             // container.RegisterType<IProductRepository, ProductRepository>();
 
             Configuration.Instance
-                .RegisterDefaultEventBus(container, lifetime)
-                .RegisterEntityFrameworkComponents(container, lifetime);
+                         .RegisterDefaultEventBus(container, lifetime)
+                         .RegisterEntityFrameworkComponents(container, lifetime);
             container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime);
             container.RegisterType<SampleModelContext, SampleModelContext>(lifetime);
         }

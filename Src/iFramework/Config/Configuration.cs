@@ -19,9 +19,7 @@ namespace IFramework.Config
     {
         public static readonly Configuration Instance = new Configuration();
 
-        private Configuration()
-        {
-        }
+        private Configuration() { }
 
         public bool NeedMessageStore { get; protected set; }
 
@@ -57,8 +55,8 @@ namespace IFramework.Config
         public Configuration UseNoneLogger()
         {
             IoCFactory.Instance.CurrentContainer
-                .RegisterInstance(typeof(ILoggerFactory)
-                    , new MockLoggerFactory());
+                      .RegisterInstance(typeof(ILoggerFactory)
+                                        , new MockLoggerFactory());
             return this;
         }
 
@@ -98,13 +96,15 @@ namespace IFramework.Config
             {
                 var value = GetAppConfig(key);
                 if (typeof(T).IsEquivalentTo(typeof(Guid)))
+                {
                     val = (T) Convert.ChangeType(new Guid(value), typeof(T));
+                }
                 else
+                {
                     val = (T) Convert.ChangeType(value, typeof(T));
+                }
             }
-            catch (Exception)
-            {
-            }
+            catch (Exception) { }
             return val;
         }
 
@@ -117,18 +117,22 @@ namespace IFramework.Config
                 {
                     var filePath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase, configPath);
                     if (File.Exists(filePath))
+                    {
                         using (TextReader reader = new StreamReader(filePath))
                         {
                             var xml = XElement.Load(filePath);
                             if (xml != null)
                             {
                                 var element = xml.Elements()
-                                    .SingleOrDefault(e => e.Attribute("key") != null &&
-                                                          e.Attribute("key").Value.Equals(keyname));
+                                                 .SingleOrDefault(e => e.Attribute("key") != null &&
+                                                                       e.Attribute("key").Value.Equals(keyname));
                                 if (element != null)
+                                {
                                     config = element.Attribute("value").Value;
+                                }
                             }
                         }
+                    }
                 }
             }
             catch (Exception)

@@ -5,17 +5,11 @@ namespace Kafka.Client.Exceptions
 {
     public class UnavailableProducerException : Exception
     {
-        public UnavailableProducerException()
-        {
-        }
+        public UnavailableProducerException() { }
 
         public UnavailableProducerException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
-        public UnavailableProducerException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public UnavailableProducerException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

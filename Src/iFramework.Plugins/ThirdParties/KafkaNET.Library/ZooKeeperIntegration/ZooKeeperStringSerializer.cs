@@ -14,9 +14,7 @@ namespace Kafka.Client.ZooKeeperIntegration
         /// <summary>
         ///     Prevents a default instance of the <see cref="ZooKeeperStringSerializer" /> class from being created.
         /// </summary>
-        private ZooKeeperStringSerializer()
-        {
-        }
+        private ZooKeeperStringSerializer() { }
 
         /// <summary>
         ///     Serializes data using UTF-8 encoding

@@ -14,8 +14,6 @@ namespace Kafka.Client.Messages
         ///     The max size of stream.
         /// </param>
         public BoundedBuffer(int size)
-            : base(new byte[size], 0, size, true, true)
-        {
-        }
+            : base(new byte[size], 0, size, true, true) { }
     }
 }

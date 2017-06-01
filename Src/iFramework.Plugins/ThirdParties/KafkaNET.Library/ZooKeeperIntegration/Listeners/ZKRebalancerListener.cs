@@ -24,12 +24,6 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
         private readonly ZKGroupDirs dirs;
         private readonly Fetcher fetcher;
         private readonly IDictionary<string, IList<KafkaMessageStream<TData>>> kafkaMessageStreams;
-        private readonly IDictionary<Tuple<string, string>, BlockingCollection<FetchedDataChunk>> queues;
-        private readonly object syncLock = new object();
-        private readonly TopicCount topicCount;
-        private readonly IZooKeeperClient zkClient;
-        private readonly ZookeeperConsumerConnector zkConsumerConnector;
-        private volatile bool isRebalanceRunning;
 
         private readonly IDictionary<string, IList<string>> oldConsumersPerTopicMap =
             new Dictionary<string, IList<string>>();
@@ -37,8 +31,15 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
         private readonly IDictionary<string, IList<string>> oldPartitionsPerTopicMap =
             new Dictionary<string, IList<string>>();
 
-        private volatile CancellationTokenSource rebalanceCancellationTokenSource = new CancellationTokenSource();
+        private readonly IDictionary<Tuple<string, string>, BlockingCollection<FetchedDataChunk>> queues;
+        private readonly object syncLock = new object();
+        private readonly TopicCount topicCount;
         private readonly IDictionary<string, IDictionary<int, PartitionTopicInfo>> topicRegistry;
+        private readonly IZooKeeperClient zkClient;
+        private readonly ZookeeperConsumerConnector zkConsumerConnector;
+        private volatile bool isRebalanceRunning;
+
+        private volatile CancellationTokenSource rebalanceCancellationTokenSource = new CancellationTokenSource();
 
         internal ZKRebalancerListener(
             ConsumerConfiguration config,
@@ -135,7 +136,7 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                     if ((DateTime.UtcNow - timeStartWait).TotalMilliseconds > waitRebalanceFinishTimeoutInMs)
                     {
                         Logger.WarnFormat("After wait more than {0} ms, the latest isRebalanceRunning:{1} ",
-                            waitRebalanceFinishTimeoutInMs, isRebalanceRunning);
+                                          waitRebalanceFinishTimeoutInMs, isRebalanceRunning);
                         break;
                     }
                 }
@@ -164,10 +165,14 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
         public void ShutdownFetchers()
         {
             if (fetcher != null)
+            {
                 fetcher.Shutdown();
+            }
             foreach (var topic in topicRegistry)
             foreach (var partition in topic.Value)
+            {
                 partition.Value.ConsumeOffsetValid = false;
+            }
         }
 
         protected virtual void OnConsumerRebalance(EventArgs args)
@@ -176,7 +181,9 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
             {
                 var handler = ConsumerRebalance;
                 if (handler != null)
+                {
                     handler(this, args);
+                }
             }
             catch (Exception ex)
             {
@@ -213,17 +220,17 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                     {
                         // some lower methods have methods like EnsureNotDisposed() implemented and so we should expect to catch here
                         Logger.InfoFormat(
-                            "ObjectDisposedException in rebalance. Assume end of SyncedRebalance. Exception occurred during rebalance {1} for consumer {2}",
-                            config.ConsumeGroupRebalanceRetryIntervalMs, objDisposedEx.FormatException(),
-                            consumerIdString);
+                                          "ObjectDisposedException in rebalance. Assume end of SyncedRebalance. Exception occurred during rebalance {1} for consumer {2}",
+                                          config.ConsumeGroupRebalanceRetryIntervalMs, objDisposedEx.FormatException(),
+                                          consumerIdString);
                         cancellationTokenSource.Cancel();
                     }
                     catch (Exception ex)
                     {
                         // Some unknown exception occurred, bail
                         Logger.ErrorFormat(
-                            "Exception in rebalance. Will retry after {0} ms. Exception occurred during rebalance {1} for consumer {2}",
-                            config.ConsumeGroupRebalanceRetryIntervalMs, ex.FormatException(), consumerIdString);
+                                           "Exception in rebalance. Will retry after {0} ms. Exception occurred during rebalance {1} for consumer {2}",
+                                           config.ConsumeGroupRebalanceRetryIntervalMs, ex.FormatException(), consumerIdString);
                         Thread.Sleep(config.ConsumeGroupRebalanceRetryIntervalMs);
                     }
                 }
@@ -251,12 +258,12 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                 Logger.Warn("No brokers found when trying to rebalance.");
                 zkClient.Subscribe(ZooKeeperClient.DefaultBrokerIdsPath, this);
                 zkConsumerConnector.subscribedChildCollection.Add(
-                    new Tuple<string, IZooKeeperChildListener>(ZooKeeperClient.DefaultBrokerIdsPath, this));
+                                                                  new Tuple<string, IZooKeeperChildListener>(ZooKeeperClient.DefaultBrokerIdsPath, this));
                 Logger.ErrorFormat(
-                    "Subscribe count: subscribedChildCollection:{0} , subscribedZookeeperStateCollection:{1} subscribedZookeeperDataCollection:{2} "
-                    , zkConsumerConnector.subscribedChildCollection.Count,
-                    zkConsumerConnector.subscribedZookeeperStateCollection.Count,
-                    zkConsumerConnector.subscribedZookeeperDataCollection.Count);
+                                   "Subscribe count: subscribedChildCollection:{0} , subscribedZookeeperStateCollection:{1} subscribedZookeeperDataCollection:{2} "
+                                   , zkConsumerConnector.subscribedChildCollection.Count,
+                                   zkConsumerConnector.subscribedZookeeperStateCollection.Count,
+                                   zkConsumerConnector.subscribedZookeeperDataCollection.Count);
                 return false;
             }
 
@@ -266,7 +273,7 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
             if (cancellationTokenSource.IsCancellationRequested)
             {
                 Logger.ErrorFormat(
-                    "Rebalance operation has been canceled externally by a future rebalance event. Exiting immediately");
+                                   "Rebalance operation has been canceled externally by a future rebalance event. Exiting immediately");
                 return false;
             }
 
@@ -289,13 +296,13 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                     var curPartitions = partitionsPerTopicMap[topic].OrderBy(p => int.Parse(p)).ToList();
 
                     Logger.InfoFormat(
-                        "{4} Partitions. {5} ConsumerClients.  Consumer {0} rebalancing the following partitions: {1} for topic {2} with consumers: {3}",
-                        consumerIdString,
-                        string.Join(",", curPartitions),
-                        topic,
-                        string.Join(",", curConsumers),
-                        curPartitions.Count,
-                        curConsumers.Count);
+                                      "{4} Partitions. {5} ConsumerClients.  Consumer {0} rebalancing the following partitions: {1} for topic {2} with consumers: {3}",
+                                      consumerIdString,
+                                      string.Join(",", curPartitions),
+                                      topic,
+                                      string.Join(",", curConsumers),
+                                      curPartitions.Count,
+                                      curConsumers.Count);
 
                     var numberOfPartsPerConsumer = curPartitions.Count / curConsumers.Count;
                     Logger.Info("Number of partitions per consumer is: " + numberOfPartsPerConsumer);
@@ -310,7 +317,9 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                                     myConsumerPosition);
 
                         if (myConsumerPosition < 0)
+                        {
                             continue;
+                        }
 
                         var startPart = numberOfPartsPerConsumer * myConsumerPosition +
                                         Math.Min(myConsumerPosition, numberOfConsumersWithExtraPart);
@@ -321,24 +330,28 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                         Logger.Info("Number of partitions to work on is: " + numberOfParts);
 
                         if (numberOfParts <= 0)
+                        {
                             Logger.InfoFormat("No broker partitions consumed by consumer thread {0} for topic {1}",
-                                consumerThreadId, item.Key);
+                                              consumerThreadId, item.Key);
+                        }
                         else
+                        {
                             for (var i = startPart; i < startPart + numberOfParts; i++)
                             {
                                 var partition = curPartitions[i];
 
                                 Logger.InfoFormat("{0} attempting to claim partition {1}", consumerThreadId, partition);
                                 var ownPartition = ProcessPartition(topicDirs, partition, topic, consumerThreadId,
-                                    curConsumers, curPartitions, cancellationTokenSource);
+                                                                    curConsumers, curPartitions, cancellationTokenSource);
                                 if (!ownPartition)
                                 {
                                     Logger.InfoFormat(
-                                        "{0} failed to claim partition {1} for topic {2}. Exiting rebalance",
-                                        consumerThreadId, partition, topic);
+                                                      "{0} failed to claim partition {1} for topic {2}. Exiting rebalance",
+                                                      consumerThreadId, partition, topic);
                                     return false;
                                 }
                             }
+                        }
                     }
                 }
             }
@@ -358,11 +371,12 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
         }
 
         private bool ProcessPartition(ZKGroupTopicDirs topicDirs,
-            string partition,
-            string topic,
-            string consumerThreadId,
-            List<string> curConsumers,
-            List<string> curPartitions, CancellationTokenSource cancellationTokenSource)
+                                      string partition,
+                                      string topic,
+                                      string consumerThreadId,
+                                      List<string> curConsumers,
+                                      List<string> curPartitions,
+                                      CancellationTokenSource cancellationTokenSource)
         {
             var partitionOwned = false;
 
@@ -375,7 +389,7 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                 if (currentPartitionOwner == null || currentPartitionOwner.Equals(consumerThreadId))
                 {
                     Logger.InfoFormat("{0} is null or equals our consumer ID. Reflect partition ownership in ZK",
-                        partitionOwnerPath);
+                                      partitionOwnerPath);
                     AddPartitionTopicInfo(topicDirs, partition, topic, consumerThreadId);
                     if (ReflectPartitionOwnershipDecision(topic, partition, consumerThreadId))
                     {
@@ -387,11 +401,11 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                 if (cancellationTokenSource.IsCancellationRequested)
                 {
                     Logger.Info(
-                        "Rebalance operation has been canceled externally by a future rebalance event. Exiting immediately");
+                                "Rebalance operation has been canceled externally by a future rebalance event. Exiting immediately");
                     break;
                 }
                 Logger.InfoFormat("{0} exists with value {1}. Sleep and retry ownership attempt", partitionOwnerPath,
-                    currentPartitionOwner);
+                                  currentPartitionOwner);
                 Thread.Sleep(1000);
             }
 
@@ -407,21 +421,21 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
             try
             {
                 Logger.InfoFormat("Consumer {0} will own partition {1} for topic {2}, will create ZK path {3}",
-                    consumerThreadId, partition, topic, partitionOwnerPath);
+                                  consumerThreadId, partition, topic, partitionOwnerPath);
                 try
                 {
                     zkClient.SlimLock.EnterWriteLock();
                     ZkUtils.CreateEphemeralPathExpectConflict(zkClient, partitionOwnerPath, consumerThreadId);
                     Logger.InfoFormat(
-                        "Consumer {0} SUCC owned partition {1} for topic {2} . finish create ZK path {3}  .",
-                        consumerThreadId, partition, topic, partitionOwnerPath);
+                                      "Consumer {0} SUCC owned partition {1} for topic {2} . finish create ZK path {3}  .",
+                                      consumerThreadId, partition, topic, partitionOwnerPath);
                     ownershipReflected = true;
                 }
                 catch (Exception ex)
                 {
                     Logger.InfoFormat(
-                        "Consumer {0} FAILED owned partition {1} for topic {2} . finish create ZK path {3}  error:{4}.",
-                        consumerThreadId, partition, topic, partitionOwnerPath, ex.FormatException());
+                                      "Consumer {0} FAILED owned partition {1} for topic {2} . finish create ZK path {3}  error:{4}.",
+                                      consumerThreadId, partition, topic, partitionOwnerPath, ex.FormatException());
                 }
                 finally
                 {
@@ -433,8 +447,8 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                 if (e.ErrorCode == KeeperException.Code.NODEEXISTS)
                 {
                     Logger.InfoFormat(
-                        "{0} failed to own partition {1} for topic {2}. Waiting for the partition owner to be deleted",
-                        consumerThreadId, partition, topic);
+                                      "{0} failed to own partition {1} for topic {2}. Waiting for the partition owner to be deleted",
+                                      consumerThreadId, partition, topic);
                     ownershipReflected = false;
                 }
                 else
@@ -447,12 +461,13 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
         }
 
         private void CloseFetchers(Cluster.Cluster cluster,
-            IDictionary<string, IList<string>> relevantTopicThreadIdsMap,
-            ZookeeperConsumerConnector zkConsumerConnector)
+                                   IDictionary<string, IList<string>> relevantTopicThreadIdsMap,
+                                   ZookeeperConsumerConnector zkConsumerConnector)
         {
             Logger.Info("enter CloseFetchers ...");
             var queuesToBeCleared = queues.Where(q => relevantTopicThreadIdsMap.ContainsKey(q.Key.Item1))
-                .Select(q => q.Value).ToList();
+                                          .Select(q => q.Value)
+                                          .ToList();
             CloseFetchersForQueues(cluster, queuesToBeCleared, kafkaMessageStreams, zkConsumerConnector);
             Logger.Info("exit CloseFetchers");
         }
@@ -462,15 +477,21 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
             var allPartitionInfos = new List<PartitionTopicInfo>();
             foreach (var partitionInfos in topicRegistry.Values)
             foreach (var partition in partitionInfos.Values)
+            {
                 allPartitionInfos.Add(partition);
+            }
             Logger.InfoFormat("Consumer {0} selected partitions : {1}", consumerIdString,
-                string.Join(",", allPartitionInfos.OrderBy(x => x.PartitionId).Select(y => y.ToString())));
+                              string.Join(",", allPartitionInfos.OrderBy(x => x.PartitionId).Select(y => y.ToString())));
             if (fetcher != null)
+            {
                 fetcher.InitConnections(allPartitionInfos, cluster);
+            }
         }
 
-        private void AddPartitionTopicInfo(ZKGroupTopicDirs topicDirs, string partition, string topic,
-            string consumerThreadId)
+        private void AddPartitionTopicInfo(ZKGroupTopicDirs topicDirs,
+                                           string partition,
+                                           string topic,
+                                           string consumerThreadId)
         {
             var partitionId = int.Parse(partition);
             var partTopicInfoMap = topicRegistry[topic];
@@ -478,8 +499,10 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
             //find the leader for this partition
             var leaderOpt = ZkUtils.GetLeaderForPartition(zkClient, topic, partitionId);
             if (!leaderOpt.HasValue)
+            {
                 throw new NoBrokersForPartitionException(
-                    string.Format("No leader available for partitions {0} on topic {1}", partition, topic));
+                                                         string.Format("No leader available for partitions {0} on topic {1}", partition, topic));
+            }
             Logger.InfoFormat("Leader for partition {0} for topic {1} is {2}", partition, topic, leaderOpt.Value);
             var leader = leaderOpt.Value;
             var znode = topicDirs.ConsumerOffsetDir + "/" + partition;
@@ -495,18 +518,18 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                 offset = offsetCommited + 1;
             }
             Logger.InfoFormat("Final offset {0} for topic {1} partition {2} OffsetCommited {3}"
-                , offset, topic, partition, offsetCommited);
+                              , offset, topic, partition, offsetCommited);
 
             var queue = queues[new Tuple<string, string>(topic, consumerThreadId)];
             var partTopicInfo = new PartitionTopicInfo(
-                topic,
-                leader,
-                partitionId,
-                queue,
-                offsetCommited,
-                offset,
-                config.FetchSize,
-                offsetCommited);
+                                                       topic,
+                                                       leader,
+                                                       partitionId,
+                                                       queue,
+                                                       offsetCommited,
+                                                       offset,
+                                                       config.FetchSize,
+                                                       offsetCommited);
             partTopicInfoMap[partitionId] = partTopicInfo;
             Logger.InfoFormat("{0} selected new offset {1}", partTopicInfo, offset);
         }
@@ -550,35 +573,47 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                 var topicCount = GetTopicCount(consumer);
                 foreach (var consumerThread in topicCount.GetConsumerThreadIdsPerTopic())
                 foreach (var consumerThreadId in consumerThread.Value)
+                {
                     if (!consumersPerTopicMap.ContainsKey(consumerThread.Key))
+                    {
                         consumersPerTopicMap.Add(consumerThread.Key, new List<string> {consumerThreadId});
+                    }
                     else
+                    {
                         consumersPerTopicMap[consumerThread.Key].Add(consumerThreadId);
+                    }
+                }
             }
 
             foreach (var item in consumersPerTopicMap)
+            {
                 item.Value.ToList().Sort();
+            }
 
             return consumersPerTopicMap;
         }
 
         private void CloseFetchersForQueues(Cluster.Cluster cluster,
-            IEnumerable<BlockingCollection<FetchedDataChunk>> queuesToBeCleared,
-            IDictionary<string, IList<KafkaMessageStream<TData>>> kafkaMessageStreams,
-            ZookeeperConsumerConnector zkConsumerConnector)
+                                            IEnumerable<BlockingCollection<FetchedDataChunk>> queuesToBeCleared,
+                                            IDictionary<string, IList<KafkaMessageStream<TData>>> kafkaMessageStreams,
+                                            ZookeeperConsumerConnector zkConsumerConnector)
         {
             if (fetcher != null)
             {
                 var allPartitionInfos = new List<PartitionTopicInfo>();
                 foreach (var item in topicRegistry.Values)
                 foreach (var partitionTopicInfo in item.Values)
+                {
                     allPartitionInfos.Add(partitionTopicInfo);
+                }
                 fetcher.Shutdown();
                 fetcher.ClearFetcherQueues(allPartitionInfos, cluster, queuesToBeCleared, kafkaMessageStreams);
                 Logger.Info("Committing all offsets after clearing the fetcher queues");
 
                 if (config.AutoCommit)
+                {
                     zkConsumerConnector.CommitOffsets();
+                }
             }
         }
     }

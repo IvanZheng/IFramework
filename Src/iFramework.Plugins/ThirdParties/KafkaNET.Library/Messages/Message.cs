@@ -72,13 +72,17 @@ namespace Kafka.Client.Messages
             var length = DefaultHeaderSize + payload.Length;
             Key = key;
             if (key != null)
+            {
                 length += key.Length;
+            }
 
             Payload = payload;
             Magic = DefaultMagicValue;
             if (compressionCodec != CompressionCodecs.NoCompressionCodec)
+            {
                 Attributes |=
                     (byte) (CompressionCodeMask & Messages.CompressionCodec.GetCompressionCodecValue(compressionCodec));
+            }
 
             Size = length;
         }
@@ -118,7 +122,9 @@ namespace Kafka.Client.Messages
             get
             {
                 if (Key == null)
+                {
                     return -1;
+                }
                 return Key.Length;
             }
         }
@@ -129,7 +135,7 @@ namespace Kafka.Client.Messages
         public int PayloadSize => Payload.Length;
 
         public CompressionCodecs CompressionCodec => Messages.CompressionCodec.GetCompressionCodec(
-            Attributes & CompressionCodeMask);
+                                                                                                   Attributes & CompressionCodeMask);
 
         /// <summary>
         ///     Writes message data into given message buffer
@@ -163,7 +169,9 @@ namespace Kafka.Client.Messages
             writer.Write(Attributes);
             writer.Write(KeyLength);
             if (KeyLength != -1)
+            {
                 writer.Write(Key);
+            }
             writer.Write(Payload.Length);
             writer.Write(Payload);
             var crc = ComputeChecksum(writer.Buffer, (int) beginningPosition, Size - MagicOffset);
@@ -239,7 +247,7 @@ namespace Kafka.Client.Messages
                 payload = reader.ReadBytes(payloadSize);
                 readed += payloadSize;
                 result = new Message(payload, key,
-                    Messages.CompressionCodec.GetCompressionCodec(attributes & CompressionCodeMask))
+                                     Messages.CompressionCodec.GetCompressionCodec(attributes & CompressionCodeMask))
                 {
                     Offset = offset,
                     PartitionId = partitionID
@@ -253,7 +261,9 @@ namespace Kafka.Client.Messages
             }
 
             if (size != readed)
+            {
                 throw new KafkaException(ErrorMapping.InvalidFetchSizeCode);
+            }
 
             return result;
         }

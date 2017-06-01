@@ -19,9 +19,9 @@ namespace EQueueTest
         private static void Main(string[] args)
         {
             Configuration.Instance
-                .UseAutofacContainer()
-                .UseEQueue(clusterName: clusterName)
-                .UseNoneLogger();
+                         .UseAutofacContainer()
+                         .UseEQueue(clusterName: clusterName)
+                         .UseNoneLogger();
             GroupConsuemrTest();
         }
 
@@ -32,12 +32,12 @@ namespace EQueueTest
                 var message = Encoding.UTF8.GetString(queueMessage.Body);
                 var sendTime = DateTime.Parse(message);
                 Console.WriteLine(
-                    $"consumer:{equeueConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                                  $"consumer:{equeueConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
                 equeueConsumer.CommitOffset(queueMessage.BrokerName, queueMessage.QueueId, queueMessage.QueueOffset);
             };
 
             var consumer = new EQueueConsumer(clusterName, NameServerList, topic, Environment.MachineName, consumerId,
-                onMessageReceived);
+                                              onMessageReceived);
             return consumer;
         }
 
@@ -45,7 +45,9 @@ namespace EQueueTest
         {
             var consumers = new List<EQueueConsumer>();
             for (var i = 0; i < 3; i++)
+            {
                 consumers.Add(CreateConsumer(i.ToString()));
+            }
             var producer = new EQueueProducer(clusterName, NameServerList);
             producer.Start();
             while (true)
@@ -60,6 +62,7 @@ namespace EQueueTest
                 var queueMessage = new Message(topic, 1, Encoding.UTF8.GetBytes(message));
 
                 while (true)
+                {
                     try
                     {
                         producer.Send(queueMessage, message);
@@ -71,6 +74,7 @@ namespace EQueueTest
                         Console.WriteLine(ex.GetBaseException().Message);
                         Thread.Sleep(2000);
                     }
+                }
             }
         }
     }

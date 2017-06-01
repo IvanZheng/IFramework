@@ -49,7 +49,9 @@
         public override string ToString()
         {
             if (DataDeleted)
+            {
                 return base.ToString().Replace("changed", "deleted");
+            }
 
             return base.ToString();
         }

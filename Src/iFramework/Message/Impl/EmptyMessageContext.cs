@@ -5,9 +5,7 @@ namespace IFramework.Message.Impl
 {
     public class EmptyMessageContext : IMessageContext
     {
-        public EmptyMessageContext()
-        {
-        }
+        public EmptyMessageContext() { }
 
         public EmptyMessageContext(IMessage message)
         {

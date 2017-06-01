@@ -21,12 +21,16 @@ namespace Kafka.Client.Cfg
         {
             // If parameter is null return false.
             if (obj == null)
+            {
                 return false;
+            }
 
             // If parameter cannot be cast to Point return false.
             var p = obj as BrokerConfiguration;
             if (p == null)
+            {
                 return false;
+            }
 
             // Return true if the fields match:
             return BrokerId == p.BrokerId && Host == p.Host && Port == p.Port;
@@ -36,7 +40,9 @@ namespace Kafka.Client.Cfg
         {
             // If parameter is null return false:
             if (p == null)
+            {
                 return false;
+            }
 
             // Return true if the fields match:
             return BrokerId == p.BrokerId && Host == p.Host && Port == p.Port;
@@ -51,9 +57,13 @@ namespace Kafka.Client.Cfg
         {
             var sb = new StringBuilder();
             if (isleader)
+            {
                 sb.AppendFormat("partition={0},leader[{0}]={1}", partitionIndex, broker);
+            }
             else
+            {
                 sb.AppendFormat("partition={0},nonleader[{0}]={1}", partitionIndex, broker);
+            }
             return sb.ToString();
         }
     }

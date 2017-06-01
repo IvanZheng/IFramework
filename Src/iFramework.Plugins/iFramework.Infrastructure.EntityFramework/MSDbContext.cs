@@ -48,17 +48,20 @@ namespace IFramework.EntityFramework
         {
             _objectContext = (this as IObjectContextAdapter).ObjectContext;
             if (_objectContext != null)
+            {
                 _objectContext.ObjectMaterialized +=
                     (s, e) => this.InitializeQueryableCollections(e.Entity);
+            }
         }
 
         public virtual void Rollback()
         {
-            ChangeTracker.Entries().Where(e => e.State == EntityState.Added || e.State == EntityState.Deleted)
-                .ForEach(e => { e.State = EntityState.Detached; });
+            ChangeTracker.Entries()
+                         .Where(e => e.State == EntityState.Added || e.State == EntityState.Deleted)
+                         .ForEach(e => { e.State = EntityState.Detached; });
             var refreshableObjects = ChangeTracker.Entries()
-                .Where(e => e.State == EntityState.Modified || e.State == EntityState.Unchanged)
-                .Select(c => c.Entity);
+                                                  .Where(e => e.State == EntityState.Modified || e.State == EntityState.Unchanged)
+                                                  .Select(c => c.Entity);
             _objectContext.Refresh(RefreshMode.StoreWins, refreshableObjects);
             ChangeTracker.Entries().ForEach(e => { (e.Entity as AggregateRoot)?.Rollback(); });
         }
@@ -68,8 +71,10 @@ namespace IFramework.EntityFramework
         {
             ObjectStateEntry ose;
             if (null != entity && _objectContext.ObjectStateManager
-                    .TryGetObjectStateEntry(entity, out ose))
+                                                .TryGetObjectStateEntry(entity, out ose))
+            {
                 return ose.EntityKey;
+            }
             return null;
         }
 
@@ -85,8 +90,8 @@ namespace IFramework.EntityFramework
             try
             {
                 ChangeTracker.Entries()
-                    .Where(e => e.State == EntityState.Added)
-                    .ForEach(e => { this.InitializeQueryableCollections(e.Entity); });
+                             .Where(e => e.State == EntityState.Added)
+                             .ForEach(e => { this.InitializeQueryableCollections(e.Entity); });
                 return base.SaveChanges();
             }
             catch (DbUpdateConcurrencyException ex)
@@ -97,10 +102,10 @@ namespace IFramework.EntityFramework
             catch (DbEntityValidationException ex)
             {
                 var errorMessage = string.Join(";", ex.EntityValidationErrors
-                    .SelectMany(eve => eve.ValidationErrors
-                        .Select(e => new {eve.Entry, Error = e})
-                        .Select(
-                            e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                                                      .SelectMany(eve => eve.ValidationErrors
+                                                                            .Select(e => new {eve.Entry, Error = e})
+                                                                            .Select(
+                                                                                    e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
                 throw new Exception(errorMessage, ex);
             }
             catch (Exception ex)
@@ -119,8 +124,8 @@ namespace IFramework.EntityFramework
             try
             {
                 ChangeTracker.Entries()
-                    .Where(e => e.State == EntityState.Added)
-                    .ForEach(e => { this.InitializeQueryableCollections(e.Entity); });
+                             .Where(e => e.State == EntityState.Added)
+                             .ForEach(e => { this.InitializeQueryableCollections(e.Entity); });
                 return await base.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
@@ -131,10 +136,10 @@ namespace IFramework.EntityFramework
             catch (DbEntityValidationException ex)
             {
                 var errorMessage = string.Join(";", ex.EntityValidationErrors
-                    .SelectMany(eve => eve.ValidationErrors
-                        .Select(e => new {eve.Entry, Error = e})
-                        .Select(
-                            e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
+                                                      .SelectMany(eve => eve.ValidationErrors
+                                                                            .Select(e => new {eve.Entry, Error = e})
+                                                                            .Select(
+                                                                                    e => $"{e.Entry?.Entity?.GetType().Name}:{e.Error?.PropertyName} / {e.Error?.ErrorMessage}")));
                 throw new Exception(errorMessage, ex);
             }
             catch (Exception ex)

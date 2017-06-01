@@ -20,7 +20,5 @@ namespace Sample.Command
         public string Key { get; set; }
     }
 
-    public abstract class LinearCommandBase : CommandBase, ILinearCommand
-    {
-    }
+    public abstract class LinearCommandBase : CommandBase, ILinearCommand { }
 }

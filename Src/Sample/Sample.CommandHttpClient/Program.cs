@@ -48,7 +48,6 @@ namespace Sample.CommandHttpClient
                 throw e;
             }
 
-            return;
             //var apiClient = new HttpClient();
             //// apiClient.BaseAddress = new System.Uri("http://localhost:6357");
             //apiClient.BaseAddress = new Uri("http://localhost:63581");
@@ -94,7 +93,7 @@ namespace Sample.CommandHttpClient
             //  var result1 = client.GetAsync<ArrayModel>("api/BatchCommand", model1).Result;
 
             var result2 = client.GetAsync<ArrayModelCollection>("api/BatchCommand/Collection", arrayModelCollection)
-                .Result;
+                                .Result;
         }
     }
 }

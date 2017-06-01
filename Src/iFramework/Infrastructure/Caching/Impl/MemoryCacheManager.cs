@@ -32,7 +32,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         public virtual void Set(string key, object data, int cacheTime)
         {
             if (data == null)
+            {
                 return;
+            }
 
             var policy = new CacheItemPolicy();
             policy.AbsoluteExpiration = DateTime.Now + TimeSpan.FromMinutes(cacheTime);
@@ -68,11 +70,17 @@ namespace IFramework.Infrastructure.Caching.Impl
             var keysToRemove = new List<string>();
 
             foreach (var item in Cache)
+            {
                 if (regex.IsMatch(item.Key))
+                {
                     keysToRemove.Add(item.Key);
+                }
+            }
 
             foreach (var key in keysToRemove)
+            {
                 Remove(key);
+            }
         }
 
         /// <summary>
@@ -81,7 +89,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         public virtual void Clear()
         {
             foreach (var item in Cache)
+            {
                 Remove(item.Key);
+            }
         }
     }
 }

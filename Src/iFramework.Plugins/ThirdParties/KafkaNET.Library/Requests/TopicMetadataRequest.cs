@@ -26,10 +26,14 @@ namespace Kafka.Client.Requests
         private TopicMetadataRequest(IEnumerable<string> topics, short versionId, int correlationId, string clientId)
         {
             if (topics == null)
+            {
                 throw new ArgumentNullException("topics", "List of topics cannot be null.");
+            }
 
             if (!topics.Any())
+            {
                 throw new ArgumentException("List of topics cannot be empty.");
+            }
 
             Topics = new List<string>(topics);
             this.versionId = versionId;
@@ -65,7 +69,9 @@ namespace Kafka.Client.Requests
             writer.WriteShortString(clientId, DefaultEncoding);
             writer.Write(Topics.Count());
             foreach (var topic in Topics)
+            {
                 writer.WriteShortString(topic, DefaultEncoding);
+            }
         }
 
         /// <summary>
@@ -76,8 +82,10 @@ namespace Kafka.Client.Requests
         /// <param name="correlationId"></param>
         /// <param name="clientId"></param>
         /// <returns>request</returns>
-        public static TopicMetadataRequest Create(IEnumerable<string> topics, short versionId, int correlationId,
-            string clientId)
+        public static TopicMetadataRequest Create(IEnumerable<string> topics,
+                                                  short versionId,
+                                                  int correlationId,
+                                                  string clientId)
         {
             return new TopicMetadataRequest(topics, versionId, correlationId, clientId);
         }
@@ -127,7 +135,9 @@ namespace Kafka.Client.Requests
                 var numTopics = reader.ReadInt32();
                 var topicMetadata = new TopicMetadata[numTopics];
                 for (var i = 0; i < numTopics; i++)
+                {
                     topicMetadata[i] = TopicMetadata.ParseFrom(reader, brokerMap);
+                }
                 return topicMetadata;
             }
         }

@@ -5,18 +5,12 @@ namespace Kafka.Client.Exceptions
 {
     public class InvalidBrokerIdException : Exception
     {
-        public InvalidBrokerIdException()
-        {
-        }
+        public InvalidBrokerIdException() { }
 
         public InvalidBrokerIdException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
         public InvalidBrokerIdException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+            : base(info, context) { }
     }
 }

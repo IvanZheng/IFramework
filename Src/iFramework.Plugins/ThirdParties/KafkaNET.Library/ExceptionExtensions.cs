@@ -13,7 +13,9 @@ namespace Kafka.Client
         public static string FormatException(this Exception exception)
         {
             if (exception == null)
+            {
                 return string.Empty;
+            }
 
             var output = new StringBuilder();
 
@@ -25,7 +27,9 @@ namespace Kafka.Client
                 output.AppendFormat("Stack Trace:\r\n {0}\r\n", currentException.StackTrace);
                 currentException = currentException.InnerException;
                 if (currentException != null)
+                {
                     output.Append("\r\n---- Inner Exception ----\r\n");
+                }
             }
 
             return output.ToString();

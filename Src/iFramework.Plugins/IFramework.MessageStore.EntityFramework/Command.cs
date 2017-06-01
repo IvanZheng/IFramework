@@ -6,9 +6,7 @@ namespace IFramework.MessageStoring
 {
     public class Command : Message
     {
-        public Command()
-        {
-        }
+        public Command() { }
 
         public Command(IMessageContext messageContext, object result = null) :
             base(messageContext)
@@ -32,21 +30,21 @@ namespace IFramework.MessageStoring
                 try
                 {
                     if (!string.IsNullOrEmpty(Result) && !string.IsNullOrEmpty(ResultType))
+                    {
                         reply = Result.ToJsonObject(System.Type.GetType(ResultType));
+                    }
                 }
-                catch (Exception)
-                {
-                }
+                catch (Exception) { }
                 return reply;
             }
         }
-        //    }
-        //        return ParentMessage as Event;
-        //    {
-        //    get
-        //{
 
         //public Event Parent
+        //{
+        //    get
+        //    {
+        //        return ParentMessage as Event;
+        //    }
         //}
 
         //public IEnumerable<Event> Children

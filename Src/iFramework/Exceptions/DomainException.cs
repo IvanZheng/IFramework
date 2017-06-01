@@ -18,11 +18,15 @@ namespace IFramework.Exceptions
             {
                 errorMessage = errorcode.GetCustomAttribute<DescriptionAttribute>()?.Description;
                 if (string.IsNullOrEmpty(errorMessage))
+                {
                     errorMessage = errorcode.ToString();
+                }
             }
 
             if (args != null && args.Length > 0)
+            {
                 return string.Format(errorMessage, args);
+            }
             return errorMessage;
         }
 
@@ -31,7 +35,9 @@ namespace IFramework.Exceptions
             dictionary.ForEach(p =>
             {
                 if (_errorcodeDic.ContainsKey(p.Key))
+                {
                     throw new Exception($"ErrorCode dictionary has already had the key {p.Key}");
+                }
                 _errorcodeDic.Add(p.Key, p.Value);
             });
         }

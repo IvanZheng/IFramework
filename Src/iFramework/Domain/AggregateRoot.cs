@@ -7,8 +7,8 @@ namespace IFramework.Domain
 {
     public abstract class AggregateRoot : Entity, IAggregateRoot
     {
-        private string _aggreagetRootType;
         private readonly Queue<IDomainEvent> EventQueue = new Queue<IDomainEvent>();
+        private string _aggreagetRootType;
 
         [JsonIgnore]
         protected string AggregateRootName
@@ -19,7 +19,9 @@ namespace IFramework.Domain
                 {
                     var aggreagetRootType = GetType();
                     if ("EntityProxyModule" == GetType().Module.ToString())
+                    {
                         aggreagetRootType = aggreagetRootType.BaseType;
+                    }
                     _aggreagetRootType = aggreagetRootType.FullName;
                 }
                 return _aggreagetRootType;
@@ -47,7 +49,9 @@ namespace IFramework.Domain
         {
             var subscriber = this as IEventSubscriber<TDomainEvent>;
             if (subscriber != null)
+            {
                 subscriber.Handle(@event);
+            }
             //else no need to call parent event handler, let client decide it!
             //{
             //    var eventSubscriberInterfaces = this.GetType().GetInterfaces()

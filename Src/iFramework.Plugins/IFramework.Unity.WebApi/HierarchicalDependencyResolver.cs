@@ -13,7 +13,9 @@ namespace IFramework.IoC.WebApi
         public HierarchicalDependencyResolver(IContainer container)
         {
             if (container == null)
+            {
                 throw new ArgumentNullException("container");
+            }
             this.container = container.CreateChildContainer();
         }
 

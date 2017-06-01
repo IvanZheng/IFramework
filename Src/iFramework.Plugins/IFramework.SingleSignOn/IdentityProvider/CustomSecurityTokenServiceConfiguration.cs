@@ -24,7 +24,9 @@ namespace IFramework.SingleSignOn.IdentityProvider
                 var config =
                     app.Get(CustomSecurityTokenServiceConfigurationKey) as CustomSecurityTokenServiceConfiguration;
                 if (config != null)
+                {
                     return config;
+                }
                 lock (SyncRoot)
                 {
                     config =

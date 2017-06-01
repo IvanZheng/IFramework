@@ -27,19 +27,6 @@ namespace Kafka.Client.Cfg
 
         public ZooKeeperConfiguration ZookeeperConfig { get; private set; }
 
-        public void Verify()
-        {
-            if (ZookeeperConfig == null)
-                throw new ArgumentException(" zookeeper  should be provided");
-        }
-
-        #region Default Value
-
-        public const int DefaultFetchSize = 11 * 1024 * 1024;
-        public const int DefaultBufferSize = 11 * 1024 * 1024;
-
-        #endregion
-
         /// <summary>
         ///     Currently didn't use yet. topic.metadata.refresh.interval.ms
         /// </summary>
@@ -61,6 +48,21 @@ namespace Kafka.Client.Cfg
         ///     that producer has internal syncproducer pool to partition data by the class and send data.
         /// </summary>
         public string PartitionerClass { get; set; }
+
+        public void Verify()
+        {
+            if (ZookeeperConfig == null)
+            {
+                throw new ArgumentException(" zookeeper  should be provided");
+            }
+        }
+
+        #region Default Value
+
+        public const int DefaultFetchSize = 11 * 1024 * 1024;
+        public const int DefaultBufferSize = 11 * 1024 * 1024;
+
+        #endregion
 
 
         #region Produce and Consume

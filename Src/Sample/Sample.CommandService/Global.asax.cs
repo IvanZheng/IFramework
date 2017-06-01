@@ -37,14 +37,14 @@ namespace Sample.CommandService
             try
             {
                 Configuration.Instance
-                    .UseLog4Net()
-                    .MessageQueueUseMachineNameFormat()
-                    .UseMessageQueue()
-                    .UseMessageStore<SampleModelContext>()
-                    .UseKafka("localhost:2181")
-                    //.UseEQueue()
-                    .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
-                    .UseMessagePublisher("eventTopic");
+                             .UseLog4Net()
+                             .MessageQueueUseMachineNameFormat()
+                             .UseMessageQueue()
+                             .UseMessageStore<SampleModelContext>()
+                             .UseKafka("localhost:2181")
+                             //.UseEQueue()
+                             .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
+                             .UseMessagePublisher("eventTopic");
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);
 
 
@@ -60,7 +60,7 @@ namespace Sample.CommandService
                 #region event subscriber init
 
                 _DomainEventConsumer = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
-                    Environment.MachineName, 100, "DomainEventSubscriber");
+                                                                                 Environment.MachineName, 100, "DomainEventSubscriber");
                 _DomainEventConsumer.Start();
 
                 #endregion
@@ -68,7 +68,7 @@ namespace Sample.CommandService
                 #region application event subscriber init
 
                 _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber",
-                    Environment.MachineName, 100, "ApplicationEventSubscriber");
+                                                                                      Environment.MachineName, 100, "ApplicationEventSubscriber");
                 _ApplicationEventConsumer.Start();
 
                 #endregion
@@ -129,7 +129,9 @@ namespace Sample.CommandService
                     Task.Run(() => _MessagePublisher?.Stop())
                 }, 10000);
                 if (!endSuccesss)
+                {
                     throw new Exception($"stop message queue client timeout!");
+                }
             }
             catch (Exception ex)
             {

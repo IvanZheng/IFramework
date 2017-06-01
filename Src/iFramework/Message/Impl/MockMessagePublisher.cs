@@ -20,12 +20,8 @@ namespace IFramework.Message.Impl
             return null;
         }
 
-        public void Start()
-        {
-        }
+        public void Start() { }
 
-        public void Stop()
-        {
-        }
+        public void Stop() { }
     }
 }

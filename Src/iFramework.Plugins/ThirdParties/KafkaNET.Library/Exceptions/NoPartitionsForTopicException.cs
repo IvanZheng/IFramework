@@ -12,9 +12,7 @@ namespace Kafka.Client.Exceptions
             Topic = topic;
         }
 
-        public NoPartitionsForTopicException()
-        {
-        }
+        public NoPartitionsForTopicException() { }
 
         public NoPartitionsForTopicException(string topic, string message)
             : base(message)

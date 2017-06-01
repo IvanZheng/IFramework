@@ -9,11 +9,15 @@ namespace Autofac.Configuration
         public XmlFileReader(string fileName)
         {
             if (fileName == null)
+            {
                 throw new ArgumentNullException("fileName");
+            }
             if (fileName.Length == 0)
+            {
                 throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                        ConfigurationSettingsReaderResources.ArgumentMayNotBeEmpty, "fileName"), "fileName");
+                                            string.Format(CultureInfo.CurrentCulture,
+                                                          ConfigurationSettingsReaderResources.ArgumentMayNotBeEmpty, "fileName"), "fileName");
+            }
             SectionHandler = SectionHandler.Deserialize(fileName);
         }
     }

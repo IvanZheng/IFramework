@@ -7,7 +7,5 @@ namespace IFramework.Command
         bool NeedRetry { get; set; }
     }
 
-    public interface ILinearCommand : ICommand
-    {
-    }
+    public interface ILinearCommand : ICommand { }
 }

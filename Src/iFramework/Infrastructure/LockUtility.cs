@@ -22,7 +22,9 @@ namespace IFramework.Infrastructure
                 lockObj.Decrement();
                 //_Logger.DebugFormat("I am thread {0}:lock counter is {1}", Thread.CurrentThread.ManagedThreadId, lockObj.Counter);
                 if (lockObj.Counter == 0)
+                {
                     _lockPool.Remove(key);
+                }
             }
         }
 

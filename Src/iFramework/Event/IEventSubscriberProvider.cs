@@ -2,7 +2,5 @@
 
 namespace IFramework.Event
 {
-    public interface IEventSubscriberProvider : IHandlerProvider
-    {
-    }
+    public interface IEventSubscriberProvider : IHandlerProvider { }
 }

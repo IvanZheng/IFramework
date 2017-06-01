@@ -18,8 +18,6 @@ namespace Kafka.Client.Producers
         ///     and will be instantiated via reflection
         /// </remarks>
         public Producer(ProducerConfiguration config)
-            : base(config)
-        {
-        }
+            : base(config) { }
     }
 }

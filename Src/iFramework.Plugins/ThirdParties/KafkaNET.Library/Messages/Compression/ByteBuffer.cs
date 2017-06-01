@@ -48,7 +48,10 @@ namespace Kafka.Client.Messages.Compression
 
         public ByteBuffer ToAsyncSafe()
         {
-            if (AsyncSafe) return this;
+            if (AsyncSafe)
+            {
+                return this;
+            }
             var copy = new byte[Length];
             Array.Copy(Buffer, Offset, copy, 0, Length);
             return NewAsync(copy);
@@ -56,7 +59,10 @@ namespace Kafka.Client.Messages.Compression
 
         public void MakeAsyncSafe()
         {
-            if (AsyncSafe) return;
+            if (AsyncSafe)
+            {
+                return;
+            }
             var copy = new byte[Length];
             Array.Copy(Buffer, Offset, copy, 0, Length);
             Buffer = copy;
@@ -66,11 +72,13 @@ namespace Kafka.Client.Messages.Compression
         public ByteBuffer ResizingAppend(ByteBuffer append)
         {
             if (AsyncSafe)
+            {
                 if (Offset + Length + append.Length <= Buffer.Length)
                 {
                     Array.Copy(append.Buffer, append.Offset, Buffer, Offset + Length, append.Length);
                     return NewAsync(Buffer, Offset, Length + append.Length);
                 }
+            }
             var newCapacity = Math.Max(Length + append.Length, Length * 2);
             var newBuffer = new byte[newCapacity];
             Array.Copy(Buffer, Offset, newBuffer, 0, Length);
@@ -88,7 +96,9 @@ namespace Kafka.Client.Messages.Compression
             var safeSelf = ToAsyncSafe();
             var buf = safeSelf.Buffer ?? BitArrayManipulation.EmptyByteArray;
             if (safeSelf.Offset == 0 && safeSelf.Length == buf.Length)
+            {
                 return buf;
+            }
             var copy = new byte[safeSelf.Length];
             Array.Copy(safeSelf.Buffer, safeSelf.Offset, copy, 0, safeSelf.Length);
             return copy;

@@ -40,14 +40,18 @@ namespace Kafka.Client.Producers
             var partitionCount = reader.ReadInt32();
             var partitions = new PartitionData[partitionCount];
             for (var i = 0; i < partitionCount; i++)
+            {
                 partitions[i] = Producers.PartitionData.ParseFrom(reader);
+            }
             return new TopicData(topic, partitions.OrderBy(x => x.Partition));
         }
 
         internal static PartitionData FindPartition(IEnumerable<PartitionData> data, int partition)
         {
             if (data == null || !data.Any())
+            {
                 return null;
+            }
 
             var low = 0;
             var high = data.Count() - 1;
@@ -56,11 +60,17 @@ namespace Kafka.Client.Producers
                 var mid = (low + high) / 2;
                 var found = data.ElementAt(mid);
                 if (found.Partition == partition)
+                {
                     return found;
+                }
                 if (partition < found.Partition)
+                {
                     high = mid - 1;
+                }
                 else
+                {
                     low = mid + 1;
+                }
             }
             return null;
         }
@@ -69,8 +79,8 @@ namespace Kafka.Client.Producers
         {
             var encoder = Encoding.GetEncoding(encoding);
             return string.IsNullOrEmpty(topic)
-                ? AbstractRequest.DefaultTopicLengthIfNonePresent
-                : (short) encoder.GetByteCount(topic);
+                       ? AbstractRequest.DefaultTopicLengthIfNonePresent
+                       : (short) encoder.GetByteCount(topic);
         }
     }
 }

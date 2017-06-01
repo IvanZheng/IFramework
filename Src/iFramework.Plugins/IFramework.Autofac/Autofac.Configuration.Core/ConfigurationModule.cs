@@ -11,9 +11,13 @@ namespace Autofac.Configuration.Core
         protected override void Load(ContainerBuilder builder)
         {
             if (builder == null)
+            {
                 throw new ArgumentNullException("builder");
+            }
             if (SectionHandler == null)
+            {
                 throw new InvalidOperationException(ConfigurationSettingsReaderResources.InitializeSectionHandler);
+            }
             var configurationRegistrar = ConfigurationRegistrar ?? new ConfigurationRegistrar();
             configurationRegistrar.RegisterConfigurationSection(builder, SectionHandler);
         }

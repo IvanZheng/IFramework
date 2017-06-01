@@ -10,9 +10,7 @@ namespace IFramework.Message
         private readonly Task<object> _replyTask;
 
         public MessageResponse(IMessageContext messageContext)
-            : this(messageContext, null, false)
-        {
-        }
+            : this(messageContext, null, false) { }
 
         public MessageResponse(IMessageContext messageConext, Task<object> replayTask, bool needReply)
         {
@@ -29,7 +27,9 @@ namespace IFramework.Message
             get
             {
                 if (!_needReply)
+                {
                     throw new Exception("Current response is set not to need message reply!");
+                }
                 return _replyTask;
             }
         }

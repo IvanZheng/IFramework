@@ -64,7 +64,10 @@ namespace Kafka.Client.Messages.Compression
             uint sizetill = 0;
             var laststart = pos * 8;
             var len = data.Length;
-            if (pos >= len) return -1;
+            if (pos >= len)
+            {
+                return -1;
+            }
             var b = (uint) (data[pos] | firstByteFill);
             pos++;
             switch (b)
@@ -76,8 +79,14 @@ namespace Kafka.Client.Messages.Compression
                     sizetill += 8;
                     break;
                 default:
-                    if (FirstHoleSize[b] >= size) return (int) laststart;
-                    if (MaxHoleSize[b] >= size) return (int) (pos * 8 + MaxHoleOffset[b] - 8);
+                    if (FirstHoleSize[b] >= size)
+                    {
+                        return (int) laststart;
+                    }
+                    if (MaxHoleSize[b] >= size)
+                    {
+                        return (int) (pos * 8 + MaxHoleOffset[b] - 8);
+                    }
                     sizetill = LastHoleSize[b];
                     laststart += 8 - sizetill;
                     break;
@@ -90,7 +99,10 @@ namespace Kafka.Client.Messages.Compression
                 switch (b)
                 {
                     case 255:
-                        if (sizetill >= size) return (int) laststart;
+                        if (sizetill >= size)
+                        {
+                            return (int) laststart;
+                        }
                         sizetill = 0;
                         laststart = pos * 8;
                         break;
@@ -99,8 +111,14 @@ namespace Kafka.Client.Messages.Compression
                         break;
                     default:
                         sizetill += FirstHoleSize[b];
-                        if (sizetill >= size) return (int) laststart;
-                        if (MaxHoleSize[b] >= size) return (int) (pos * 8 + MaxHoleOffset[b] - 8);
+                        if (sizetill >= size)
+                        {
+                            return (int) laststart;
+                        }
+                        if (MaxHoleSize[b] >= size)
+                        {
+                            return (int) (pos * 8 + MaxHoleOffset[b] - 8);
+                        }
                         sizetill = LastHoleSize[b];
                         laststart = pos * 8 - sizetill;
                         break;
@@ -167,12 +185,24 @@ namespace Kafka.Client.Messages.Compression
             {
                 var b1 = a1[o1 + i];
                 var b2 = a2[o2 + i];
-                if (b1 < b2) return -1;
-                if (b1 > b2) return 1;
+                if (b1 < b2)
+                {
+                    return -1;
+                }
+                if (b1 > b2)
+                {
+                    return 1;
+                }
             }
 
-            if (l1 < l2) return -1;
-            if (l1 > l2) return 1;
+            if (l1 < l2)
+            {
+                return -1;
+            }
+            if (l1 > l2)
+            {
+                return 1;
+            }
             return 0;
         }
     }

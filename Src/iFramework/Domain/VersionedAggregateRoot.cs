@@ -11,7 +11,9 @@ namespace IFramework.Domain
             get
             {
                 if (_newVersion == 0)
+                {
                     _newVersion = Version + 1;
+                }
                 return _newVersion;
             }
         }

@@ -34,7 +34,7 @@ namespace IFramework.EntityFramework.Repositories
         }
 
         public static IQueryable<T> Include<T, TProperty>(this IQueryable<T> source,
-            Expression<Func<T, TProperty>> path)
+                                                          Expression<Func<T, TProperty>> path)
         {
             return QueryableExtensions.Include(source, path);
         }
@@ -45,10 +45,12 @@ namespace IFramework.EntityFramework.Repositories
         }
 
         public static Task<TEntity> FirstOrDefaultAsync<TEntity>(this IQueryable<TEntity> query,
-            Expression<Func<TEntity, bool>> predicate = null) where TEntity : class
+                                                                 Expression<Func<TEntity, bool>> predicate = null) where TEntity : class
         {
             if (predicate == null)
+            {
                 return QueryableExtensions.FirstOrDefaultAsync(query);
+            }
             return QueryableExtensions.FirstOrDefaultAsync(query, predicate);
         }
     }

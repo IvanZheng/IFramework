@@ -21,12 +21,18 @@ namespace IFramework.Log4Net
         {
             var file = new FileInfo(configFile);
             if (!file.Exists)
+            {
                 file = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configFile));
+            }
 
             if (file.Exists)
+            {
                 XmlConfigurator.ConfigureAndWatch(file);
+            }
             else
+            {
                 BasicConfigurator.Configure(new TraceAppender {Layout = new PatternLayout()});
+            }
         }
 
         /// <summary>

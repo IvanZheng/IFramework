@@ -43,8 +43,11 @@ namespace Kafka.Client.Requests
 
         public const short CurrentVersion = 0;
 
-        public FetchRequest(int correlationId, string clientId, int maxWait, int minBytes,
-            Dictionary<string, List<PartitionFetchInfo>> fetchInfos)
+        public FetchRequest(int correlationId,
+                            string clientId,
+                            int maxWait,
+                            int minBytes,
+                            Dictionary<string, List<PartitionFetchInfo>> fetchInfos)
         {
             VersionId = CurrentVersion;
             CorrelationId = correlationId;
@@ -108,7 +111,9 @@ namespace Kafka.Client.Requests
                 writer.WriteShortString(offsetInfo.Key);
                 writer.Write(offsetInfo.Value.Count);
                 foreach (var v in offsetInfo.Value)
+                {
                     v.WriteTo(writer);
+                }
             }
         }
 
@@ -124,23 +129,24 @@ namespace Kafka.Client.Requests
                    DefaultMinBytesSize +
                    DefaultOffsetInfoSizeSize +
                    OffsetInfo.Keys.Sum(x => BitWorks.GetShortStringLength(x, DefaultEncoding)) + OffsetInfo.Values
-                       .Select(pl => 4 + pl.Sum(p => p.SizeInBytes)).Sum();
+                                                                                                           .Select(pl => 4 + pl.Sum(p => p.SizeInBytes))
+                                                                                                           .Sum();
         }
 
         public override string ToString()
         {
             return string.Format(
-                CultureInfo.CurrentCulture,
-                "varsionId: {0}, correlationId: {1}, clientId: {2}, replicaId: {3}, maxWait: {4}, minBytes: {5}, requestMap: {6}",
-                VersionId,
-                CorrelationId,
-                ClientId,
-                ReplicaId,
-                MaxWait,
-                MinBytes,
-                string.Join(";",
-                    OffsetInfo.Select(x => string.Format("[Topic:{0}, Info:{1}]", x.Key, string.Join("|", x.Value))))
-            );
+                                 CultureInfo.CurrentCulture,
+                                 "varsionId: {0}, correlationId: {1}, clientId: {2}, replicaId: {3}, maxWait: {4}, minBytes: {5}, requestMap: {6}",
+                                 VersionId,
+                                 CorrelationId,
+                                 ClientId,
+                                 ReplicaId,
+                                 MaxWait,
+                                 MinBytes,
+                                 string.Join(";",
+                                             OffsetInfo.Select(x => string.Format("[Topic:{0}, Info:{1}]", x.Key, string.Join("|", x.Value))))
+                                );
         }
     }
 }

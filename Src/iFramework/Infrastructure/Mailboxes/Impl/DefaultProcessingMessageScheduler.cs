@@ -9,7 +9,9 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         public async Task ScheduleMailbox(ProcessingMailbox<TMessage> mailbox)
         {
             if (mailbox.EnterHandlingMessage())
+            {
                 await mailbox.Run().ConfigureAwait(false);
+            }
         }
 
         public async Task SchedulProcessing(Func<Task> processing)

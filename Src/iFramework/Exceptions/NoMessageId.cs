@@ -5,13 +5,9 @@ namespace IFramework.Exceptions
 {
     public class NoMessageId : Exception
     {
-        public NoMessageId() : base("NoMessageId")
-        {
-        }
+        public NoMessageId() : base("NoMessageId") { }
 
         protected NoMessageId(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+            : base(info, context) { }
     }
 }

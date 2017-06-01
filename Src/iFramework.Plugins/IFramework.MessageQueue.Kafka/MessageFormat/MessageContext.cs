@@ -28,14 +28,22 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
             SentTime = DateTime.Now;
             Message = message;
             if (!string.IsNullOrEmpty(id))
+            {
                 MessageID = id;
+            }
             else if (message is IMessage)
+            {
                 MessageID = (message as IMessage).ID;
+            }
             else
+            {
                 MessageID = ObjectId.GenerateNewId().ToString();
+            }
             ToBeSentMessageContexts = new List<IMessageContext>();
             if (message != null && message is IMessage)
+            {
                 Topic = (message as IMessage).GetTopic();
+            }
         }
 
 
@@ -66,13 +74,13 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
                 {
                     var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
                     if (sagaInfoJson != null)
+                    {
                         try
                         {
                             _sagaInfo = ((JObject) Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
                         }
-                        catch (Exception)
-                        {
-                        }
+                        catch (Exception) { }
+                    }
                 }
                 return _sagaInfo;
             }
@@ -110,7 +118,9 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
             get
             {
                 if (_Message != null)
+                {
                     return _Message;
+                }
                 object messageType = null;
                 if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
                 {
@@ -124,7 +134,9 @@ namespace IFramework.MessageQueue.MSKafka.MessageFormat
                 _Message = value;
                 KafkaMessage.Payload = Encoding.UTF8.GetBytes(value.ToJson());
                 if (value != null)
+                {
                     Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
+                }
             }
         }
 

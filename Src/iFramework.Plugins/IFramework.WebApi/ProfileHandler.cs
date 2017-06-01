@@ -16,7 +16,7 @@ namespace IFramework.AspNet
     {
         public ProfileHandler()
         {
-            _cpuCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total");
+            _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             _ramCounter = new PerformanceCounter("Memory", "Available MBytes");
         }
 
@@ -32,8 +32,8 @@ namespace IFramework.AspNet
         /// </summary>
 
         #region IHttpHandler Members private readonly PerformanceCounter _cpuCounter;
-
         private readonly PerformanceCounter _ramCounter;
+
         private readonly PerformanceCounter _cpuCounter;
 
         public float CurrentCpuUsage => _cpuCounter.NextValue();
@@ -55,9 +55,10 @@ namespace IFramework.AspNet
 
             //write your handler implementation here.
             context.Response.Write(
-                $"CurrentCpuUsage:{CurrentCpuUsage} AvailableRAM:{AvailableRAM} work threads:{availableWorkThreads}/{maxWorkerThreads} completionPortThreads:{availableCompletionPortThreads}/{maxCompletionPortThreads} ");
-            var ipv4 = Dns.GetHostEntry(Dns.GetHostName()).AddressList
-                .First(x => x.AddressFamily == AddressFamily.InterNetwork);
+                                   $"CurrentCpuUsage:{CurrentCpuUsage} AvailableRAM:{AvailableRAM} work threads:{availableWorkThreads}/{maxWorkerThreads} completionPortThreads:{availableCompletionPortThreads}/{maxCompletionPortThreads} ");
+            var ipv4 = Dns.GetHostEntry(Dns.GetHostName())
+                          .AddressList
+                          .First(x => x.AddressFamily == AddressFamily.InterNetwork);
 
             context.Response.Write($"host ip: {ipv4}");
         }

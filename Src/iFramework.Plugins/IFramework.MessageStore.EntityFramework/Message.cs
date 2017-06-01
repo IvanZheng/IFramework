@@ -7,9 +7,7 @@ namespace IFramework.MessageStoring
 {
     public abstract class Message
     {
-        public Message()
-        {
-        }
+        public Message() { }
 
         public Message(IMessageContext messageContext)
         {

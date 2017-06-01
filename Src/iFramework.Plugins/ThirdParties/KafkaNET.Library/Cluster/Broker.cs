@@ -77,7 +77,9 @@ namespace Kafka.Client.Cluster
         public static Broker CreateBroker(int id, string brokerInfoString)
         {
             if (string.IsNullOrEmpty(brokerInfoString))
+            {
                 throw new ArgumentException(string.Format("Broker id {0} does not exist", id));
+            }
 
             var ser = new JavaScriptSerializer();
             var result = ser.Deserialize<Dictionary<string, object>>(brokerInfoString);

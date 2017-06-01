@@ -29,17 +29,25 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             SentTime = DateTime.Now;
             Message = message;
             if (!string.IsNullOrEmpty(id))
+            {
                 MessageID = id;
+            }
             else if (message is IMessage)
+            {
                 MessageID = (message as IMessage).ID;
+            }
             else
+            {
                 MessageID = ObjectId.GenerateNewId().ToString();
+            }
             ToBeSentMessageContexts = new List<IMessageContext>();
             if (message != null)
             {
                 var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
                 if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+                {
                     Topic = topicAttribute.Topic;
+                }
             }
         }
 
@@ -71,13 +79,13 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
                 {
                     var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
                     if (sagaInfoJson != null)
+                    {
                         try
                         {
                             _sagaInfo = ((JObject) Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
                         }
-                        catch (Exception)
-                        {
-                        }
+                        catch (Exception) { }
+                    }
                 }
                 return _sagaInfo;
             }
@@ -115,7 +123,9 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             get
             {
                 if (_Message != null)
+                {
                     return _Message;
+                }
                 object messageType = null;
                 if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
                 {
@@ -128,7 +138,9 @@ namespace IFramework.MessageQueue.ServiceBus.MessageFormat
             {
                 _Message = value;
                 if (value != null)
+                {
                     Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
+                }
             }
         }
 

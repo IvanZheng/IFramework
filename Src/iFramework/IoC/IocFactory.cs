@@ -33,7 +33,9 @@ namespace IFramework.IoC
             get
             {
                 if (_CurrentContainer == null)
+                {
                     throw new Exception("Please call SetContainer first.");
+                }
                 return _CurrentContainer;
             }
         }

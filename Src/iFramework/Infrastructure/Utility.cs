@@ -46,8 +46,9 @@ namespace IFramework.Infrastructure
 
         public static IPAddress GetLocalIPV4()
         {
-            return Dns.GetHostEntry(Dns.GetHostName()).AddressList
-                .First(x => x.AddressFamily == AddressFamily.InterNetwork);
+            return Dns.GetHostEntry(Dns.GetHostName())
+                      .AddressList
+                      .First(x => x.AddressFamily == AddressFamily.InterNetwork);
         }
 
         private static uint[] CreateLookup32()
@@ -61,15 +62,17 @@ namespace IFramework.Infrastructure
             return result;
         }
 
-        public static string ToBase36string(this byte[] bytes, EndianFormat bytesEndian = EndianFormat.Little,
-            bool includeProceedingZeros = true)
+        public static string ToBase36string(this byte[] bytes,
+                                            EndianFormat bytesEndian = EndianFormat.Little,
+                                            bool includeProceedingZeros = true)
         {
             var base36_no_zeros = new RadixEncoding(k_base36_digits, bytesEndian, includeProceedingZeros);
             return base36_no_zeros.Encode(bytes);
         }
 
         public static byte[] ConvertBase36StringToBytes(string base36string,
-            EndianFormat bytesEndian = EndianFormat.Little, bool includeProceedingZeros = true)
+                                                        EndianFormat bytesEndian = EndianFormat.Little,
+                                                        bool includeProceedingZeros = true)
         {
             var base36_no_zeros = new RadixEncoding(k_base36_digits, bytesEndian, includeProceedingZeros);
             var bytes = new List<byte>(base36_no_zeros.Decode(base36string));
@@ -83,7 +86,9 @@ namespace IFramework.Infrastructure
         public static string ToHexString(this byte[] bytes)
         {
             if (bytes == null)
+            {
                 throw new ArgumentNullException("bytes");
+            }
             var lookup32 = _lookup32;
             var result = new char[bytes.Length * 2];
             for (var i = 0; i < bytes.Length; i++)
@@ -99,9 +104,15 @@ namespace IFramework.Infrastructure
         {
             var uniqueCode = 0;
             if (!string.IsNullOrWhiteSpace(str))
+            {
                 foreach (var c in str)
+                {
                     if (c != 0)
+                    {
                         uniqueCode += (c << 5) - c;
+                    }
+                }
+            }
             return uniqueCode;
         }
 
@@ -130,8 +141,9 @@ namespace IFramework.Infrastructure
 
         public static object InvokeGenericMethod(this object obj, Type genericType, string method, object[] args)
         {
-            var mi = obj.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .First(m => m.Name == method && m.IsGenericMethod);
+            var mi = obj.GetType()
+                        .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                        .First(m => m.Name == method && m.IsGenericMethod);
             var miConstructed = mi.MakeGenericMethod(genericType);
             var fastInvoker = FastInvoke.GetMethodInvoker(miConstructed);
             return fastInvoker(obj, args);
@@ -141,7 +153,8 @@ namespace IFramework.Infrastructure
         {
             MethodInfo mi = null;
             foreach (var m in obj.GetType()
-                .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+                                 .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            {
                 if (m.Name == method && m.GetParameters().Length == args.Length)
                 {
                     var equalParameters = true;
@@ -160,8 +173,11 @@ namespace IFramework.Infrastructure
                         break;
                     }
                 }
+            }
             if (mi == null)
+            {
                 throw new NotSupportedException();
+            }
             var fastInvoker = FastInvoke.GetMethodInvoker(mi);
             return fastInvoker(obj, args);
         }
@@ -181,25 +197,33 @@ namespace IFramework.Infrastructure
             {
                 var attrs = (obj as Type).GetCustomAttributes(typeof(TAttribute), inherit);
                 if (attrs != null)
+                {
                     return attrs.FirstOrDefault() as TAttribute;
+                }
             }
             else if (obj is FieldInfo)
             {
                 var attrs = ((FieldInfo) obj).GetCustomAttributes(typeof(TAttribute), inherit);
                 if (attrs != null && attrs.Length > 0)
+                {
                     return attrs.FirstOrDefault(attr => attr is TAttribute) as TAttribute;
+                }
             }
             else if (obj is PropertyInfo)
             {
                 var attrs = ((PropertyInfo) obj).GetCustomAttributes(inherit);
                 if (attrs != null && attrs.Length > 0)
+                {
                     return attrs.FirstOrDefault(attr => attr is TAttribute) as TAttribute;
+                }
             }
             else if (obj is MethodInfo)
             {
                 var attrs = (obj as MethodInfo).GetCustomAttributes(inherit);
                 if (attrs != null && attrs.Length > 0)
+                {
                     return attrs.FirstOrDefault(attr => attr is TAttribute) as TAttribute;
+                }
             }
             else if (obj.GetType().IsDefined(typeof(TAttribute), true))
             {
@@ -219,7 +243,10 @@ namespace IFramework.Infrastructure
             this IEnumerable<T> source,
             Action<T> act)
         {
-            foreach (T element in source.OrEmptyIfNull()) act(element);
+            foreach (var element in source.OrEmptyIfNull())
+            {
+                act(element);
+            }
             return source;
         }
 
@@ -229,17 +256,29 @@ namespace IFramework.Infrastructure
             var timetext = string.Empty;
             var span = DateTime.Now - datetime;
             if (span.Days > 30)
+            {
                 timetext = datetime.ToShortDateString();
+            }
             else if (span.Days >= 1)
+            {
                 timetext = string.Format("{0}{1}", span.Days, GetResource("Day", lang));
+            }
             else if (span.Hours >= 1)
+            {
                 timetext = string.Format("{0}{1}", span.Hours, GetResource("Hour", lang));
+            }
             else if (span.Minutes >= 1)
+            {
                 timetext = string.Format("{0}{1}", span.Minutes, GetResource("Minute", lang));
+            }
             else if (span.Seconds >= 1)
+            {
                 timetext = string.Format("{0}{1}", span.Seconds, GetResource("Second", lang));
+            }
             else
+            {
                 timetext = string.Format("1{0}", GetResource("Second", lang));
+            }
             return timetext;
         }
 
@@ -266,10 +305,14 @@ namespace IFramework.Infrastructure
                 crypto.GetNonZeroBytes(data);
                 var result = new StringBuilder(size);
                 foreach (var b in data)
+                {
                     result.Append(chars[b % (chars.Length - 1)]);
+                }
                 // Unique identifiers cannot begin with 0-9
                 if (result[0] >= '0' && result[0] <= '9')
+                {
                     return GetUniqueIdentifier(length);
+                }
                 return result.ToString();
             }
             catch (Exception ex)
@@ -292,19 +335,25 @@ namespace IFramework.Infrastructure
                     {
                         var value = property.Value as JValue;
                         if (value != null)
+                        {
                             objValue = value.Value;
+                        }
                     }
                 }
                 else
                 {
                     var property = obj.GetType()
-                        .GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                                      .GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                     if (property != null)
+                    {
                         objValue = FastInvoke.GetMethodInvoker(property.GetGetMethod(true))(obj, null);
+                    }
                 }
 
                 if (objValue != null)
+                {
                     retValue = (T) objValue;
+                }
             }
             catch (Exception)
             {
@@ -324,15 +373,20 @@ namespace IFramework.Infrastructure
                 {
                     var value = property.Value as JValue;
                     if (value != null)
+                    {
                         objValue = value.Value;
+                    }
                 }
             }
             else
             {
-                var property = obj.GetType().GetProperty(name,
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var property = obj.GetType()
+                                  .GetProperty(name,
+                                               BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (property != null)
+                {
                     objValue = FastInvoke.GetMethodInvoker(property.GetGetMethod(true))(obj, null);
+                }
             }
             return objValue;
         }
@@ -340,22 +394,31 @@ namespace IFramework.Infrastructure
         public static void SetValueByKey(this object obj, string name, object value)
         {
             if (obj is DynamicJson)
+            {
                 obj = (obj as DynamicJson)._json;
+            }
             if (obj is JObject)
             {
                 var jObject = obj as JObject;
                 var property = jObject.Property(name);
                 if (property != null)
+                {
                     property.Value = JToken.FromObject(value);
+                }
                 else
+                {
                     jObject.Add(name, JToken.FromObject(value));
+                }
             }
             else
             {
-                var property = obj.GetType().GetProperty(name,
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var property = obj.GetType()
+                                  .GetProperty(name,
+                                               BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (property != null)
+                {
                     FastInvoke.GetMethodInvoker(property.GetSetMethod(true))(obj, new[] {value});
+                }
             }
         }
 
@@ -381,7 +444,9 @@ namespace IFramework.Infrastructure
             var param = Expression.Parameter(type);
             Expression body = param;
             foreach (var member in propertyName.Split('.'))
+            {
                 body = Expression.PropertyOrField(body, member);
+            }
             return Expression.Lambda(body, param);
         }
 
@@ -394,20 +459,21 @@ namespace IFramework.Infrastructure
         }
 
         public static IQueryable<TEntity> GetOrderByQueryable<TEntity>(IQueryable<TEntity> query,
-            LambdaExpression orderByExpression, bool asc)
+                                                                       LambdaExpression orderByExpression,
+                                                                       bool asc)
             where TEntity : class
         {
             var orderBy = asc ? "OrderBy" : "OrderByDescending";
             var orderByCallExpression =
                 Expression.Call(typeof(Queryable),
-                    orderBy,
-                    new[]
-                    {
-                        typeof(TEntity),
-                        orderByExpression.Body.Type
-                    },
-                    query.Expression,
-                    orderByExpression);
+                                orderBy,
+                                new[]
+                                {
+                                    typeof(TEntity),
+                                    orderByExpression.Body.Type
+                                },
+                                query.Expression,
+                                orderByExpression);
             return query.Provider.CreateQuery<TEntity>(orderByCallExpression);
         }
 
@@ -415,7 +481,9 @@ namespace IFramework.Infrastructure
         public static List<QueryParameter> GetQueryParameters(string parameters)
         {
             if (parameters.StartsWith("?"))
+            {
                 parameters = parameters.Remove(0, 1);
+            }
 
             var result = new List<QueryParameter>();
 
@@ -423,7 +491,9 @@ namespace IFramework.Infrastructure
             {
                 var p = parameters.Split('&');
                 foreach (var s in p)
+                {
                     if (!string.IsNullOrEmpty(s))
+                    {
                         if (s.IndexOf('=') > -1)
                         {
                             var temp = s.Split('=');
@@ -433,6 +503,8 @@ namespace IFramework.Infrastructure
                         {
                             result.Add(new QueryParameter(s, string.Empty));
                         }
+                    }
+                }
             }
 
             return result;
@@ -448,7 +520,9 @@ namespace IFramework.Infrastructure
                 sb.AppendFormat("{0}={1}", p.Name, p.Value);
 
                 if (i < parameters.Count - 1)
+                {
                     sb.Append("&");
+                }
             }
 
             return sb.ToString();
@@ -469,7 +543,9 @@ namespace IFramework.Infrastructure
             cs.FlushFinalBlock();
             var ret = new StringBuilder();
             foreach (var b in ms.ToArray())
+            {
                 ret.AppendFormat("{0:X2}", b);
+            }
             ret.ToString();
             return ret.ToString();
         }
@@ -499,7 +575,9 @@ namespace IFramework.Infrastructure
         {
             var innerEx = ex;
             while (innerEx.InnerException != null)
+            {
                 innerEx = innerEx.InnerException;
+            }
             return innerEx;
         }
 
@@ -521,11 +599,17 @@ namespace IFramework.Infrastructure
         {
             object resource = string.Empty;
             if (!string.IsNullOrEmpty(lang))
+            {
                 resource = HttpContext.GetLocalResourceObject(path, key, new CultureInfo(lang));
+            }
             else
+            {
                 resource = HttpContext.GetLocalResourceObject(path, key);
+            }
             if (resource != null)
+            {
                 return resource.ToString();
+            }
             return string.Empty;
         }
 
@@ -538,11 +622,17 @@ namespace IFramework.Infrastructure
         {
             object resource = string.Empty;
             if (!string.IsNullOrEmpty(lang))
+            {
                 resource = HttpContext.GetGlobalResourceObject("GlobalResource", key, new CultureInfo(lang));
+            }
             else
+            {
                 resource = HttpContext.GetGlobalResourceObject("GlobalResource", key);
+            }
             if (resource != null)
+            {
                 return resource.ToString();
+            }
             return string.Empty;
         }
 
@@ -554,8 +644,13 @@ namespace IFramework.Infrastructure
 
         public static string StyledSheetEncode(string s)
         {
-            s = s.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\"", "\\\"").Replace("\r\n", "\\n")
-                .Replace("\n\r", "\\n").Replace("\r", "\\n").Replace("\n", "\\n");
+            s = s.Replace("\\", "\\\\")
+                 .Replace("'", "\\'")
+                 .Replace("\"", "\\\"")
+                 .Replace("\r\n", "\\n")
+                 .Replace("\n\r", "\\n")
+                 .Replace("\r", "\\n")
+                 .Replace("\n", "\\n");
             s = s.Replace("/", "\\/");
             return s;
         }
@@ -566,7 +661,9 @@ namespace IFramework.Infrastructure
             var data = md5Hasher.ComputeHash(Encoding.Default.GetBytes(input));
             var sBuilder = new StringBuilder();
             for (var i = 0; i < data.Length; i++)
+            {
                 sBuilder.Append(data[i].ToString("x2"));
+            }
             return sBuilder.ToString();
         }
 
@@ -654,7 +751,9 @@ namespace IFramework.Infrastructure
         public static string ResolveVirtualPath(string path)
         {
             if (string.IsNullOrEmpty(HttpRuntime.AppDomainAppVirtualPath))
+            {
                 return Path.Combine("/", path).Replace('\\', '/').Replace("//", "/");
+            }
             return Path.Combine(HttpRuntime.AppDomainAppVirtualPath, path).Replace('\\', '/').Replace("//", "/");
         }
 

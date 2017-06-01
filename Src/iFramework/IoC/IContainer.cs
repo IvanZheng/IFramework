@@ -93,8 +93,9 @@ namespace IFramework.IoC
         IContainer RegisterInstance<TInterface>(TInterface instance, Lifetime lifetime = Lifetime.Singleton)
             where TInterface : class;
 
-        IContainer RegisterInstance<TInterface>(string name, TInterface instance,
-            Lifetime lifetime = Lifetime.Singleton) where TInterface : class;
+        IContainer RegisterInstance<TInterface>(string name,
+                                                TInterface instance,
+                                                Lifetime lifetime = Lifetime.Singleton) where TInterface : class;
 
         //
         // Summary:

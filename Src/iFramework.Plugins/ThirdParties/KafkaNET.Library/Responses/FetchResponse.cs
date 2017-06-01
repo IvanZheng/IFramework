@@ -22,7 +22,7 @@ namespace Kafka.Client.Responses
             Guard.NotNull(data, "data");
             CorrelationId = correlationId;
             TopicDataDict = data.GroupBy(x => x.Topic, x => x)
-                .ToDictionary(x => x.Key, x => x.ToList().FirstOrDefault());
+                                .ToDictionary(x => x.Key, x => x.ToList().FirstOrDefault());
         }
 
         public FetchResponse(int correlationId, IEnumerable<TopicData> data, int size)
@@ -30,7 +30,7 @@ namespace Kafka.Client.Responses
             Guard.NotNull(data, "data");
             CorrelationId = correlationId;
             TopicDataDict = data.GroupBy(x => x.Topic, x => x)
-                .ToDictionary(x => x.Key, x => x.ToList().FirstOrDefault());
+                                .ToDictionary(x => x.Key, x => x.ToList().FirstOrDefault());
             Size = size;
         }
 
@@ -68,7 +68,9 @@ namespace Kafka.Client.Responses
             {
                 var topicData = TopicDataDict[topic];
                 if (topicData != null)
+                {
                     return TopicData.FindPartition(topicData.PartitionData, partition);
+                }
             }
 
             return new PartitionData(partition, new BufferedMessageSet(Enumerable.Empty<Message>(), partition));
@@ -86,15 +88,17 @@ namespace Kafka.Client.Responses
                     dataCount = reader.ReadInt32();
                     var data = new TopicData[dataCount];
                     for (var i = 0; i < dataCount; i++)
+                    {
                         data[i] = TopicData.ParseFrom(reader);
+                    }
 
                     return new FetchResponse(correlationId, data, size);
                 }
                 catch (OutOfMemoryException mex)
                 {
                     Logger.Error(string.Format(
-                        "OOM Error. Data values were: size: {0}, correlationId: {1}, dataCound: {2}.\r\nFull Stack of exception: {3}",
-                        size, correlationId, dataCount, mex.StackTrace));
+                                               "OOM Error. Data values were: size: {0}, correlationId: {1}, dataCound: {2}.\r\nFull Stack of exception: {3}",
+                                               size, correlationId, dataCount, mex.StackTrace));
                     throw;
                 }
             }

@@ -6,9 +6,7 @@ namespace Autofac.Configuration.Elements
 {
     public class ParameterElementCollection : NamedConfigurationElementCollection<ParameterElement>
     {
-        public ParameterElementCollection() : base("parameter", "name")
-        {
-        }
+        public ParameterElementCollection() : base("parameter", "name") { }
 
         public IEnumerable<Parameter> ToParameters()
         {
@@ -16,8 +14,8 @@ namespace Autofac.Configuration.Elements
             {
                 var localParameter = current;
                 yield return new ResolvedParameter((pi, c) => pi.Name == localParameter.Name,
-                    (pi, c) => TypeManipulation.ChangeToCompatibleType(localParameter.CoerceValue(), pi.ParameterType,
-                        pi));
+                                                   (pi, c) => TypeManipulation.ChangeToCompatibleType(localParameter.CoerceValue(), pi.ParameterType,
+                                                                                                      pi));
             }
         }
     }

@@ -47,7 +47,8 @@ namespace IFramework.Infrastructure
         /// <param name="bytesEndian">Endian ordering of bytes input to Encode and output by Decode</param>
         /// <param name="includeProceedingZeros">True if we want ending zero bytes to be encoded</param>
         public RadixEncoding(string digits,
-            EndianFormat bytesEndian = EndianFormat.Little, bool includeProceedingZeros = false)
+                             EndianFormat bytesEndian = EndianFormat.Little,
+                             bool includeProceedingZeros = false)
         {
             //Contract.Requires<ArgumentNullException>(digits != null);
             var radix = digits.Length;
@@ -96,7 +97,10 @@ namespace IFramework.Infrastructure
 
             // Don't really have to do this, our code will build this result (empty string),
             // but why not catch the condition before doing work?
-            if (bytes.Length == 0) return string.Empty;
+            if (bytes.Length == 0)
+            {
+                return string.Empty;
+            }
 
             // if the array ends with zeros, having the capacity set to this will help us know how much
             // 'padding' we will need to add
@@ -107,7 +111,9 @@ namespace IFramework.Infrastructure
             // HACK: BigInteger uses the last byte as the 'sign' byte. If that byte's MSB is set, 
             // we need to pad the input with an extra 0 (ie, make it positive)
             if ((bytes[bytes.Length - 1] & 0x80) == 0x80)
+            {
                 Array.Resize(ref bytes, bytes.Length + 1);
+            }
 
             var dividend = new BigInteger(bytes);
             // IsZero's computation is less complex than evaluating "dividend > 0"
@@ -121,12 +127,18 @@ namespace IFramework.Infrastructure
             }
 
             if (IncludeProceedingZeros)
+            {
                 for (var x = result.Count; x < result.Capacity; x++)
+                {
                     result.Add(kDigits[0]); // pad with the character that represents 'zero'
+                }
+            }
 
             // orientate the characters in big-endian ordering
             if (Endian == EndianFormat.Little)
+            {
                 result.Reverse();
+            }
             // If we didn't end up adding padding, ToArray will end up returning a TrimExcess'd array, 
             // so nothing wasted
             return new string(result.ToArray());
@@ -155,9 +167,11 @@ namespace IFramework.Infrastructure
             //Contract.Requires<ArgumentNullException>(radixChars != null);
 
             if (Endian == EndianFormat.Big)
+            {
                 return IncludeProceedingZeros
-                    ? DecodeImplReversedWithPadding(radixChars)
-                    : DecodeImplReversed(radixChars);
+                           ? DecodeImplReversedWithPadding(radixChars)
+                           : DecodeImplReversed(radixChars);
+            }
             return IncludeProceedingZeros ? DecodeImplWithPadding(radixChars) : DecodeImpl(radixChars);
         }
 
@@ -169,7 +183,10 @@ namespace IFramework.Infrastructure
             for (var x = startIndex; x < chars.Length; x++)
             {
                 var i = kDigits.IndexOf(chars[x]);
-                if (i < 0) return null; // invalid character
+                if (i < 0)
+                {
+                    return null; // invalid character
+                }
                 bi *= kRadixBig;
                 bi += i;
             }
@@ -181,7 +198,12 @@ namespace IFramework.Infrastructure
         {
             var pad_count = 0;
             for (var x = 0; x < chars.Length; x++, pad_count++)
-                if (chars[x] != kDigits[0]) break;
+            {
+                if (chars[x] != kDigits[0])
+                {
+                    break;
+                }
+            }
 
             var result = DecodeImpl(chars, pad_count);
             DecodeImplPadResult(ref result, pad_count);
@@ -199,7 +221,10 @@ namespace IFramework.Infrastructure
             for (var x = chars.Length - 1 - startIndex; x >= 0; x--)
             {
                 var i = kDigits.IndexOf(chars[x]);
-                if (i < 0) return null; // invalid character
+                if (i < 0)
+                {
+                    return null; // invalid character
+                }
                 bi *= kRadixBig;
                 bi += i;
             }
@@ -211,7 +236,12 @@ namespace IFramework.Infrastructure
         {
             var pad_count = 0;
             for (var x = chars.Length - 1; x >= 0; x--, pad_count++)
-                if (chars[x] != kDigits[0]) break;
+            {
+                if (chars[x] != kDigits[0])
+                {
+                    break;
+                }
+            }
 
             var result = DecodeImplReversed(chars, pad_count);
             DecodeImplPadResult(ref result, pad_count);

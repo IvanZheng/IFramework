@@ -33,10 +33,15 @@ namespace IFramework.MessageQueue.MSKafka
         private IDictionary<string, IList<KafkaMessageStream<KafkaMessages.Message>>> _streams;
         protected int _waitInterval;
 
-        public KafkaConsumer(string zkConnectionString, string topic, string groupId, string consumerId,
-            OnKafkaMessageReceived onMessageReceived,
-            int backOffIncrement = 30, int fullLoadThreshold = 1000, int waitInterval = 1000,
-            bool start = true)
+        public KafkaConsumer(string zkConnectionString,
+                             string topic,
+                             string groupId,
+                             string consumerId,
+                             OnKafkaMessageReceived onMessageReceived,
+                             int backOffIncrement = 30,
+                             int fullLoadThreshold = 1000,
+                             int waitInterval = 1000,
+                             bool start = true)
         {
             _fullLoadThreshold = fullLoadThreshold;
             _waitInterval = waitInterval;
@@ -60,7 +65,9 @@ namespace IFramework.MessageQueue.MSKafka
             };
             _onMessageReceived = onMessageReceived;
             if (start)
+            {
                 Start();
+            }
         }
 
         public string ZkConnectionString { get; protected set; }
@@ -76,16 +83,16 @@ namespace IFramework.MessageQueue.MSKafka
         public void Start()
         {
             ZkConsumerConnector = new ZookeeperConsumerConnector(ConsumerConfiguration, true,
-                ZkRebalanceHandler,
-                ZkDisconnectedHandler,
-                ZkExpiredHandler);
+                                                                 ZkRebalanceHandler,
+                                                                 ZkDisconnectedHandler,
+                                                                 ZkExpiredHandler);
             _cancellationTokenSource = new CancellationTokenSource();
             _consumerTask = Task.Factory.StartNew(cs => ReceiveMessages(cs as CancellationTokenSource,
-                    _onMessageReceived),
-                _cancellationTokenSource,
-                _cancellationTokenSource.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                                                                        _onMessageReceived),
+                                                  _cancellationTokenSource,
+                                                  _cancellationTokenSource.Token,
+                                                  TaskCreationOptions.LongRunning,
+                                                  TaskScheduler.Default);
         }
 
         public void CommitOffset(IMessageContext messageContext)
@@ -114,7 +121,9 @@ namespace IFramework.MessageQueue.MSKafka
         {
             _logger.Error($"{GroupId}.{ConsumerId} zookeeper disconnected!");
             if (!_cancellationTokenSource.IsCancellationRequested)
+            {
                 ReStart();
+            }
         }
 
         private void ZkRebalanceHandler(object sender, EventArgs args)
@@ -146,19 +155,21 @@ namespace IFramework.MessageQueue.MSKafka
         }
 
         private void ReceiveMessages(CancellationTokenSource cancellationTokenSource,
-            OnKafkaMessageReceived onMessagesReceived)
+                                     OnKafkaMessageReceived onMessagesReceived)
         {
             IEnumerable<KafkaMessages.Message> messages = null;
 
             #region peek messages that not been consumed since last time
 
             while (!cancellationTokenSource.IsCancellationRequested)
+            {
                 try
                 {
                     //var linkedTimeoutCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token,
                     //                                                                       new CancellationTokenSource(3000).Token);
                     messages = GetMessages(cancellationTokenSource.Token);
                     foreach (var message in messages)
+                    {
                         try
                         {
                             AddMessage(message);
@@ -176,9 +187,12 @@ namespace IFramework.MessageQueue.MSKafka
                         catch (Exception ex)
                         {
                             if (message.Payload != null)
+                            {
                                 RemoveMessage(message.PartitionId.Value, message.Offset);
+                            }
                             _logger.Error(ex.GetBaseException().Message, ex);
                         }
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -196,6 +210,7 @@ namespace IFramework.MessageQueue.MSKafka
                         _logger.Error(ex.GetBaseException().Message, ex);
                     }
                 }
+            }
 
             #endregion
         }
@@ -215,9 +230,9 @@ namespace IFramework.MessageQueue.MSKafka
             var slidingDoor = SlidingDoors.GetOrAdd(message.PartitionId.Value, partition =>
             {
                 return new SlidingDoor(CommitOffset,
-                    string.Empty,
-                    partition,
-                    Configuration.Instance.GetCommitPerMessage());
+                                       string.Empty,
+                                       partition,
+                                       Configuration.Instance.GetCommitPerMessage());
             });
             slidingDoor.AddOffset(message.Offset);
         }
@@ -226,7 +241,9 @@ namespace IFramework.MessageQueue.MSKafka
         {
             var slidingDoor = SlidingDoors.TryGetValue(partition);
             if (slidingDoor == null)
+            {
                 throw new Exception("partition slidingDoor not exists");
+            }
             slidingDoor.RemoveOffset(offset);
         }
 

@@ -68,16 +68,22 @@ namespace Kafka.Client.Utils
                 catch (KeeperException e)
                 {
                     if (e.ErrorCode == KeeperException.Code.NONODE)
+                    {
                         zkTopics = null;
+                    }
                     else
+                    {
                         throw;
+                    }
                 }
 
                 if (zkTopics == null)
+                {
                     throw new ArgumentException(
-                        string.Format(CultureInfo.InvariantCulture,
-                            "Can't automatically retrieve topic list because consumer group {0} does not have any topics with commited offsets",
-                            consumerGroup));
+                                                string.Format(CultureInfo.InvariantCulture,
+                                                              "Can't automatically retrieve topic list because consumer group {0} does not have any topics with commited offsets",
+                                                              consumerGroup));
+                }
 
                 topics = zkTopics.ToList();
             }
@@ -94,27 +100,29 @@ namespace Kafka.Client.Utils
                 foreach (var topic in topics)
                 {
                     Logger.DebugFormat("Collecting consumer offset statistics for consumer group {0}, topic {1}",
-                        consumerGroup, topic);
+                                       consumerGroup, topic);
                     consumerGroupState.TopicsStat[topic] = ProcessTopic(consumerGroup, topic);
                 }
             }
             catch (NoPartitionsForTopicException exc)
             {
                 Logger.ErrorFormat("Could not find any partitions for topic {0}. Error: {1}", exc.Topic,
-                    exc.FormatException());
+                                   exc.FormatException());
                 throw;
             }
             catch (Exception exc)
             {
                 Logger.ErrorFormat("Failed to collect consumer offset statistics for consumer group {0}. Error: {1}",
-                    consumerGroup, exc.FormatException());
+                                   consumerGroup, exc.FormatException());
                 throw;
             }
             finally
             {
                 // close created consumers
                 foreach (var consumer in consumerDict)
+                {
                     consumer.Value.Dispose();
+                }
 
                 consumerDict.Clear();
             }
@@ -140,6 +148,7 @@ namespace Kafka.Client.Utils
             };
 
             foreach (var partitionId in topicPartitionMap[topic])
+            {
                 try
                 {
                     var partitionIdInt = int.Parse(partitionId);
@@ -148,20 +157,21 @@ namespace Kafka.Client.Utils
                 catch (NoLeaderForPartitionException exc)
                 {
                     Logger.ErrorFormat("Could not found a leader for partition {0}. Details: {1}", exc.PartitionId,
-                        exc.FormatException());
+                                       exc.FormatException());
                 }
                 catch (BrokerNotAvailableException exc)
                 {
                     Logger.ErrorFormat(
-                        "Could not found a broker information for broker {0} while processing partition {1}. Details: {2}",
-                        exc.BrokerId, partitionId, exc.FormatException());
+                                       "Could not found a broker information for broker {0} while processing partition {1}. Details: {2}",
+                                       exc.BrokerId, partitionId, exc.FormatException());
                 }
                 catch (OffsetIsUnknowException exc)
                 {
                     Logger.ErrorFormat(
-                        "Could not retrieve offset from broker {0} for topic {1} partition {2}. Details: {3}",
-                        exc.BrokerId, exc.Topic, exc.PartitionId, exc.FormatException());
+                                       "Could not retrieve offset from broker {0} for topic {1} partition {2}. Details: {3}",
+                                       exc.BrokerId, exc.Topic, exc.PartitionId, exc.FormatException());
                 }
+            }
 
             return topicState;
         }
@@ -169,12 +179,14 @@ namespace Kafka.Client.Utils
         private PartitionStatisticsRecord ProcessPartition(string consumerGroup, string topic, int partitionId)
         {
             Logger.DebugFormat("Collecting consumer offset statistics for consumer group {0}, topic {1}, partition {2}",
-                consumerGroup, topic, partitionId);
+                               consumerGroup, topic, partitionId);
 
             // find partition leader and create a consumer instance
             var leader = ZkUtils.GetLeaderForPartition(zkClient, topic, partitionId);
             if (!leader.HasValue)
+            {
                 throw new NoLeaderForPartitionException(partitionId);
+            }
 
             var consumer = GetConsumer(leader.Value);
 
@@ -189,7 +201,9 @@ namespace Kafka.Client.Utils
                 currentOffset =
                     ConsumerUtils.EarliestOrLatestOffset(consumer, topic, partitionId, OffsetRequest.EarliestTime);
                 if (!currentOffset.HasValue)
+                {
                     throw new OffsetIsUnknowException(topic, leader.Value, partitionId);
+                }
             }
             else
             {
@@ -200,10 +214,12 @@ namespace Kafka.Client.Utils
             var lastOffset =
                 ConsumerUtils.EarliestOrLatestOffset(consumer, topic, partitionId, OffsetRequest.LatestTime);
             if (!lastOffset.HasValue)
+            {
                 throw new OffsetIsUnknowException(topic, leader.Value, partitionId);
+            }
 
             var owner = zkClient.ReadData<string>(
-                ZkUtils.GetConsumerPartitionOwnerPath(consumerGroup, topic, partitionIdStr), true);
+                                                  ZkUtils.GetConsumerPartitionOwnerPath(consumerGroup, topic, partitionIdStr), true);
 
             return new PartitionStatisticsRecord
             {
@@ -226,7 +242,9 @@ namespace Kafka.Client.Utils
             {
                 var broker = kafkaCluster.GetBroker(brokerId);
                 if (broker == null)
+                {
                     throw new BrokerNotAvailableException(brokerId);
+                }
 
                 result = new Consumer(config, broker.Host, broker.Port);
                 consumerDict.Add(brokerId, result);
@@ -239,17 +257,21 @@ namespace Kafka.Client.Utils
         {
             Logger.InfoFormat("Connecting to zookeeper instance at {0}", config.ZooKeeper.ZkConnect);
             zkClient = new ZooKeeperClient(config.ZooKeeper.ZkConnect, config.ZooKeeper.ZkSessionTimeoutMs,
-                ZooKeeperStringSerializer.Serializer, config.ZooKeeper.ZkConnectionTimeoutMs);
+                                           ZooKeeperStringSerializer.Serializer, config.ZooKeeper.ZkConnectionTimeoutMs);
             zkClient.Connect();
         }
 
         protected override void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             if (disposed)
+            {
                 return;
+            }
 
             Logger.Info("ConsumerOffsetChecker shutting down");
 
@@ -262,13 +284,17 @@ namespace Kafka.Client.Utils
                 lock (shuttingDownLock)
                 {
                     if (disposed)
+                    {
                         return;
+                    }
 
                     disposed = true;
                 }
 
                 if (zkClient != null)
+                {
                     zkClient.Dispose();
+                }
             }
             catch (Exception exc)
             {

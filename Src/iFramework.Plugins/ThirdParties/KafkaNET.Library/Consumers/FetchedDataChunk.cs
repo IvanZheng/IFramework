@@ -29,7 +29,9 @@ namespace Kafka.Client.Consumers
         {
             var other = obj as FetchedDataChunk;
             if (other == null)
+            {
                 return false;
+            }
             return Equals(other);
         }
 

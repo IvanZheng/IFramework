@@ -5,17 +5,11 @@ namespace Kafka.Client.Exceptions
 {
     public class InvalidMessageSizeException : Exception
     {
-        public InvalidMessageSizeException()
-        {
-        }
+        public InvalidMessageSizeException() { }
 
         public InvalidMessageSizeException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
-        public InvalidMessageSizeException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public InvalidMessageSizeException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

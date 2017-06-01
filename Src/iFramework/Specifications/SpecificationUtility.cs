@@ -15,7 +15,7 @@ namespace IFramework.Specifications
         }
 
         public static Expression ReplaceParameters(Dictionary<ParameterExpression, ParameterExpression> map,
-            Expression exp)
+                                                   Expression exp)
         {
             return new ParameterRebinder(map).Visit(exp);
         }
@@ -24,19 +24,22 @@ namespace IFramework.Specifications
         {
             ParameterExpression replacement;
             if (map.TryGetValue(p, out replacement))
+            {
                 p = replacement;
+            }
             return base.VisitParameter(p);
         }
     }
 
     public static class ExpressionUtility
     {
-        public static Expression<T> Compose<T>(this Expression<T> first, Expression<T> second,
-            Func<Expression, Expression, Expression> merge)
+        public static Expression<T> Compose<T>(this Expression<T> first,
+                                               Expression<T> second,
+                                               Func<Expression, Expression, Expression> merge)
         {
             // build parameter map (from parameters of second to parameters of first)
             var map = first.Parameters.Select((f, i) => new {f, s = second.Parameters[i]})
-                .ToDictionary(p => p.s, p => p.f);
+                           .ToDictionary(p => p.s, p => p.f);
 
             // replace parameters in the second lambda expression with parameters from the first
             var secondBody = ParameterRebinder.ReplaceParameters(map, second.Body);
@@ -46,13 +49,13 @@ namespace IFramework.Specifications
         }
 
         public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> first,
-            Expression<Func<T, bool>> second)
+                                                       Expression<Func<T, bool>> second)
         {
             return first.Compose(second, Expression.And);
         }
 
         public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> first,
-            Expression<Func<T, bool>> second)
+                                                      Expression<Func<T, bool>> second)
         {
             return first.Compose(second, Expression.Or);
         }

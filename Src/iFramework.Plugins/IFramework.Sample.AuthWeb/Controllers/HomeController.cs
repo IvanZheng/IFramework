@@ -11,10 +11,10 @@ namespace IFramework.Sample.AuthWeb.Controllers
         public ActionResult Index()
         {
             FederatedPassiveSecurityTokenServiceOperations.ProcessRequest(
-                System.Web.HttpContext.Current.Request,
-                User as ClaimsPrincipal,
-                CustomSecurityTokenServiceConfiguration.Current.CreateSecurityTokenService(),
-                System.Web.HttpContext.Current.Response);
+                                                                          System.Web.HttpContext.Current.Request,
+                                                                          User as ClaimsPrincipal,
+                                                                          CustomSecurityTokenServiceConfiguration.Current.CreateSecurityTokenService(),
+                                                                          System.Web.HttpContext.Current.Response);
             return View();
         }
 
@@ -28,11 +28,11 @@ namespace IFramework.Sample.AuthWeb.Controllers
         public ActionResult Redirect()
         {
             FederatedPassiveSecurityTokenServiceOperations.ProcessRequest(
-                System.Web.HttpContext.Current.Request,
-                User as ClaimsPrincipal,
-                CustomSecurityTokenServiceConfiguration.Current.CreateSecurityTokenService(),
-                System.Web.HttpContext.Current.Response);
-            return View();
+                                                                          System.Web.HttpContext.Current.Request,
+                                                                          User as ClaimsPrincipal,
+                                                                          CustomSecurityTokenServiceConfiguration.Current.CreateSecurityTokenService(),
+                                                                          System.Web.HttpContext.Current.Response);
+            return null;
         }
 
         public ActionResult About()

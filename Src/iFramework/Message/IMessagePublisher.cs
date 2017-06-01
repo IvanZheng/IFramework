@@ -1,6 +1,4 @@
 ﻿namespace IFramework.Message
 {
-    public interface IMessagePublisher : IMessageSender
-    {
-    }
+    public interface IMessagePublisher : IMessageSender { }
 }

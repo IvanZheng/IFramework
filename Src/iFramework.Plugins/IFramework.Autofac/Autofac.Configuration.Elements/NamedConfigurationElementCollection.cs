@@ -6,7 +6,7 @@ using System.Configuration;
 namespace Autofac.Configuration.Elements
 {
     public class NamedConfigurationElementCollection<TElementType> : ConfigurationElementCollection,
-        IEnumerable<TElementType>, IEnumerable where TElementType : ConfigurationElement
+                                                                     IEnumerable<TElementType>, IEnumerable where TElementType : ConfigurationElement
     {
         private readonly string _elementKey;
         private readonly string _elementName;
@@ -14,13 +14,21 @@ namespace Autofac.Configuration.Elements
         protected NamedConfigurationElementCollection(string elementName, string elementKey)
         {
             if (elementName == null)
+            {
                 throw new ArgumentNullException("elementName");
+            }
             if (elementName.Length == 0)
+            {
                 throw new ArgumentOutOfRangeException(elementName);
+            }
             if (elementKey == null)
+            {
                 throw new ArgumentNullException("elementKey");
+            }
             if (elementKey.Length == 0)
+            {
                 throw new ArgumentOutOfRangeException(elementKey);
+            }
             _elementName = elementName;
             _elementKey = elementKey;
         }
@@ -36,7 +44,9 @@ namespace Autofac.Configuration.Elements
             set
             {
                 if (BaseGet(index) != null)
+                {
                     BaseRemoveAt(index);
+                }
                 BaseAdd(index, value);
             }
         }
@@ -56,7 +66,9 @@ namespace Autofac.Configuration.Elements
             {
                 var disposable = enumerator as IDisposable;
                 if (disposable != null)
+                {
                     disposable.Dispose();
+                }
             }
         }
 
@@ -73,7 +85,9 @@ namespace Autofac.Configuration.Elements
         protected override object GetElementKey(ConfigurationElement element)
         {
             if (element == null)
+            {
                 throw new ArgumentNullException("element");
+            }
             return (string) element.ElementInformation.Properties[_elementKey].Value;
         }
     }

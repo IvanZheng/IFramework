@@ -2,6 +2,7 @@ using System.Data.Services;
 using System.Data.Services.Common;
 using System.Data.Services.Providers;
 using Sample.Persistence;
+
 //------------------------------------------------------------------------------
 // <copyright file="WebDataService.svc.cs" company="Microsoft">
 //     Copyright (c) Microsoft Corporation.  All rights reserved.

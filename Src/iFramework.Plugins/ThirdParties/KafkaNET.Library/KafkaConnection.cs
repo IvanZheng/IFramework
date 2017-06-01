@@ -52,13 +52,13 @@ namespace Kafka.Client
         /// <param name="receiveTimeoutMs"></param>
         /// <param name="reconnectIntervalMs"></param>
         public KafkaConnection(string server,
-            int port,
-            int bufferSize,
-            int sendTimeoutMs,
-            int receiveTimeoutMs,
-            int reconnectIntervalMs,
-            int networkStreamReadTimeoutMs = 60 * 1000,
-            int networkStreamWriteTimeoutMs = 60 * 1000)
+                               int port,
+                               int bufferSize,
+                               int sendTimeoutMs,
+                               int receiveTimeoutMs,
+                               int reconnectIntervalMs,
+                               int networkStreamReadTimeoutMs = 60 * 1000,
+                               int networkStreamWriteTimeoutMs = 60 * 1000)
         {
             this.server = server;
             this.port = port;
@@ -140,11 +140,15 @@ namespace Kafka.Client
         public void Dispose()
         {
             if (disposed)
+            {
                 return;
+            }
 
             disposed = true;
             if (stream != null)
+            {
                 CloseConnection();
+            }
         }
 
         /// <summary>
@@ -153,7 +157,9 @@ namespace Kafka.Client
         private void EnsuresNotDisposed()
         {
             if (disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
         }
 
         public override string ToString()
@@ -165,6 +171,7 @@ namespace Kafka.Client
         {
             var watch = Stopwatch.StartNew();
             if (socket != null)
+            {
                 try
                 {
                     CloseConnection();
@@ -172,9 +179,10 @@ namespace Kafka.Client
                 catch (Exception e)
                 {
                     Logger.Error(
-                        string.Format("KafkaConnectio.Connect() exception in CloseConnection, duration={0}ms",
-                            watch.ElapsedMilliseconds), e);
+                                 string.Format("KafkaConnectio.Connect() exception in CloseConnection, duration={0}ms",
+                                               watch.ElapsedMilliseconds), e);
                 }
+            }
 
             socket = null;
 
@@ -198,15 +206,19 @@ namespace Kafka.Client
                     result.AsyncWaitHandle.Close();
 
                     if (newSocket.Connected)
+                    {
                         socket = newSocket;
+                    }
                     else
+                    {
                         newSocket.Close();
+                    }
                 }
                 catch (Exception ex)
                 {
                     Logger.Error(
-                        string.Format("KafkaConnectio.Connect() failed, duration={0}ms,this={1},targetAddress={2}",
-                            watch.ElapsedMilliseconds, this, targetAddress), ex);
+                                 string.Format("KafkaConnectio.Connect() failed, duration={0}ms,this={1},targetAddress={2}",
+                                               watch.ElapsedMilliseconds, this, targetAddress), ex);
                     throw new UnableToConnectToHostException(targetAddress.ToString(), port, ex);
                 }
             }
@@ -214,12 +226,13 @@ namespace Kafka.Client
             {
                 var addresses =
                     Dns.GetHostAddresses(server)
-                        .Where(
-                            h =>
-                                h.AddressFamily == AddressFamily.InterNetwork ||
-                                h.AddressFamily == AddressFamily.InterNetworkV6);
+                       .Where(
+                              h =>
+                                  h.AddressFamily == AddressFamily.InterNetwork ||
+                                  h.AddressFamily == AddressFamily.InterNetworkV6);
 
                 foreach (var address in addresses)
+                {
                     try
                     {
                         var newSocket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
@@ -248,21 +261,22 @@ namespace Kafka.Client
                     catch (Exception e)
                     {
                         Logger.Error(
-                            string.Format("ErrorConnectingToAddress, duration={0}ms,address={1},server={2},port={3}",
-                                watch.ElapsedMilliseconds, address, server, port), e);
+                                     string.Format("ErrorConnectingToAddress, duration={0}ms,address={1},server={2},port={3}",
+                                                   watch.ElapsedMilliseconds, address, server, port), e);
                         throw new UnableToConnectToHostException(server, port, e);
                     }
+                }
             }
 
             if (socket == null)
             {
                 Logger.ErrorFormat("UnableToConnectToHostException, duration={0}ms,server={1},port={2}",
-                    watch.ElapsedMilliseconds, server, port);
+                                   watch.ElapsedMilliseconds, server, port);
                 throw new UnableToConnectToHostException(server, port);
             }
 
             Logger.DebugFormat("KafkaConnection.Connect() succeeded, duration={0}ms,server={1},port={2}",
-                watch.ElapsedMilliseconds, server, port);
+                               watch.ElapsedMilliseconds, server, port);
 
             stream = new NetworkStream(socket, true)
             {
@@ -293,7 +307,9 @@ namespace Kafka.Client
                     Send(data);
 
                     if (shouldParse)
+                    {
                         response = parser.ParseFrom(reader);
+                    }
                     lastActiveTimeMs = Environment.TickCount;
                 }
                 return response;
@@ -301,7 +317,9 @@ namespace Kafka.Client
             catch (Exception e)
             {
                 if (e is IOException || e is SocketException || e is InvalidOperationException)
+                {
                     Connected = false;
+                }
                 throw;
             }
         }
@@ -313,7 +331,9 @@ namespace Kafka.Client
         private void Send(byte[] data)
         {
             if (!Connected)
+            {
                 Connect();
+            }
 
             try
             {
@@ -324,7 +344,9 @@ namespace Kafka.Client
             catch (Exception e)
             {
                 if (e is IOException || e is SocketException || e is InvalidOperationException)
+                {
                     Connected = false;
+                }
                 throw;
             }
         }

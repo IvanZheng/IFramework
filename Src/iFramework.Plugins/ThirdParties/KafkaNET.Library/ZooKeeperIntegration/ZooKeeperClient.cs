@@ -75,9 +75,7 @@ namespace Kafka.Client.ZooKeeperIntegration
         ///     It is recommended to use quite large sessions timeouts for ZooKeeper.
         /// </remarks>
         public ZooKeeperClient(string servers, int sessionTimeout, IZooKeeperSerializer serializer)
-            : this(new ZooKeeperConnection(servers, sessionTimeout), serializer)
-        {
-        }
+            : this(new ZooKeeperConnection(servers, sessionTimeout), serializer) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ZooKeeperClient" /> class.
@@ -109,9 +107,7 @@ namespace Kafka.Client.ZooKeeperIntegration
             Logger.Info("Quit constructor ...");
         }
 
-        private ZooKeeperClient()
-        {
-        }
+        private ZooKeeperClient() { }
         //public int? IdleTime { get; private set; }
 
         public ReaderWriterLockSlim SlimLock { get; } = new ReaderWriterLockSlim();
@@ -139,20 +135,24 @@ namespace Kafka.Client.ZooKeeperIntegration
                 Logger.Info("Finish connect ...");
                 Logger.Debug("Awaiting connection to Zookeeper server");
                 if (!WaitUntilConnected(connectionTimeout))
+                {
                     throw new ZooKeeperException(
-                        "Unable to connect to zookeeper server within timeout: " + connectionTimeout);
+                                                 "Unable to connect to zookeeper server within timeout: " + connectionTimeout);
+                }
                 started = true;
                 Logger.Debug("Connection to Zookeeper server established");
             }
             catch (ThreadInterruptedException)
             {
                 throw new InvalidOperationException(
-                    "Not connected with zookeeper server yet. Current state is " + connection.ClientState);
+                                                    "Not connected with zookeeper server yet. Current state is " + connection.ClientState);
             }
             finally
             {
                 if (!started)
+                {
                     Disconnect();
+                }
             }
         }
 
@@ -175,7 +175,9 @@ namespace Kafka.Client.ZooKeeperIntegration
             try
             {
                 if (eventWorker.ThreadState != ThreadState.Unstarted)
+                {
                     eventWorker.Join(5000);
+                }
             }
             catch (ThreadStateException)
             {
@@ -183,7 +185,9 @@ namespace Kafka.Client.ZooKeeperIntegration
             }
 
             if (connection != null)
+            {
                 connection.Dispose();
+            }
 
             connection = null;
         }
@@ -222,7 +226,9 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             if (eventWorker != null && eventWorker == Thread.CurrentThread)
+            {
                 throw new InvalidOperationException("Must not be done in the ZooKeeper event thread.");
+            }
 
             Logger.Debug("Waiting for keeper state: " + KeeperState.SyncConnected + " time out: " +
                          connectionTimeout); //.SyncConnected);
@@ -232,32 +238,42 @@ namespace Kafka.Client.ZooKeeperIntegration
             {
                 currentState = connection.ClientState;
                 if (currentState == KeeperState.SyncConnected)
+                {
                     return true;
+                }
                 Logger.DebugFormat("Current state:{0} in the lib:{1}", currentState,
-                    connection.GetInternalZKClient().State);
+                                   connection.GetInternalZKClient().State);
 
                 var stopWatch = Stopwatch.StartNew();
                 while (currentState != KeeperState.SyncConnected)
                 {
                     if (!stillWaiting)
+                    {
                         return false;
+                    }
 
                     stillWaiting = Monitor.Wait(stateChangedLock, connectionTimeout);
                     Logger.DebugFormat("Current state:{0} in the lib:{1}", currentState,
-                        connection.GetInternalZKClient().State);
+                                       connection.GetInternalZKClient().State);
                     currentState = connection.ClientState;
                     if (currentState == KeeperState.SyncConnected)
+                    {
                         return true;
+                    }
                     if (stopWatch.Elapsed.TotalMilliseconds > connectionTimeout)
+                    {
                         break;
+                    }
                     Thread.Sleep(1000);
                 }
 
                 Logger.DebugFormat("Current state:{0} in the lib:{1}", currentState,
-                    connection.GetInternalZKClient().State);
+                                   connection.GetInternalZKClient().State);
                 currentState = connection.ClientState;
                 if (currentState == KeeperState.SyncConnected)
+                {
                     return true;
+                }
                 return false;
             }
         }
@@ -280,11 +296,14 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             if (zooKeeperEventWorker != null && zooKeeperEventWorker == Thread.CurrentThread)
+            {
                 throw new InvalidOperationException("Must not be done in the zookeeper event thread");
+            }
 
             var connectionWatch = Stopwatch.StartNew();
             var maxWait = connectionTimeout * 4L;
             while (connectionWatch.ElapsedMilliseconds < maxWait)
+            {
                 try
                 {
                     return callback();
@@ -307,11 +326,12 @@ namespace Kafka.Client.ZooKeeperIntegration
                         throw;
                     }
                 }
+            }
             connectionWatch.Stop();
 
             // exceeded time out, any good callers will handle the exception properly for their situation.
             throw KeeperException.Create(KeeperException.Code
-                .OPERATIONTIMEOUT); // KeeperException.OperationTimeoutException();
+                                                        .OPERATIONTIMEOUT); // KeeperException.OperationTimeoutException();
         }
 
         /// <summary>
@@ -335,6 +355,7 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             var currentTime = DateTime.UtcNow;
             while (true)
+            {
                 try
                 {
                     return callback();
@@ -344,13 +365,17 @@ namespace Kafka.Client.ZooKeeperIntegration
                     if (e.ErrorCode == KeeperException.Code.CONNECTIONLOSS)
                     {
                         if (OperationTimedOut(currentTime, timeout))
+                        {
                             throw;
+                        }
                         Thread.Yield();
                     }
                     else if (e.ErrorCode == KeeperException.Code.SESSIONEXPIRED)
                     {
                         if (OperationTimedOut(currentTime, timeout))
+                        {
                             throw;
+                        }
                         Thread.Yield();
                     }
                     else
@@ -358,6 +383,7 @@ namespace Kafka.Client.ZooKeeperIntegration
                         throw;
                     }
                 }
+            }
             //catch (KeeperException.ConnectionLossException)
             //{
             //    if (OperationTimedOut(currentTime, timeout))
@@ -415,7 +441,7 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             return RetryUntilConnected(
-                () => connection.Exists(path, watch));
+                                       () => connection.Exists(path, watch));
         }
 
         /// <summary>
@@ -457,7 +483,7 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             return RetryUntilConnected(
-                () => connection.GetChildren(path, watch));
+                                       () => connection.GetChildren(path, watch));
         }
 
         /// <summary>
@@ -485,7 +511,9 @@ namespace Kafka.Client.ZooKeeperIntegration
             catch (KeeperException e) // KeeperException.NoNodeException)
             {
                 if (e.ErrorCode == KeeperException.Code.NONODE)
+                {
                     return 0;
+                }
                 throw;
             }
         }
@@ -519,7 +547,7 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             var bytes = RetryUntilConnected(
-                () => connection.ReadData(path, stats, watch));
+                                            () => connection.ReadData(path, stats, watch));
             return serializer.Deserialize(bytes) as T;
         }
 
@@ -591,11 +619,11 @@ namespace Kafka.Client.ZooKeeperIntegration
             EnsuresNotDisposed();
             var bytes = serializer.Serialize(data);
             RetryUntilConnected(
-                () =>
-                {
-                    connection.WriteData(path, bytes, expectedVersion);
-                    return null as object;
-                });
+                                () =>
+                                {
+                                    connection.WriteData(path, bytes, expectedVersion);
+                                    return null as object;
+                                });
         }
 
         /// <summary>
@@ -613,20 +641,22 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             return RetryUntilConnected(
-                () =>
-                {
-                    try
-                    {
-                        connection.Delete(path);
-                        return true;
-                    }
-                    catch (KeeperException e) // KeeperException.NoNodeException)
-                    {
-                        if (e.ErrorCode == KeeperException.Code.NONODE)
-                            return false;
-                        throw;
-                    }
-                });
+                                       () =>
+                                       {
+                                           try
+                                           {
+                                               connection.Delete(path);
+                                               return true;
+                                           }
+                                           catch (KeeperException e) // KeeperException.NoNodeException)
+                                           {
+                                               if (e.ErrorCode == KeeperException.Code.NONODE)
+                                               {
+                                                   return false;
+                                               }
+                                               throw;
+                                           }
+                                       });
         }
 
         /// <summary>
@@ -651,13 +681,19 @@ namespace Kafka.Client.ZooKeeperIntegration
             catch (KeeperException e)
             {
                 if (e.ErrorCode == KeeperException.Code.NONODE)
+                {
                     return true;
+                }
                 throw;
             }
 
             foreach (var child in children)
+            {
                 if (!DeleteRecursive(path + "/" + child))
+                {
                     return false;
+                }
+            }
 
             return Delete(path);
         }
@@ -674,7 +710,9 @@ namespace Kafka.Client.ZooKeeperIntegration
 
             EnsuresNotDisposed();
             if (!Exists(path))
+            {
                 CreatePersistent(path, true);
+            }
         }
 
         /// <summary>
@@ -698,7 +736,9 @@ namespace Kafka.Client.ZooKeeperIntegration
             catch (KeeperException e)
             {
                 if (e.ErrorCode == KeeperException.Code.NONODE)
+                {
                     return null;
+                }
                 throw;
             }
         }
@@ -733,12 +773,16 @@ namespace Kafka.Client.ZooKeeperIntegration
             try
             {
                 if (disposed)
+                {
                     return;
+                }
 
                 lock (shuttingDownLock)
                 {
                     if (disposed)
+                    {
                         return;
+                    }
 
                     disposed = true;
                 }
@@ -747,9 +791,7 @@ namespace Kafka.Client.ZooKeeperIntegration
                 {
                     Disconnect();
                 }
-                catch (ThreadInterruptedException)
-                {
-                }
+                catch (ThreadInterruptedException) { }
                 catch (Exception exc)
                 {
                     Logger.Debug("Ignoring unexpected errors on closing ZooKeeperClient", exc);
@@ -789,12 +831,16 @@ namespace Kafka.Client.ZooKeeperIntegration
                 if (e.ErrorCode == KeeperException.Code.NODEEXISTS)
                 {
                     if (!createParents)
+                    {
                         throw;
+                    }
                 }
                 else if (e.ErrorCode == KeeperException.Code.NONODE)
                 {
                     if (!createParents)
+                    {
                         throw;
+                    }
 
                     var parentDir = path.Substring(0, path.LastIndexOf('/'));
                     CreatePersistent(parentDir, true);
@@ -953,7 +999,9 @@ namespace Kafka.Client.ZooKeeperIntegration
                 if (e.ErrorCode == KeeperException.Code.NONODE)
                 {
                     if (!returnNullIfPathNotExists)
+                    {
                         throw;
+                    }
 
                     return null;
                 }
@@ -964,7 +1012,7 @@ namespace Kafka.Client.ZooKeeperIntegration
         private bool OperationTimedOut(DateTime currentTime, TimeSpan timeout)
         {
             return DateTime.UtcNow.Subtract(currentTime)
-                       .CompareTo(timeout) < 0;
+                           .CompareTo(timeout) < 0;
         }
 
         public long GetCreateTime(string path)
@@ -972,7 +1020,7 @@ namespace Kafka.Client.ZooKeeperIntegration
             Guard.NotNullNorEmpty(path, "path");
             EnsuresNotDisposed();
             return RetryUntilConnected(
-                () => connection.GetCreateTime(path));
+                                       () => connection.GetCreateTime(path));
         }
 
         /// <summary>
@@ -993,11 +1041,13 @@ namespace Kafka.Client.ZooKeeperIntegration
         private string Create(string path, object data, CreateMode mode)
         {
             if (path == null)
+            {
                 throw new ArgumentNullException("Path must not be null");
+            }
 
             var bytes = data == null ? null : serializer.Serialize(data);
             return RetryUntilConnected(() =>
-                connection.Create(path, bytes, mode));
+                                           connection.Create(path, bytes, mode));
         }
 
         /// <summary>
@@ -1006,7 +1056,9 @@ namespace Kafka.Client.ZooKeeperIntegration
         private void EnsuresNotDisposed()
         {
             if (disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
         }
     }
 }

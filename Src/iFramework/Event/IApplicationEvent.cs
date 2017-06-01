@@ -1,6 +1,4 @@
 ﻿namespace IFramework.Event
 {
-    public interface IApplicationEvent : IEvent
-    {
-    }
+    public interface IApplicationEvent : IEvent { }
 }

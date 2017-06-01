@@ -43,7 +43,9 @@ namespace Kafka.Client.Consumers
             {
                 var consumerSet = new List<string>();
                 for (var i = 0; i < item.Value; i++)
+                {
                     consumerSet.Add(consumerIdString + "-" + i);
+                }
 
                 result.Add(item.Key, consumerSet);
             }
@@ -55,7 +57,9 @@ namespace Kafka.Client.Consumers
         {
             var o = obj as TopicCount;
             if (o != null)
+            {
                 return consumerIdString == o.consumerIdString && topicCountMap == o.topicCountMap;
+            }
 
             return false;
         }
@@ -64,11 +68,17 @@ namespace Kafka.Client.Consumers
         public override int GetHashCode()
         {
             if (consumerIdString != null && topicCountMap != null)
+            {
                 return consumerIdString.GetHashCode() ^ topicCountMap.GetHashCode();
+            }
             if (consumerIdString != null)
+            {
                 return consumerIdString.GetHashCode();
+            }
             if (topicCountMap != null)
+            {
                 return topicCountMap.GetHashCode();
+            }
             return 0;
         }
 
@@ -86,7 +96,9 @@ namespace Kafka.Client.Consumers
             foreach (var entry in topicCountMap)
             {
                 if (i > 0)
+                {
                     sb.Append(",");
+                }
 
                 sb.Append("\"" + entry.Key + "\": " + entry.Value);
                 i++;

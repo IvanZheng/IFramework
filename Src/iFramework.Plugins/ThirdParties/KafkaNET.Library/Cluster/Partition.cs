@@ -7,9 +7,13 @@ namespace Kafka.Client.Cluster
     /// </summary>
     public class Partition
     {
-        public Partition(string topic, int partId, Replica leader = null, HashSet<Replica> assignedReplicas = null,
-            HashSet<Replica> inSyncReplica = null, HashSet<Replica> catchUpReplicas = null,
-            HashSet<Replica> reassignedReplicas = null)
+        public Partition(string topic,
+                         int partId,
+                         Replica leader = null,
+                         HashSet<Replica> assignedReplicas = null,
+                         HashSet<Replica> inSyncReplica = null,
+                         HashSet<Replica> catchUpReplicas = null,
+                         HashSet<Replica> reassignedReplicas = null)
         {
             Topic = topic;
             Leader = leader;
@@ -40,9 +44,9 @@ namespace Kafka.Client.Cluster
         public override string ToString()
         {
             return string.Format("Topic={0},PartId={1},LeaderBrokerId={2}"
-                , Topic
-                , PartId
-                , Leader == null ? "NA" : Leader.BrokerId.ToString());
+                                 , Topic
+                                 , PartId
+                                 , Leader == null ? "NA" : Leader.BrokerId.ToString());
         }
     }
 }

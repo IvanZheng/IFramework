@@ -8,9 +8,9 @@ namespace EQueueNameServer
         private static void Main(string[] args)
         {
             Configuration.Instance
-                .UseAutofacContainer()
-                .UseEQueue()
-                .StartEqueueNameServer();
+                         .UseAutofacContainer()
+                         .UseEQueue()
+                         .StartEqueueNameServer();
 
             Console.WriteLine("Equeue name server started.");
             Console.ReadLine();

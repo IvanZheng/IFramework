@@ -15,8 +15,9 @@ namespace IFramework.MessageQueue.ServiceBus
     {
         private readonly SubscriptionClient _subscriptionClient;
 
-        public SubscriptionConsumer(string id, OnMessagesReceived onMessagesReceived,
-            SubscriptionClient subscriptionClient)
+        public SubscriptionConsumer(string id,
+                                    OnMessagesReceived onMessagesReceived,
+                                    SubscriptionClient subscriptionClient)
             : base(id, onMessagesReceived)
         {
             _subscriptionClient = subscriptionClient;
@@ -40,15 +41,15 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             _cancellationTokenSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew(cs => ReceiveTopicMessages(cs as CancellationTokenSource,
-                    _onMessagesReceived),
-                _cancellationTokenSource,
-                _cancellationTokenSource.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                                                                        _onMessagesReceived),
+                                             _cancellationTokenSource,
+                                             _cancellationTokenSource.Token,
+                                             TaskCreationOptions.LongRunning,
+                                             TaskScheduler.Default);
         }
 
         private void ReceiveTopicMessages(CancellationTokenSource cancellationSource,
-            OnMessagesReceived onMessagesReceived)
+                                          OnMessagesReceived onMessagesReceived)
         {
             var needPeek = true;
             long sequenceNumber = 0;
@@ -57,11 +58,14 @@ namespace IFramework.MessageQueue.ServiceBus
             #region peek messages that not been consumed since last time
 
             while (!cancellationSource.IsCancellationRequested && needPeek)
+            {
                 try
                 {
                     brokeredMessages = _subscriptionClient.PeekBatch(sequenceNumber, 50);
                     if (brokeredMessages == null || brokeredMessages.Count() == 0)
+                    {
                         break;
+                    }
                     var messageContexts = new List<IMessageContext>();
                     foreach (var message in brokeredMessages)
                     {
@@ -88,17 +92,19 @@ namespace IFramework.MessageQueue.ServiceBus
                     Thread.Sleep(1000);
                     _logger.Error($"subscriptionClient.ReceiveBatch {_subscriptionClient.Name} failed", ex);
                 }
+            }
 
             #endregion
 
             #region receive messages to enqueue consuming queue
 
             while (!cancellationSource.IsCancellationRequested)
+            {
                 try
                 {
                     brokeredMessages =
                         _subscriptionClient.ReceiveBatch(50,
-                            Configuration.Instance.GetMessageQueueReceiveMessageTimeout());
+                                                         Configuration.Instance.GetMessageQueueReceiveMessageTimeout());
                     foreach (var message in brokeredMessages)
                     {
                         message.Defer();
@@ -118,6 +124,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     Thread.Sleep(1000);
                     _logger.Error($"subscriptionClient.ReceiveBatch {_subscriptionClient.Name} failed", ex);
                 }
+            }
 
             #endregion
         }

@@ -38,7 +38,9 @@ namespace Kafka.Client.Producers
             {
                 var size = DefaultPartitionIdSize;
                 if (Leader != null)
+                {
                     size += Leader.SizeInBytes;
+                }
                 size += DefaultNumberOfReplicasSize;
                 size += Replicas.Sum(replica => replica.SizeInBytes);
                 size += DefaultNumberOfSyncReplicasSize;
@@ -77,12 +79,16 @@ namespace Kafka.Client.Producers
             // number of replicas
             writer.Write((short) Replicas.Count());
             foreach (var replica in Replicas)
+            {
                 replica.WriteTo(writer);
+            }
 
             // number of in-sync replicas
             writer.Write((short) Isr.Count());
             foreach (var isr in Isr)
+            {
                 isr.WriteTo(writer);
+            }
 
             writer.Write((byte) 0);
         }
@@ -94,19 +100,25 @@ namespace Kafka.Client.Producers
             var leaderId = reader.ReadInt32();
             Broker leader = null;
             if (leaderId != -1)
+            {
                 leader = brokers[leaderId];
+            }
 
             // list of all replicas
             var numReplicas = reader.ReadInt32();
             var replicas = new List<Broker>();
             for (var i = 0; i < numReplicas; ++i)
+            {
                 replicas.Add(brokers[reader.ReadInt32()]);
+            }
 
             // list of in-sync replicas
             var numIsr = reader.ReadInt32();
             var isrs = new List<Broker>();
             for (var i = 0; i < numIsr; ++i)
+            {
                 isrs.Add(brokers[reader.ReadInt32()]);
+            }
 
             return new PartitionMetadata(partitionId, leader, replicas, isrs);
         }
@@ -115,11 +127,11 @@ namespace Kafka.Client.Producers
         {
             var sb = new StringBuilder(4096);
             sb.AppendFormat(
-                "PartitionMetadata.ParitionId:{0},Leader:{1},Replicas Count:{2},Isr Count:{3}",
-                PartitionId,
-                Leader == null ? "null" : Leader.ToString(),
-                Replicas.Count(),
-                Isr.Count());
+                            "PartitionMetadata.ParitionId:{0},Leader:{1},Replicas Count:{2},Isr Count:{3}",
+                            PartitionId,
+                            Leader == null ? "null" : Leader.ToString(),
+                            Replicas.Count(),
+                            Isr.Count());
 
             var i = 0;
             foreach (var r in Replicas)

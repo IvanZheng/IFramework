@@ -18,8 +18,11 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
         private readonly TopicCount topicCount;
         private readonly ZookeeperConsumerConnector zkConsumerConnector;
 
-        public ZKSessionExpireListener(ZKGroupDirs dirs, string consumerIdString, TopicCount topicCount,
-            ZKRebalancerListener<TData> loadBalancerListener, ZookeeperConsumerConnector zkConsumerConnector)
+        public ZKSessionExpireListener(ZKGroupDirs dirs,
+                                       string consumerIdString,
+                                       TopicCount topicCount,
+                                       ZKRebalancerListener<TData> loadBalancerListener,
+                                       ZookeeperConsumerConnector zkConsumerConnector)
         {
             this.consumerIdString = consumerIdString;
             this.loadBalancerListener = loadBalancerListener;
@@ -80,7 +83,7 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
             OnZKSessionExpired(EventArgs.Empty);
 
             Logger.InfoFormat("ZK session expired; release old broker partition ownership; re-register consumer {0}",
-                consumerIdString);
+                              consumerIdString);
             loadBalancerListener.ResetState();
             zkConsumerConnector.RegisterConsumerInZk(dirs, consumerIdString, topicCount);
 
@@ -97,7 +100,9 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
             {
                 var handler = ZKSessionDisconnected;
                 if (handler != null)
+                {
                     handler(this, args);
+                }
             }
             catch (Exception ex)
             {
@@ -111,7 +116,9 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
             {
                 var handler = ZKSessionExpired;
                 if (handler != null)
+                {
                     handler(this, args);
+                }
             }
             catch (Exception ex)
             {

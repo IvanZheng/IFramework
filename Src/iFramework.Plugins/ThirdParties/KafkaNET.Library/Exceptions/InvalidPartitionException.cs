@@ -5,17 +5,11 @@ namespace Kafka.Client.Exceptions
 {
     public class InvalidPartitionException : Exception
     {
-        public InvalidPartitionException()
-        {
-        }
+        public InvalidPartitionException() { }
 
         public InvalidPartitionException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
-        public InvalidPartitionException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public InvalidPartitionException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

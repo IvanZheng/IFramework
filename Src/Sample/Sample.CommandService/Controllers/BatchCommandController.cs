@@ -62,18 +62,20 @@ namespace Sample.CommandService.Controllers
         private async Task<ApiResult> Action(ICommand command)
         {
             if (ModelState.IsValid)
+            {
                 return await ExceptionManager.ProcessAsync(async () =>
                 {
                     var messageResponse = await _CommandBus.SendAsync(command, true);
                     return await messageResponse.ReadAsAsync<ApiResult>();
                 });
+            }
             return
                 new ApiResult
                 {
                     ErrorCode = ErrorCode.CommandInvalid,
                     Message = string.Join(",", ModelState.Values
-                        .SelectMany(v => v.Errors
-                            .Select(e => e.ErrorMessage)))
+                                                         .SelectMany(v => v.Errors
+                                                                           .Select(e => e.ErrorMessage)))
                 };
         }
 
@@ -138,7 +140,7 @@ namespace Sample.CommandService.Controllers
 
         private void DoCommand(List<ICommand> batchCommands)
         {
-            batchCommands.ForEach(cmd => { Task.Factory.StartNew(() => { Action(cmd); }); });
+            batchCommands.ForEach(cmd => { Task.Factory.StartNew(() => { Action(cmd).Wait(); }); });
         }
     }
 }

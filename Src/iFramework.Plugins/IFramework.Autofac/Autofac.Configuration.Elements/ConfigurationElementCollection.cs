@@ -6,7 +6,7 @@ using System.Configuration;
 namespace Autofac.Configuration.Elements
 {
     public class ConfigurationElementCollection<TElementType> : ConfigurationElementCollection,
-        IEnumerable<TElementType>, IEnumerable where TElementType : ConfigurationElement
+                                                                IEnumerable<TElementType>, IEnumerable where TElementType : ConfigurationElement
     {
         private readonly string _elementName;
 
@@ -35,7 +35,9 @@ namespace Autofac.Configuration.Elements
             {
                 var disposable = enumerator as IDisposable;
                 if (disposable != null)
+                {
                     disposable.Dispose();
+                }
             }
         }
 

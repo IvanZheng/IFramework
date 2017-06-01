@@ -1,6 +1,4 @@
 ﻿namespace IFramework.UnitOfWork
 {
-    public interface IAppUnitOfWork : IUnitOfWork
-    {
-    }
+    public interface IAppUnitOfWork : IUnitOfWork { }
 }

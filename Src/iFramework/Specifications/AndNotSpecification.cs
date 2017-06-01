@@ -19,9 +19,7 @@ namespace IFramework.Specifications
         /// </summary>
         /// <param name="left">The left side of the combined specification.</param>
         /// <param name="right">The right side of the combined specification.</param>
-        public AndNotSpecification(ISpecification<T> left, ISpecification<T> right) : base(left, right)
-        {
-        }
+        public AndNotSpecification(ISpecification<T> left, ISpecification<T> right) : base(left, right) { }
 
         #endregion
 

@@ -9,37 +9,51 @@ namespace Autofac.Configuration.Util
 {
     internal class TypeManipulation
     {
-        public static object ChangeToCompatibleType(object value, Type destinationType,
-            ICustomAttributeProvider memberInfo)
+        public static object ChangeToCompatibleType(object value,
+                                                    Type destinationType,
+                                                    ICustomAttributeProvider memberInfo)
         {
             if (destinationType == null)
+            {
                 throw new ArgumentNullException("destinationType");
+            }
             if (value == null)
             {
                 if (!destinationType.IsValueType)
+                {
                     return null;
+                }
                 return Activator.CreateInstance(destinationType);
             }
             TypeConverter typeConverter;
             if (memberInfo != null)
             {
                 var typeConverterAttribute = memberInfo.GetCustomAttributes(typeof(TypeConverterAttribute), true)
-                    .Cast<TypeConverterAttribute>().FirstOrDefault();
+                                                       .Cast<TypeConverterAttribute>()
+                                                       .FirstOrDefault();
                 if (typeConverterAttribute != null && !string.IsNullOrEmpty(typeConverterAttribute.ConverterTypeName))
                 {
                     typeConverter = GetTypeConverterFromName(typeConverterAttribute.ConverterTypeName);
                     if (typeConverter.CanConvertFrom(value.GetType()))
+                    {
                         return typeConverter.ConvertFrom(value);
+                    }
                 }
             }
             typeConverter = TypeDescriptor.GetConverter(value.GetType());
             if (typeConverter.CanConvertTo(destinationType))
+            {
                 return typeConverter.ConvertTo(value, destinationType);
+            }
             if (destinationType.IsInstanceOfType(value))
+            {
                 return value;
+            }
             typeConverter = TypeDescriptor.GetConverter(destinationType);
             if (typeConverter.CanConvertFrom(value.GetType()))
+            {
                 return typeConverter.ConvertFrom(value);
+            }
             if (value is string)
             {
                 var method = destinationType.GetMethod("TryParse", BindingFlags.Static | BindingFlags.Public);
@@ -49,11 +63,13 @@ namespace Autofac.Configuration.Util
                     array[0] = value;
                     var array2 = array;
                     if ((bool) method.Invoke(null, array2))
+                    {
                         return array2[1];
+                    }
                 }
             }
             throw new ConfigurationErrorsException(string.Format(CultureInfo.CurrentCulture,
-                ConfigurationSettingsReaderResources.TypeConversionUnsupported, value.GetType(), destinationType));
+                                                                 ConfigurationSettingsReaderResources.TypeConversionUnsupported, value.GetType(), destinationType));
         }
 
         private static TypeConverter GetTypeConverterFromName(string converterTypeName)
@@ -61,8 +77,10 @@ namespace Autofac.Configuration.Util
             var type = Type.GetType(converterTypeName, true);
             var typeConverter = Activator.CreateInstance(type) as TypeConverter;
             if (typeConverter == null)
+            {
                 throw new ConfigurationErrorsException(string.Format(CultureInfo.CurrentCulture,
-                    ConfigurationSettingsReaderResources.TypeConverterAttributeTypeNotConverter, converterTypeName));
+                                                                     ConfigurationSettingsReaderResources.TypeConverterAttributeTypeNotConverter, converterTypeName));
+            }
             return typeConverter;
         }
     }

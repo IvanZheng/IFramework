@@ -25,9 +25,13 @@ namespace Autofac.Configuration.Elements
         public object CoerceValue()
         {
             if (List.ElementInformation.IsPresent)
+            {
                 return List;
+            }
             if (Dictionary.ElementInformation.IsPresent)
+            {
                 return Dictionary;
+            }
             return Value;
         }
     }

@@ -18,7 +18,7 @@ namespace IFramework.Repositories
     public class OrderExpression<TEntity> : OrderExpression
     {
         public OrderExpression(Expression<Func<TEntity, dynamic>> orderByExpression,
-            SortOrder sortOrder = SortOrder.Unspecified) :
+                               SortOrder sortOrder = SortOrder.Unspecified) :
             base(null, sortOrder)
         {
             OrderByExpression = orderByExpression;

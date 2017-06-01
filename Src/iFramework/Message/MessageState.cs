@@ -5,19 +5,17 @@ namespace IFramework.Message
     public class MessageState
     {
         public MessageState(IMessageContext messageContext, bool needReply = false) :
-            this(messageContext, null, needReply)
-        {
-        }
+            this(messageContext, null, needReply) { }
 
         public MessageState(IMessageContext messageContext,
-            TaskCompletionSource<MessageResponse> sendTaskCompletionSource, bool needReply) :
-            this(messageContext, sendTaskCompletionSource, null, needReply)
-        {
-        }
+                            TaskCompletionSource<MessageResponse> sendTaskCompletionSource,
+                            bool needReply) :
+            this(messageContext, sendTaskCompletionSource, null, needReply) { }
 
         public MessageState(IMessageContext messageContext,
-            TaskCompletionSource<MessageResponse> sendTaskCompletionSource,
-            TaskCompletionSource<object> replyTaskCompletionSource, bool needReply)
+                            TaskCompletionSource<MessageResponse> sendTaskCompletionSource,
+                            TaskCompletionSource<object> replyTaskCompletionSource,
+                            bool needReply)
         {
             MessageContext = messageContext;
             MessageID = messageContext.MessageID;

@@ -22,16 +22,16 @@ namespace Kafka.Client.Serialization
         ///     The input stream.
         /// </param>
         public KafkaBinaryReader(Stream input)
-            : base(input)
-        {
-        }
+            : base(input) { }
 
         public bool DataAvailable
         {
             get
             {
                 if (BaseStream is NetworkStream)
+                {
                     return ((NetworkStream) BaseStream).DataAvailable;
+                }
 
                 return BaseStream.Length != BaseStream.Position;
             }
@@ -46,7 +46,9 @@ namespace Kafka.Client.Serialization
         protected override void Dispose(bool disposing)
         {
             if (BaseStream.CanSeek)
+            {
                 BaseStream.Position = 0;
+            }
         }
 
         /// <summary>
@@ -125,7 +127,9 @@ namespace Kafka.Client.Serialization
         {
             var length = ReadInt16();
             if (length == -1)
+            {
                 return null;
+            }
 
             var bytes = ReadBytes(length);
             var encoder = Encoding.GetEncoding(encoding);

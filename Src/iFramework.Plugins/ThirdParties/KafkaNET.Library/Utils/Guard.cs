@@ -11,7 +11,9 @@ namespace Kafka.Client.Utils
         public static T NotNull<T>(T parameter, string paramName)
         {
             if (parameter == null)
+            {
                 throw new ArgumentNullException(paramName);
+            }
 
             return parameter;
         }
@@ -19,33 +21,45 @@ namespace Kafka.Client.Utils
         public static void Count(ICollection parameter, int length, string paramName)
         {
             if (parameter.Count != length)
+            {
                 throw new ArgumentOutOfRangeException(paramName, parameter.Count, string.Empty);
+            }
         }
 
         public static void Greater(int parameter, int expected, string paramName)
         {
             if (parameter <= expected)
+            {
                 throw new ArgumentOutOfRangeException(paramName, parameter, string.Empty);
+            }
         }
 
         public static void NotNullNorEmpty(string parameter, string paramName)
         {
             if (string.IsNullOrEmpty(parameter))
+            {
                 throw new ArgumentException("Given string is empty", paramName);
+            }
         }
 
         public static void AllNotNull(IEnumerable parameter, string paramName)
         {
             foreach (var par in parameter)
+            {
                 if (par == null)
+                {
                     throw new ArgumentNullException(paramName);
+                }
+            }
         }
 
         public static void CheckBool(bool realValue, bool expected, string paramName)
         {
             if (realValue != expected)
+            {
                 throw new ArgumentException(string.Format("Parameter:{0} expect:{1} real value:{2}", paramName,
-                    expected, realValue));
+                                                          expected, realValue));
+            }
         }
 
         /// <summary>
@@ -65,7 +79,7 @@ namespace Kafka.Client.Utils
             if (!evaluatedValue)
             {
                 var e = (Exception) Activator.CreateInstance(
-                    typeof(TException), string.Format("'{0}' is not met.", Normalize(assertion.ToString())));
+                                                             typeof(TException), string.Format("'{0}' is not met.", Normalize(assertion.ToString())));
                 throw e;
             }
         }
@@ -88,7 +102,9 @@ namespace Kafka.Client.Utils
             };
 
             foreach (var pattern in replacements)
+            {
                 result = pattern.Key.Replace(result, pattern.Value);
+            }
 
             result = result.Trim();
             return result;

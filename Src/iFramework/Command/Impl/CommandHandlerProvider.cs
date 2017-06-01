@@ -9,21 +9,19 @@ namespace IFramework.Command.Impl
         private Type[] _HandlerGenericTypes;
 
         public CommandHandlerProvider(params string[] assemblies)
-            : base(assemblies)
-        {
-        }
+            : base(assemblies) { }
 
         protected override Type[] HandlerGenericTypes
         {
             get
             {
                 return _HandlerGenericTypes ?? (_HandlerGenericTypes = new[]
-                           {
-                               typeof(ICommandAsyncHandler<ICommand>),
-                               typeof(ICommandHandler<ICommand>)
-                           }
-                           .Select(ht => ht.GetGenericTypeDefinition())
-                           .ToArray());
+                                                    {
+                                                        typeof(ICommandAsyncHandler<ICommand>),
+                                                        typeof(ICommandHandler<ICommand>)
+                                                    }
+                                                    .Select(ht => ht.GetGenericTypeDefinition())
+                                                    .ToArray());
             }
         }
     }

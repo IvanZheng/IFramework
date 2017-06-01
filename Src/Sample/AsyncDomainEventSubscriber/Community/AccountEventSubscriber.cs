@@ -45,8 +45,6 @@ namespace Sample.AsyncDomainEventSubscriber.Community
             throw new DomainException("test fail handled event!");
         }
 
-        public void Handle(PeopleRegisted message)
-        {
-        }
+        public void Handle(PeopleRegisted message) { }
     }
 }

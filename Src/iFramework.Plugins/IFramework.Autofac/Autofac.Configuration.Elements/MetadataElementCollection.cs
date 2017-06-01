@@ -2,8 +2,6 @@ namespace Autofac.Configuration.Elements
 {
     public class MetadataElementCollection : NamedConfigurationElementCollection<MetadataElement>
     {
-        public MetadataElementCollection() : base("item", "name")
-        {
-        }
+        public MetadataElementCollection() : base("item", "name") { }
     }
 }

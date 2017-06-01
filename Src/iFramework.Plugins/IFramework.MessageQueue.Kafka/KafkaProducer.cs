@@ -32,7 +32,9 @@ namespace IFramework.MessageQueue.MSKafka
             try
             {
                 if (_producer != null)
+                {
                     _producer.Dispose();
+                }
             }
             catch (Exception ex)
             {

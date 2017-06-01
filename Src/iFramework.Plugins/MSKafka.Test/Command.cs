@@ -21,8 +21,6 @@ namespace MSKafka.Test
 
     public class LinearCommand : Command, ILinearCommand
     {
-        public LinearCommand(string body) : base(body)
-        {
-        }
+        public LinearCommand(string body) : base(body) { }
     }
 }

@@ -32,7 +32,9 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
             MessageID = message.ID;
             var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
             if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+            {
                 Topic = topicAttribute.Topic;
+            }
         }
 
         public MessageContext(IMessage message, string key)
@@ -96,12 +98,16 @@ namespace IFramework.MessageQueue.ZeroMQ.MessageFormat
             get
             {
                 if (_Message != null)
+                {
                     return _Message;
+                }
                 object messageType = null;
                 object messageBody = null;
                 if (Headers.TryGetValue("MessageType", out messageType) && messageType != null
                     && Headers.TryGetValue("Message", out messageBody) && messageBody != null)
+                {
                     _Message = messageBody.ToString().ToJsonObject(Type.GetType(messageType.ToString()));
+                }
                 return _Message;
             }
             set

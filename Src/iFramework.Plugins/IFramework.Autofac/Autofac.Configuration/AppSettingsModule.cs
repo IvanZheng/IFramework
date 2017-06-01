@@ -38,7 +38,9 @@ namespace Autofac.Configuration
                 }
             }
             foreach (var current in _modules)
+            {
                 builder.RegisterModule(current);
+            }
         }
     }
 }

@@ -19,13 +19,17 @@ namespace IFramework.AspNet
         }
 
         public override IHttpHandler GetHandler(HttpContext context,
-            string requestType, string virtualPath, string path)
+                                                string requestType,
+                                                string virtualPath,
+                                                string path)
         {
             var page =
                 base.GetHandler(context, requestType, virtualPath, path);
 
             if (page != null)
+            {
                 InjectDependencies(page);
+            }
 
             return page;
         }
@@ -37,6 +41,7 @@ namespace IFramework.AspNet
             var ctor = GetInjectableConstructor(pageType);
 
             if (ctor != null)
+            {
                 try
                 {
                     var arguments =
@@ -47,9 +52,10 @@ namespace IFramework.AspNet
                 catch (Exception ex)
                 {
                     throw new Exception(string.Format(
-                        "The type {0} could not be initialized. {1}",
-                        pageType, ex.Message), ex);
+                                                      "The type {0} could not be initialized. {1}",
+                                                      pageType, ex.Message), ex);
                 }
+            }
         }
 
         private static object[] GetConstructorArguments(
@@ -60,8 +66,10 @@ namespace IFramework.AspNet
             var arguments = new object[parameters.Length];
 
             for (var i = 0; i < parameters.Length; i++)
+            {
                 arguments[i] =
                     GetInstance(parameters[i].ParameterType);
+            }
 
             return arguments;
         }
@@ -70,19 +78,23 @@ namespace IFramework.AspNet
             Type type)
         {
             var overloadedPublicConstructors = (
-                from ctor in type.GetConstructors()
-                where ctor.GetParameters().Length > 0
-                select ctor).ToArray();
+                                                   from ctor in type.GetConstructors()
+                                                   where ctor.GetParameters().Length > 0
+                                                   select ctor).ToArray();
 
             if (overloadedPublicConstructors.Length == 0)
+            {
                 return null;
+            }
 
             if (overloadedPublicConstructors.Length == 1)
+            {
                 return overloadedPublicConstructors[0];
+            }
 
             throw new Exception(string.Format(
-                "The type {0} has multiple public overloaded " +
-                "constructors and can't be initialized.", type));
+                                              "The type {0} has multiple public overloaded " +
+                                              "constructors and can't be initialized.", type));
         }
     }
 }

@@ -12,7 +12,8 @@ namespace Kafka.Client.Consumers
         string GetConsumerIdString();
 
         IDictionary<string, IList<IKafkaMessageStream<TData>>> CreateMessageStreams<TData>(
-            IDictionary<string, int> topicCountDict, IDecoder<TData> decoder);
+            IDictionary<string, int> topicCountDict,
+            IDecoder<TData> decoder);
 
         IDictionary<string, IDictionary<int, PartitionTopicInfo>> GetCurrentOwnership();
 

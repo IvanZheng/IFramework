@@ -16,9 +16,7 @@ namespace Kafka.Client.Serialization
         ///     Initializes a new instance of the <see cref="KafkaBinaryWriter" /> class
         ///     using big endian bytes order for primive types and UTF-8 encoding for strings.
         /// </summary>
-        protected KafkaBinaryWriter()
-        {
-        }
+        protected KafkaBinaryWriter() { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="KafkaBinaryWriter" /> class
@@ -28,9 +26,7 @@ namespace Kafka.Client.Serialization
         ///     The output stream.
         /// </param>
         public KafkaBinaryWriter(MemoryStream output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         public byte[] Buffer => ((MemoryStream) OutStream).GetBuffer();
 

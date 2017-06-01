@@ -38,21 +38,31 @@ namespace IFramework.Message.Impl
             {
                 var handlerTypes = _HandlerTypes[messageType];
                 if (handlerTypes != null && handlerTypes.Count > 0)
+                {
                     avaliableHandlerTypes = handlerTypes;
+                }
             }
             else if (!discardKeyTypes.Contains(messageType))
             {
                 foreach (var handlerTypes in _HandlerTypes)
+                {
                     if (messageType.IsSubclassOf(handlerTypes.Key))
                     {
                         var messageDispatcherHandlerTypes = _HandlerTypes[handlerTypes.Key];
                         if (messageDispatcherHandlerTypes != null && messageDispatcherHandlerTypes.Count > 0)
+                        {
                             avaliableHandlerTypes = avaliableHandlerTypes.Union(messageDispatcherHandlerTypes).ToList();
+                        }
                     }
+                }
                 if (avaliableHandlerTypes.Count == 0)
+                {
                     discardKeyTypes.Add(messageType);
+                }
                 else
+                {
                     _HandlerTypes.TryAdd(messageType, avaliableHandlerTypes);
+                }
             }
             return avaliableHandlerTypes;
         }
@@ -63,7 +73,9 @@ namespace IFramework.Message.Impl
             object handler = null;
             var handlerType = GetHandlerType(messageType);
             if (handlerType != null)
+            {
                 handler = IoCFactory.Resolve(handlerType.Type);
+            }
             return handler;
         }
 
@@ -75,11 +87,15 @@ namespace IFramework.Message.Impl
         private void RegisterHandlers()
         {
             var handlerElements = ConfigurationReader.Instance
-                .GetConfigurationSection<FrameworkConfigurationSection>()?
-                .Handlers;
+                                                     .GetConfigurationSection<FrameworkConfigurationSection>()
+                                                     ?
+                                                     .Handlers;
             if (handlerElements != null)
+            {
                 foreach (HandlerElement handlerElement in handlerElements)
+                {
                     if (Assemblies == null || Assemblies.Contains(handlerElement.Name))
+                    {
                         try
                         {
                             switch (handlerElement.SourceType)
@@ -94,9 +110,10 @@ namespace IFramework.Message.Impl
                                     break;
                             }
                         }
-                        catch
-                        {
-                        }
+                        catch { }
+                    }
+                }
+            }
 
             RegisterInheritedMessageHandlers();
         }
@@ -104,22 +121,23 @@ namespace IFramework.Message.Impl
         private void RegisterInheritedMessageHandlers()
         {
             _HandlerTypes.Keys.ForEach(messageType =>
-                _HandlerTypes.Keys.Where(type => type.IsSubclassOf(messageType))
-                    .ForEach(type =>
-                        {
-                            var list =
-                                _HandlerTypes[type].Union(_HandlerTypes[messageType]).ToList();
-                            _HandlerTypes[type].Clear();
-                            _HandlerTypes[type].AddRange(list);
-                        }
-                    ));
+                                           _HandlerTypes.Keys.Where(type => type.IsSubclassOf(messageType))
+                                                        .ForEach(type =>
+                                                                 {
+                                                                     var list =
+                                                                         _HandlerTypes[type].Union(_HandlerTypes[messageType]).ToList();
+                                                                     _HandlerTypes[type].Clear();
+                                                                     _HandlerTypes[type].AddRange(list);
+                                                                 }
+                                                                ));
         }
 
         public void Register(Type messageType, Type handlerType)
         {
             var isAsync = false;
             var handleMethod = handlerType.GetMethods()
-                .Where(m => m.GetParameters().Any(p => p.ParameterType == messageType)).FirstOrDefault();
+                                          .Where(m => m.GetParameters().Any(p => p.ParameterType == messageType))
+                                          .FirstOrDefault();
             isAsync = typeof(Task).IsAssignableFrom(handleMethod.ReturnType);
             if (_HandlerTypes.ContainsKey(messageType))
             {
@@ -127,7 +145,9 @@ namespace IFramework.Message.Impl
                 if (registeredDispatcherHandlerTypes != null)
                 {
                     if (!registeredDispatcherHandlerTypes.Exists(ht => ht.Type == handlerType && ht.IsAsync == isAsync))
+                    {
                         registeredDispatcherHandlerTypes.Add(new HandlerTypeInfo(handlerType, isAsync));
+                    }
                 }
                 else
                 {
@@ -158,19 +178,22 @@ namespace IFramework.Message.Impl
         private void RegisterHandlerFromAssembly(Assembly assembly)
         {
             var exportedTypes = assembly.GetExportedTypes()
-                .Where(x => x.IsInterface == false && x.IsAbstract == false
-                            && x.GetInterfaces()
-                                .Any(y => y.IsGenericType
-                                          && HandlerGenericTypes.Contains(y.GetGenericTypeDefinition())));
+                                        .Where(x => x.IsInterface == false && x.IsAbstract == false
+                                                    && x.GetInterfaces()
+                                                        .Any(y => y.IsGenericType
+                                                                  && HandlerGenericTypes.Contains(y.GetGenericTypeDefinition())));
             foreach (var type in exportedTypes)
+            {
                 RegisterHandlerFromType(type);
+            }
         }
 
         protected void RegisterHandlerFromType(Type handlerType)
         {
-            var ihandlerTypes = handlerType.GetInterfaces().Where(x => x.IsGenericType
-                                                                       && HandlerGenericTypes.Contains(x
-                                                                           .GetGenericTypeDefinition()));
+            var ihandlerTypes = handlerType.GetInterfaces()
+                                           .Where(x => x.IsGenericType
+                                                       && HandlerGenericTypes.Contains(x
+                                                                                           .GetGenericTypeDefinition()));
             foreach (var ihandlerType in ihandlerTypes)
             {
                 var messageType = ihandlerType.GetGenericArguments().Single();

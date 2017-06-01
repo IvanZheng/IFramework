@@ -83,10 +83,10 @@ namespace Kafka.Client.Helper
             TopicPartitionsLeaderProducers =
                 new ConcurrentDictionary<string, ConcurrentDictionary<int, Producer<TKey, TData>>>();
 
-        private object topicProducerLock = new object();
-
         private readonly ConcurrentDictionary<string, Producer<TKey, TData>> TopicProducersWithPartitionerClass =
             new ConcurrentDictionary<string, Producer<TKey, TData>>();
+
+        private object topicProducerLock = new object();
 
         public KafkaSimpleManager(KafkaSimpleManagerConfiguration config)
         {
@@ -130,27 +130,33 @@ namespace Kafka.Client.Helper
             }
 
             if (syncProducerPoolForMetaData != null)
+            {
                 lock (syncProducerPoolForMetadataLock)
                 {
                     syncProducerPoolForMetaData.Dispose();
                     syncProducerPoolForMetaData = null;
                     syncProducerPoolForMetaData = tempSyncProducerPool;
                 }
+            }
             else
+            {
                 syncProducerPoolForMetaData = tempSyncProducerPool;
+            }
 
             if (syncProducerPoolForMetaData == null || syncProducerPoolForMetaData.Count() == 0)
             {
                 var s = string.Format(
-                    "KafkaSimpleManager[{0}] SyncProducerPool Initialization produced empty syncProducer list, please check path /brokers/ids in zookeeper={1} to make sure ther is active brokers.",
-                    GetHashCode().ToString("X"), Config.ZookeeperConfig);
+                                      "KafkaSimpleManager[{0}] SyncProducerPool Initialization produced empty syncProducer list, please check path /brokers/ids in zookeeper={1} to make sure ther is active brokers.",
+                                      GetHashCode().ToString("X"), Config.ZookeeperConfig);
                 Logger.Error(s);
                 syncProducerPoolForMetaData = null;
                 throw new ArgumentException(s);
             }
             Logger.InfoFormat("The syncProducerPoolForMetaData:{0}", syncProducerPoolForMetaData.Count());
             foreach (var kv in syncProducerPoolForMetaData.syncProducers)
+            {
                 Logger.InfoFormat("\tBrokerID:  {0}  count: {1}", kv.Key, kv.Value.Producers.Count);
+            }
 
             Logger.InfoFormat("KafkaSimpleManager[{0}] SyncProducerPool initialized", GetHashCode().ToString("X"));
         }
@@ -158,7 +164,8 @@ namespace Kafka.Client.Helper
         public List<string> GetTopicPartitionsFromZK(string topic)
         {
             return syncProducerPoolForMetaData.zkClient
-                .GetChildren(string.Format("/brokers/topics/{0}/partitions", topic)).ToList();
+                                              .GetChildren(string.Format("/brokers/topics/{0}/partitions", topic))
+                                              .ToList();
         }
 
         /// <summary>
@@ -172,7 +179,7 @@ namespace Kafka.Client.Helper
                 syncProducerPoolForMetaData = null;
             }
             Logger.DebugFormat("KafkaSyncProducerPoolManager[{0}] SyncProducerPool cleared",
-                GetHashCode().ToString("X"));
+                               GetHashCode().ToString("X"));
         }
 
         #endregion
@@ -184,13 +191,18 @@ namespace Kafka.Client.Helper
         ///     If can't get metadata for specified topic at first time, will RecreateSyncProducerPoolForMetadata and retry once.
         ///     MANIFOLD use.
         /// </summary>
-        public TopicMetadata RefreshMetadata(short versionId, string clientId, int correlationId, string topic,
-            bool force)
+        public TopicMetadata RefreshMetadata(short versionId,
+                                             string clientId,
+                                             int correlationId,
+                                             string topic,
+                                             bool force)
         {
             Logger.InfoFormat("RefreshMetadata enter: {0} {1} {2} Topic:{3} Force:{4}", versionId, clientId,
-                correlationId, topic, force);
+                              correlationId, topic, force);
             if (!force && TopicMetadatas.ContainsKey(topic))
+            {
                 return TopicMetadatas[topic];
+            }
 
             var retry = 0;
             while (retry < 2)
@@ -199,7 +211,7 @@ namespace Kafka.Client.Helper
                 var tempTopicMetadatasLastUpdateTime = new Dictionary<string, DateTime>();
                 var partitionLeaders = new Dictionary<int, Tuple<Broker, BrokerConfiguration>>();
                 RefreshMetadataInternal(versionId, clientId, correlationId, topic, tempTopicMetadatas,
-                    tempTopicMetadatasLastUpdateTime, partitionLeaders);
+                                        tempTopicMetadatasLastUpdateTime, partitionLeaders);
 
                 if (tempTopicMetadatas.ContainsKey(topic))
                 {
@@ -208,25 +220,29 @@ namespace Kafka.Client.Helper
                     TopicMetadataPartitionsLeaders[topic] = partitionLeaders;
                     var partitionCountInZK = GetTopicPartitionsFromZK(topic).Count;
                     if (partitionCountInZK != partitionLeaders.Count)
+                    {
                         Logger.WarnFormat(
-                            "RefreshMetadata exit return. Some partitions has no leader.  Topic:{0}  PartitionMetadata:{1} partitionLeaders:{2} != partitionCountInZK:{3}",
-                            topic, tempTopicMetadatas[topic].PartitionsMetadata.Count(), partitionLeaders.Count,
-                            partitionCountInZK);
+                                          "RefreshMetadata exit return. Some partitions has no leader.  Topic:{0}  PartitionMetadata:{1} partitionLeaders:{2} != partitionCountInZK:{3}",
+                                          topic, tempTopicMetadatas[topic].PartitionsMetadata.Count(), partitionLeaders.Count,
+                                          partitionCountInZK);
+                    }
                     else
+                    {
                         Logger.InfoFormat(
-                            "RefreshMetadata exit return. Topic:{0}  PartitionMetadata:{1} partitionLeaders:{2} partitionCountInZK:{3}",
-                            topic, tempTopicMetadatas[topic].PartitionsMetadata.Count(), partitionLeaders.Count,
-                            partitionCountInZK);
+                                          "RefreshMetadata exit return. Topic:{0}  PartitionMetadata:{1} partitionLeaders:{2} partitionCountInZK:{3}",
+                                          topic, tempTopicMetadatas[topic].PartitionsMetadata.Count(), partitionLeaders.Count,
+                                          partitionCountInZK);
+                    }
                     return TopicMetadatas[topic];
                 }
                 Logger.WarnFormat(
-                    "Got null for metadata of topic {0}, will RecreateSyncProducerPoolForMetadata and retry . ", topic);
+                                  "Got null for metadata of topic {0}, will RecreateSyncProducerPoolForMetadata and retry . ", topic);
                 RecreateSyncProducerPoolForMetadata();
                 retry++;
             }
 
             Logger.WarnFormat("RefreshMetadata exit return NULL: {0} {1} {2} Topic:{3} Force:{4}", versionId, clientId,
-                correlationId, topic, force);
+                              correlationId, topic, force);
             return null;
         }
 
@@ -242,46 +258,57 @@ namespace Kafka.Client.Helper
         internal BrokerConfiguration GetLeaderBrokerOfPartition(string topic, int partitionID)
         {
             if (!TopicMetadatas.ContainsKey(topic))
+            {
                 throw new KafkaException(string.Format(
-                    "There is no  metadata  for topic {0}.  Please call RefreshMetadata with force = true and try again.",
-                    topic));
+                                                       "There is no  metadata  for topic {0}.  Please call RefreshMetadata with force = true and try again.",
+                                                       topic));
+            }
 
             var metadata = TopicMetadatas[topic];
             if (metadata.Error != ErrorMapping.NoError)
+            {
                 throw new KafkaException(
-                    string.Format("The metadata status for topic {0} is abnormal, detail: ", topic), metadata.Error);
+                                         string.Format("The metadata status for topic {0} is abnormal, detail: ", topic), metadata.Error);
+            }
 
             if (!TopicMetadataPartitionsLeaders[topic].ContainsKey(partitionID))
+            {
                 throw new NoLeaderForPartitionException(
-                    string.Format("No leader for topic {0} parition {1} ", topic, partitionID));
+                                                        string.Format("No leader for topic {0} parition {1} ", topic, partitionID));
+            }
 
             return TopicMetadataPartitionsLeaders[topic][partitionID].Item2;
         }
 
-        private void RefreshMetadataInternal(short versionId, string clientId, int correlationId, string topic,
-            Dictionary<string, TopicMetadata> tempTopicMetadatas,
-            Dictionary<string, DateTime> tempTopicMetadatasLastUpdateTime,
-            Dictionary<int, Tuple<Broker, BrokerConfiguration>> partitionLeaders)
+        private void RefreshMetadataInternal(short versionId,
+                                             string clientId,
+                                             int correlationId,
+                                             string topic,
+                                             Dictionary<string, TopicMetadata> tempTopicMetadatas,
+                                             Dictionary<string, DateTime> tempTopicMetadatasLastUpdateTime,
+                                             Dictionary<int, Tuple<Broker, BrokerConfiguration>> partitionLeaders)
         {
             Logger.InfoFormat("RefreshMetadataInternal enter: {0} {1} {2} Topic:{3} ", versionId, clientId,
-                correlationId, topic);
+                              correlationId, topic);
 
             lock (syncProducerPoolForMetadataLock)
             {
                 var brokerPartitionInfo = new BrokerPartitionInfo(syncProducerPoolForMetaData, tempTopicMetadatas,
-                    tempTopicMetadatasLastUpdateTime, ProducerConfiguration.DefaultTopicMetaDataRefreshIntervalMS,
-                    syncProducerPoolForMetaData.zkClient);
+                                                                  tempTopicMetadatasLastUpdateTime, ProducerConfiguration.DefaultTopicMetaDataRefreshIntervalMS,
+                                                                  syncProducerPoolForMetaData.zkClient);
                 brokerPartitionInfo.UpdateInfo(versionId, correlationId, clientId, topic);
             }
             if (!tempTopicMetadatas.ContainsKey(topic))
+            {
                 throw new NoBrokerForTopicException(
-                    string.Format(
-                        "There is no metadata for topic {0}.  Please check if all brokers of that topic live.", topic));
+                                                    string.Format(
+                                                                  "There is no metadata for topic {0}.  Please check if all brokers of that topic live.", topic));
+            }
             var metadata = tempTopicMetadatas[topic];
             if (metadata.Error != ErrorMapping.NoError)
             {
                 throw new KafkaException(
-                    string.Format("The metadata status for topic {0} is abnormal, detail: ", topic), metadata.Error);
+                                         string.Format("The metadata status for topic {0} is abnormal, detail: ", topic), metadata.Error);
                 ;
             }
 
@@ -290,22 +317,24 @@ namespace Kafka.Client.Helper
                 if (p.Leader != null && !partitionLeaders.ContainsKey(p.PartitionId))
                 {
                     partitionLeaders.Add(p.PartitionId, new Tuple<Broker, BrokerConfiguration>(
-                        p.Leader,
-                        new BrokerConfiguration
-                        {
-                            BrokerId = p.Leader.Id,
-                            Host = p.Leader.Host,
-                            Port = p.Leader.Port
-                        }));
+                                                                                               p.Leader,
+                                                                                               new BrokerConfiguration
+                                                                                               {
+                                                                                                   BrokerId = p.Leader.Id,
+                                                                                                   Host = p.Leader.Host,
+                                                                                                   Port = p.Leader.Port
+                                                                                               }));
                     Logger.DebugFormat("RefreshMetadataInternal Topic {0} partition {1} has leader {2}", topic,
-                        p.PartitionId, p.Leader.Id);
+                                       p.PartitionId, p.Leader.Id);
                 }
                 if (p.Leader == null)
+                {
                     Logger.ErrorFormat("RefreshMetadataInternal Topic {0} partition {1} does not have a leader yet.",
-                        topic, p.PartitionId);
+                                       topic, p.PartitionId);
+                }
             }
             Logger.InfoFormat("RefreshMetadataInternal exit: {0} {1} {2} Topic:{3} ", versionId, clientId,
-                correlationId, topic);
+                              correlationId, topic);
         }
 
         #endregion
@@ -315,67 +344,95 @@ namespace Kafka.Client.Helper
         /// <summary>
         ///     Get offset
         /// </summary>
-        public void RefreshAndGetOffset(short versionId, string clientId, int correlationId, string topic,
-            int partitionId, bool forceRefreshOffsetCache, out long earliestOffset, out long latestOffset)
+        public void RefreshAndGetOffset(short versionId,
+                                        string clientId,
+                                        int correlationId,
+                                        string topic,
+                                        int partitionId,
+                                        bool forceRefreshOffsetCache,
+                                        out long earliestOffset,
+                                        out long latestOffset)
         {
             earliestOffset = -1;
             latestOffset = -1;
             if (!forceRefreshOffsetCache && TopicOffsetEarliest.ContainsKey(topic) &&
                 TopicOffsetEarliest[topic].ContainsKey(partitionId))
+            {
                 earliestOffset = TopicOffsetEarliest[topic][partitionId];
+            }
             if (!forceRefreshOffsetCache && TopicOffsetLatest.ContainsKey(topic) &&
                 TopicOffsetLatest[topic].ContainsKey(partitionId))
+            {
                 latestOffset = TopicOffsetLatest[topic][partitionId];
+            }
             if (!forceRefreshOffsetCache && earliestOffset != -1 && latestOffset != -1)
+            {
                 return;
+            }
             //Get
             using (var consumer = GetConsumer(topic, partitionId))
             {
                 var offsetRequestInfoEarliest = new Dictionary<string, List<PartitionOffsetRequestInfo>>();
                 var offsetRequestInfoForPartitionsEarliest = new List<PartitionOffsetRequestInfo>();
                 offsetRequestInfoForPartitionsEarliest.Add(
-                    new PartitionOffsetRequestInfo(partitionId, OffsetRequest.EarliestTime, 1));
+                                                           new PartitionOffsetRequestInfo(partitionId, OffsetRequest.EarliestTime, 1));
                 offsetRequestInfoEarliest.Add(topic, offsetRequestInfoForPartitionsEarliest);
                 var offsetRequestEarliest = new OffsetRequest(offsetRequestInfoEarliest);
                 //Earliest
                 var offsetResponseEarliest = consumer.GetOffsetsBefore(offsetRequestEarliest);
                 List<PartitionOffsetsResponse> partitionOffsetEaliest = null;
                 if (offsetResponseEarliest.ResponseMap.TryGetValue(topic, out partitionOffsetEaliest))
+                {
                     foreach (var p in partitionOffsetEaliest)
+                    {
                         if (p.Error == ErrorMapping.NoError && p.PartitionId == partitionId)
                         {
                             earliestOffset = p.Offsets[0];
                             //Cache                           
                             if (!TopicOffsetEarliest.ContainsKey(topic))
+                            {
                                 TopicOffsetEarliest.TryAdd(topic, new ConcurrentDictionary<int, long>());
+                            }
                             TopicOffsetEarliest[topic][partitionId] = earliestOffset;
                         }
+                    }
+                }
 
                 //Latest
                 var offsetRequestInfoLatest = new Dictionary<string, List<PartitionOffsetRequestInfo>>();
                 var offsetRequestInfoForPartitionsLatest = new List<PartitionOffsetRequestInfo>();
                 offsetRequestInfoForPartitionsLatest.Add(
-                    new PartitionOffsetRequestInfo(partitionId, OffsetRequest.LatestTime, 1));
+                                                         new PartitionOffsetRequestInfo(partitionId, OffsetRequest.LatestTime, 1));
                 offsetRequestInfoLatest.Add(topic, offsetRequestInfoForPartitionsLatest);
                 var offsetRequestLatest = new OffsetRequest(offsetRequestInfoLatest);
 
                 var offsetResponseLatest = consumer.GetOffsetsBefore(offsetRequestLatest);
                 List<PartitionOffsetsResponse> partitionOffsetLatest = null;
                 if (offsetResponseLatest.ResponseMap.TryGetValue(topic, out partitionOffsetLatest))
+                {
                     foreach (var p in partitionOffsetLatest)
+                    {
                         if (p.Error == ErrorMapping.NoError && p.PartitionId == partitionId)
                         {
                             latestOffset = p.Offsets[0];
                             //Cache
                             if (!TopicOffsetLatest.ContainsKey(topic))
+                            {
                                 TopicOffsetLatest.TryAdd(topic, new ConcurrentDictionary<int, long>());
+                            }
                             TopicOffsetLatest[topic][partitionId] = latestOffset;
                         }
+                    }
+                }
             }
         }
 
-        public long RefreshAndGetOffsetByTimeStamp(short versionId, string clientId, int correlationId, string topic,
-            int partitionId, DateTime timeStampInUTC)
+        public long RefreshAndGetOffsetByTimeStamp(short versionId,
+                                                   string clientId,
+                                                   int correlationId,
+                                                   string topic,
+                                                   int partitionId,
+                                                   DateTime timeStampInUTC)
         {
             //Get
             using (var consumer = GetConsumer(topic, partitionId))
@@ -383,16 +440,22 @@ namespace Kafka.Client.Helper
                 var offsetRequestInfoEarliest = new Dictionary<string, List<PartitionOffsetRequestInfo>>();
                 var offsetRequestInfoForPartitionsEarliest = new List<PartitionOffsetRequestInfo>();
                 offsetRequestInfoForPartitionsEarliest.Add(new PartitionOffsetRequestInfo(partitionId,
-                    KafkaClientHelperUtils.ToUnixTimestampMillis(timeStampInUTC), 8));
+                                                                                          KafkaClientHelperUtils.ToUnixTimestampMillis(timeStampInUTC), 8));
                 offsetRequestInfoEarliest.Add(topic, offsetRequestInfoForPartitionsEarliest);
                 var offsetRequestEarliest = new OffsetRequest(offsetRequestInfoEarliest);
                 //Earliest
                 var offsetResponseEarliest = consumer.GetOffsetsBefore(offsetRequestEarliest);
                 List<PartitionOffsetsResponse> partitionOffsetByTimeStamp = null;
                 if (offsetResponseEarliest.ResponseMap.TryGetValue(topic, out partitionOffsetByTimeStamp))
+                {
                     foreach (var p in partitionOffsetByTimeStamp)
+                    {
                         if (p.PartitionId == partitionId)
+                        {
                             return partitionOffsetByTimeStamp[0].Offsets[0];
+                        }
+                    }
+                }
             }
             return -1;
         }
@@ -402,15 +465,22 @@ namespace Kafka.Client.Helper
 
         #region Thread safe producer pool
 
-        public int InitializeProducerPoolForTopic(short versionId, string clientId, int correlationId, string topic,
-            bool forceRefreshMetadata, ProducerConfiguration producerConfigTemplate, bool forceRecreateEvenHostPortSame)
+        public int InitializeProducerPoolForTopic(short versionId,
+                                                  string clientId,
+                                                  int correlationId,
+                                                  string topic,
+                                                  bool forceRefreshMetadata,
+                                                  ProducerConfiguration producerConfigTemplate,
+                                                  bool forceRecreateEvenHostPortSame)
         {
             Logger.InfoFormat(
-                "InitializeProducerPoolForTopic ==  enter:  Topic:{0} forceRefreshMetadata:{1}  forceRecreateEvenHostPortSame:{2} ",
-                topic, forceRefreshMetadata, forceRecreateEvenHostPortSame);
+                              "InitializeProducerPoolForTopic ==  enter:  Topic:{0} forceRefreshMetadata:{1}  forceRecreateEvenHostPortSame:{2} ",
+                              topic, forceRefreshMetadata, forceRecreateEvenHostPortSame);
             TopicMetadata topicMetadata = null;
             if (forceRefreshMetadata)
+            {
                 topicMetadata = RefreshMetadata(versionId, clientId, correlationId, topic, forceRefreshMetadata);
+            }
 
             var partitionLeaders = TopicMetadataPartitionsLeaders[topic];
 
@@ -420,12 +490,14 @@ namespace Kafka.Client.Helper
             if (string.IsNullOrEmpty(Config.PartitionerClass))
             {
                 foreach (var kv in partitionLeaders)
+                {
                     CreateProducerOfOnePartition(topic, kv.Key, kv.Value.Item2, producerConfigTemplate,
-                        forceRecreateEvenHostPortSame);
+                                                 forceRecreateEvenHostPortSame);
+                }
                 Logger.InfoFormat(
-                    "InitializeProducerPoolForTopic ==  exit:  Topic:{0} forceRefreshMetadata:{1}  forceRecreateEvenHostPortSame:{2} this.TopicPartitionsLeaderProducers[topic].Count:{3}",
-                    topic, forceRefreshMetadata, forceRecreateEvenHostPortSame,
-                    TopicPartitionsLeaderProducers[topic].Count);
+                                  "InitializeProducerPoolForTopic ==  exit:  Topic:{0} forceRefreshMetadata:{1}  forceRecreateEvenHostPortSame:{2} this.TopicPartitionsLeaderProducers[topic].Count:{3}",
+                                  topic, forceRefreshMetadata, forceRecreateEvenHostPortSame,
+                                  TopicPartitionsLeaderProducers[topic].Count);
                 return TopicPartitionsLeaderProducers[topic].Count;
             }
             var producerConfig = new ProducerConfiguration(producerConfigTemplate);
@@ -441,16 +513,16 @@ namespace Kafka.Client.Helper
                     oldProducer.Dispose();
                     removeOldProducer = TopicProducersWithPartitionerClass.TryRemove(topic, out oldProducer);
                     Logger.InfoFormat(
-                        "InitializeProducerPoolForTopic == Remove producer from TopicProducersWithPartitionerClass for  topic {0}  removeOldProducer:{1} ",
-                        topic, removeOldProducer);
+                                      "InitializeProducerPoolForTopic == Remove producer from TopicProducersWithPartitionerClass for  topic {0}  removeOldProducer:{1} ",
+                                      topic, removeOldProducer);
                 }
             }
 
             var producer = new Producer<TKey, TData>(producerConfig);
             var addNewProducer = TopicProducersWithPartitionerClass.TryAdd(topic, producer);
             Logger.InfoFormat(
-                "InitializeProducerPoolForTopic == Add producer  TopicProducersWithPartitionerClass for  topic {0}  SyncProducerOfOneBroker:{1} addNewProducer:{2}   END.",
-                topic, producerConfig.SyncProducerOfOneBroker, addNewProducer);
+                              "InitializeProducerPoolForTopic == Add producer  TopicProducersWithPartitionerClass for  topic {0}  SyncProducerOfOneBroker:{1} addNewProducer:{2}   END.",
+                              topic, producerConfig.SyncProducerOfOneBroker, addNewProducer);
 
             return addNewProducer ? 1 : 0;
         }
@@ -463,12 +535,16 @@ namespace Kafka.Client.Helper
         public Producer<TKey, TData> GetProducerWithPartionerClass(string topic)
         {
             if (string.IsNullOrEmpty(Config.PartitionerClass))
+            {
                 throw new ArgumentException(
-                    "Please must specify KafkaSimpleManagerConfiguration.PartitionerClass before call this function.");
+                                            "Please must specify KafkaSimpleManagerConfiguration.PartitionerClass before call this function.");
+            }
             if (!TopicProducersWithPartitionerClass.ContainsKey(topic))
+            {
                 throw new KafkaException(string.Format(
-                    "There is no  TopicProducersWithPartitionerClass producer  for topic {0}  , please make sure you have called CreateProducerForPartitions",
-                    topic));
+                                                       "There is no  TopicProducersWithPartitionerClass producer  for topic {0}  , please make sure you have called CreateProducerForPartitions",
+                                                       topic));
+            }
 
             return TopicProducersWithPartitionerClass[topic];
         }
@@ -480,36 +556,49 @@ namespace Kafka.Client.Helper
         /// <param name="partitionID"></param>
         /// <param name="randomReturnIfProducerOfTargetPartionNotExists"></param>
         /// <returns></returns>
-        public Producer<TKey, TData> GetProducerOfPartition(string topic, int partitionID,
-            bool randomReturnIfProducerOfTargetPartionNotExists)
+        public Producer<TKey, TData> GetProducerOfPartition(string topic,
+                                                            int partitionID,
+                                                            bool randomReturnIfProducerOfTargetPartionNotExists)
         {
             if (!string.IsNullOrEmpty(Config.PartitionerClass))
+            {
                 throw new ArgumentException(string.Format(
-                    "Please call GetProducerWithPartionerClass to get producer since  KafkaSimpleManagerConfiguration.PartitionerClass is {0} is not null.",
-                    Config.PartitionerClass));
+                                                          "Please call GetProducerWithPartionerClass to get producer since  KafkaSimpleManagerConfiguration.PartitionerClass is {0} is not null.",
+                                                          Config.PartitionerClass));
+            }
 
             if (!TopicMetadatas.ContainsKey(topic))
+            {
                 throw new KafkaException(string.Format(
-                    "There is no  metadata  for topic {0}.  Please call RefreshMetadata with force = true and try again. ",
-                    topic));
+                                                       "There is no  metadata  for topic {0}.  Please call RefreshMetadata with force = true and try again. ",
+                                                       topic));
+            }
 
             if (TopicMetadatas[topic].Error != ErrorMapping.NoError)
+            {
                 throw new KafkaException(
-                    string.Format("The metadata status for topic {0} is abnormal, detail: ", topic),
-                    TopicMetadatas[topic].Error);
+                                         string.Format("The metadata status for topic {0} is abnormal, detail: ", topic),
+                                         TopicMetadatas[topic].Error);
+            }
 
             if (!TopicPartitionsLeaderProducers.ContainsKey(topic))
+            {
                 throw new KafkaException(string.Format(
-                    "There is no  producer  for topic {0} partition {1} , please make sure you have called CreateProducerForPartitions",
-                    topic, partitionID));
+                                                       "There is no  producer  for topic {0} partition {1} , please make sure you have called CreateProducerForPartitions",
+                                                       topic, partitionID));
+            }
 
             if (TopicPartitionsLeaderProducers[topic].ContainsKey(partitionID))
+            {
                 return TopicPartitionsLeaderProducers[topic][partitionID];
+            }
 
             if (randomReturnIfProducerOfTargetPartionNotExists)
             {
                 if (!TopicPartitionsLeaderProducers[topic].Any())
+                {
                     return null;
+                }
 
                 var randomPartition = randomForGetCachedProducer.Next(TopicPartitionsLeaderProducers[topic].Count);
                 return TopicPartitionsLeaderProducers[topic].Values.ElementAt(randomPartition);
@@ -517,75 +606,102 @@ namespace Kafka.Client.Helper
             return null;
         }
 
-        public Producer<TKey, TData> RefreshMetadataAndRecreateProducerOfOnePartition(short versionId, string clientId,
-            int correlationId, string topic, int partitionId, bool forceRefreshMetadata,
-            bool forceRecreateEvenHostPortSame, ProducerConfiguration producerConfigTemplate,
-            bool randomReturnIfProducerOfTargetPartionNotExists)
+        public Producer<TKey, TData> RefreshMetadataAndRecreateProducerOfOnePartition(short versionId,
+                                                                                      string clientId,
+                                                                                      int correlationId,
+                                                                                      string topic,
+                                                                                      int partitionId,
+                                                                                      bool forceRefreshMetadata,
+                                                                                      bool forceRecreateEvenHostPortSame,
+                                                                                      ProducerConfiguration producerConfigTemplate,
+                                                                                      bool randomReturnIfProducerOfTargetPartionNotExists)
         {
             Logger.InfoFormat(
-                "RefreshMetadataAndRecreateProducerWithPartition ==  enter:  Topic:{0}  partitionId:{1} forceRefreshMetadata:{2}  forceRecreateEvenHostPortSame:{3} randomReturnIfProducerOfTargetPartionNotExists:{4} ",
-                topic, partitionId, forceRefreshMetadata, forceRecreateEvenHostPortSame,
-                randomReturnIfProducerOfTargetPartionNotExists);
+                              "RefreshMetadataAndRecreateProducerWithPartition ==  enter:  Topic:{0}  partitionId:{1} forceRefreshMetadata:{2}  forceRecreateEvenHostPortSame:{3} randomReturnIfProducerOfTargetPartionNotExists:{4} ",
+                              topic, partitionId, forceRefreshMetadata, forceRecreateEvenHostPortSame,
+                              randomReturnIfProducerOfTargetPartionNotExists);
 
             TopicMetadata topicMetadata = null;
             if (forceRefreshMetadata)
+            {
                 topicMetadata = RefreshMetadata(versionId, clientId, correlationId, topic, forceRefreshMetadata);
+            }
 
             if (!TopicMetadataPartitionsLeaders[topic].ContainsKey(partitionId))
+            {
                 throw new NoLeaderForPartitionException(
-                    string.Format("No leader for topic {0} parition {1} ", topic, partitionId));
+                                                        string.Format("No leader for topic {0} parition {1} ", topic, partitionId));
+            }
 
             var value = TopicMetadataPartitionsLeaders[topic][partitionId];
 
             CreateProducerOfOnePartition(topic, partitionId, value.Item2, producerConfigTemplate,
-                forceRecreateEvenHostPortSame);
+                                         forceRecreateEvenHostPortSame);
 
             return GetProducerOfPartition(topic, partitionId, randomReturnIfProducerOfTargetPartionNotExists);
         }
 
-        private void CreateProducerOfOnePartition(string topic, int partitionId, BrokerConfiguration broker,
-            ProducerConfiguration producerConfigTemplate, bool forceRecreateEvenHostPortSame)
+        private void CreateProducerOfOnePartition(string topic,
+                                                  int partitionId,
+                                                  BrokerConfiguration broker,
+                                                  ProducerConfiguration producerConfigTemplate,
+                                                  bool forceRecreateEvenHostPortSame)
         {
             Logger.InfoFormat(
-                "CreateProducer ==  enter:  Topic:{0} partitionId:{1} broker:{2}  forceRecreateEvenHostPortSame:{3} ",
-                topic, partitionId, broker, forceRecreateEvenHostPortSame);
+                              "CreateProducer ==  enter:  Topic:{0} partitionId:{1} broker:{2}  forceRecreateEvenHostPortSame:{3} ",
+                              topic, partitionId, broker, forceRecreateEvenHostPortSame);
             //Explicitly set partitionID
             var producerConfig = new ProducerConfiguration(producerConfigTemplate,
-                new List<BrokerConfiguration> {broker}, partitionId)
+                                                           new List<BrokerConfiguration> {broker}, partitionId)
             {
                 ForceToPartition = partitionId
             };
 
             if (!TopicPartitionsLeaderProducers.ContainsKey(topic))
+            {
                 TopicPartitionsLeaderProducers.TryAdd(topic, new ConcurrentDictionary<int, Producer<TKey, TData>>());
+            }
 
             var dictPartitionLeaderProducersOfOneTopic = TopicPartitionsLeaderProducers[topic];
             var needRecreate = true;
             Producer<TKey, TData> oldProducer = null;
             if (dictPartitionLeaderProducersOfOneTopic.TryGetValue(partitionId, out oldProducer))
+            {
                 if (oldProducer.Config.Brokers.Any()
                     && oldProducer.Config.Brokers[0].Equals(producerConfig.Brokers[0]))
+                {
                     needRecreate = false;
+                }
+            }
 
             if (forceRecreateEvenHostPortSame)
+            {
                 needRecreate = true;
+            }
 
             if (needRecreate)
+            {
                 lock (GetProduceLockOfTopic(topic, partitionId))
                 {
                     if (dictPartitionLeaderProducersOfOneTopic.TryGetValue(partitionId, out oldProducer))
+                    {
                         if (oldProducer.Config.Brokers.Any()
                             && oldProducer.Config.Brokers[0].Equals(producerConfig.Brokers[0]))
+                        {
                             needRecreate = false;
+                        }
+                    }
 
                     if (forceRecreateEvenHostPortSame)
+                    {
                         needRecreate = true;
+                    }
 
                     if (!needRecreate)
                     {
                         Logger.InfoFormat(
-                            "CreateProducer == Add producer SKIP  after got lock for  topic {0}  partition {1} since leader {2} not changed. Maybe created by other thread.  END.",
-                            topic, partitionId, producerConfig.Brokers[0]);
+                                          "CreateProducer == Add producer SKIP  after got lock for  topic {0}  partition {1} since leader {2} not changed. Maybe created by other thread.  END.",
+                                          topic, partitionId, producerConfig.Brokers[0]);
                         return;
                     }
 
@@ -596,22 +712,25 @@ namespace Kafka.Client.Helper
                         removeOldProducer =
                             dictPartitionLeaderProducersOfOneTopic.TryRemove(partitionId, out oldProducer);
                         Logger.InfoFormat(
-                            "CreateProducer == Remove producer for  topic {0}  partition {1} leader {2} removeOldProducer:{3} ",
-                            topic, partitionId, oldProducer.Config.Brokers[0], removeOldProducer);
+                                          "CreateProducer == Remove producer for  topic {0}  partition {1} leader {2} removeOldProducer:{3} ",
+                                          topic, partitionId, oldProducer.Config.Brokers[0], removeOldProducer);
                     }
 
                     var producer = new Producer<TKey, TData>(producerConfig);
                     var addNewProducer = dictPartitionLeaderProducersOfOneTopic.TryAdd(partitionId, producer);
 
                     Logger.InfoFormat(
-                        "CreateProducer == Add producer for  topic {0}  partition {1} leader {2} SyncProducerOfOneBroker:{3} removeOldProducer:{4} addNewProducer:{5}   END.",
-                        topic, partitionId, broker, producerConfig.SyncProducerOfOneBroker, removeOldProducer,
-                        addNewProducer);
+                                      "CreateProducer == Add producer for  topic {0}  partition {1} leader {2} SyncProducerOfOneBroker:{3} removeOldProducer:{4} addNewProducer:{5}   END.",
+                                      topic, partitionId, broker, producerConfig.SyncProducerOfOneBroker, removeOldProducer,
+                                      addNewProducer);
                 }
+            }
             else
+            {
                 Logger.InfoFormat(
-                    "CreateProducer == Add producer SKIP for  topic {0}  partition {1} since leader {2} not changed.   END.",
-                    topic, partitionId, producerConfig.Brokers[0]);
+                                  "CreateProducer == Add producer SKIP for  topic {0}  partition {1} since leader {2} not changed.   END.",
+                                  topic, partitionId, producerConfig.Brokers[0]);
+            }
         }
 
         #endregion
@@ -652,7 +771,7 @@ namespace Kafka.Client.Helper
         public Consumer GetConsumer(string topic, int partitionID, ConsumerConfiguration cosumerConfigTemplate)
         {
             var config = new ConsumerConfiguration(cosumerConfigTemplate,
-                GetLeaderBrokerOfPartition(topic, partitionID));
+                                                   GetLeaderBrokerOfPartition(topic, partitionID));
             return new Consumer(config);
         }
 
@@ -663,8 +782,7 @@ namespace Kafka.Client.Helper
         /// <summary>
         ///     MANIFOLD use .  get one consumer from the pool.
         /// </summary>
-        public Consumer GetConsumerFromPool(short versionId, string clientId, int correlationId
-            , string topic, ConsumerConfiguration cosumerConfigTemplate, int partitionId)
+        public Consumer GetConsumerFromPool(short versionId, string clientId, int correlationId, string topic, ConsumerConfiguration cosumerConfigTemplate, int partitionId)
         {
             if (!TopicPartitionsLeaderConsumers.ContainsKey(topic))
             {
@@ -673,23 +791,29 @@ namespace Kafka.Client.Helper
 
             var consumers = GetConsumerPoolForTopic(topic);
             if (!consumers.ContainsKey(partitionId))
+            {
                 lock (GetConsumeLockOfTopicPartition(topic, partitionId))
                 {
                     if (!consumers.ContainsKey(partitionId))
                     {
                         var config = new ConsumerConfiguration(cosumerConfigTemplate,
-                            GetLeaderBrokerOfPartition(topic, partitionId));
+                                                               GetLeaderBrokerOfPartition(topic, partitionId));
                         var consumer = new Consumer(config);
                         if (consumers.TryAdd(partitionId, consumer))
+                        {
                             Logger.InfoFormat(
-                                "Create one consumer for client {0} topic {1} partitoin {2} addOneConsumer return value:{3} ",
-                                clientId, topic, partitionId, true);
+                                              "Create one consumer for client {0} topic {1} partitoin {2} addOneConsumer return value:{3} ",
+                                              clientId, topic, partitionId, true);
+                        }
                         else
+                        {
                             Logger.WarnFormat(
-                                "Create one consumer for client {0} topic {1} partitoin {2} addOneConsumer return value:{3} ",
-                                clientId, topic, partitionId, false);
+                                              "Create one consumer for client {0} topic {1} partitoin {2} addOneConsumer return value:{3} ",
+                                              clientId, topic, partitionId, false);
+                        }
                     }
                 }
+            }
 
             return consumers[partitionId];
         }
@@ -697,44 +821,50 @@ namespace Kafka.Client.Helper
         /// <summary>
         ///     MANIFOLD use .  Force recreate consumer for some partition and return it back.
         /// </summary>
-        public Consumer GetConsumerFromPoolAfterRecreate(short versionId, string clientId, int correlationId
-            , string topic, ConsumerConfiguration cosumerConfigTemplate, int partitionId,
-            int notRecreateTimeRangeInMs = -1)
+        public Consumer GetConsumerFromPoolAfterRecreate(short versionId,
+                                                         string clientId,
+                                                         int correlationId,
+                                                         string topic,
+                                                         ConsumerConfiguration cosumerConfigTemplate,
+                                                         int partitionId,
+                                                         int notRecreateTimeRangeInMs = -1)
         {
             var topicMetadata = RefreshMetadata(versionId, clientId, correlationId, topic, true);
             var consumers = GetConsumerPoolForTopic(topic);
             lock (GetConsumeLockOfTopicPartition(topic, partitionId))
             {
                 var config = new ConsumerConfiguration(cosumerConfigTemplate,
-                    GetLeaderBrokerOfPartition(topic, partitionId));
+                                                       GetLeaderBrokerOfPartition(topic, partitionId));
                 Consumer oldConsumer = null;
                 if (consumers.TryGetValue(partitionId, out oldConsumer))
                 {
                     if ((DateTime.UtcNow.Ticks - oldConsumer.CreatedTimeInUTC) / 10000.0 < notRecreateTimeRangeInMs)
                     {
                         Logger.WarnFormat(
-                            "Do NOT recreate consumer for client {0} topic {1} partitoin {2} since it only created {3} ms. less than {4} ",
-                            clientId, topic, partitionId
-                            , (DateTime.UtcNow.Ticks - oldConsumer.CreatedTimeInUTC) / 10000.0,
-                            notRecreateTimeRangeInMs);
+                                          "Do NOT recreate consumer for client {0} topic {1} partitoin {2} since it only created {3} ms. less than {4} ",
+                                          clientId, topic, partitionId
+                                          , (DateTime.UtcNow.Ticks - oldConsumer.CreatedTimeInUTC) / 10000.0,
+                                          notRecreateTimeRangeInMs);
                     }
                     else
                     {
                         Logger.InfoFormat("Destroy one old consumer for client {0} topic {1} partitoin {2} ", clientId,
-                            topic, partitionId);
+                                          topic, partitionId);
                         if (oldConsumer != null)
+                        {
                             oldConsumer.Dispose();
+                        }
 
                         consumers[partitionId] = new Consumer(config);
                         Logger.InfoFormat("Create one consumer for client {0} topic {1} partitoin {2} ", clientId,
-                            topic, partitionId);
+                                          topic, partitionId);
                     }
                 }
                 else
                 {
                     consumers[partitionId] = new Consumer(config);
                     Logger.InfoFormat("Newly Create one consumer for client {0} topic {1} partitoin {2} ", clientId,
-                        topic, partitionId);
+                                      topic, partitionId);
                 }
             }
 
@@ -744,7 +874,9 @@ namespace Kafka.Client.Helper
         private ConcurrentDictionary<int, Consumer> GetConsumerPoolForTopic(string topic)
         {
             if (TopicPartitionsLeaderConsumers.ContainsKey(topic))
+            {
                 return TopicPartitionsLeaderConsumers[topic];
+            }
 
             TopicPartitionsLeaderConsumers.TryAdd(topic, new ConcurrentDictionary<int, Consumer>());
 
@@ -784,7 +916,9 @@ namespace Kafka.Client.Helper
                 // If disposing equals true, dispose all managed
                 // and unmanaged resources.
                 if (disposing)
+                {
                     ClearSyncProducerPoolForMetadata();
+                }
 
                 // Call the appropriate methods to clean up
                 // unmanaged resources here.
@@ -807,7 +941,9 @@ namespace Kafka.Client.Helper
             {
                 lockOfTopicPartition = new object();
                 if (TopicLockProduce.TryAdd(key, lockOfTopicPartition))
+                {
                     break;
+                }
             }
             return lockOfTopicPartition;
         }
@@ -821,7 +957,9 @@ namespace Kafka.Client.Helper
             {
                 lockOfTopicPartition = new object();
                 if (TopicPartitionLockConsume.TryAdd(key, lockOfTopicPartition))
+                {
                     break;
+                }
             }
             return lockOfTopicPartition;
         }

@@ -56,8 +56,8 @@ namespace IFramework.Autofac
         {
             var builder = new ContainerBuilder();
             builder.RegisterInstance(instance)
-                .As(t)
-                .InstanceLifetime(lifetime);
+                   .As(t)
+                   .InstanceLifetime(lifetime);
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -66,8 +66,8 @@ namespace IFramework.Autofac
         {
             var builder = new ContainerBuilder();
             builder.RegisterInstance(instance)
-                .Named(name, t)
-                .InstanceLifetime(lifetime);
+                   .Named(name, t)
+                   .InstanceLifetime(lifetime);
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -77,19 +77,20 @@ namespace IFramework.Autofac
         {
             var builder = new ContainerBuilder();
             builder.RegisterInstance(instance)
-                .InstanceLifetime(lifetime);
+                   .InstanceLifetime(lifetime);
             builder.Update(_container.ComponentRegistry);
             return this;
         }
 
-        public IContainer RegisterInstance<TInterface>(string name, TInterface instance,
-            Lifetime lifetime = Lifetime.Singleton)
+        public IContainer RegisterInstance<TInterface>(string name,
+                                                       TInterface instance,
+                                                       Lifetime lifetime = Lifetime.Singleton)
             where TInterface : class
         {
             var builder = new ContainerBuilder();
             builder.RegisterInstance(instance)
-                .Named<TInterface>(name)
-                .InstanceLifetime(lifetime);
+                   .Named<TInterface>(name)
+                   .InstanceLifetime(lifetime);
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -103,20 +104,28 @@ namespace IFramework.Autofac
             if (string.IsNullOrEmpty(name))
             {
                 if (to.IsGenericType)
+                {
                     builder.RegisterGeneric(to).As(from);
+                }
                 else
+                {
                     builder.RegisterType(to).As(from);
+                }
             }
             else
             {
                 if (to.IsGenericType)
+                {
                     builder.RegisterGeneric(to)
-                        .Named(name, from)
-                        .WithParameters(injectionMembers);
+                           .Named(name, from)
+                           .WithParameters(injectionMembers);
+                }
                 else
+                {
                     builder.RegisterType(to)
-                        .Named(name, from)
-                        .WithParameters(injectionMembers);
+                           .Named(name, from)
+                           .WithParameters(injectionMembers);
+                }
             }
             builder.Update(_container.ComponentRegistry);
             return this;
@@ -127,36 +136,47 @@ namespace IFramework.Autofac
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
             if (to.IsGenericType)
+            {
                 builder.RegisterGeneric(to)
-                    .As(from)
-                    .WithParameters(injectionMembers)
-                    .InstanceLifetime(lifetime);
+                       .As(from)
+                       .WithParameters(injectionMembers)
+                       .InstanceLifetime(lifetime);
+            }
             else
+            {
                 builder.RegisterType(to)
-                    .As(from)
-                    .WithParameters(injectionMembers)
-                    .InstanceLifetime(lifetime);
+                       .As(from)
+                       .WithParameters(injectionMembers)
+                       .InstanceLifetime(lifetime);
+            }
 
             builder.Update(_container.ComponentRegistry);
             return this;
         }
 
-        public IContainer RegisterType(Type from, Type to, string name, Lifetime lifetime,
-            params Injection[] injections)
+        public IContainer RegisterType(Type from,
+                                       Type to,
+                                       string name,
+                                       Lifetime lifetime,
+                                       params Injection[] injections)
         {
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
 
             if (to.IsGenericType)
+            {
                 builder.RegisterGeneric(to)
-                    .Named(name, from)
-                    .InstanceLifetime(lifetime)
-                    .WithParameters(injectionMembers);
+                       .Named(name, from)
+                       .InstanceLifetime(lifetime)
+                       .WithParameters(injectionMembers);
+            }
             else
+            {
                 builder.RegisterType(to)
-                    .Named(name, from)
-                    .InstanceLifetime(lifetime)
-                    .WithParameters(injectionMembers);
+                       .Named(name, from)
+                       .InstanceLifetime(lifetime)
+                       .WithParameters(injectionMembers);
+            }
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -166,15 +186,19 @@ namespace IFramework.Autofac
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
             if (typeof(TTo).IsGenericType)
+            {
                 builder.RegisterGeneric(typeof(TTo))
-                    .As(typeof(TFrom))
-                    .InstanceLifetime(lifetime)
-                    .WithParameters(injectionMembers);
+                       .As(typeof(TFrom))
+                       .InstanceLifetime(lifetime)
+                       .WithParameters(injectionMembers);
+            }
             else
+            {
                 builder.RegisterType(typeof(TTo))
-                    .As(typeof(TFrom))
-                    .InstanceLifetime(lifetime)
-                    .WithParameters(injectionMembers);
+                       .As(typeof(TFrom))
+                       .InstanceLifetime(lifetime)
+                       .WithParameters(injectionMembers);
+            }
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -184,13 +208,17 @@ namespace IFramework.Autofac
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
             if (typeof(TTo).IsGenericType)
+            {
                 builder.RegisterGeneric(typeof(TTo))
-                    .As(typeof(TFrom))
-                    .WithParameters(injectionMembers);
+                       .As(typeof(TFrom))
+                       .WithParameters(injectionMembers);
+            }
             else
+            {
                 builder.RegisterType(typeof(TTo))
-                    .As(typeof(TFrom))
-                    .WithParameters(injectionMembers);
+                       .As(typeof(TFrom))
+                       .WithParameters(injectionMembers);
+            }
             builder.Update(_container.ComponentRegistry);
             return this;
         }
@@ -200,13 +228,17 @@ namespace IFramework.Autofac
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
             if (typeof(TTo).IsGenericType)
+            {
                 builder.RegisterGeneric(typeof(TTo))
-                    .Named(name, typeof(TFrom))
-                    .WithParameters(injectionMembers);
+                       .Named(name, typeof(TFrom))
+                       .WithParameters(injectionMembers);
+            }
             else
+            {
                 builder.RegisterType(typeof(TTo))
-                    .Named(name, typeof(TFrom))
-                    .WithParameters(injectionMembers);
+                       .Named(name, typeof(TFrom))
+                       .WithParameters(injectionMembers);
+            }
 
             builder.Update(_container.ComponentRegistry);
             return this;
@@ -218,15 +250,19 @@ namespace IFramework.Autofac
             var injectionMembers = GetInjectionParameters(injections);
             var builder = new ContainerBuilder();
             if (typeof(TTo).IsGenericType)
+            {
                 builder.RegisterGeneric(typeof(TTo))
-                    .Named(name, typeof(TFrom))
-                    .InstanceLifetime(lifetime)
-                    .WithParameters(injectionMembers);
+                       .Named(name, typeof(TFrom))
+                       .InstanceLifetime(lifetime)
+                       .WithParameters(injectionMembers);
+            }
             else
+            {
                 builder.RegisterType(typeof(TTo))
-                    .Named(name, typeof(TFrom))
-                    .InstanceLifetime(lifetime)
-                    .WithParameters(injectionMembers);
+                       .Named(name, typeof(TFrom))
+                       .InstanceLifetime(lifetime)
+                       .WithParameters(injectionMembers);
+            }
 
             builder.Update(_container.ComponentRegistry);
             return this;
@@ -281,13 +317,13 @@ namespace IFramework.Autofac
                 {
                     var constructInjection = injection as ConstructInjection;
                     injectionMembers.AddRange(constructInjection.Parameters
-                        .Select(p => new NamedParameter(p.ParameterName, p.ParameterValue)));
+                                                                .Select(p => new NamedParameter(p.ParameterName, p.ParameterValue)));
                 }
                 else if (injection is ParameterInjection)
                 {
                     var propertyInjection = injection as ParameterInjection;
                     injectionMembers.Add(new NamedPropertyParameter(propertyInjection.ParameterName,
-                        propertyInjection.ParameterValue));
+                                                                    propertyInjection.ParameterValue));
                 }
             });
             return injectionMembers;

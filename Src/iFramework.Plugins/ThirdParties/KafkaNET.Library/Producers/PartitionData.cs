@@ -22,9 +22,7 @@ namespace Kafka.Client.Producers
         }
 
         public PartitionData(int partition, BufferedMessageSet messages)
-            : this(partition, (short) ErrorMapping.NoError, messages)
-        {
-        }
+            : this(partition, (short) ErrorMapping.NoError, messages) { }
 
         public int Partition { get; }
         public BufferedMessageSet MessageSet { get; }
@@ -48,7 +46,9 @@ namespace Kafka.Client.Producers
             var listMessageAndOffsets = new List<MessageAndOffset>();
             //Seemly the MessageSet can only do traverse for one time.
             foreach (var m in MessageSet)
+            {
                 listMessageAndOffsets.Add(m);
+            }
             return listMessageAndOffsets;
         }
     }

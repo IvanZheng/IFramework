@@ -4,9 +4,7 @@ namespace IFramework.MessageStoring
 {
     public class HandledEvent
     {
-        public HandledEvent()
-        {
-        }
+        public HandledEvent() { }
 
         public HandledEvent(string id, string subscriptionName, DateTime handledTime)
         {
@@ -22,9 +20,7 @@ namespace IFramework.MessageStoring
 
     public class FailHandledEvent : HandledEvent
     {
-        public FailHandledEvent()
-        {
-        }
+        public FailHandledEvent() { }
 
         public FailHandledEvent(string id, string subscriptionName, DateTime handledTime, Exception e)
             : base(id, subscriptionName, handledTime)

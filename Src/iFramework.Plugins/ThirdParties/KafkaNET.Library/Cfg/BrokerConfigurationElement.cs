@@ -33,10 +33,14 @@ namespace Kafka.Client.Cfg
             {
                 var addresses = Dns.GetHostAddresses(Host);
                 if (addresses.Length > 0)
+                {
                     Host = addresses[0].ToString();
+                }
                 else
+                {
                     throw new ConfigurationErrorsException(string.Format(CultureInfo.CurrentCulture,
-                        "Could not resolve the address: {0}.", Host));
+                                                                         "Could not resolve the address: {0}.", Host));
+                }
             }
         }
 

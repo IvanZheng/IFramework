@@ -50,7 +50,9 @@ namespace IFramework.Infrastructure
         public ObjectId(byte[] bytes)
         {
             if (bytes == null)
+            {
                 throw new ArgumentNullException("bytes");
+            }
             Unpack(bytes, out _timestamp, out _machine, out _pid, out _increment);
         }
 
@@ -62,9 +64,7 @@ namespace IFramework.Infrastructure
         /// <param name="pid">The PID.</param>
         /// <param name="increment">The increment.</param>
         public ObjectId(DateTime timestamp, int machine, short pid, int increment)
-            : this(GetTimestampFromDateTime(timestamp), machine, pid, increment)
-        {
-        }
+            : this(GetTimestampFromDateTime(timestamp), machine, pid, increment) { }
 
         /// <summary>
         ///     Initializes a new instance of the ObjectId class.
@@ -76,11 +76,15 @@ namespace IFramework.Infrastructure
         public ObjectId(int timestamp, int machine, short pid, int increment)
         {
             if ((machine & 0xff000000) != 0)
+            {
                 throw new ArgumentOutOfRangeException("machine",
-                    "The machine value must be between 0 and 16777215 (it must fit in 3 bytes).");
+                                                      "The machine value must be between 0 and 16777215 (it must fit in 3 bytes).");
+            }
             if ((increment & 0xff000000) != 0)
+            {
                 throw new ArgumentOutOfRangeException("increment",
-                    "The increment value must be between 0 and 16777215 (it must fit in 3 bytes).");
+                                                      "The increment value must be between 0 and 16777215 (it must fit in 3 bytes).");
+            }
 
             _timestamp = timestamp;
             _machine = machine;
@@ -95,7 +99,9 @@ namespace IFramework.Infrastructure
         public ObjectId(string value)
         {
             if (value == null)
+            {
                 throw new ArgumentNullException("value");
+            }
             Unpack(ParseHexString(value), out _timestamp, out _machine, out _pid, out _increment);
         }
 
@@ -240,11 +246,15 @@ namespace IFramework.Infrastructure
         public static byte[] Pack(int timestamp, int machine, short pid, int increment)
         {
             if ((machine & 0xff000000) != 0)
+            {
                 throw new ArgumentOutOfRangeException("machine",
-                    "The machine value must be between 0 and 16777215 (it must fit in 3 bytes).");
+                                                      "The machine value must be between 0 and 16777215 (it must fit in 3 bytes).");
+            }
             if ((increment & 0xff000000) != 0)
+            {
                 throw new ArgumentOutOfRangeException("increment",
-                    "The increment value must be between 0 and 16777215 (it must fit in 3 bytes).");
+                                                      "The increment value must be between 0 and 16777215 (it must fit in 3 bytes).");
+            }
 
             var bytes = new byte[12];
             bytes[0] = (byte) (timestamp >> 24);
@@ -270,10 +280,14 @@ namespace IFramework.Infrastructure
         public static ObjectId Parse(string s)
         {
             if (s == null)
+            {
                 throw new ArgumentNullException("s");
+            }
             ObjectId objectId;
             if (TryParse(s, out objectId))
+            {
                 return objectId;
+            }
             var message = string.Format("'{0}' is not a valid 24 digit hex string.", s);
             throw new FormatException(message);
         }
@@ -312,9 +326,13 @@ namespace IFramework.Infrastructure
         public static void Unpack(byte[] bytes, out int timestamp, out int machine, out short pid, out int increment)
         {
             if (bytes == null)
+            {
                 throw new ArgumentNullException("bytes");
+            }
             if (bytes.Length < 12)
+            {
                 throw new ArgumentOutOfRangeException("bytes", "Byte array must be larger 12 bytes long.");
+            }
             timestamp = (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
             machine = (bytes[4] << 16) + (bytes[5] << 8) + bytes[6];
             pid = (short) ((bytes[7] << 8) + bytes[8]);
@@ -358,11 +376,20 @@ namespace IFramework.Infrastructure
         public int CompareTo(ObjectId other)
         {
             var r = _timestamp.CompareTo(other._timestamp);
-            if (r != 0) return r;
+            if (r != 0)
+            {
+                return r;
+            }
             r = _machine.CompareTo(other._machine);
-            if (r != 0) return r;
+            if (r != 0)
+            {
+                return r;
+            }
             r = _pid.CompareTo(other._pid);
-            if (r != 0) return r;
+            if (r != 0)
+            {
+                return r;
+            }
             return _increment.CompareTo(other._increment);
         }
 
@@ -388,7 +415,9 @@ namespace IFramework.Infrastructure
         public override bool Equals(object obj)
         {
             if (obj is ObjectId)
+            {
                 return Equals((ObjectId) obj);
+            }
             return false;
         }
 
@@ -458,11 +487,15 @@ namespace IFramework.Infrastructure
         public static byte[] ParseHexString(string s)
         {
             if (s == null)
+            {
                 throw new ArgumentNullException("s");
+            }
 
             byte[] bytes;
             if ((s.Length & 1) != 0)
+            {
                 s = "0" + s; // make length of s even
+            }
             bytes = new byte[s.Length / 2];
             for (var i = 0; i < bytes.Length; i++)
             {
@@ -475,11 +508,11 @@ namespace IFramework.Infrastructure
                 catch (FormatException e)
                 {
                     throw new FormatException(
-                        string.Format("Invalid hex string {0}. Problem with substring {1} starting at position {2}",
-                            s,
-                            hex,
-                            2 * i),
-                        e);
+                                              string.Format("Invalid hex string {0}. Problem with substring {1} starting at position {2}",
+                                                            s,
+                                                            hex,
+                                                            2 * i),
+                                              e);
                 }
             }
 
@@ -515,9 +548,13 @@ namespace IFramework.Infrastructure
         public static DateTime ToUniversalTime(DateTime dateTime)
         {
             if (dateTime == DateTime.MinValue)
+            {
                 return DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+            }
             if (dateTime == DateTime.MaxValue)
+            {
                 return DateTime.SpecifyKind(DateTime.MaxValue, DateTimeKind.Utc);
+            }
             return dateTime.ToUniversalTime();
         }
     }

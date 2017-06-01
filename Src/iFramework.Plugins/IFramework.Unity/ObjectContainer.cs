@@ -64,8 +64,9 @@ namespace IFramework.Unity
             return this;
         }
 
-        public IContainer RegisterInstance<TInterface>(string name, TInterface instance,
-            Lifetime life = Lifetime.Singleton)
+        public IContainer RegisterInstance<TInterface>(string name,
+                                                       TInterface instance,
+                                                       Lifetime life = Lifetime.Singleton)
             where TInterface : class
         {
             _unityContainer.RegisterInstance(name, instance, GetLifeTimeManager(life));
@@ -77,9 +78,13 @@ namespace IFramework.Unity
         {
             var injectionMembers = GetInjectionParameters(injections);
             if (string.IsNullOrEmpty(name))
+            {
                 _unityContainer.RegisterType(from, to, injectionMembers);
+            }
             else
+            {
                 _unityContainer.RegisterType(from, to, name, injectionMembers);
+            }
             return this;
         }
 
@@ -90,8 +95,11 @@ namespace IFramework.Unity
             return this;
         }
 
-        public IContainer RegisterType(Type from, Type to, string name, Lifetime lifetime,
-            params Injection[] injections)
+        public IContainer RegisterType(Type from,
+                                       Type to,
+                                       string name,
+                                       Lifetime lifetime,
+                                       params Injection[] injections)
         {
             var injectionMembers = GetInjectionParameters(injections);
             _unityContainer.RegisterType(from, to, name, GetLifeTimeManager(lifetime), injectionMembers);
@@ -162,7 +170,9 @@ namespace IFramework.Unity
             LifetimeManager lifetimeManager = null;
             lifetimeManager = Resolve<LifetimeManager>(Configuration.Instance.GetLifetimeManagerKey(lifetime));
             if (lifetimeManager == null)
+            {
                 throw new Exception($"{lifetime} is not supported.");
+            }
             return lifetimeManager;
         }
 
@@ -175,13 +185,14 @@ namespace IFramework.Unity
                 {
                     var constructInjection = injection as ConstructInjection;
                     injectionMembers.Add(new InjectionConstructor(constructInjection.Parameters
-                        .Select(p => p.ParameterValue).ToArray()));
+                                                                                    .Select(p => p.ParameterValue)
+                                                                                    .ToArray()));
                 }
                 else if (injection is ParameterInjection)
                 {
                     var propertyInjection = injection as ParameterInjection;
                     injectionMembers.Add(new InjectionProperty(propertyInjection.ParameterName,
-                        propertyInjection.ParameterValue));
+                                                               propertyInjection.ParameterValue));
                 }
             });
             return injectionMembers.ToArray();
@@ -192,10 +203,7 @@ namespace IFramework.Unity
         {
             var resolverOverrides = new List<ResolverOverride>();
             //resolverOverrides.Add(new ParameterOverride("container", this));
-            parameters.ForEach(parameter =>
-            {
-                resolverOverrides.Add(new ParameterOverride(parameter.Name, parameter.Value));
-            });
+            parameters.ForEach(parameter => { resolverOverrides.Add(new ParameterOverride(parameter.Name, parameter.Value)); });
             return resolverOverrides.ToArray();
         }
     }

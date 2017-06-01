@@ -2,7 +2,5 @@
 
 namespace IFramework.Command
 {
-    public interface ICommandHandlerProvider : IHandlerProvider
-    {
-    }
+    public interface ICommandHandlerProvider : IHandlerProvider { }
 }

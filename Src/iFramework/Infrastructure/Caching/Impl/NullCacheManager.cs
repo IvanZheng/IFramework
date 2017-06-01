@@ -22,9 +22,7 @@
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
         /// <param name="cacheTime">Cache time</param>
-        public virtual void Set(string key, object data, int cacheTime)
-        {
-        }
+        public virtual void Set(string key, object data, int cacheTime) { }
 
         /// <summary>
         ///     Gets a value indicating whether the value associated with the specified key is cached
@@ -40,23 +38,17 @@
         ///     Removes the value with the specified key from the cache
         /// </summary>
         /// <param name="key">/key</param>
-        public virtual void Remove(string key)
-        {
-        }
+        public virtual void Remove(string key) { }
 
         /// <summary>
         ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
-        public virtual void RemoveByPattern(string pattern)
-        {
-        }
+        public virtual void RemoveByPattern(string pattern) { }
 
         /// <summary>
         ///     Clear all cache data
         /// </summary>
-        public virtual void Clear()
-        {
-        }
+        public virtual void Clear() { }
     }
 }

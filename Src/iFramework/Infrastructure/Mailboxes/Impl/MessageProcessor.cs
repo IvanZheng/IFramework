@@ -15,8 +15,8 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         private readonly ILogger _logger;
 
         private readonly BlockingCollection<IMailboxProcessorCommand> _mailboxProcessorCommands;
-        private Task _processComandTask;
         private readonly IProcessingMessageScheduler<IMessageContext> _processingMessageScheduler;
+        private Task _processComandTask;
 
         public MessageProcessor(IProcessingMessageScheduler<IMessageContext> scheduler, int batchCount = 100)
         {
@@ -33,11 +33,11 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         public void Start()
         {
             _processComandTask = Task.Factory.StartNew(
-                cs => ProcessMailboxProcessorCommands(cs as CancellationTokenSource),
-                _cancellationSource,
-                _cancellationSource.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                                                       cs => ProcessMailboxProcessorCommands(cs as CancellationTokenSource),
+                                                       _cancellationSource,
+                                                       _cancellationSource.Token,
+                                                       TaskCreationOptions.LongRunning,
+                                                       TaskScheduler.Default);
         }
 
         public void Stop()
@@ -57,13 +57,18 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         private void ProcessMailboxProcessorCommands(CancellationTokenSource cancellationSource)
         {
             while (!cancellationSource.IsCancellationRequested)
+            {
                 try
                 {
                     var command = _mailboxProcessorCommands.Take(cancellationSource.Token);
                     if (command is ProcessMessageCommand<IMessageContext>)
+                    {
                         ExecuteProcessCommand((ProcessMessageCommand<IMessageContext>) command);
+                    }
                     else if (command is CompleteMessageCommand<IMessageContext>)
+                    {
                         CompleteProcessMessage((CompleteMessageCommand<IMessageContext>) command);
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -77,6 +82,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 {
                     _logger?.Error(ex.GetBaseException().Message, ex);
                 }
+            }
         }
 
 
@@ -84,7 +90,9 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         {
             var mailbox = command.Mailbox;
             if (mailbox.MessageQueue.Count == 0)
+            {
                 MailboxDictionary.TryRemove(mailbox.Key);
+            }
         }
 
         private void HandleMailboxEmpty(ProcessingMailbox<IMessageContext> mailbox)
@@ -101,11 +109,11 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             if (!string.IsNullOrWhiteSpace(key))
             {
                 var mailbox = MailboxDictionary.GetOrAdd(key,
-                    x =>
-                    {
-                        return new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler,
-                            processingMessageFunc, HandleMailboxEmpty, _batchCount);
-                    });
+                                                         x =>
+                                                         {
+                                                             return new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler,
+                                                                                                           processingMessageFunc, HandleMailboxEmpty, _batchCount);
+                                                         });
                 mailbox.EnqueueMessage(messageContext);
                 _processingMessageScheduler.ScheduleMailbox(mailbox);
             }

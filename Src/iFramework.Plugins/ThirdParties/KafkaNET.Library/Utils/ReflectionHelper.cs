@@ -10,7 +10,9 @@ namespace Kafka.Client.Utils
         {
             object o1;
             if (string.IsNullOrEmpty(className))
+            {
                 return default(T);
+            }
 
             var t1 = Type.GetType(className, true);
             if (t1.IsGenericType)
@@ -24,8 +26,10 @@ namespace Kafka.Client.Utils
             o1 = Activator.CreateInstance(t1);
             var obj = o1 as T;
             if (obj == null)
+            {
                 throw new ArgumentException("Unable to instantiate class " + className + ", matching " +
                                             typeof(T).FullName);
+            }
 
             return obj;
         }

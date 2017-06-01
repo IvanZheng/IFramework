@@ -6,9 +6,7 @@ namespace IFramework.Specifications
     public class OrSpecification<T> : CompositeSpecification<T>
         // where T : class, IEntity
     {
-        public OrSpecification(ISpecification<T> left, ISpecification<T> right) : base(left, right)
-        {
-        }
+        public OrSpecification(ISpecification<T> left, ISpecification<T> right) : base(left, right) { }
 
 
         public override Expression<Func<T, bool>> GetExpression()

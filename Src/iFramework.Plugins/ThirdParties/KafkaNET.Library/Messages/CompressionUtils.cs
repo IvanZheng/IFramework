@@ -33,8 +33,8 @@ namespace Kafka.Client.Messages
                             //if (Logger.IsDebugEnabled)
                             {
                                 Logger.DebugFormat(
-                                    "Allocating BufferedMessageSet of size = {0}",
-                                    MessageSet.GetMessageSetSize(messages));
+                                                   "Allocating BufferedMessageSet of size = {0}",
+                                                   MessageSet.GetMessageSetSize(messages));
                             }
 
                             var bufferedMessageSet = new BufferedMessageSet(messages, partition);
@@ -50,7 +50,7 @@ namespace Kafka.Client.Messages
                                 catch (IOException ex)
                                 {
                                     Logger.ErrorFormat("Error while writing to the GZIP stream {0}",
-                                        ex.FormatException());
+                                                       ex.FormatException());
                                     throw;
                                 }
                             }
@@ -65,8 +65,8 @@ namespace Kafka.Client.Messages
 
                 case CompressionCodecs.SnappyCompressionCodec:
                     Logger.DebugFormat(
-                        "Allocating BufferedMessageSet of size = {0}",
-                        MessageSet.GetMessageSetSize(messages));
+                                       "Allocating BufferedMessageSet of size = {0}",
+                                       MessageSet.GetMessageSetSize(messages));
 
                     var messageSet = new BufferedMessageSet(messages, partition);
                     using (var inputStream = new MemoryStream(messageSet.SetSize))
@@ -90,7 +90,7 @@ namespace Kafka.Client.Messages
 
                 default:
                     throw new UnknownCodecException(string.Format(CultureInfo.CurrentCulture, "Unknown Codec: {0}",
-                        compressionCodec));
+                                                                  compressionCodec));
             }
         }
 
@@ -115,7 +115,7 @@ namespace Kafka.Client.Messages
                                 catch (IOException ex)
                                 {
                                     Logger.InfoFormat("Error while reading from the GZIP input stream: {0}",
-                                        ex.FormatException());
+                                                      ex.FormatException());
                                     throw;
                                 }
                             }
@@ -142,13 +142,13 @@ namespace Kafka.Client.Messages
                     catch (Exception ex)
                     {
                         Logger.ErrorFormat("Error while reading from the Snappy input stream  {0}",
-                            ex.FormatException());
+                                           ex.FormatException());
                         throw;
                     }
 
                 default:
                     throw new UnknownCodecException(string.Format(CultureInfo.CurrentCulture, "Unknown Codec: {0}",
-                        message.CompressionCodec));
+                                                                  message.CompressionCodec));
             }
         }
     }

@@ -42,9 +42,7 @@ namespace IFramework.Infrastructure
         }
 
         public ApiResult(object errorCode, string message = null)
-            : base(errorCode, message)
-        {
-        }
+            : base(errorCode, message) { }
 
         public TResult Result { get; set; }
     }
@@ -52,8 +50,8 @@ namespace IFramework.Infrastructure
     public static class ExceptionManager
     {
         private static readonly ILogger _logger = IoCFactory.IsInit()
-            ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager))
-            : null;
+                                                      ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager))
+                                                      : null;
 
         private static string _UnKnownMessage = ErrorCode.UnknownError.ToString();
 
@@ -68,7 +66,9 @@ namespace IFramework.Infrastructure
             var unknownErrorMessage = _UnKnownMessage;
             var compliationSection = Configuration.GetCompliationSection();
             if (compliationSection != null && compliationSection.Debug)
+            {
                 unknownErrorMessage = ex.Message;
+            }
             return unknownErrorMessage;
         }
 
@@ -79,10 +79,10 @@ namespace IFramework.Infrastructure
         }
 
         public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
-            bool continueOnCapturedContext = false,
-            bool needRetry = false,
-            int retryCount = 50,
-            Func<Exception, string> getExceptionMessage = null)
+                                                               bool continueOnCapturedContext = false,
+                                                               bool needRetry = false,
+                                                               int retryCount = 50,
+                                                               Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -164,10 +164,10 @@ namespace IFramework.Infrastructure
         }
 
         public static async Task<ApiResult> ProcessAsync(Func<Task> func,
-            bool continueOnCapturedContext = false,
-            bool needRetry = false,
-            int retryCount = 50,
-            Func<Exception, string> getExceptionMessage = null)
+                                                         bool continueOnCapturedContext = false,
+                                                         bool needRetry = false,
+                                                         int retryCount = 50,
+                                                         Func<Exception, string> getExceptionMessage = null)
         {
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
             ApiResult apiResult = null;
@@ -243,8 +243,10 @@ namespace IFramework.Infrastructure
             #endregion
         }
 
-        public static ApiResult Process(Action action, bool needRetry = false, int retryCount = 50,
-            Func<Exception, string> getExceptionMessage = null)
+        public static ApiResult Process(Action action,
+                                        bool needRetry = false,
+                                        int retryCount = 50,
+                                        Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -278,8 +280,10 @@ namespace IFramework.Infrastructure
             return apiResult;
         }
 
-        public static ApiResult<T> Process<T>(Func<T> func, bool needRetry = false, int retryCount = 50,
-            Func<Exception, string> getExceptionMessage = null)
+        public static ApiResult<T> Process<T>(Func<T> func,
+                                              bool needRetry = false,
+                                              int retryCount = 50,
+                                              Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -290,9 +294,13 @@ namespace IFramework.Infrastructure
                     var result = func();
                     needRetry = false;
                     if (result != null)
+                    {
                         apiResult = new ApiResult<T>(result);
+                    }
                     else
+                    {
                         apiResult = new ApiResult<T>();
+                    }
                 }
                 catch (Exception ex)
                 {

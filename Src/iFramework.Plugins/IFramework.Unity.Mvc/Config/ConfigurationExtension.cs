@@ -8,10 +8,10 @@ namespace IFramework.Config
         public static Configuration UseUnityMvc(this Configuration configuration)
         {
             IoCFactory.Instance
-                .CurrentContainer
-                .RegisterType<LifetimeManager, PerRequestLifetimeManager>(
-                    configuration.GetLifetimeManagerKey(Lifetime.PerRequest)
-                );
+                      .CurrentContainer
+                      .RegisterType<LifetimeManager, PerRequestLifetimeManager>(
+                                                                                configuration.GetLifetimeManagerKey(Lifetime.PerRequest)
+                                                                               );
             return configuration;
         }
     }

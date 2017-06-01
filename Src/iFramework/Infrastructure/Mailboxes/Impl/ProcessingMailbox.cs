@@ -9,17 +9,17 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         where TMessage : class
     {
         private static int _processedCount;
-        private readonly IProcessingMessageScheduler<TMessage> _scheduler;
         private readonly int _batchCount;
         private readonly Action<ProcessingMailbox<TMessage>> _handleMailboxEmpty;
-        private volatile int _isHandlingMessage;
         private readonly Func<TMessage, Task> _processMessage;
+        private readonly IProcessingMessageScheduler<TMessage> _scheduler;
+        private volatile int _isHandlingMessage;
 
         public ProcessingMailbox(string key,
-            IProcessingMessageScheduler<TMessage> scheduler,
-            Func<TMessage, Task> processingMessage,
-            Action<ProcessingMailbox<TMessage>> handleMailboxEmpty,
-            int batchCount = 100)
+                                 IProcessingMessageScheduler<TMessage> scheduler,
+                                 Func<TMessage, Task> processingMessage,
+                                 Action<ProcessingMailbox<TMessage>> handleMailboxEmpty,
+                                 int batchCount = 100)
         {
             _batchCount = batchCount;
             _scheduler = scheduler;
@@ -51,20 +51,28 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             TMessage processingMessage = null;
             var processedCount = 0;
             while (processedCount < _batchCount)
+            {
                 try
                 {
                     processingMessage = null;
                     if (MessageQueue.TryDequeue(out processingMessage))
+                    {
                         await _processMessage(processingMessage).ConfigureAwait(false);
+                    }
                     else
+                    {
                         break;
+                    }
                 }
                 finally
                 {
                     processedCount++;
                     if (processingMessage != null)
+                    {
                         Interlocked.Add(ref _processedCount, 1);
+                    }
                 }
+            }
             ExitHandlingMessage();
         }
 
@@ -79,7 +87,9 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             else
             {
                 if (_handleMailboxEmpty != null)
+                {
                     _handleMailboxEmpty(this);
+                }
             }
         }
 

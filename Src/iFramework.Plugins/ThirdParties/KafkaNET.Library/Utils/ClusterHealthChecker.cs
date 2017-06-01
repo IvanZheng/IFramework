@@ -65,24 +65,31 @@ namespace Kafka.Client.Utils
                 catch (KeeperException e)
                 {
                     if (e.ErrorCode == KeeperException.Code.NONODE)
+                    {
                         zkTopics = null;
+                    }
                     else
+                    {
                         throw;
+                    }
                 }
 
                 if (zkTopics == null)
+                {
                     throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                        "Can't automatically retrieve topic list from ZooKeeper state"));
+                                                              "Can't automatically retrieve topic list from ZooKeeper state"));
+                }
 
                 topics = zkTopics.ToList();
             }
 
             Logger.InfoFormat("Collecting topics metadata from ZooKeeper state for topics {0}",
-                string.Join(",", topics));
+                              string.Join(",", topics));
 
             var topicMetadataMap = new Dictionary<string, Dictionary<int, TopicPartitionState>>();
 
             foreach (var topic in topics)
+            {
                 try
                 {
                     Logger.DebugFormat("Collecting topic information from ZooKeeper state for topic {0}", topic);
@@ -91,19 +98,20 @@ namespace Kafka.Client.Utils
                 catch (NoPartitionsForTopicException exc)
                 {
                     Logger.ErrorFormat("Could not find any partitions for topic {0}. Error: {1}", exc.Topic,
-                        exc.FormatException());
+                                       exc.FormatException());
                     topicMetadataMap[topic] = new Dictionary<int, TopicPartitionState>();
                 }
                 catch (Exception exc)
                 {
                     Logger.ErrorFormat(
-                        "Unexpected error when trying to collect topic '{0}' metadata from ZooKeeper state. Error: {1}",
-                        topic, exc.FormatException());
+                                       "Unexpected error when trying to collect topic '{0}' metadata from ZooKeeper state. Error: {1}",
+                                       topic, exc.FormatException());
                     throw;
                 }
+            }
 
             Logger.InfoFormat("Completed collecting topics metadata from ZooKeeper state for topics {0}",
-                string.Join(",", topics));
+                              string.Join(",", topics));
 
             return topicMetadataMap;
         }
@@ -125,20 +133,23 @@ namespace Kafka.Client.Utils
         {
             // retrive latest brokers info
             if (brokers == null)
+            {
                 RefreshKafkaBrokersInfo();
+            }
 
             brokers = brokers ?? kafkaCluster.Brokers.Values;
             var brokersConnectionString = string.Join(", ",
-                kafkaCluster.Brokers.Values.Select(x => string.Join(":", x.Id, x.Host, x.Port)));
+                                                      kafkaCluster.Brokers.Values.Select(x => string.Join(":", x.Id, x.Host, x.Port)));
             Logger.InfoFormat("Collecting brokers alive state for brokers {0}", brokersConnectionString);
 
             var brokerAliveStateMap = new SortedDictionary<int, bool>();
             foreach (var broker in brokers)
+            {
                 try
                 {
                     Logger.DebugFormat("Sending request to broker #{0} {1}:{2}", broker.Id, broker.Host, broker.Port);
                     using (var kafkaConnection = new KafkaConnection(broker.Host, broker.Port, config.BufferSize,
-                        config.SendTimeout, config.ReceiveTimeout, int.MaxValue))
+                                                                     config.SendTimeout, config.ReceiveTimeout, int.MaxValue))
                     {
                         // send topic offset request for random non-existing topic
                         var requestInfos = new Dictionary<string, List<PartitionOffsetRequestInfo>>();
@@ -154,9 +165,10 @@ namespace Kafka.Client.Utils
                 catch (Exception exc)
                 {
                     Logger.WarnFormat("Failed to send request to broker #{0} {1}:{2}. Error:", broker.Id, broker.Host,
-                        broker.Port, exc.FormatException());
+                                      broker.Port, exc.FormatException());
                     brokerAliveStateMap[broker.Id] = false;
                 }
+            }
 
             Logger.InfoFormat("Completed collecting brokers alive state for brokers {0}", brokersConnectionString);
 
@@ -194,7 +206,7 @@ namespace Kafka.Client.Utils
             var hostList = GetHosts(config.ZooKeeper.ZkConnect);
 
             Logger.InfoFormat("Collecting ZooKeeper VMs alive state by connecting over TCP to machines {0}",
-                config.ZooKeeper.ZkConnect);
+                              config.ZooKeeper.ZkConnect);
 
             var zkaliveStateMap = new Dictionary<string, IDictionary<string, bool>>();
             foreach (var host in hostList)
@@ -206,13 +218,13 @@ namespace Kafka.Client.Utils
                     try
                     {
                         Logger.DebugFormat("Sending request to ZooKeeper VM host '{0}' IP '{1}'", host.Item1,
-                            hostIpStr);
+                                           hostIpStr);
                         zkaliveStateMap[host.Item1][hostIpStr] = PingZooKeeperHost(hostIpAddress);
                     }
                     catch (Exception exc)
                     {
                         Logger.WarnFormat("Failed Sending request to ZooKeeper VM host '{0}' IP '{1}'. Error: ",
-                            host.Item1, hostIpStr, exc.FormatException());
+                                          host.Item1, hostIpStr, exc.FormatException());
                         zkaliveStateMap[host.Item1][hostIpStr] = false;
                         errorList.Add(exc);
                     }
@@ -220,7 +232,7 @@ namespace Kafka.Client.Utils
             }
 
             Logger.InfoFormat("Completed Collecting ZooKeeper VMs alive state by connecting over TCP to machines {0}",
-                config.ZooKeeper.ZkConnect);
+                              config.ZooKeeper.ZkConnect);
 
             return zkaliveStateMap;
         }
@@ -266,15 +278,19 @@ namespace Kafka.Client.Utils
                         {
                             var response = Encoding.ASCII.GetString(readBuffer, 0, bytesRead);
                             Logger.InfoFormat(
-                                "Recieved a response to ruok command from ZooKeeper host {0}. Response: {1}",
-                                addr.ToString(), response);
+                                              "Recieved a response to ruok command from ZooKeeper host {0}. Response: {1}",
+                                              addr.ToString(), response);
                             if (response.Contains(PingTelNetResponse))
+                            {
                                 gotOkResponse = true;
+                            }
                         }
                     }
 
                     if (!gotOkResponse)
+                    {
                         throw new Exception("No 'imok' recieved right after connected to ZooKeeper host");
+                    }
                 }
                 finally
                 {
@@ -282,9 +298,7 @@ namespace Kafka.Client.Utils
                     {
                         tcpClient.GetStream().Close();
                     }
-                    catch (Exception)
-                    {
-                    }
+                    catch (Exception) { }
                 }
             }
 
@@ -315,7 +329,7 @@ namespace Kafka.Client.Utils
         {
             Logger.InfoFormat("Connecting to zookeeper instance at {0}", config.ZooKeeper.ZkConnect);
             zkClient = new ZooKeeperClient(config.ZooKeeper.ZkConnect, config.ZooKeeper.ZkSessionTimeoutMs,
-                ZooKeeperStringSerializer.Serializer, config.ZooKeeper.ZkConnectionTimeoutMs);
+                                           ZooKeeperStringSerializer.Serializer, config.ZooKeeper.ZkConnectionTimeoutMs);
             zkClient.Connect();
         }
 
@@ -330,12 +344,15 @@ namespace Kafka.Client.Utils
                 var length = str.LastIndexOf(':');
                 if (length >= 0)
                 {
-                    if (length < str.Length - 1) port = int.Parse(str.Substring(length + 1));
+                    if (length < str.Length - 1)
+                    {
+                        port = int.Parse(str.Substring(length + 1));
+                    }
                     host = str.Substring(0, length);
                 }
 
                 list.Add(new Tuple<string, IList<IPEndPoint>>(host,
-                    ResolveHostToIpAddresses(host).Select(address => new IPEndPoint(address, port)).ToList()));
+                                                              ResolveHostToIpAddresses(host).Select(address => new IPEndPoint(address, port)).ToList()));
             }
 
             return list;
@@ -349,10 +366,14 @@ namespace Kafka.Client.Utils
         protected override void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             if (disposed)
+            {
                 return;
+            }
 
             Logger.Info("ClusterHealthChecker shutting down");
 
@@ -365,13 +386,17 @@ namespace Kafka.Client.Utils
                 lock (shuttingDownLock)
                 {
                     if (disposed)
+                    {
                         return;
+                    }
 
                     disposed = true;
                 }
 
                 if (zkClient != null)
+                {
                     zkClient.Dispose();
+                }
             }
             catch (Exception exc)
             {

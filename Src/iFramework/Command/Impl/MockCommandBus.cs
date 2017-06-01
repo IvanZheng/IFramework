@@ -9,17 +9,18 @@ namespace IFramework.Command.Impl
 {
     public class MockCommandBus : ICommandBus
     {
-        public void SendMessageStates(IEnumerable<MessageState> messageStates)
-        {
-        }
+        public void SendMessageStates(IEnumerable<MessageState> messageStates) { }
 
         public Task<MessageResponse> SendAsync(ICommand command, bool needReply = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<MessageResponse> SendAsync(ICommand command, CancellationToken sendCancellationToken,
-            TimeSpan sendTimeout, CancellationToken replyCancellationToken, bool needReply = true)
+        public Task<MessageResponse> SendAsync(ICommand command,
+                                               CancellationToken sendCancellationToken,
+                                               TimeSpan sendTimeout,
+                                               CancellationToken replyCancellationToken,
+                                               bool needReply = true)
         {
             throw new NotImplementedException();
         }
@@ -29,16 +30,14 @@ namespace IFramework.Command.Impl
             throw new NotImplementedException();
         }
 
-        public void Start()
-        {
-        }
+        public void Start() { }
 
-        public void Stop()
-        {
-        }
+        public void Stop() { }
 
-        public IMessageContext WrapCommand(ICommand command, bool needReply = false, SagaInfo sagaInfo = null,
-            string producer = null)
+        public IMessageContext WrapCommand(ICommand command,
+                                           bool needReply = false,
+                                           SagaInfo sagaInfo = null,
+                                           string producer = null)
         {
             throw new NotImplementedException();
         }
@@ -53,8 +52,11 @@ namespace IFramework.Command.Impl
             throw new NotImplementedException();
         }
 
-        public Task<MessageResponse> StartSaga(ICommand command, CancellationToken sendCancellationToken,
-            TimeSpan sendTimeout, CancellationToken replyCancellationToken, string sagaId = null)
+        public Task<MessageResponse> StartSaga(ICommand command,
+                                               CancellationToken sendCancellationToken,
+                                               TimeSpan sendTimeout,
+                                               CancellationToken replyCancellationToken,
+                                               string sagaId = null)
         {
             throw new NotImplementedException();
         }

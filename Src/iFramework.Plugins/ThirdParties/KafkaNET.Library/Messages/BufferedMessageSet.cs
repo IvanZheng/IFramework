@@ -33,14 +33,10 @@ namespace Kafka.Client.Messages
         /// </summary>
         /// <param name="messages">The list of messages.</param>
         public BufferedMessageSet(IEnumerable<Message> messages, int partition)
-            : this(messages, (short) ErrorMapping.NoError, partition)
-        {
-        }
+            : this(messages, (short) ErrorMapping.NoError, partition) { }
 
         public BufferedMessageSet(IEnumerable<Message> messages, short error, int partition)
-            : this(messages, error, 0, partition)
-        {
-        }
+            : this(messages, error, 0, partition) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="BufferedMessageSet" /> class.
@@ -126,10 +122,14 @@ namespace Kafka.Client.Messages
             get
             {
                 if (state != ConsumerIteratorState.Ready && state != ConsumerIteratorState.Done)
+                {
                     throw new NoSuchElementException();
+                }
 
                 if (nextItem != null)
+                {
                     return nextItem;
+                }
 
                 throw new IllegalStateException("Expected item but none found.");
             }
@@ -141,7 +141,9 @@ namespace Kafka.Client.Messages
         public bool MoveNext()
         {
             if (state == ConsumerIteratorState.Failed)
+            {
                 throw new IllegalStateException("Iterator is in failed state");
+            }
 
             switch (state)
             {
@@ -161,15 +163,15 @@ namespace Kafka.Client.Messages
             innerDone = true;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
         public static BufferedMessageSet ParseFrom(KafkaBinaryReader reader, int size, int partitionID)
         {
             var bytesLeft = size;
             if (bytesLeft == 0)
+            {
                 return new BufferedMessageSet(Enumerable.Empty<Message>(), partitionID);
+            }
 
             var messages = new List<Message>();
 
@@ -177,14 +179,18 @@ namespace Kafka.Client.Messages
             {
                 // Already read last message
                 if (bytesLeft < 12)
+                {
                     break;
+                }
 
                 var offset = reader.ReadInt64();
                 var msgSize = reader.ReadInt32();
                 bytesLeft -= 12;
 
                 if (msgSize > bytesLeft || msgSize < 0)
+                {
                     break;
+                }
 
                 var msg = Message.ParseFrom(reader, offset, msgSize, partitionID);
                 bytesLeft -= msgSize;
@@ -192,7 +198,9 @@ namespace Kafka.Client.Messages
             } while (bytesLeft > 0);
 
             if (bytesLeft > 0)
+            {
                 reader.ReadBytes(bytesLeft);
+            }
 
             return new BufferedMessageSet(messages, partitionID);
         }
@@ -269,7 +277,9 @@ namespace Kafka.Client.Messages
         private MessageAndOffset MakeNextOuter()
         {
             if (topIterPosition >= Messages.Count())
+            {
                 return AllDone();
+            }
 
             var newMessage = Messages.ElementAt(topIterPosition);
             lastMessageSize = newMessage.Size;
@@ -278,8 +288,8 @@ namespace Kafka.Client.Messages
             {
                 case CompressionCodecs.NoCompressionCodec:
                     Logger.DebugFormat(
-                        "Message is uncompressed. Valid byte count = {0}",
-                        currValidBytes);
+                                       "Message is uncompressed. Valid byte count = {0}",
+                                       currValidBytes);
                     innerIter = null;
                     innerDone = true;
                     currValidBytes += 4 + newMessage.Size;
@@ -304,7 +314,9 @@ namespace Kafka.Client.Messages
                     var messageAndOffset = innerIter.Current;
                     innerDone = !innerIter.MoveNext();
                     if (innerDone)
+                    {
                         currValidBytes += 4 + lastMessageSize;
+                    }
 
                     return new MessageAndOffset(messageAndOffset.Message, currValidBytes);
             }

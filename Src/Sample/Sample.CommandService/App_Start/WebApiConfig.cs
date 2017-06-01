@@ -23,10 +23,10 @@ namespace Sample.CommandService
             config.Formatters.Insert(0, new MultipartMediaTypeFormatter());
             config.Formatters.Insert(0, new CommandMediaTypeFormatter());
             config.Routes.MapHttpRoute(
-                "DefaultApi",
-                "api/{controller}/{command}",
-                new {command = RouteParameter.Optional}
-            );
+                                       "DefaultApi",
+                                       "api/{controller}/{command}",
+                                       new {command = RouteParameter.Optional}
+                                      );
             config.EnableIPRestrict();
             // Uncomment the following line of code to enable query support for actions with an IQueryable or IQueryable<T> return type.
             // To avoid processing unexpected or malicious queries, use the validation settings on QueryableAttribute to validate incoming queries.

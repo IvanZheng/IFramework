@@ -12,7 +12,9 @@ namespace IFramework.AspNet
                 var cookieValue = defaultValue;
                 var cookie = controller.Request.Cookies[key];
                 if (cookie != null)
+                {
                     cookieValue = cookie.Value;
+                }
                 return cookieValue;
             }
             catch (Exception)

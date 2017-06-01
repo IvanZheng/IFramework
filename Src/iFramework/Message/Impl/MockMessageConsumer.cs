@@ -4,9 +4,7 @@ namespace IFramework.Message.Impl
 {
     public class MockMessageConsumer : IMessageConsumer
     {
-        public void Start()
-        {
-        }
+        public void Start() { }
 
         public string GetStatus()
         {
@@ -16,12 +14,8 @@ namespace IFramework.Message.Impl
         public decimal MessageCount => 0;
 
 
-        public void Stop()
-        {
-        }
+        public void Stop() { }
 
-        public void EnqueueMessage(object message)
-        {
-        }
+        public void EnqueueMessage(object message) { }
     }
 }

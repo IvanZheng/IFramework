@@ -14,14 +14,10 @@ namespace Kafka.Client.Exceptions
             Topic = topic;
         }
 
-        public OffsetIsUnknowException()
-        {
-        }
+        public OffsetIsUnknowException() { }
 
         public OffsetIsUnknowException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
         public int? BrokerId { get; set; }
 

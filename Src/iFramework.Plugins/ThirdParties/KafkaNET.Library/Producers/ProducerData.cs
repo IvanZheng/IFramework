@@ -58,9 +58,7 @@ namespace Kafka.Client.Producers
         /// <param name="key">The partitioning key.</param>
         /// <param name="data">The data to send on the topic.</param>
         public ProducerData(string topic, TKey key, TData data)
-            : this(topic, key, new List<TData> {data})
-        {
-        }
+            : this(topic, key, new List<TData> {data}) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ProducerData{TKey,TData}" /> class.
@@ -88,9 +86,7 @@ namespace Kafka.Client.Producers
         ///     The data to send on the topic.
         /// </param>
         public ProducerData(string topic, TData data)
-            : this(topic, new List<TData> {data})
-        {
-        }
+            : this(topic, new List<TData> {data}) { }
 
         /// <summary>
         ///     Gets topic.

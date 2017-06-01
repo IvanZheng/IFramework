@@ -13,19 +13,13 @@ namespace Kafka.Client.Exceptions
             BrokerId = brokerId;
         }
 
-        public BrokerNotAvailableException()
-        {
-        }
+        public BrokerNotAvailableException() { }
 
         public BrokerNotAvailableException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
         public BrokerNotAvailableException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+            : base(info, context) { }
 
         public int? BrokerId { get; set; }
     }

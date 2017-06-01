@@ -10,25 +10,18 @@ namespace IFramework.Message.Impl
             return false;
         }
 
-        public void RemoveSentCommand(string commandId)
-        {
-        }
+        public void RemoveSentCommand(string commandId) { }
 
-        public void RemovePublishedEvent(string eventId)
-        {
-        }
+        public void RemovePublishedEvent(string eventId) { }
 
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
 
-        public void HandleEvent(IMessageContext eventContext, string subscriptionName,
-            IEnumerable<IMessageContext> commandContexts,
-            IEnumerable<IMessageContext> messageContexts)
-        {
-        }
+        public void HandleEvent(IMessageContext eventContext,
+                                string subscriptionName,
+                                IEnumerable<IMessageContext> commandContexts,
+                                IEnumerable<IMessageContext> messageContexts) { }
 
 
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
@@ -43,32 +36,26 @@ namespace IFramework.Message.Impl
             return null;
         }
 
-        public void Rollback()
-        {
-        }
+        public void Rollback() { }
 
-        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null,
-            params IMessageContext[] eventContexts)
-        {
-        }
+        public void SaveFailedCommand(IMessageContext commandContext,
+                                      Exception ex = null,
+                                      params IMessageContext[] eventContexts) { }
 
-        public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e,
-            params IMessageContext[] messageContexts)
-        {
-        }
+        public void SaveFailHandledEvent(IMessageContext eventContext,
+                                         string subscriptionName,
+                                         Exception e,
+                                         params IMessageContext[] messageContexts) { }
 
-        public void SaveEvent(IMessageContext eventContext)
-        {
-        }
+        public void SaveEvent(IMessageContext eventContext) { }
 
         public CommandHandledInfo GetCommandHandledInfo(string commandId)
         {
             return null;
         }
 
-        public void SaveCommand(IMessageContext commandContext, object result = null,
-            params IMessageContext[] eventContexts)
-        {
-        }
+        public void SaveCommand(IMessageContext commandContext,
+                                object result = null,
+                                params IMessageContext[] eventContexts) { }
     }
 }

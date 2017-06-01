@@ -6,17 +6,11 @@ namespace IFramework.Event.Impl
 {
     public class MockEventBus : IEventBus
     {
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
-        public void Publish<TMessage>(TMessage @event) where TMessage : IEvent
-        {
-        }
+        public void Publish<TMessage>(TMessage @event) where TMessage : IEvent { }
 
-        public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent
-        {
-        }
+        public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent { }
 
         public IEnumerable<IEvent> GetEvents()
         {
@@ -24,9 +18,7 @@ namespace IFramework.Event.Impl
         }
 
 
-        public void ClearMessages()
-        {
-        }
+        public void ClearMessages() { }
 
         public void PublishAnyway(params IEvent[] events)
         {
@@ -58,8 +50,6 @@ namespace IFramework.Event.Impl
             throw new NotImplementedException();
         }
 
-        public void Commit()
-        {
-        }
+        public void Commit() { }
     }
 }

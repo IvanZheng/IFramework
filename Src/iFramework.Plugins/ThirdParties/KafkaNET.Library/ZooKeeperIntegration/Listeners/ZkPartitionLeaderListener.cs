@@ -9,20 +9,24 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
     internal class ZkPartitionLeaderListener<TData> : IZooKeeperDataListener
     {
         public static ILogger Logger = IoCFactory.Resolve<ILoggerFactory>()
-            .Create(typeof(ZkPartitionLeaderListener<TData>));
+                                                 .Create(typeof(ZkPartitionLeaderListener<TData>));
 
         private readonly Dictionary<string, int> _partitionLeaderMap;
 
         private readonly ZKRebalancerListener<TData> _rebalancer;
 
         public ZkPartitionLeaderListener(ZKRebalancerListener<TData> rebalancer,
-            Dictionary<string, int> partitionLeaderMap = null)
+                                         Dictionary<string, int> partitionLeaderMap = null)
         {
             _rebalancer = rebalancer;
             if (partitionLeaderMap != null)
+            {
                 _partitionLeaderMap = new Dictionary<string, int>(partitionLeaderMap);
+            }
             else
+            {
                 _partitionLeaderMap = new Dictionary<string, int>();
+            }
         }
 
         public void HandleDataChange(ZooKeeperDataChangedEventArgs args)
@@ -42,8 +46,8 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                 if (!_partitionLeaderMap.ContainsKey(nodePath) || _partitionLeaderMap[nodePath] != parsedLeader)
                 {
                     var currentLeader = _partitionLeaderMap.ContainsKey(nodePath)
-                        ? _partitionLeaderMap[nodePath].ToString()
-                        : "null";
+                                            ? _partitionLeaderMap[nodePath].ToString()
+                                            : "null";
                     Logger.Info("Performing rebalancing. Leader value for path: " + nodePath + " has changed from " +
                                 currentLeader + " to " + parsedLeader);
                     _partitionLeaderMap[nodePath] = parsedLeader;

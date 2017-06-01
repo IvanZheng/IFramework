@@ -28,7 +28,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         {
             var items = GetItems();
             if (items == null)
+            {
                 return default(T);
+            }
 
             return (T) items[key];
         }
@@ -43,13 +45,21 @@ namespace IFramework.Infrastructure.Caching.Impl
         {
             var items = GetItems();
             if (items == null)
+            {
                 return;
+            }
 
             if (data != null)
+            {
                 if (items.Contains(key))
+                {
                     items[key] = data;
+                }
                 else
+                {
                     items.Add(key, data);
+                }
+            }
         }
 
         /// <summary>
@@ -61,7 +71,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         {
             var items = GetItems();
             if (items == null)
+            {
                 return false;
+            }
 
             return items[key] != null;
         }
@@ -74,7 +86,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         {
             var items = GetItems();
             if (items == null)
+            {
                 return;
+            }
 
             items.Remove(key);
         }
@@ -87,17 +101,25 @@ namespace IFramework.Infrastructure.Caching.Impl
         {
             var items = GetItems();
             if (items == null)
+            {
                 return;
+            }
 
             var enumerator = items.GetEnumerator();
             var regex = new Regex(pattern, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
             var keysToRemove = new List<string>();
             while (enumerator.MoveNext())
+            {
                 if (regex.IsMatch(enumerator.Key.ToString()))
+                {
                     keysToRemove.Add(enumerator.Key.ToString());
+                }
+            }
 
             foreach (var key in keysToRemove)
+            {
                 items.Remove(key);
+            }
         }
 
         /// <summary>
@@ -107,15 +129,21 @@ namespace IFramework.Infrastructure.Caching.Impl
         {
             var items = GetItems();
             if (items == null)
+            {
                 return;
+            }
 
             var enumerator = items.GetEnumerator();
             var keysToRemove = new List<string>();
             while (enumerator.MoveNext())
+            {
                 keysToRemove.Add(enumerator.Key.ToString());
+            }
 
             foreach (var key in keysToRemove)
+            {
                 items.Remove(key);
+            }
         }
 
         /// <summary>
@@ -124,7 +152,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         protected virtual IDictionary GetItems()
         {
             if (_context != null)
+            {
                 return _context.Items;
+            }
 
             return null;
         }

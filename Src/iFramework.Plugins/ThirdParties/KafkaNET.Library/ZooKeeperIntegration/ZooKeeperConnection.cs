@@ -31,9 +31,7 @@ namespace Kafka.Client.ZooKeeperIntegration
         ///     The list of ZooKeeper servers.
         /// </param>
         public ZooKeeperConnection(string servers)
-            : this(servers, DefaultSessionTimeout)
-        {
-        }
+            : this(servers, DefaultSessionTimeout) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ZooKeeperConnection" /> class.
@@ -78,14 +76,20 @@ namespace Kafka.Client.ZooKeeperIntegration
             get
             {
                 if (_zkclient == null)
+                {
                     return KeeperState.Unknown;
+                }
                 var currentState = _zkclient.State.State;
                 if (currentState == ZooKeeper.States.CONNECTED.State)
+                {
                     return KeeperState.SyncConnected;
+                }
                 if (currentState == ZooKeeper.States.CLOSED.State
                     || currentState == ZooKeeper.States.NOT_CONNECTED.State
                     || currentState == ZooKeeper.States.CONNECTING.State)
+                {
                     return KeeperState.Disconnected;
+                }
                 return KeeperState.Unknown;
             }
         }
@@ -99,18 +103,22 @@ namespace Kafka.Client.ZooKeeperIntegration
         public void Connect(IWatcher watcher)
         {
             if (disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
 
             lock (syncLock)
             {
                 if (_zkclient != null)
+                {
                     throw new InvalidOperationException("ZooKeeper client has already been started");
+                }
 
                 try
                 {
                     Logger.InfoFormat("Starting ZK client .. with connect handler.. {0}...", watcher.ToString());
                     _zkclient = new ZooKeeper(Servers, new TimeSpan(0, 0, 0, 0, SessionTimeout),
-                        watcher); //new ZkClientState(this.Servers, new TimeSpan(0, 0, 0, 0, this.SessionTimeout), watcher);
+                                              watcher); //new ZkClientState(this.Servers, new TimeSpan(0, 0, 0, 0, this.SessionTimeout), watcher);
                     Logger.InfoFormat("Finish start ZK client .. with connect handler.. {0}...", watcher.ToString());
                 }
                 catch (IOException exc)
@@ -280,12 +288,16 @@ namespace Kafka.Client.ZooKeeperIntegration
         public void Dispose()
         {
             if (disposed)
+            {
                 return;
+            }
 
             lock (shuttingDownLock)
             {
                 if (disposed)
+                {
                     return;
+                }
 
                 disposed = true;
             }
@@ -318,9 +330,13 @@ namespace Kafka.Client.ZooKeeperIntegration
         private void EnsuresNotDisposedAndNotNull()
         {
             if (disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
             if (_zkclient == null)
+            {
                 throw new ApplicationException("internal ZkClient _zkclient is null.");
+            }
         }
     }
 }

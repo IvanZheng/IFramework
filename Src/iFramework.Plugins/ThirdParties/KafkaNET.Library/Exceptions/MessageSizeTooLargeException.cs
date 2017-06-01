@@ -5,12 +5,8 @@ namespace Kafka.Client.Exceptions
 {
     public class MessageSizeTooLargeException : Exception
     {
-        public MessageSizeTooLargeException()
-        {
-        }
+        public MessageSizeTooLargeException() { }
 
-        public MessageSizeTooLargeException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public MessageSizeTooLargeException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

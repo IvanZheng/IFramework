@@ -5,22 +5,14 @@ namespace Kafka.Client.Exceptions
 {
     public class KafkaConsumeException : KafkaClientException
     {
-        public KafkaConsumeException()
-        {
-        }
+        public KafkaConsumeException() { }
 
-        public KafkaConsumeException(string message) : base(message)
-        {
-        }
+        public KafkaConsumeException(string message) : base(message) { }
 
         public KafkaConsumeException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+            : base(info, context) { }
 
         public KafkaConsumeException(string message, ErrorMapping errorCode)
-            : base(message, errorCode)
-        {
-        }
+            : base(message, errorCode) { }
     }
 }

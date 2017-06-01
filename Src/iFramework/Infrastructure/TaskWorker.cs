@@ -19,9 +19,10 @@ namespace IFramework.Infrastructure
     {
         public delegate void WorkDelegate();
 
+        private readonly ILogger _logger;
+
         protected volatile bool _canceled;
         protected CancellationTokenSource _cancellationTokenSource;
-        private readonly ILogger _logger;
         protected object _mutex = new object();
         protected Semaphore _semaphore = new Semaphore(0, 1);
         protected volatile bool _suspend;
@@ -58,15 +59,25 @@ namespace IFramework.Infrastructure
             {
                 WorkerStatus status;
                 if (_canceled)
+                {
                     status = WorkerStatus.Canceled;
+                }
                 else if (_task == null)
+                {
                     status = WorkerStatus.NotStarted;
+                }
                 else if (_suspend)
+                {
                     status = WorkerStatus.Suspended;
+                }
                 else if (_task.Status == TaskStatus.RanToCompletion)
+                {
                     status = WorkerStatus.Completed;
+                }
                 else
+                {
                     status = WorkerStatus.Running;
+                }
                 return status;
             }
         }
@@ -78,13 +89,9 @@ namespace IFramework.Infrastructure
         }
 
 
-        protected virtual void RunPrepare()
-        {
-        }
+        protected virtual void RunPrepare() { }
 
-        protected virtual void RunCompleted()
-        {
-        }
+        protected virtual void RunCompleted() { }
 
         protected virtual void Run()
         {
@@ -92,6 +99,7 @@ namespace IFramework.Infrastructure
             {
                 RunPrepare();
                 while (!_toExit)
+                {
                     try
                     {
                         _cancellationTokenSource.Token.ThrowIfCancellationRequested();
@@ -102,12 +110,18 @@ namespace IFramework.Infrastructure
                         }
                         _cancellationTokenSource.Token.ThrowIfCancellationRequested();
                         if (_workDelegate != null)
+                        {
                             _workDelegate.Invoke();
+                        }
                         else
+                        {
                             Work();
+                        }
                         _cancellationTokenSource.Token.ThrowIfCancellationRequested();
                         if (WorkInterval > 0)
+                        {
                             Sleep(WorkInterval);
+                        }
                     }
                     catch (OperationCanceledException)
                     {
@@ -121,6 +135,7 @@ namespace IFramework.Infrastructure
                     {
                         Console.Write(ex.Message);
                     }
+                }
                 RunCompleted();
             }
             catch (Exception ex)
@@ -131,9 +146,7 @@ namespace IFramework.Infrastructure
             }
         }
 
-        protected virtual void Work()
-        {
-        }
+        protected virtual void Work() { }
 
 
         public virtual void Suspend()
@@ -149,9 +162,7 @@ namespace IFramework.Infrastructure
                 {
                     _semaphore.Release();
                 }
-                catch (Exception)
-                {
-                }
+                catch (Exception) { }
             }
         }
 
@@ -168,7 +179,7 @@ namespace IFramework.Infrastructure
                     _toExit = false;
                     _cancellationTokenSource = new CancellationTokenSource();
                     _task = Task.Factory.StartNew(Run, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning,
-                        TaskScheduler.Default);
+                                                  TaskScheduler.Default);
                 }
                 else
                 {
@@ -181,9 +192,13 @@ namespace IFramework.Infrastructure
         public virtual void Wait(int millionSecondsTimeout = 0)
         {
             if (millionSecondsTimeout > 0)
+            {
                 Task.WaitAll(new[] {_task}, millionSecondsTimeout);
+            }
             else
+            {
                 Task.WaitAll(_task);
+            }
         }
 
         protected virtual void Complete()
@@ -199,9 +214,13 @@ namespace IFramework.Infrastructure
                 {
                     _toExit = true;
                     if (_suspend)
+                    {
                         Resume();
+                    }
                     if (forcibly)
+                    {
                         _cancellationTokenSource.Cancel(true);
+                    }
                     _canceled = true;
                     _task = null;
                 }

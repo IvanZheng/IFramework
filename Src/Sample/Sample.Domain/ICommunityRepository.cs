@@ -2,7 +2,5 @@
 
 namespace Sample.Domain
 {
-    public interface ICommunityRepository : IDomainRepository
-    {
-    }
+    public interface ICommunityRepository : IDomainRepository { }
 }

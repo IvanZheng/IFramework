@@ -5,9 +5,7 @@ namespace IFramework.MessageStoring
 {
     public class Event : Message
     {
-        public Event()
-        {
-        }
+        public Event() { }
 
         public Event(IMessageContext messageContext) :
             base(messageContext)
@@ -25,12 +23,12 @@ namespace IFramework.MessageStoring
         public string AggregateRootType { get; set; }
 
         public int Version { get; set; }
-        //        return ParentMessage;
-        //    {
-        //    get
-        //{
 
         //public Message Parent
+        //{
+        //    get
+        //    {
+        //        return ParentMessage;
         //    }
         //}
 

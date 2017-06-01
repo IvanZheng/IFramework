@@ -39,11 +39,11 @@ namespace Kafka.Client.Requests
         ///     Initializes a new instance of the OffsetRequest class.
         /// </summary>
         public OffsetRequest(Dictionary<string,
-                List<PartitionOffsetRequestInfo>> requestInfo,
-            short versionId = 0,
-            int correlationId = 0,
-            string clientId = "",
-            int replicaId = -1)
+                                 List<PartitionOffsetRequestInfo>> requestInfo,
+                             short versionId = 0,
+                             int correlationId = 0,
+                             string clientId = "",
+                             int replicaId = -1)
         {
             VersionId = versionId;
             ClientId = clientId;
@@ -100,7 +100,9 @@ namespace Kafka.Client.Requests
                 writer.WriteShortString(kv.Key);
                 writer.Write(kv.Value.Count);
                 foreach (var info in kv.Value)
+                {
                     info.WriteTo(writer);
+                }
             }
         }
 

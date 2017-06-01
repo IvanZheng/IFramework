@@ -18,15 +18,15 @@ namespace Sample.CommandConsumer
             try
             {
                 Configuration.Instance
-                    .UseUnityContainer()
-                    .RegisterCommonComponents()
-                    .UseLog4Net()
-                    .MessageQueueUseMachineNameFormat()
-                    .UseMessageQueue()
-                    .UseMessageStore<SampleModelContext>()
-                    .UseKafka("192.168.99.60:2181")
-                    .UseMessagePublisher("eventTopic")
-                    .RegisterEntityFrameworkComponents();
+                             .UseUnityContainer()
+                             .RegisterCommonComponents()
+                             .UseLog4Net()
+                             .MessageQueueUseMachineNameFormat()
+                             .UseMessageQueue()
+                             .UseMessageStore<SampleModelContext>()
+                             .UseKafka("192.168.99.60:2181")
+                             .UseMessagePublisher("eventTopic")
+                             .RegisterEntityFrameworkComponents();
 
                 var container = IoCFactory.Instance.CurrentContainer;
                 container.RegisterType<ICommunityRepository, CommunityRepository>(Lifetime.Hierarchical);
@@ -43,7 +43,7 @@ namespace Sample.CommandConsumer
 
                 var commandQueueName = "commandqueue";
                 var commandConsumer = MessageQueueFactory.CreateCommandConsumer(commandQueueName,
-                    ObjectId.GenerateNewId().ToString(), 100, "CommandHandlers");
+                                                                                ObjectId.GenerateNewId().ToString(), 100, "CommandHandlers");
                 commandConsumer.Start();
 
                 #endregion

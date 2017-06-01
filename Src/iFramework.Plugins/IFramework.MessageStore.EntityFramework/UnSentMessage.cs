@@ -7,9 +7,7 @@ namespace IFramework.MessageStoring
 {
     public abstract class UnSentMessage
     {
-        public UnSentMessage()
-        {
-        }
+        public UnSentMessage() { }
 
         public UnSentMessage(IMessageContext messageContext)
         {

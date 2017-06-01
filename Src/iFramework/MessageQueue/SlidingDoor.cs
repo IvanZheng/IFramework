@@ -6,6 +6,7 @@ namespace IFramework.MessageQueue
 {
     public class SlidingDoor : ISlidingDoor
     {
+        private readonly object _removeOffsetLock = new object();
         protected string _broker;
         protected Action<string, int, long> _commitOffset;
         protected bool _commitPerMessage;
@@ -14,10 +15,11 @@ namespace IFramework.MessageQueue
         protected long _lastOffset = -1L;
         protected SortedSet<long> _offsets;
         protected int _partition;
-        private readonly object _removeOffsetLock = new object();
 
-        public SlidingDoor(Action<string, int, long> commitOffset, string broker, int partition,
-            bool commitPerMessage = false)
+        public SlidingDoor(Action<string, int, long> commitOffset,
+                           string broker,
+                           int partition,
+                           bool commitPerMessage = false)
         {
             _commitOffset = commitOffset;
             _broker = broker;
@@ -52,10 +54,16 @@ namespace IFramework.MessageQueue
                 lock (_removeOffsetLock)
                 {
                     if (_offsets.Remove(offset))
+                    {
                         if (_offsets.Count > 0)
+                        {
                             _consumedOffset = _offsets.First() - 1;
+                        }
                         else
+                        {
                             _consumedOffset = _lastOffset;
+                        }
+                    }
                     if (_consumedOffset > _lastCommittedOffset)
                     {
                         _commitOffset(_broker, _partition, _consumedOffset);

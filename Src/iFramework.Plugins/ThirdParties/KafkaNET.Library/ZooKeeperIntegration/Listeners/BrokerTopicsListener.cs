@@ -50,7 +50,7 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                          + "/broker/topics, /broker/topics/topic, /broker/ids");
             Logger.Debug("Initialized this broker topics listener with initial mapping of broker id to "
                          + "partition id per topic with " + oldBrokerTopicsPartitionsMap.ToMultiString(
-                             x => x.Key + " --> " + x.Value.ToMultiString(y => y.ToString(), ","), "; "));
+                                                                                                       x => x.Key + " --> " + x.Value.ToMultiString(y => y.ToString(), ","), "; "));
         }
 
         /// <summary>
@@ -103,8 +103,8 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
                             {
                                 Logger.Debug("List of brokers changed at " + path);
                                 Logger.Debug(
-                                    "Currently registered list of brokers for topic " + topic + " -> " +
-                                    childs.ToMultiString(","));
+                                             "Currently registered list of brokers for topic " + topic + " -> " +
+                                             childs.ToMultiString(","));
                                 ProcessNewBrokerInExistingTopic(topic, childs);
                             }
                             break;
@@ -127,11 +127,11 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
         {
             Logger.Debug("Before reseting broker topic partitions state -> "
                          + oldBrokerTopicsPartitionsMap.ToMultiString(
-                             x => x.Key + " --> " + x.Value.ToMultiString(y => y.ToString(), ","), "; "));
+                                                                      x => x.Key + " --> " + x.Value.ToMultiString(y => y.ToString(), ","), "; "));
             oldBrokerTopicsPartitionsMap = actualBrokerTopicsPartitionsMap;
             Logger.Debug("After reseting broker topic partitions state -> "
                          + oldBrokerTopicsPartitionsMap.ToMultiString(
-                             x => x.Key + " --> " + x.Value.ToMultiString(y => y.ToString(), ","), "; "));
+                                                                      x => x.Key + " --> " + x.Value.ToMultiString(y => y.ToString(), ","), "; "));
             Logger.Debug("Before reseting broker id map state -> "
                          + oldBrokerIdMap.ToMultiString(", "));
             oldBrokerIdMap = actualBrokerIdMap;
@@ -163,22 +163,26 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
 
             var updatedBrokerParts = new SortedSet<Partition>();
             foreach (var bp in sortedBrokerPartitions)
+            {
                 for (var i = 0; i < bp.Value; i++)
                 {
                     //var bidPid = new Partition(bp.Key, i);
                     //updatedBrokerParts.Add(bidPid);
                 }
+            }
 
             Logger.Debug(
-                "Currently registered list of brokers for topic " + topic + " -> " + childs.ToMultiString(", "));
+                         "Currently registered list of brokers for topic " + topic + " -> " + childs.ToMultiString(", "));
             var mergedBrokerParts = updatedBrokerParts;
             if (actualBrokerTopicsPartitionsMap.ContainsKey(topic))
             {
                 var oldBrokerParts = actualBrokerTopicsPartitionsMap[topic];
                 Logger.Debug(
-                    "Unregistered list of brokers for topic " + topic + " -> " + oldBrokerParts.ToMultiString(", "));
+                             "Unregistered list of brokers for topic " + topic + " -> " + oldBrokerParts.ToMultiString(", "));
                 foreach (var oldBrokerPart in oldBrokerParts)
+                {
                     mergedBrokerParts.Add(oldBrokerPart);
+                }
             }
             else
             {
@@ -196,7 +200,9 @@ namespace Kafka.Client.ZooKeeperIntegration.Listeners
         private void ProcessBrokerChange(string path, IEnumerable<string> childs)
         {
             if (path != ZooKeeperClient.DefaultBrokerIdsPath)
+            {
                 return;
+            }
 
             var updatedBrokers = childs.Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToList();
             var oldBrokers = oldBrokerIdMap.Select(x => x.Key).ToList();

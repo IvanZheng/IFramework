@@ -44,7 +44,9 @@ namespace IFramework4._5Tests
             }
 
             while (_totalProcessed != totalShouldbe)
+            {
                 Task.Delay(1000).Wait();
+            }
 
             Assert.AreEqual(processor.MailboxDictionary.Count, 0);
         }

@@ -39,15 +39,15 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             _cancellationTokenSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew(cs => ReceiveQueueMessages(cs as CancellationTokenSource,
-                    _onMessagesReceived),
-                _cancellationTokenSource,
-                _cancellationTokenSource.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                                                                        _onMessagesReceived),
+                                             _cancellationTokenSource,
+                                             _cancellationTokenSource.Token,
+                                             TaskCreationOptions.LongRunning,
+                                             TaskScheduler.Default);
         }
 
         private void ReceiveQueueMessages(CancellationTokenSource cancellationTokenSource,
-            OnMessagesReceived onMessagesReceived)
+                                          OnMessagesReceived onMessagesReceived)
         {
             var needPeek = true;
             long sequenceNumber = 0;
@@ -56,11 +56,14 @@ namespace IFramework.MessageQueue.ServiceBus
             #region peek messages that not been consumed since last time
 
             while (!cancellationTokenSource.IsCancellationRequested && needPeek)
+            {
                 try
                 {
                     brokeredMessages = _queueClient.PeekBatch(sequenceNumber, 50);
                     if (brokeredMessages == null || brokeredMessages.Count() == 0)
+                    {
                         break;
+                    }
                     var messageContexts = new List<IMessageContext>();
                     foreach (var message in brokeredMessages)
                     {
@@ -87,12 +90,14 @@ namespace IFramework.MessageQueue.ServiceBus
                     Thread.Sleep(1000);
                     _logger.Error($" queueClient.PeekBatch {_queueClient.Path} failed", ex);
                 }
+            }
 
             #endregion
 
             #region receive messages to enqueue consuming queue
 
             while (!cancellationTokenSource.IsCancellationRequested)
+            {
                 try
                 {
                     brokeredMessages =
@@ -116,6 +121,7 @@ namespace IFramework.MessageQueue.ServiceBus
                     Thread.Sleep(1000);
                     _logger.Error($" queueClient.PeekBatch {_queueClient.Path} failed", ex);
                 }
+            }
 
             #endregion
         }

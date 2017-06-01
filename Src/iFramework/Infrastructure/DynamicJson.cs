@@ -66,9 +66,13 @@ namespace IFramework.Infrastructure
             {
                 var property = _json.Property(binder.Name);
                 if (property != null)
+                {
                     property.Value = JToken.FromObject(val);
+                }
                 else
+                {
                     _json.Add(binder.Name, JToken.FromObject(val));
+                }
             }
             catch (Exception)
             {

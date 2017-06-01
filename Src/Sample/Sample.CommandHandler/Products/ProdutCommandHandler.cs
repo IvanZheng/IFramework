@@ -11,8 +11,8 @@ using Sample.Persistence.Repositories;
 namespace Sample.CommandHandler.Products
 {
     public class ProdutCommandHandler : ICommandHandler<CreateProduct>,
-        ICommandAsyncHandler<ReduceProduct>,
-        ICommandHandler<GetProducts>
+                                        ICommandAsyncHandler<ReduceProduct>,
+                                        ICommandHandler<GetProducts>
     {
         //   IEventBus _EventBus;
         private readonly IMessageContext _CommandContext;
@@ -21,9 +21,9 @@ namespace Sample.CommandHandler.Products
         private readonly IUnitOfWork _UnitOfWork;
 
         public ProdutCommandHandler(IUnitOfWork unitOfWork,
-            CommunityRepository domainRepository,
-            // IEventBus eventBus,
-            IMessageContext commandContext)
+                                    CommunityRepository domainRepository,
+                                    // IEventBus eventBus,
+                                    IMessageContext commandContext)
         {
             _UnitOfWork = unitOfWork;
             _DomainRepository = domainRepository;
@@ -34,10 +34,10 @@ namespace Sample.CommandHandler.Products
         public async Task Handle(ReduceProduct command)
         {
             var product = await _DomainRepository.GetByKeyAsync<Product>(command.ProductId)
-                .ConfigureAwait(false);
+                                                 .ConfigureAwait(false);
             product.ReduceCount(command.ReduceCount);
             await _UnitOfWork.CommitAsync()
-                .ConfigureAwait(false);
+                             .ConfigureAwait(false);
             _CommandContext.Reply = product.Count;
         }
 
@@ -51,8 +51,8 @@ namespace Sample.CommandHandler.Products
         public void Handle(GetProducts command)
         {
             var products = _DomainRepository.FindAll<Product>(p => command.ProductIds.Contains(p.Id))
-                .Select(p => new Project {Id = p.Id, Name = p.Name, Count = p.Count})
-                .ToList();
+                                            .Select(p => new Project {Id = p.Id, Name = p.Name, Count = p.Count})
+                                            .ToList();
             _CommandContext.Reply = products;
         }
     }

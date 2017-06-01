@@ -36,10 +36,14 @@ namespace IFramework.MessageQueue.EQueue
         public void Send(global::EQueue.Protocols.Message equeueMessage, string key)
         {
             if (key == null)
+            {
                 key = string.Empty;
+            }
             var result = Producer.Send(equeueMessage, key);
             if (result.SendStatus != SendStatus.Success)
+            {
                 throw new Exception(result.ErrorMessage);
+            }
         }
     }
 }

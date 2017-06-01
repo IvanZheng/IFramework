@@ -20,7 +20,8 @@ namespace Kafka.Client.Consumers
         ///     The list of <see cref="KafkaMessageStream" />, which are iterators over topic.
         /// </returns>
         IDictionary<string, IList<KafkaMessageStream<TData>>> CreateMessageStreams<TData>(
-            IDictionary<string, int> topicCountDict, IDecoder<TData> decoder);
+            IDictionary<string, int> topicCountDict,
+            IDecoder<TData> decoder);
 
         /// <summary>
         ///     Commits the offsets of all messages consumed so far.

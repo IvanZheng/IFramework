@@ -12,7 +12,9 @@ namespace IFramework.Message.Impl
             : base(messageQueueClient, defaultTopic)
         {
             if (string.IsNullOrEmpty(defaultTopic))
+            {
                 throw new Exception("message sender must have a default topic.");
+            }
         }
 
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
@@ -21,12 +23,12 @@ namespace IFramework.Message.Impl
             using (var messageStore = scope.Resolve<IMessageStore>())
             {
                 return messageStore.GetAllUnPublishedEvents(
-                    (messageId, message, topic, correlationID, replyEndPoint, sagaInfo, producer) =>
-                        _messageQueueClient.WrapMessage(message, key: message.Key,
-                            topic: topic, messageId: messageId,
-                            correlationId: correlationID,
-                            replyEndPoint: replyEndPoint,
-                            sagaInfo: sagaInfo, producer: producer));
+                                                            (messageId, message, topic, correlationID, replyEndPoint, sagaInfo, producer) =>
+                                                                _messageQueueClient.WrapMessage(message, key: message.Key,
+                                                                                                topic: topic, messageId: messageId,
+                                                                                                correlationId: correlationID,
+                                                                                                replyEndPoint: replyEndPoint,
+                                                                                                sagaInfo: sagaInfo, producer: producer));
             }
         }
 
@@ -39,9 +41,10 @@ namespace IFramework.Message.Impl
         {
             messageState.SendTaskCompletionSource?
                 .TrySetResult(new MessageResponse(messageState.MessageContext,
-                    null,
-                    false));
+                                                  null,
+                                                  false));
             if (_needMessageStore)
+            {
                 Task.Run(() =>
                 {
                     using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
@@ -50,6 +53,7 @@ namespace IFramework.Message.Impl
                         messageStore.RemovePublishedEvent(messageState.MessageID);
                     }
                 });
+            }
         }
     }
 }

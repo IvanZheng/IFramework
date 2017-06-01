@@ -2,8 +2,6 @@ namespace Autofac.Configuration.Elements
 {
     public class ComponentElementCollection : ConfigurationElementCollection<ComponentElement>
     {
-        public ComponentElementCollection() : base("component")
-        {
-        }
+        public ComponentElementCollection() : base("component") { }
     }
 }

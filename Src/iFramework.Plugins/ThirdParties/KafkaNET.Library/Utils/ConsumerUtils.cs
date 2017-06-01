@@ -25,8 +25,10 @@ namespace Kafka.Client.Utils
         ///     Retrive first or last offset for a given partition based on <see cref="offsetRequestConstant" /> parameter.
         ///     If offset couldn't be retrieved returns null.
         /// </returns>
-        public static long? EarliestOrLatestOffset(Consumer consumer, string topic, int partitionId,
-            long offsetRequestConstant)
+        public static long? EarliestOrLatestOffset(Consumer consumer,
+                                                   string topic,
+                                                   int partitionId,
+                                                   long offsetRequestConstant)
         {
             var requestInfos = new Dictionary<string, List<PartitionOffsetRequestInfo>>();
             requestInfos[topic] =
@@ -38,8 +40,8 @@ namespace Kafka.Client.Utils
             var topicResult = offsets.ResponseMap[topic];
             var responseRow = topicResult != null ? topicResult.FirstOrDefault() : null;
             return responseRow != null && responseRow.Offsets != null && responseRow.Offsets.Count > 0
-                ? responseRow.Offsets[0]
-                : (long?) null;
+                       ? responseRow.Offsets[0]
+                       : (long?) null;
         }
     }
 }

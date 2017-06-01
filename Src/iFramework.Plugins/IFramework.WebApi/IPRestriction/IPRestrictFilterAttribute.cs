@@ -22,11 +22,15 @@ namespace IFramework.AspNet
         public IPFilterAttribute(string entry = null)
         {
             if (string.IsNullOrEmpty(entry))
+            {
                 WhiteList = IPRestrictExtension.IPRestrictConfig?.GlobalWhiteList;
+            }
             else
+            {
                 WhiteList = IPRestrictExtension.IPRestrictConfig
-                    .EntryWhiteListDictionary
-                    .TryGetValue(entry, null);
+                                               .EntryWhiteListDictionary
+                                               .TryGetValue(entry, null);
+            }
             WhiteList = WhiteList ?? new List<string>();
         }
 
@@ -39,9 +43,11 @@ namespace IFramework.AspNet
                 if (clientIP != WebApiUtility.LocalIPv4
                     && clientIP != WebApiUtility.LocalIPv6
                     && !WhiteList.Contains(clientIP))
+                {
                     throw new HttpResponseException(actionContext.Request
-                        .CreateErrorResponse(HttpStatusCode.Forbidden,
-                            WebApiUtility.ClientIPNotAllowedMessage));
+                                                                 .CreateErrorResponse(HttpStatusCode.Forbidden,
+                                                                                      WebApiUtility.ClientIPNotAllowedMessage));
+                }
             }
         }
     }

@@ -10,9 +10,9 @@ namespace EQueueBroker
             try
             {
                 Configuration.Instance
-                    .UseAutofacContainer()
-                    .UseEQueue()
-                    .StartEqueueBroker();
+                             .UseAutofacContainer()
+                             .UseEQueue()
+                             .StartEqueueBroker();
                 Console.WriteLine("EQueue Broker started.");
             }
             catch (Exception ex)

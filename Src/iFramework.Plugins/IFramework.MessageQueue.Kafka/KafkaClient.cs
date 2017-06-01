@@ -231,8 +231,12 @@ namespace IFramework.MessageQueue.MSKafka
                     }
                     catch (Exception ex)
                     {
+                        if (TopicExsits(topic))
+                        {
+                            break;
+                        }
                         _logger.Error($"Create topic {topic} failed", ex);
-                        Task.Delay(2000).Wait();
+                        Task.Delay(200).Wait();
                     }
                 }
             }

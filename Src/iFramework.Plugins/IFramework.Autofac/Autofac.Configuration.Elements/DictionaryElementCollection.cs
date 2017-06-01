@@ -11,14 +11,14 @@ namespace Autofac.Configuration.Elements
     [TypeConverter(typeof(DictionaryElementTypeConverter))]
     public class DictionaryElementCollection : ConfigurationElementCollection<ListItemElement>
     {
-        public DictionaryElementCollection() : base("item")
-        {
-        }
+        public DictionaryElementCollection() : base("item") { }
 
         private class DictionaryElementTypeConverter : TypeConverter
         {
-            public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value,
-                Type destinationType)
+            public override object ConvertTo(ITypeDescriptorContext context,
+                                             CultureInfo culture,
+                                             object value,
+                                             Type destinationType)
             {
                 var instantiableType = GetInstantiableType(destinationType);
                 var dictionaryElementCollection = value as DictionaryElementCollection;
@@ -29,7 +29,9 @@ namespace Autofac.Configuration.Elements
                     foreach (var current in dictionaryElementCollection)
                     {
                         if (string.IsNullOrEmpty(current.Key))
+                        {
                             throw new ConfigurationErrorsException("Key cannot be null in a dictionary element.");
+                        }
                         var key = TypeManipulation.ChangeToCompatibleType(current.Key, genericArguments[0], null);
                         var value2 = TypeManipulation.ChangeToCompatibleType(current.Value, genericArguments[1], null);
                         dictionary.Add(key, value2);
@@ -50,17 +52,21 @@ namespace Autofac.Configuration.Elements
                     typeof(IDictionary<,>).IsAssignableFrom(destinationType.GetGenericTypeDefinition()))
                 {
                     var array = destinationType.IsGenericType
-                        ? destinationType.GetGenericArguments()
-                        : new[]
-                        {
-                            typeof(string),
-                            typeof(object)
-                        };
+                                    ? destinationType.GetGenericArguments()
+                                    : new[]
+                                    {
+                                        typeof(string),
+                                        typeof(object)
+                                    };
                     if (array.Length != 2)
+                    {
                         return null;
+                    }
                     var type = typeof(Dictionary<,>).MakeGenericType(array);
                     if (destinationType.IsAssignableFrom(type))
+                    {
                         return type;
+                    }
                 }
                 return null;
             }

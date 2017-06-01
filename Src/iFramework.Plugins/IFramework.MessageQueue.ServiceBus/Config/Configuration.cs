@@ -12,7 +12,9 @@ namespace IFramework.MessageQueue.ServiceBus
         {
             var partitionCount = 0;
             if (QueuePartitions != null)
+            {
                 partitionCount = QueuePartitions.TryGetValue(queue, 0);
+            }
             return partitionCount;
         }
 
@@ -22,7 +24,7 @@ namespace IFramework.MessageQueue.ServiceBus
         /// </summary>
         /// <returns></returns>
         public static Configuration SetQueuePartitions(this Configuration configuration,
-            IDictionary<string, int> queuePartitions)
+                                                       IDictionary<string, int> queuePartitions)
         {
             QueuePartitions = queuePartitions;
             return configuration;

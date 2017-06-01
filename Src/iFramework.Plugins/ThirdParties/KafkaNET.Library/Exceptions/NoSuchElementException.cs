@@ -5,12 +5,8 @@ namespace Kafka.Client.Exceptions
 {
     public class NoSuchElementException : Exception
     {
-        public NoSuchElementException()
-        {
-        }
+        public NoSuchElementException() { }
 
-        public NoSuchElementException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public NoSuchElementException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

@@ -13,8 +13,8 @@ namespace IFramework.Config
         public static Configuration UseLog4Net(this Configuration configuration, string configFile = "log4net.config")
         {
             IoCFactory.Instance.CurrentContainer
-                .RegisterInstance(typeof(ILoggerFactory)
-                    , new Log4NetLoggerFactory(configFile));
+                      .RegisterInstance(typeof(ILoggerFactory)
+                                        , new Log4NetLoggerFactory(configFile));
             return configuration;
         }
     }

@@ -13,29 +13,33 @@ namespace IFramework.Autofac.Tests
         public void ResolveAutofac()
         {
             Configuration.Instance
-                .UseAutofacContainer()
-                .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                         .UseAutofacContainer()
+                         .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                 ;
             for (var i = 0; i < 10000; i++)
+            {
                 using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                 {
                     var myClass = scope.Resolve<MyClass>();
                     Assert.AreEqual(myClass.Container, myClass.YourClass.Container);
                 }
+            }
         }
 
         [TestMethod]
         public void ResolveUnity()
         {
             Configuration.Instance
-                .UseUnityContainer()
+                         .UseUnityContainer()
                 ;
             for (var i = 0; i < 10000; i++)
+            {
                 using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
                 {
                     var myClass = scope.Resolve<MyClass>();
                     Assert.AreEqual(myClass.Container, myClass.YourClass.Container);
                 }
+            }
         }
     }
 }

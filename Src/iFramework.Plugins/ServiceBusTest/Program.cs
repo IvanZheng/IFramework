@@ -39,7 +39,9 @@ namespace ServiceBusTest
             var queueClient = messageFactory.CreateQueueClient(queueName);
             var toSendMessages = new List<BrokeredMessage>();
             for (var i = 0; i < 10; i++)
+            {
                 toSendMessages.Add(new BrokeredMessage(new Payload {Id = i, Time = DateTime.Now}));
+            }
             queueClient.SendBatch(toSendMessages);
             IEnumerable<BrokeredMessage> brokeredMessages = null;
             long sequenceNumber = 0;
@@ -48,7 +50,9 @@ namespace ServiceBusTest
             {
                 while (needPeek && (brokeredMessages = queueClient.PeekBatch(sequenceNumber, 5)) != null &&
                        brokeredMessages.Count() > 0)
+                {
                     foreach (var message in brokeredMessages)
+                    {
                         try
                         {
                             if (message.State != MessageState.Deferred)
@@ -63,11 +67,15 @@ namespace ServiceBusTest
                         {
                             Console.WriteLine(ex.GetBaseException().Message);
                         }
+                    }
+                }
 
 
                 while ((brokeredMessages = queueClient.ReceiveBatch(2, new TimeSpan(0, 0, 5))) != null &&
                        brokeredMessages.Count() > 0)
+                {
                     foreach (var message in brokeredMessages)
+                    {
                         try
                         {
                             message.Defer();
@@ -78,6 +86,8 @@ namespace ServiceBusTest
                         {
                             Console.WriteLine(ex.GetBaseException().Message);
                         }
+                    }
+                }
             });
 
             Task.Run(() =>

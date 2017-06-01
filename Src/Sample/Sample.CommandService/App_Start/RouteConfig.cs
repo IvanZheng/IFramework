@@ -10,10 +10,10 @@ namespace Sample.CommandService
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
             routes.IgnoreRoute("{service}.svc/{*pathInfo}");
             routes.MapRoute(
-                "Default",
-                "{controller}/{action}/{id}",
-                new {controller = "Test", action = "Index", id = UrlParameter.Optional}
-            );
+                            "Default",
+                            "{controller}/{action}/{id}",
+                            new {controller = "Test", action = "Index", id = UrlParameter.Optional}
+                           );
         }
     }
 }

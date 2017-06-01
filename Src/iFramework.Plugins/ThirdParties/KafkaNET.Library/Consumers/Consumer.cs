@@ -44,12 +44,12 @@ namespace Kafka.Client.Consumers
             host = config.Broker.Host;
             port = config.Broker.Port;
             connection = new KafkaConnection(
-                host,
-                port,
-                Config.BufferSize,
-                Config.SendTimeout,
-                Config.ReceiveTimeout,
-                Config.ReconnectInterval);
+                                             host,
+                                             port,
+                                             Config.BufferSize,
+                                             Config.SendTimeout,
+                                             Config.ReceiveTimeout,
+                                             Config.ReconnectInterval);
             CreatedTimeInUTC = DateTime.UtcNow.Ticks;
         }
 
@@ -69,12 +69,12 @@ namespace Kafka.Client.Consumers
             this.host = host;
             this.port = port;
             connection = new KafkaConnection(
-                this.host,
-                this.port,
-                Config.BufferSize,
-                Config.SendTimeout,
-                Config.ReceiveTimeout,
-                Config.ReconnectInterval);
+                                             this.host,
+                                             this.port,
+                                             Config.BufferSize,
+                                             Config.SendTimeout,
+                                             Config.ReceiveTimeout,
+                                             Config.ReconnectInterval);
         }
 
         public ConsumerConfiguration Config { get; }
@@ -92,6 +92,7 @@ namespace Kafka.Client.Consumers
         {
             short tryCounter = 1;
             while (tryCounter <= Config.NumberOfTries)
+            {
                 try
                 {
                     lock (this)
@@ -103,11 +104,14 @@ namespace Kafka.Client.Consumers
                 {
                     //// if maximum number of tries reached
                     if (tryCounter == Config.NumberOfTries)
+                    {
                         throw;
+                    }
 
                     tryCounter++;
                     Logger.InfoFormat("GetOffsetsBefore reconnect due to {0}", ex.FormatException());
                 }
+            }
 
             return null;
         }
@@ -122,6 +126,7 @@ namespace Kafka.Client.Consumers
         {
             short tryCounter = 1;
             while (tryCounter <= Config.NumberOfTries)
+            {
                 try
                 {
                     lock (this)
@@ -133,11 +138,14 @@ namespace Kafka.Client.Consumers
                 {
                     //// if maximum number of tries reached
                     if (tryCounter == Config.NumberOfTries)
+                    {
                         throw;
+                    }
 
                     tryCounter++;
                     Logger.InfoFormat("GetMetaData reconnect due to {0}", ex.FormatException());
                 }
+            }
 
             return null;
         }
@@ -145,7 +153,9 @@ namespace Kafka.Client.Consumers
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
+            {
                 if (connection != null)
+                {
                     lock (this)
                     {
                         if (connection != null)
@@ -154,36 +164,44 @@ namespace Kafka.Client.Consumers
                             connection = null;
                         }
                     }
+                }
+            }
         }
 
         #region Fetch
 
-        public FetchResponse Fetch(string clientId, string topic, int correlationId, int partitionId, long fetchOffset,
-            int fetchSize
-            , int maxWaitTime, int minWaitSize)
+        public FetchResponse Fetch(string clientId,
+                                   string topic,
+                                   int correlationId,
+                                   int partitionId,
+                                   long fetchOffset,
+                                   int fetchSize,
+                                   int maxWaitTime,
+                                   int minWaitSize)
         {
             var requestMap = new Dictionary<string, List<PartitionFetchInfo>>();
             requestMap.Add(
-                topic,
-                new List<PartitionFetchInfo>
-                {
-                    new PartitionFetchInfo(
-                        partitionId,
-                        fetchOffset,
-                        fetchSize)
-                });
+                           topic,
+                           new List<PartitionFetchInfo>
+                           {
+                               new PartitionFetchInfo(
+                                                      partitionId,
+                                                      fetchOffset,
+                                                      fetchSize)
+                           });
             return Fetch(new FetchRequest(
-                correlationId,
-                clientId,
-                maxWaitTime,
-                minWaitSize,
-                requestMap));
+                                          correlationId,
+                                          clientId,
+                                          maxWaitTime,
+                                          minWaitSize,
+                                          requestMap));
         }
 
         public FetchResponse Fetch(FetchRequest request)
         {
             short tryCounter = 1;
             while (tryCounter <= Config.NumberOfTries)
+            {
                 try
                 {
                     Logger.Debug("Fetch is waiting for send lock");
@@ -197,11 +215,14 @@ namespace Kafka.Client.Consumers
                 {
                     //// if maximum number of tries reached
                     if (tryCounter == Config.NumberOfTries)
+                    {
                         throw;
+                    }
 
                     tryCounter++;
                     Logger.InfoFormat("Fetch reconnect due to {0}", ex.FormatException());
                 }
+            }
 
             return null;
         }
@@ -209,40 +230,49 @@ namespace Kafka.Client.Consumers
         /// <summary>
         ///     MANIFOLD use
         /// </summary>
-        public FetchResponseWrapper FetchAndGetDetail(string clientId, string topic, int correlationId, int partitionId,
-            long fetchOffset, int fetchSize
-            , int maxWaitTime, int minWaitSize)
+        public FetchResponseWrapper FetchAndGetDetail(string clientId,
+                                                      string topic,
+                                                      int correlationId,
+                                                      int partitionId,
+                                                      long fetchOffset,
+                                                      int fetchSize,
+                                                      int maxWaitTime,
+                                                      int minWaitSize)
         {
             var response = Fetch(clientId,
-                topic,
-                correlationId,
-                partitionId,
-                fetchOffset,
-                fetchSize,
-                maxWaitTime,
-                minWaitSize);
+                                 topic,
+                                 correlationId,
+                                 partitionId,
+                                 fetchOffset,
+                                 fetchSize,
+                                 maxWaitTime,
+                                 minWaitSize);
             if (response == null)
+            {
                 throw new KafkaConsumeException(
-                    string.Format(
-                        "FetchRequest returned null FetchResponse,fetchOffset={0},leader={1},topic={2},partition={3}",
-                        fetchOffset, Config.Broker, topic, partitionId));
+                                                string.Format(
+                                                              "FetchRequest returned null FetchResponse,fetchOffset={0},leader={1},topic={2},partition={3}",
+                                                              fetchOffset, Config.Broker, topic, partitionId));
+            }
             var partitionData = response.PartitionData(topic, partitionId);
             if (partitionData == null)
+            {
                 throw new KafkaConsumeException(
-                    string.Format(
-                        "PartitionData int FetchResponse is null,fetchOffset={0},leader={1},topic={2},partition={3}",
-                        fetchOffset, Config.Broker, topic, partitionId));
+                                                string.Format(
+                                                              "PartitionData int FetchResponse is null,fetchOffset={0},leader={1},topic={2},partition={3}",
+                                                              fetchOffset, Config.Broker, topic, partitionId));
+            }
             if (partitionData.Error != ErrorMapping.NoError)
             {
                 var s = string.Format(
-                    "Partition data in FetchResponse has error. {0}  {1} fetchOffset={2},leader={3},topic={4},partition={5}"
-                    , partitionData.Error, KafkaException.GetMessage(partitionData.Error)
-                    , fetchOffset, Config.Broker, topic, partitionId);
+                                      "Partition data in FetchResponse has error. {0}  {1} fetchOffset={2},leader={3},topic={4},partition={5}"
+                                      , partitionData.Error, KafkaException.GetMessage(partitionData.Error)
+                                      , fetchOffset, Config.Broker, topic, partitionId);
                 Logger.Error(s);
                 throw new KafkaConsumeException(s, partitionData.Error);
             }
             return new FetchResponseWrapper(partitionData.GetMessageAndOffsets(), response.Size, response.CorrelationId,
-                topic, partitionId);
+                                            topic, partitionId);
         }
 
         #endregion

@@ -8,19 +8,13 @@ namespace Kafka.Client.Exceptions
         private long offsetTime;
 
 
-        public TimeStampTooSmallException()
-        {
-        }
+        public TimeStampTooSmallException() { }
 
         public TimeStampTooSmallException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
 
         public TimeStampTooSmallException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+            : base(info, context) { }
 
         public TimeStampTooSmallException(long offsetTime)
         {

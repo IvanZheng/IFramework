@@ -8,7 +8,8 @@ namespace IFramework.Autofac
     {
         public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle>
             InstanceLifetime<TLimit, TActivatorData, TRegistrationStyle>(
-                this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> builder, Lifetime lifetime)
+                this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> builder,
+                Lifetime lifetime)
         {
             switch (lifetime)
             {

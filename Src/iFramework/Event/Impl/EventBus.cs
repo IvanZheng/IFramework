@@ -41,9 +41,7 @@ namespace IFramework.Event.Impl
             events.ForEach(@event => Publish(@event));
         }
 
-        public virtual void Dispose()
-        {
-        }
+        public virtual void Dispose() { }
 
         public IEnumerable<IEvent> GetEvents()
         {

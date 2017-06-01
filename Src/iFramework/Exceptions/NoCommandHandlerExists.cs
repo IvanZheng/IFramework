@@ -5,13 +5,9 @@ namespace IFramework.Exceptions
 {
     public class NoCommandHandlerExists : Exception
     {
-        public NoCommandHandlerExists() : base("NoneCommandHandlerExists")
-        {
-        }
+        public NoCommandHandlerExists() : base("NoneCommandHandlerExists") { }
 
         protected NoCommandHandlerExists(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+            : base(info, context) { }
     }
 }

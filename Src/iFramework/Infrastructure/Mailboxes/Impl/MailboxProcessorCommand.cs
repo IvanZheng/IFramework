@@ -3,9 +3,7 @@ using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
-    internal interface IMailboxProcessorCommand
-    {
-    }
+    internal interface IMailboxProcessorCommand { }
 
     internal class ProcessMessageCommand<TMessage> : IMailboxProcessorCommand
         where TMessage : class

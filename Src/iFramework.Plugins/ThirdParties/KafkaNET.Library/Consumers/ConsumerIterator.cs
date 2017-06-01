@@ -25,12 +25,12 @@ namespace Kafka.Client.Consumers
         private readonly CancellationToken cancellationToken;
         private readonly BlockingCollection<FetchedDataChunk> channel;
         private readonly int consumerTimeoutMs;
+        private readonly IDecoder<TData> decoder;
+        private readonly SemaphoreSlim makeNextSemaphore = new SemaphoreSlim(1, 1);
         private long consumedOffset = -1;
         private IEnumerator<MessageAndOffset> current;
         private FetchedDataChunk currentDataChunk;
         public volatile PartitionTopicInfo currentTopicInfo;
-        private readonly IDecoder<TData> decoder;
-        private readonly SemaphoreSlim makeNextSemaphore = new SemaphoreSlim(1, 1);
         private TData nextItem;
         private ConsumerIteratorState state = ConsumerIteratorState.NotReady;
         private string topic;
@@ -44,11 +44,11 @@ namespace Kafka.Client.Consumers
         /// <param name="consumerTimeoutMs">
         ///     The consumer timeout in ms.
         /// </param>
-        public ConsumerIterator(string topic, BlockingCollection<FetchedDataChunk> channel, int consumerTimeoutMs,
-            IDecoder<TData> decoder)
-            : this(topic, channel, consumerTimeoutMs, decoder, CancellationToken.None)
-        {
-        }
+        public ConsumerIterator(string topic,
+                                BlockingCollection<FetchedDataChunk> channel,
+                                int consumerTimeoutMs,
+                                IDecoder<TData> decoder)
+            : this(topic, channel, consumerTimeoutMs, decoder, CancellationToken.None) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ConsumerIterator" /> with a <see cref="CancellationToken" />
@@ -56,8 +56,11 @@ namespace Kafka.Client.Consumers
         /// <param name="channel">The queue containing</param>
         /// <param name="consumerTimeoutMs">The consumer timeout in ms</param>
         /// <param name="cacellationToken">The <see cref="CancellationToken" /> to allow for clean task cancellation</param>
-        public ConsumerIterator(string topic, BlockingCollection<FetchedDataChunk> channel, int consumerTimeoutMs,
-            IDecoder<TData> decoder, CancellationToken cancellationToken)
+        public ConsumerIterator(string topic,
+                                BlockingCollection<FetchedDataChunk> channel,
+                                int consumerTimeoutMs,
+                                IDecoder<TData> decoder,
+                                CancellationToken cancellationToken)
         {
             this.topic = topic;
             this.channel = channel;
@@ -77,14 +80,18 @@ namespace Kafka.Client.Consumers
             get
             {
                 if (!MoveNext())
+                {
                     throw new NoSuchElementException();
+                }
 
                 state = ConsumerIteratorState.NotReady;
                 if (nextItem != null)
                 {
                     if (consumedOffset < 0)
+                    {
                         throw new IllegalStateException(string.Format(CultureInfo.CurrentCulture,
-                            "Byte offset returned by the message set is invalid {0}.", consumedOffset));
+                                                                      "Byte offset returned by the message set is invalid {0}.", consumedOffset));
+                    }
 
                     //if (consumedMessageOffset < 0)
                     //{
@@ -120,7 +127,9 @@ namespace Kafka.Client.Consumers
         public bool MoveNext()
         {
             if (state == ConsumerIteratorState.Failed)
+            {
                 throw new IllegalStateException("Iterator is in failed state");
+            }
 
             switch (state)
             {
@@ -141,9 +150,7 @@ namespace Kafka.Client.Consumers
             state = ConsumerIteratorState.NotReady;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
         public void ClearIterator()
         {
@@ -161,7 +168,9 @@ namespace Kafka.Client.Consumers
             finally
             {
                 if (semaphoreTaken)
+                {
                     makeNextSemaphore.Release();
+                }
             }
         }
 
@@ -184,7 +193,9 @@ namespace Kafka.Client.Consumers
             }
 
             if (state == ConsumerIteratorState.Done)
+            {
                 return false;
+            }
 
             state = ConsumerIteratorState.Ready;
             return true;
@@ -219,14 +230,14 @@ namespace Kafka.Client.Consumers
 
                 currentTopicInfo = currentDataChunk.TopicInfo;
                 Logger.DebugFormat("CurrentTopicInfo: ConsumedOffset({0}), FetchOffset({1})",
-                    currentTopicInfo.ConsumeOffset, currentTopicInfo.FetchOffset);
+                                   currentTopicInfo.ConsumeOffset, currentTopicInfo.FetchOffset);
                 if (currentTopicInfo.FetchOffset < currentDataChunk.FetchOffset)
                 {
                     Logger.ErrorFormat(
-                        "consumed offset: {0} doesn't match fetch offset: {1} for {2}; consumer may lose data",
-                        currentTopicInfo.ConsumeOffset,
-                        currentDataChunk.FetchOffset,
-                        currentTopicInfo);
+                                       "consumed offset: {0} doesn't match fetch offset: {1} for {2}; consumer may lose data",
+                                       currentTopicInfo.ConsumeOffset,
+                                       currentDataChunk.FetchOffset,
+                                       currentTopicInfo);
                     currentTopicInfo.ConsumeOffset = currentDataChunk.FetchOffset;
                 }
 

@@ -26,11 +26,15 @@ namespace Kafka.Client.Consumers
             get
             {
                 if (TopicsStat == null)
+                {
                     return 0;
+                }
 
                 long result = 0;
                 foreach (var topicStatRecord in TopicsStat.Values)
+                {
                     result += topicStatRecord.Lag;
+                }
 
                 return result;
             }

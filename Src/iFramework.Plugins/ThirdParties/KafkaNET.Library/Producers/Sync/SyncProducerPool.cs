@@ -36,7 +36,7 @@ namespace Kafka.Client.Producers.Sync
             if (config.ZooKeeper != null)
             {
                 zkClient = new ZooKeeperClient(config.ZooKeeper.ZkConnect, config.ZooKeeper.ZkSessionTimeoutMs,
-                    ZooKeeperStringSerializer.Serializer);
+                                               ZooKeeperStringSerializer.Serializer);
                 zkClient.Connect();
             }
 
@@ -51,13 +51,15 @@ namespace Kafka.Client.Producers.Sync
             if (config.ZooKeeper != null)
             {
                 zkClient = new ZooKeeperClient(config.ZooKeeper.ZkConnect, config.ZooKeeper.ZkSessionTimeoutMs,
-                    ZooKeeperStringSerializer.Serializer);
+                                               ZooKeeperStringSerializer.Serializer);
                 zkClient.Connect();
             }
 
             if (producers != null && producers.Any())
+            {
                 producers.ForEach(x => syncProducers.TryAdd(x.Config.BrokerId,
-                    new SyncProducerWrapper(x, config.SyncProducerOfOneBroker)));
+                                                            new SyncProducerWrapper(x, config.SyncProducerOfOneBroker)));
+            }
         }
 
         protected ProducerConfiguration Config { get; }
@@ -69,7 +71,7 @@ namespace Kafka.Client.Producers.Sync
             var syncProducerConfig = new SyncProducerConfiguration(Config, broker.Id, broker.Host, broker.Port);
             var producerWrapper = new SyncProducerWrapper(syncProducerConfig, Config.SyncProducerOfOneBroker);
             Logger.DebugFormat("Creating sync producer for broker id = {0} at {1}:{2} SyncProducerOfOneBroker:{3}",
-                broker.Id, broker.Host, broker.Port, Config.SyncProducerOfOneBroker);
+                               broker.Id, broker.Host, broker.Port, Config.SyncProducerOfOneBroker);
             syncProducers.TryAdd(broker.Id, producerWrapper);
         }
 
@@ -83,7 +85,7 @@ namespace Kafka.Client.Producers.Sync
             else if (zkClient != null)
             {
                 Logger.DebugFormat("Connecting to {0} for creating sync producers for all brokers in the cluster",
-                    config.ZooKeeper.ZkConnect);
+                                   config.ZooKeeper.ZkConnect);
                 var brokers = ZkUtils.GetAllBrokersInCluster(zkClient);
                 brokers.ForEach(AddProducer);
             }
@@ -103,8 +105,10 @@ namespace Kafka.Client.Producers.Sync
             SyncProducerWrapper producerWrapper;
             syncProducers.TryGetValue(brokerId, out producerWrapper);
             if (producerWrapper == null)
+            {
                 throw new UnavailableProducerException(
-                    string.Format("Sync producer for broker id {0} does not exist", brokerId));
+                                                       string.Format("Sync producer for broker id {0} does not exist", brokerId));
+            }
 
             return producerWrapper.GetProducer();
         }
@@ -127,11 +131,14 @@ namespace Kafka.Client.Producers.Sync
             sb.Append(string.Join(",", configuredBrokers.Select(r => r.ToString()).ToArray()));
 
             if (Config.ZooKeeper != null)
+            {
                 sb.AppendFormat("\t Broker zookeeper: {0} \t", Config.ZooKeeper.ZkConnect);
+            }
 
             sb.Append(string.Join(",",
-                syncProducers.Select(r => string.Format("BrokerID:{0} syncProducerCount:{1} ", r.Key,
-                    r.Value.Producers.Count())).ToArray()));
+                                  syncProducers.Select(r => string.Format("BrokerID:{0} syncProducerCount:{1} ", r.Key,
+                                                                          r.Value.Producers.Count()))
+                                               .ToArray()));
             return sb.ToString();
         }
 
@@ -142,22 +149,31 @@ namespace Kafka.Client.Producers.Sync
 
         public List<ISyncProducer> GetProducers()
         {
-            return syncProducers.OrderBy(a => a.Key).Select(r => r.Value).ToList().Select(r => r.GetProducer())
-                .ToList();
+            return syncProducers.OrderBy(a => a.Key)
+                                .Select(r => r.Value)
+                                .ToList()
+                                .Select(r => r.GetProducer())
+                                .ToList();
         }
 
         protected void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             if (Disposed)
+            {
                 return;
+            }
 
             Disposed = true;
             syncProducers.ForEach(x => x.Value.Dispose());
             if (zkClient != null)
+            {
                 zkClient.Dispose();
+            }
         }
 
         internal class SyncProducerWrapper
@@ -170,14 +186,18 @@ namespace Kafka.Client.Producers.Sync
                 Producers = new Queue<ISyncProducer>(count);
                 for (var i = 0; i < count; i++)
                     //TODO: if can't create , should retry later. should not block
+                {
                     Producers.Enqueue(new SyncProducer(syncProducerConfig));
+                }
             }
 
             public SyncProducerWrapper(ISyncProducer syncProducer, int count)
             {
                 Producers = new Queue<ISyncProducer>(count);
                 for (var i = 0; i < count; i++)
+                {
                     Producers.Enqueue(syncProducer);
+                }
             }
 
             protected bool Disposed { get; set; }
@@ -204,10 +224,14 @@ namespace Kafka.Client.Producers.Sync
             protected void Dispose(bool disposing)
             {
                 if (!disposing)
+                {
                     return;
+                }
 
                 if (Disposed)
+                {
                     return;
+                }
 
                 Disposed = true;
                 Producers.ForEach(x => x.Dispose());

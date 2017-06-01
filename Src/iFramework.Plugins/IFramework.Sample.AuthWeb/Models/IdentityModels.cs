@@ -25,9 +25,7 @@ namespace IFramework.Sample.AuthWeb.Models
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
-            : base("DefaultConnection", false)
-        {
-        }
+            : base("DefaultConnection", false) { }
 
         public static ApplicationDbContext Create()
         {

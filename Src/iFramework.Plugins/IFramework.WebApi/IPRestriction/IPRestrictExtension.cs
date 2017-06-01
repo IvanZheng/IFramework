@@ -28,7 +28,9 @@ namespace IFramework.AspNet
             configFile = configFile ?? "ipRestrict.json";
             var file = new FileInfo(configFile);
             if (!file.Exists)
+            {
                 file = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configFile));
+            }
 
             if (file.Exists)
             {

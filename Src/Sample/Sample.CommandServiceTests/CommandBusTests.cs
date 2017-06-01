@@ -25,24 +25,24 @@ namespace Sample.CommandService.Tests
     public class CommandBusTests
     {
         private static readonly string _zkConnectionString = "localhost:2181";
-        private ICommandBus _commandBus;
-        private List<CreateProduct> _createProducts;
-        private ILogger _logger;
 
         private readonly int batchCount = 10;
         private readonly int productCount = 10;
+        private ICommandBus _commandBus;
+        private List<CreateProduct> _createProducts;
+        private ILogger _logger;
 
         [TestInitialize]
         public void Initialize()
         {
             Configuration.Instance.UseUnityContainer()
-                .UseLog4Net()
-                .UseKafka(_zkConnectionString)
-                //    .SetCommitPerMessage(true)//for servicebus !!!
-                .MessageQueueUseMachineNameFormat()
-                .UseCommandBus("CommandBusTest", "CommandBusTest.ReplyTopic", "CommandBusTest.ReplySubscription")
-                .RegisterDefaultEventBus()
-                .RegisterEntityFrameworkComponents();
+                         .UseLog4Net()
+                         .UseKafka(_zkConnectionString)
+                         //    .SetCommitPerMessage(true)//for servicebus !!!
+                         .MessageQueueUseMachineNameFormat()
+                         .UseCommandBus("CommandBusTest", "CommandBusTest.ReplyTopic", "CommandBusTest.ReplySubscription")
+                         .RegisterDefaultEventBus()
+                         .RegisterEntityFrameworkComponents();
 
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(CommandBusTests));
             InitProducts();
@@ -74,15 +74,19 @@ namespace Sample.CommandService.Tests
             _logger.ErrorFormat("cost time : {0} ms", costTime);
 
             var products = _commandBus.SendAsync(new GetProducts
-            {
-                ProductIds = _createProducts.Select(p => p.ProductId).ToList()
-            }, true).Result.ReadAsAsync<List<Project>>().Result;
+                                      {
+                                          ProductIds = _createProducts.Select(p => p.ProductId).ToList()
+                                      }, true)
+                                      .Result.ReadAsAsync<List<Project>>()
+                                      .Result;
             var success = true;
             Console.WriteLine(products.ToJson());
             for (var i = 0; i < _createProducts.Count; i++)
+            {
                 success = success && products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
-                              .Count ==
+                                             .Count ==
                           _createProducts[i].Count - batchCount;
+            }
             Console.WriteLine($"test success {success}");
             Stop();
         }
@@ -109,12 +113,12 @@ namespace Sample.CommandService.Tests
                 var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
                 var sendTime = DateTime.Parse(message);
                 Console.WriteLine(
-                    $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                                  $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
                 kafkaConsumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
             };
 
             var consumer = new KafkaConsumer(_zkConnectionString, commandQueue,
-                $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
+                                             $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
             return consumer;
         }
 
@@ -152,15 +156,18 @@ namespace Sample.CommandService.Tests
             Console.WriteLine("cost time : {0} ms", costTime);
 
             var products = _commandBus.ExecuteAsync<List<Project>>(new GetProducts
-            {
-                ProductIds = _createProducts.Select(p => p.ProductId).ToList()
-            }).Result;
+                                      {
+                                          ProductIds = _createProducts.Select(p => p.ProductId).ToList()
+                                      })
+                                      .Result;
             var success = true;
 
             for (var i = 0; i < _createProducts.Count; i++)
+            {
                 success = success && products.FirstOrDefault(p => p.Id == _createProducts[i].ProductId)
-                              .Count ==
+                                             .Count ==
                           _createProducts[i].Count - batchCount;
+            }
             Console.WriteLine($"test success {success}");
             Assert.IsTrue(success);
             Stop();

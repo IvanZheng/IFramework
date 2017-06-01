@@ -32,7 +32,9 @@ namespace IFramework.Log4Net
         public void Debug(object message)
         {
             if (_log.IsDebugEnabled)
+            {
                 _log.Debug(message);
+            }
         }
 
         /// <summary>
@@ -42,7 +44,9 @@ namespace IFramework.Log4Net
         public void DebugFormat(string format, params object[] args)
         {
             if (_log.IsDebugEnabled)
+            {
                 _log.DebugFormat(format, args);
+            }
         }
 
         /// <summary>
@@ -52,7 +56,9 @@ namespace IFramework.Log4Net
         public void Debug(object message, Exception exception)
         {
             if (_log.IsDebugEnabled)
+            {
                 _log.Debug(message, exception);
+            }
         }
 
         /// <summary>

@@ -2,7 +2,5 @@
 
 namespace IFramework.Command.Impl
 {
-    public class LinearKeyAttribute : Attribute
-    {
-    }
+    public class LinearKeyAttribute : Attribute { }
 }

@@ -11,9 +11,7 @@ namespace IFramework.Config
         /// <summary>
         ///     Initializes a new instance of <c>Configuration Reader</c> class.
         /// </summary>
-        private ConfigurationReader()
-        {
-        }
+        private ConfigurationReader() { }
 
         public static ConfigurationReader Instance { get; } = new ConfigurationReader();
 
@@ -25,9 +23,13 @@ namespace IFramework.Config
                 var configSectionNameAttr = typeof(TConfigurationSection)
                     .GetCustomAttribute<ConfigurationSectionNameAttribute>();
                 if (configSectionNameAttr != null)
+                {
                     name = configSectionNameAttr.Name;
+                }
                 if (string.IsNullOrEmpty(name))
+                {
                     name = typeof(TConfigurationSection).Name;
+                }
             }
 
             var configSection = Configs[name] as TConfigurationSection;

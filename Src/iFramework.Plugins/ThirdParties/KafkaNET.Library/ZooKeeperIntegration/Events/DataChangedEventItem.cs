@@ -22,9 +22,7 @@ namespace Kafka.Client.ZooKeeperIntegration.Events
         /// <remarks>
         ///     Should use external logger to keep same format of all event logs
         /// </remarks>
-        public DataChangedEventItem()
-        {
-        }
+        public DataChangedEventItem() { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="DataChangedEventItem" /> class.
@@ -42,7 +40,7 @@ namespace Kafka.Client.ZooKeeperIntegration.Events
         ///     Should use external logger to keep same format of all event logs
         /// </remarks>
         public DataChangedEventItem(ZooKeeperClient.ZooKeeperEventHandler<ZooKeeperDataChangedEventArgs> changedHandler,
-            ZooKeeperClient.ZooKeeperEventHandler<ZooKeeperDataChangedEventArgs> deletedHandler)
+                                    ZooKeeperClient.ZooKeeperEventHandler<ZooKeeperDataChangedEventArgs> deletedHandler)
         {
             DataChanged += changedHandler;
             DataDeleted += deletedHandler;
@@ -92,10 +90,14 @@ namespace Kafka.Client.ZooKeeperIntegration.Events
         {
             var handlers = dataChanged;
             if (handlers == null)
+            {
                 return;
+            }
 
             foreach (var handler in handlers.GetInvocationList())
+            {
                 Logger.Debug(e + " sent to " + handler.Target);
+            }
 
             handlers(e);
         }
@@ -110,10 +112,14 @@ namespace Kafka.Client.ZooKeeperIntegration.Events
         {
             var handlers = dataDeleted;
             if (handlers == null)
+            {
                 return;
+            }
 
             foreach (var handler in handlers.GetInvocationList())
+            {
                 Logger.Debug(e + " sent to " + handler.Target);
+            }
 
             handlers(e);
         }

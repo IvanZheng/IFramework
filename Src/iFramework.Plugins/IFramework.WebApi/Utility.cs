@@ -24,9 +24,7 @@ namespace IFramework.AspNet
 
 
         public FormValueProvider(ControllerContext controllerContext)
-            : this(controllerContext.HttpContext.Request.Form)
-        {
-        }
+            : this(controllerContext.HttpContext.Request.Form) { }
 
         public FormValueProvider(NameValueCollection formValues)
         {
@@ -41,18 +39,24 @@ namespace IFramework.AspNet
                     var keys = ParseKey(key);
 
                     foreach (var k in keys)
+                    {
                         if (k.EndsWith("[]"))
                         {
                             var arrayKey = k.Substring(0, k.Length - 2);
                             var arrayValues = value.Split(',');
                             if (arrayValues.Length > 0)
+                            {
                                 for (var i = 0; i < arrayValues.Length; i++)
+                                {
                                     values[string.Format("{0}[{1}]", arrayKey, i)] = arrayValues[i];
+                                }
+                            }
                         }
                         else
                         {
                             values[k] = value;
                         }
+                    }
                 }
             }
 
@@ -120,19 +124,23 @@ namespace IFramework.AspNet
 
 
         public static NameValueCollection ToNameValueCollection<T>(this T dynamicObject,
-            string key = null,
-            NameValueCollection nameValueCollection = null,
-            bool removeEmptyObject = true)
+                                                                   string key = null,
+                                                                   NameValueCollection nameValueCollection = null,
+                                                                   bool removeEmptyObject = true)
         {
             nameValueCollection = nameValueCollection ?? HttpUtility.ParseQueryString("");
             if (dynamicObject == null)
+            {
                 return nameValueCollection;
+            }
             var objectType = dynamicObject.GetType();
             if (objectType.IsPrimitive || objectType == typeof(string) || objectType == typeof(DateTime))
             {
                 var value = dynamicObject.ToString();
                 if (!removeEmptyObject || !string.IsNullOrWhiteSpace(value))
+                {
                     nameValueCollection.Add(key, value);
+                }
                 return nameValueCollection;
             }
             var propertyDescriptors = TypeDescriptor.GetProperties(dynamicObject);
@@ -141,16 +149,20 @@ namespace IFramework.AspNet
                 var propertyDescriptor = propertyDescriptors[i];
                 var value = propertyDescriptor.GetValue(dynamicObject);
                 if (value == null)
+                {
                     continue;
+                }
                 if (propertyDescriptor.PropertyType.IsPrimitive ||
                     propertyDescriptor.PropertyType == typeof(string) ||
                     propertyDescriptor.PropertyType == typeof(DateTime))
                 {
                     if (removeEmptyObject && string.IsNullOrWhiteSpace(value.ToString()))
+                    {
                         continue;
+                    }
                     var formDataKey = string.IsNullOrEmpty(key)
-                        ? $"{propertyDescriptor.Name}"
-                        : $"{key}[{propertyDescriptor.Name}]";
+                                          ? $"{propertyDescriptor.Name}"
+                                          : $"{key}[{propertyDescriptor.Name}]";
 
                     nameValueCollection.Add(formDataKey, value.ToString());
                 }
@@ -160,15 +172,17 @@ namespace IFramework.AspNet
                     foreach (var val in value as IEnumerable)
                     {
                         var formDataKey = string.IsNullOrEmpty(key)
-                            ? $"{propertyDescriptor.Name}[{j}]"
-                            : $"{key}[{propertyDescriptor.Name}][{j}]";
+                                              ? $"{propertyDescriptor.Name}[{j}]"
+                                              : $"{key}[{propertyDescriptor.Name}][{j}]";
                         var valType = val.GetType();
                         if (valType.IsPrimitive ||
                             valType == typeof(string) ||
                             valType == typeof(DateTime))
                         {
                             if (!removeEmptyObject || !string.IsNullOrWhiteSpace(val.ToString()))
+                            {
                                 nameValueCollection.Add(formDataKey, val.ToString());
+                            }
                         }
                         else
                         {
@@ -180,8 +194,8 @@ namespace IFramework.AspNet
                 else
                 {
                     var formDataKey = string.IsNullOrEmpty(key)
-                        ? $"{propertyDescriptor.Name}"
-                        : $"{key}[{propertyDescriptor.Name}]";
+                                          ? $"{propertyDescriptor.Name}"
+                                          : $"{key}[{propertyDescriptor.Name}]";
                     ToNameValueCollection(value, formDataKey, nameValueCollection, removeEmptyObject);
                 }
             }
@@ -205,14 +219,18 @@ namespace IFramework.AspNet
             //        : null;
             //}
             if (request != null && request.Properties.ContainsKey("MS_HttpContext"))
+            {
                 return ((HttpContextWrapper) request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+            }
             if (request != null && request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
             {
                 var property = (RemoteEndpointMessageProperty) request.Properties[RemoteEndpointMessageProperty.Name];
                 return property != null ? property.Address : null;
             }
             if (HttpContext.Current != null)
+            {
                 return HttpContext.Current.Request.UserHostAddress;
+            }
             return null;
         }
     }

@@ -19,17 +19,18 @@ namespace IFramework.AspNet
         {
             var isDeubg = Config.Configuration.GetCompliationSection()?.Debug ?? false;
             return string.Join(";",
-                modelState.Where(m => (m.Value?.Errors?.Count ?? 0) > 0)
-                    .Select(
-                        m =>
-                            $"{m.Key}:{(isDeubg ? string.Join(",", m.Value.Errors.Select(e => e.ErrorMessage + e.Exception?.Message)) : "invalid")}"));
+                               modelState.Where(m => (m.Value?.Errors?.Count ?? 0) > 0)
+                                         .Select(
+                                                 m =>
+                                                     $"{m.Key}:{(isDeubg ? string.Join(",", m.Value.Errors.Select(e => e.ErrorMessage + e.Exception?.Message)) : "invalid")}"));
         }
 
         #region process wrapping
 
-        protected ApiResult<T> Process<T>(Func<T> func, bool needRetry = true,
-            Func<Exception, string> getExceptionMessage = null,
-            Func<ModelStateDictionary, string> getModelErrorMessage = null)
+        protected ApiResult<T> Process<T>(Func<T> func,
+                                          bool needRetry = true,
+                                          Func<Exception, string> getExceptionMessage = null,
+                                          Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
             {
@@ -39,15 +40,16 @@ namespace IFramework.AspNet
             getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
             return
                 new ApiResult<T>
-                (
-                    ErrorCode.InvalidParameters,
-                    getModelErrorMessage(ModelState)
-                );
+                    (
+                     ErrorCode.InvalidParameters,
+                     getModelErrorMessage(ModelState)
+                    );
         }
 
-        protected ApiResult Process(Action action, bool needRetry = true,
-            Func<Exception, string> getExceptionMessage = null,
-            Func<ModelStateDictionary, string> getModelErrorMessage = null)
+        protected ApiResult Process(Action action,
+                                    bool needRetry = true,
+                                    Func<Exception, string> getExceptionMessage = null,
+                                    Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
             {
@@ -57,10 +59,10 @@ namespace IFramework.AspNet
             getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
             return
                 new ApiResult
-                (
-                    ErrorCode.InvalidParameters,
-                    getModelErrorMessage(ModelState)
-                );
+                    (
+                     ErrorCode.InvalidParameters,
+                     getModelErrorMessage(ModelState)
+                    );
         }
 
         private List<CookieHeaderValue> _cookies;
@@ -68,7 +70,9 @@ namespace IFramework.AspNet
         protected void AddCookies(params CookieHeaderValue[] cookies)
         {
             if (_cookies == null)
+            {
                 _cookies = new List<CookieHeaderValue>();
+            }
             _cookies.AddRange(cookies);
         }
 
@@ -79,7 +83,9 @@ namespace IFramework.AspNet
                 var value = defaultValue;
                 var cookie = Request.Headers.GetCookies(key).FirstOrDefault();
                 if (cookie != null)
+                {
                     value = cookie[key].Value;
+                }
                 return value;
             }
             catch (Exception)
@@ -96,63 +102,69 @@ namespace IFramework.AspNet
         }
 
         public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext,
-            CancellationToken cancellationToken)
+                                                               CancellationToken cancellationToken)
         {
             return base.ExecuteAsync(controllerContext, cancellationToken)
-                .ContinueWith(t =>
-                {
-                    if (t.IsFaulted)
-                    {
-                        var httpResponseException = t.Exception.GetBaseException() as HttpResponseException;
-                        if (httpResponseException != null)
-                            return httpResponseException.Response;
-                    }
-                    if (_cookies != null && _cookies.Count > 0)
-                        t.Result.Headers.AddCookies(_cookies);
-                    return t.Result;
-                });
+                       .ContinueWith(t =>
+                       {
+                           if (t.IsFaulted)
+                           {
+                               var httpResponseException = t.Exception.GetBaseException() as HttpResponseException;
+                               if (httpResponseException != null)
+                               {
+                                   return httpResponseException.Response;
+                               }
+                           }
+                           if (_cookies != null && _cookies.Count > 0)
+                           {
+                               t.Result.Headers.AddCookies(_cookies);
+                           }
+                           return t.Result;
+                       });
         }
 
         protected async Task<ApiResult> ProcessAsync(Func<Task> func,
-            bool continueOnCapturedContext = false,
-            bool needRetry = true,
-            Func<Exception, string> getExceptionMessage = null,
-            Func<ModelStateDictionary, string> getModelErrorMessage = null)
+                                                     bool continueOnCapturedContext = false,
+                                                     bool needRetry = true,
+                                                     Func<Exception, string> getExceptionMessage = null,
+                                                     Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
+            {
                 return await ExceptionManager.ProcessAsync(func,
-                        continueOnCapturedContext,
-                        needRetry,
-                        getExceptionMessage: getExceptionMessage)
-                    .ConfigureAwait(continueOnCapturedContext);
+                                                           continueOnCapturedContext,
+                                                           needRetry,
+                                                           getExceptionMessage: getExceptionMessage)
+                                             .ConfigureAwait(continueOnCapturedContext);
+            }
             getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
             return
                 new ApiResult
-                (
-                    ErrorCode.InvalidParameters,
-                    getModelErrorMessage(ModelState)
-                );
+                    (
+                     ErrorCode.InvalidParameters,
+                     getModelErrorMessage(ModelState)
+                    );
         }
 
         protected async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
-            bool continueOnCapturedContext = false,
-            bool needRetry = true,
-            Func<Exception, string> getExceptionMessage = null,
-            Func<ModelStateDictionary, string> getModelErrorMessage = null)
+                                                           bool continueOnCapturedContext = false,
+                                                           bool needRetry = true,
+                                                           Func<Exception, string> getExceptionMessage = null,
+                                                           Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
             {
                 return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry,
-                        getExceptionMessage: getExceptionMessage)
-                    .ConfigureAwait(continueOnCapturedContext);
+                                                           getExceptionMessage: getExceptionMessage)
+                                             .ConfigureAwait(continueOnCapturedContext);
             }
             getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
             return
                 new ApiResult<T>
-                (
-                    ErrorCode.InvalidParameters,
-                    getModelErrorMessage(ModelState)
-                );
+                    (
+                     ErrorCode.InvalidParameters,
+                     getModelErrorMessage(ModelState)
+                    );
         }
 
         protected string GetClientIp(HttpRequestMessage request = null)

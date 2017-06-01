@@ -7,12 +7,10 @@ using Sample.DomainEvents.Community;
 namespace Sample.Domain.Model
 {
     public abstract class People : VersionedAggregateRoot,
-        IEventSubscriber<PeopleRegisted>,
-        IEventSubscriber<ItemRegisted>
+                                   IEventSubscriber<PeopleRegisted>,
+                                   IEventSubscriber<ItemRegisted>
     {
-        public People()
-        {
-        }
+        public People() { }
 
         public People(string username, string password, DateTime registerTime)
         {

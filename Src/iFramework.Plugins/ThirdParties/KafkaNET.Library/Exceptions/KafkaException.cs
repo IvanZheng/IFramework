@@ -41,9 +41,7 @@ namespace Kafka.Client.Exceptions
             ErrorCode = (short) errorCode;
         }
 
-        public KafkaException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        public KafkaException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
         /// <summary>
         ///     Gets the error code that was sent from Kafka.
@@ -59,7 +57,9 @@ namespace Kafka.Client.Exceptions
         {
             ErrorMapping error;
             if (Enum.TryParse(errorCode.ToString(CultureInfo.InvariantCulture), out error))
+            {
                 return GetMessage(error);
+            }
 
             return "Unknown Error.";
         }

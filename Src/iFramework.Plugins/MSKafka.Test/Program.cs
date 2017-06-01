@@ -23,8 +23,8 @@ namespace MSKafka.Test
         private static void Main(string[] args)
         {
             Configuration.Instance
-                .UseUnityContainer()
-                .UseLog4Net("log4net.config");
+                         .UseUnityContainer()
+                         .UseLog4Net("log4net.config");
             GroupConsuemrTest();
             IoCFactory.Instance.CurrentContainer.Dispose();
         }
@@ -36,11 +36,11 @@ namespace MSKafka.Test
                 var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
                 var sendTime = DateTime.Parse(message.Split('@')[1]);
                 Console.WriteLine(
-                    $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
+                                  $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
                 kafkaConsumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
             };
             var consumer = new KafkaConsumer(zkConnectionString, commandQueue,
-                $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
+                                             $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
             return consumer;
         }
 
@@ -48,7 +48,9 @@ namespace MSKafka.Test
         {
             var consumers = new List<KafkaConsumer>();
             for (var i = 0; i < 1; i++)
+            {
                 consumers.Add(CreateConsumer(commandQueue, i.ToString()));
+            }
             var queueClient = new KafkaProducer(commandQueue, zkConnectionString);
             while (true)
             {
@@ -64,6 +66,7 @@ namespace MSKafka.Test
                 var kafkaMessage = new Message(Encoding.UTF8.GetBytes(message));
                 var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
                 while (true)
+                {
                     try
                     {
                         queueClient.Send(data);
@@ -75,6 +78,7 @@ namespace MSKafka.Test
                         Console.WriteLine("send message failed {0}", ex.Message);
                         Thread.Sleep(2000);
                     }
+                }
             }
         }
 
@@ -94,9 +98,11 @@ namespace MSKafka.Test
 
 
             var products = _commandBus.SendAsync(new GetProducts
-            {
-                ProductIds = new List<Guid> {reduceProduct.ProductId}
-            }, true).Result.ReadAsAsync<List<Project>>().Result;
+                                      {
+                                          ProductIds = new List<Guid> {reduceProduct.ProductId}
+                                      }, true)
+                                      .Result.ReadAsAsync<List<Project>>()
+                                      .Result;
 
             Console.WriteLine(products.ToJson());
             Console.ReadLine();

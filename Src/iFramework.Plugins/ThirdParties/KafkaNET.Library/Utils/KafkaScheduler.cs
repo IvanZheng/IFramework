@@ -22,12 +22,16 @@ namespace Kafka.Client.Utils
         public void Dispose()
         {
             if (disposed)
+            {
                 return;
+            }
 
             lock (shuttingDownLock)
             {
                 if (disposed)
+                {
                     return;
+                }
 
                 disposed = true;
             }

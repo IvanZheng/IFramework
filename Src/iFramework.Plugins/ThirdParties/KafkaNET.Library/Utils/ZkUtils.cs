@@ -40,11 +40,13 @@ namespace Kafka.Client.Utils
                     var partitionReplicas = new int[rep.Count];
 
                     for (var i = 0; i < rep.Count; i++)
+                    {
                         partitionReplicas[i] = Convert.ToInt32(rep[i]);
+                    }
                     treturn.Add(partitionID, partitionReplicas);
                 }
                 Logger.InfoFormat("Get topic data directly from zookeeper Topic:{0} Data:{1} Partition count:{2}",
-                    topic, data, treturn.Count);
+                                  topic, data, treturn.Count);
             }
             catch (Exception ex)
             {
@@ -73,9 +75,13 @@ namespace Kafka.Client.Utils
                     catch (KeeperException e2)
                     {
                         if (e2.ErrorCode == KeeperException.Code.NODEEXISTS)
+                        {
                             zkClient.WriteData(path, data);
+                        }
                         else
+                        {
                             throw;
+                        }
                     }
                 }
                 else
@@ -89,7 +95,9 @@ namespace Kafka.Client.Utils
         {
             var parentDir = path.Substring(0, path.LastIndexOf('/'));
             if (parentDir.Length != 0)
+            {
                 zkClient.CreatePersistent(parentDir, true);
+            }
         }
 
         internal static string GetConsumerPartitionOwnerPath(string group, string topic, string partition)
@@ -113,14 +121,18 @@ namespace Kafka.Client.Utils
             catch (KeeperException e)
             {
                 if (e.ErrorCode == KeeperException.Code.NONODE)
+                {
                     Logger.InfoFormat("{0} deleted during connection loss; this is ok", path);
+                }
                 else
+                {
                     throw;
+                }
             }
         }
 
         internal static IDictionary<string, IList<string>> GetPartitionsForTopics(IZooKeeperClient zkClient,
-            IEnumerable<string> topics)
+                                                                                  IEnumerable<string> topics)
         {
             var result = new Dictionary<string, IList<string>>();
             foreach (var topic in topics)
@@ -128,7 +140,9 @@ namespace Kafka.Client.Utils
                 var partitions = zkClient.GetChildrenParentMayNotExist(GetTopicPartitionsPath(topic));
 
                 if (partitions == null)
+                {
                     throw new NoPartitionsForTopicException(topic);
+                }
 
                 Logger.DebugFormat("children of /brokers/topics/{0} are {1}", topic, string.Join(",", partitions));
                 result.Add(topic, partitions != null ? partitions.OrderBy(x => x).ToList() : new List<string>());
@@ -208,10 +222,12 @@ namespace Kafka.Client.Utils
         {
             var stateData =
                 zkClient.ReadData<string>(
-                    GetTopicPartitionStatePath(topic, partition.ToString(CultureInfo.InvariantCulture)), true);
+                                          GetTopicPartitionStatePath(topic, partition.ToString(CultureInfo.InvariantCulture)), true);
 
             if (string.IsNullOrWhiteSpace(stateData))
+            {
                 return null;
+            }
             int leader;
             return TryParsePartitionLeader(stateData, out leader) ? (int?) leader : null;
         }
@@ -219,9 +235,9 @@ namespace Kafka.Client.Utils
         public static IEnumerable<Broker> GetBrokerInfoFromIds(IZooKeeperClient zkClient, IEnumerable<int> brokerIds)
         {
             return brokerIds.Select(
-                brokerId =>
-                    Broker.CreateBroker(brokerId,
-                        zkClient.ReadData<string>(ZooKeeperClient.DefaultBrokerIdsPath + "/" + brokerId)));
+                                    brokerId =>
+                                        Broker.CreateBroker(brokerId,
+                                                            zkClient.ReadData<string>(ZooKeeperClient.DefaultBrokerIdsPath + "/" + brokerId)));
         }
 
 
@@ -229,10 +245,12 @@ namespace Kafka.Client.Utils
         {
             var stateData =
                 zkClient.ReadData<string>(
-                    GetTopicPartitionStatePath(topic, partition.ToString(CultureInfo.InvariantCulture)), true);
+                                          GetTopicPartitionStatePath(topic, partition.ToString(CultureInfo.InvariantCulture)), true);
 
             if (string.IsNullOrWhiteSpace(stateData))
+            {
                 return null;
+            }
 
             TopicPartitionState partitionState;
             try
@@ -253,8 +271,8 @@ namespace Kafka.Client.Utils
             catch (Exception exc)
             {
                 Logger.WarnFormat(
-                    "Unexpected error while trying to get topic partition state for topic '{0}' partition '{1}'. Error: {2} ",
-                    topic, partition, exc.FormatException());
+                                  "Unexpected error while trying to get topic partition state for topic '{0}' partition '{1}'. Error: {2} ",
+                                  topic, partition, exc.FormatException());
                 return null;
             }
 

@@ -17,9 +17,9 @@ namespace Kafka.Client.Messages
                     return CompressionCodecs.SnappyCompressionCodec;
                 default:
                     throw new UnknownCodecException(string.Format(
-                        CultureInfo.CurrentCulture,
-                        "{0} is an unknown compression codec",
-                        codec));
+                                                                  CultureInfo.CurrentCulture,
+                                                                  "{0} is an unknown compression codec",
+                                                                  codec));
             }
         }
 
@@ -36,9 +36,9 @@ namespace Kafka.Client.Messages
                     return 0;
                 default:
                     throw new UnknownCodecException(string.Format(
-                        CultureInfo.CurrentCulture,
-                        "{0} is an unknown compression codec",
-                        compressionCodec));
+                                                                  CultureInfo.CurrentCulture,
+                                                                  "{0} is an unknown compression codec",
+                                                                  compressionCodec));
             }
         }
     }

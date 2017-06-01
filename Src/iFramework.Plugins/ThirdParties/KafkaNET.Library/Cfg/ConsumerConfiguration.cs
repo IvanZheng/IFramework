@@ -105,16 +105,22 @@ namespace Kafka.Client.Cfg
         {
             if (config.Broker.ElementInformation.IsPresent
                 && config.ZooKeeperServers.ElementInformation.IsPresent)
+            {
                 throw new ConfigurationErrorsException(
-                    "ZooKeeper configuration cannot be set when brokers configuration is used");
+                                                       "ZooKeeper configuration cannot be set when brokers configuration is used");
+            }
 
             if (!config.ZooKeeperServers.ElementInformation.IsPresent
                 && !config.Broker.ElementInformation.IsPresent)
+            {
                 throw new ConfigurationErrorsException("ZooKeeper server or Kafka broker configuration must be set");
+            }
 
             if (config.ZooKeeperServers.ElementInformation.IsPresent
                 && config.ZooKeeperServers.Servers.Count == 0)
+            {
                 throw new ConfigurationErrorsException("At least one ZooKeeper server address is required");
+            }
         }
 
         private static string GetIpAddress(string host)
@@ -124,10 +130,12 @@ namespace Kafka.Client.Cfg
             {
                 var ip = Dns.GetHostEntry(host);
                 if (ip.AddressList.Length > 0)
+                {
                     return ip.AddressList[0].ToString();
+                }
 
                 throw new ConfigurationErrorsException(string.Format(CultureInfo.CurrentCulture,
-                    "Could not resolve the zookeeper server address: {0}.", host));
+                                                                     "Could not resolve the zookeeper server address: {0}.", host));
             }
 
             return host;
@@ -146,7 +154,9 @@ namespace Kafka.Client.Cfg
         private void SetZooKeeperConfiguration(ZooKeeperConfigurationElement config)
         {
             if (config.Servers.Count == 0)
+            {
                 throw new ConfigurationErrorsException();
+            }
 
             var sb = new StringBuilder();
             foreach (ZooKeeperServerConfigurationElement server in config.Servers)
@@ -159,10 +169,10 @@ namespace Kafka.Client.Cfg
 
             sb.Remove(sb.Length - 1, 1);
             ZooKeeper = new ZooKeeperConfiguration(
-                sb.ToString(),
-                config.SessionTimeout,
-                config.ConnectionTimeout,
-                config.SyncTime);
+                                                   sb.ToString(),
+                                                   config.SessionTimeout,
+                                                   config.ConnectionTimeout,
+                                                   config.SyncTime);
         }
 
         #region Constructor
@@ -224,18 +234,20 @@ namespace Kafka.Client.Cfg
             ConsumeGroupRebalanceRetryIntervalMs = DefaultConsumeGroupRebalanceRetryIntervalMs;
             ConsumeGroupFindNewLeaderSleepIntervalMs = DefaultConsumeGroupFindNewLeaderSleepIntervalMs;
             if (config.Broker.ElementInformation.IsPresent)
+            {
                 SetBrokerConfiguration(config.Broker);
+            }
             else
+            {
                 SetZooKeeperConfiguration(config.ZooKeeperServers);
+            }
         }
 
         public ConsumerConfiguration(XElement xmlElement)
-            : this(ConsumerConfigurationSection.FromXml(xmlElement))
-        {
-        }
+            : this(ConsumerConfigurationSection.FromXml(xmlElement)) { }
 
         public ConsumerConfiguration(ConsumerConfiguration cosumerConfigTemplate,
-            BrokerConfiguration brokerConfiguration)
+                                     BrokerConfiguration brokerConfiguration)
         {
             Broker = brokerConfiguration;
 

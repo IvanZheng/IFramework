@@ -62,13 +62,15 @@ namespace IFramework.SingleSignOn
         public static Uri GetCurrentAudienceUri()
         {
             var audienceUris = FederatedAuthentication.WSFederationAuthenticationModule.FederationConfiguration
-                .IdentityConfiguration.AudienceRestriction.AllowedAudienceUris;
+                                                      .IdentityConfiguration.AudienceRestriction.AllowedAudienceUris;
             var currentUrl = HttpContext.Current.Request.Url.AbsoluteUri.ToLower();
             var compareUrl = currentUrl.EndsWith("/") ? currentUrl : currentUrl + "/";
             var currentAudienceUri =
                 audienceUris.FirstOrDefault(ent => compareUrl.ToLower().Contains(ent.AbsoluteUri.ToLower()));
             if (currentAudienceUri == null)
+            {
                 throw new Exception("未找到到与访问地址匹配的audienceUri,请检查配置文件中的audienceUris");
+            }
             return currentAudienceUri;
         }
     }

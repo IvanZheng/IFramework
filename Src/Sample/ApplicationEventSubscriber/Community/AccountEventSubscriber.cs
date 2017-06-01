@@ -6,7 +6,7 @@ using Sample.Command;
 namespace Sample.ApplicationEventSubscriber.Community
 {
     public class AccountEventSubscriber : IEventSubscriber<AccountLogined>,
-        IEventSubscriber<AccountRegistered>
+                                          IEventSubscriber<AccountRegistered>
     {
         private readonly IEventBus _eventBus;
 

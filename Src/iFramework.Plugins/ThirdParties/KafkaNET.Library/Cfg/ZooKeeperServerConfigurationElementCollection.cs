@@ -11,7 +11,9 @@ namespace Kafka.Client.Cfg
             set
             {
                 if (BaseGet(index) != null)
+                {
                     BaseRemoveAt(index);
+                }
 
                 BaseAdd(index, value);
             }

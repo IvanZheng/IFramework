@@ -4,17 +4,11 @@ namespace Kafka.Client.Exceptions
 {
     public class NoBrokerForTopicException : KafkaClientException
     {
-        public NoBrokerForTopicException()
-        {
-        }
+        public NoBrokerForTopicException() { }
 
-        public NoBrokerForTopicException(string message) : base(message)
-        {
-        }
+        public NoBrokerForTopicException(string message) : base(message) { }
 
         public NoBrokerForTopicException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+            : base(info, context) { }
     }
 }

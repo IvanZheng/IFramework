@@ -9,12 +9,12 @@
         public const int DefaultSyncTime = 2000;
 
         public ZooKeeperConfiguration()
-            : this(null, DefaultSessionTimeout, DefaultConnectionTimeout, DefaultSyncTime)
-        {
-        }
+            : this(null, DefaultSessionTimeout, DefaultConnectionTimeout, DefaultSyncTime) { }
 
-        public ZooKeeperConfiguration(string zkconnect, int zksessionTimeoutMs, int zkconnectionTimeoutMs,
-            int zksyncTimeMs)
+        public ZooKeeperConfiguration(string zkconnect,
+                                      int zksessionTimeoutMs,
+                                      int zkconnectionTimeoutMs,
+                                      int zksyncTimeMs)
         {
             ZkConnect = zkconnect;
             ZkConnectionTimeoutMs = zkconnectionTimeoutMs;

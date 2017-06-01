@@ -25,11 +25,15 @@ namespace Kafka.Client.Consumers
             get
             {
                 if (PartitionsStat == null)
+                {
                     return 0;
+                }
 
                 long result = 0;
                 foreach (var partitionStatRecord in PartitionsStat.Values)
+                {
                     result += partitionStatRecord.Lag;
+                }
 
                 return result;
             }

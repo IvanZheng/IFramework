@@ -25,14 +25,12 @@ namespace Kafka.Client.Producers.Sync
         ///     The producer config.
         /// </param>
         public SyncProducer(SyncProducerConfiguration config) : this(config, new KafkaConnection(
-            config.Host,
-            config.Port,
-            config.BufferSize,
-            config.SendTimeout,
-            config.ReceiveTimeout,
-            config.ReconnectInterval))
-        {
-        }
+                                                                                                 config.Host,
+                                                                                                 config.Port,
+                                                                                                 config.BufferSize,
+                                                                                                 config.SendTimeout,
+                                                                                                 config.ReceiveTimeout,
+                                                                                                 config.ReconnectInterval)) { }
 
         public SyncProducer(SyncProducerConfiguration config, IKafkaConnection connection)
         {
@@ -58,7 +56,9 @@ namespace Kafka.Client.Producers.Sync
 
             foreach (var topicData in request.Data)
             foreach (var partitionData in topicData.PartitionData)
+            {
                 VerifyMessageSize(partitionData.MessageSet.Messages);
+            }
 
             return connection.Send(request);
         }
@@ -80,14 +80,20 @@ namespace Kafka.Client.Producers.Sync
         protected virtual void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             if (disposed)
+            {
                 return;
+            }
 
             disposed = true;
             if (connection != null)
+            {
                 connection.Dispose();
+            }
         }
 
         /// <summary>
@@ -96,13 +102,17 @@ namespace Kafka.Client.Producers.Sync
         private void EnsuresNotDisposed()
         {
             if (disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
         }
 
         private void VerifyMessageSize(IEnumerable<Message> messages)
         {
             if (messages.Any(message => message.PayloadSize > Config.MaxMessageSize))
+            {
                 throw new MessageSizeTooLargeException();
+            }
         }
     }
 }
