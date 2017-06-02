@@ -11,7 +11,7 @@ namespace IFramework.Repositories
     ///     Represents the base class for repositories.
     /// </summary>
     /// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
-    public abstract class BaseRepository<TAggregateRoot> : IRepository<TAggregateRoot>
+    public abstract class BaseRepository<TAggregateRoot>: IRepository<TAggregateRoot>
         where TAggregateRoot : class
     {
         #region Protected Methods
@@ -94,21 +94,15 @@ namespace IFramework.Repositories
         /// <param name="entity">The entity to be updated.</param>
         protected abstract void DoUpdate(TAggregateRoot entity);
 
-        protected abstract IQueryable<TAggregateRoot> DoPageFind(int pageIndex,
-                                                                 int pageSize,
-                                                                 ISpecification<TAggregateRoot> specification,
-                                                                 ref long totalCount,
+        protected abstract IQueryable<TAggregateRoot> DoPageFind(int pageIndex, int pageSize,
+                                                                 ISpecification<TAggregateRoot> specification, ref long totalCount,
                                                                  params OrderExpression[] orderExpressions);
 
-        protected abstract Task<Tuple<IQueryable<TAggregateRoot>, long>> DoPageFindAsync(int pageIndex,
-                                                                                         int pageSize,
-                                                                                         ISpecification<TAggregateRoot> specification,
-                                                                                         params OrderExpression[] orderExpressions);
+        protected abstract Task<Tuple<IQueryable<TAggregateRoot>, long>> DoPageFindAsync(int pageIndex, int pageSize,
+                                                                                         ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions);
 
-        protected abstract IQueryable<TAggregateRoot> DoPageFind(int pageIndex,
-                                                                 int pageSize,
-                                                                 ISpecification<TAggregateRoot> specification,
-                                                                 params OrderExpression[] orderExpressions);
+        protected abstract IQueryable<TAggregateRoot> DoPageFind(int pageIndex, int pageSize,
+                                                                 ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions);
 
         #endregion
 
@@ -158,9 +152,7 @@ namespace IFramework.Repositories
         public void Remove(IEnumerable<TAggregateRoot> entities)
         {
             foreach (var entity in entities)
-            {
                 DoRemove(entity);
-            }
         }
 
         /// <summary>
@@ -289,54 +281,42 @@ namespace IFramework.Repositories
             return DoExistsAsync(Specification<TAggregateRoot>.Eval(specification));
         }
 
-        public IQueryable<TAggregateRoot> PageFind(int pageIndex,
-                                                   int pageSize,
-                                                   Expression<Func<TAggregateRoot, bool>> specification,
-                                                   params OrderExpression[] orderExpressions)
+        public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
+                                                   Expression<Func<TAggregateRoot, bool>> expression, params OrderExpression[] orderExpressions)
         {
-            return DoPageFind(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(specification), orderExpressions);
+            return DoPageFind(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(expression), orderExpressions);
         }
 
-        public IQueryable<TAggregateRoot> PageFind(int pageIndex,
-                                                   int pageSize,
-                                                   Expression<Func<TAggregateRoot, bool>> specification,
-                                                   ref long totalCount,
+        public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
+                                                   Expression<Func<TAggregateRoot, bool>> expression, ref long totalCount,
                                                    params OrderExpression[] orderExpressions)
         {
-            return DoPageFind(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(specification), ref totalCount,
+            return DoPageFind(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(expression), ref totalCount,
                               orderExpressions);
         }
 
-        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex,
-                                                                           int pageSize,
-                                                                           Expression<Func<TAggregateRoot, bool>> specification,
-                                                                           params OrderExpression[] orderExpressions)
+        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize,
+                                                                           Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
         {
             return DoPageFindAsync(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(specification),
                                    orderExpressions);
         }
 
-        public IQueryable<TAggregateRoot> PageFind(int pageIndex,
-                                                   int pageSize,
-                                                   ISpecification<TAggregateRoot> specification,
-                                                   ref long totalCount,
+        public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
+                                                   ISpecification<TAggregateRoot> specification, ref long totalCount,
                                                    params OrderExpression[] orderExpressions)
         {
             return DoPageFind(pageIndex, pageSize, specification, ref totalCount, orderExpressions);
         }
 
-        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex,
-                                                                           int pageSize,
-                                                                           ISpecification<TAggregateRoot> specification,
-                                                                           params OrderExpression[] orderExpressions)
+        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize,
+                                                                           ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
         {
             return DoPageFindAsync(pageIndex, pageSize, specification, orderExpressions);
         }
 
-        public IQueryable<TAggregateRoot> PageFind(int pageIndex,
-                                                   int pageSize,
-                                                   ISpecification<TAggregateRoot> specification,
-                                                   params OrderExpression[] orderExpressions)
+        public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
+                                                   ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
         {
             return DoPageFind(pageIndex, pageSize, specification, orderExpressions);
         }
@@ -370,6 +350,18 @@ namespace IFramework.Repositories
 
         protected abstract long DoCount(Expression<Func<TAggregateRoot, bool>> specification);
         protected abstract Task<long> DoCountAsync(Expression<Func<TAggregateRoot, bool>> specification);
+
+        protected abstract void DoReload(TAggregateRoot entity);
+        protected abstract Task DoReloadAsync(TAggregateRoot entity);
+        public void Reload(TAggregateRoot entity)
+        {
+            DoReload(entity);
+        }
+
+        public Task ReloadAsync(TAggregateRoot entity)
+        {
+            return DoReloadAsync(entity);
+        }
 
         #endregion
     }

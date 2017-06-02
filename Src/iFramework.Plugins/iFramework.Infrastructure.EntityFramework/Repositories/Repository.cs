@@ -10,28 +10,25 @@ using IFramework.Infrastructure;
 using IFramework.Repositories;
 using IFramework.Specifications;
 using IFramework.UnitOfWork;
+using IFramework.Domain;
 
 namespace IFramework.EntityFramework.Repositories
 {
-    public class Repository<TEntity> : BaseRepository<TEntity>, IMergeOptionChangable
+    public class Repository<TEntity>: BaseRepository<TEntity>, IMergeOptionChangable
         where TEntity : class
     {
-        private readonly UnitOfWork _UnitOfWork;
         internal DbContext _Container;
         private DbSet<TEntity> _objectSet;
+        private readonly UnitOfWork _UnitOfWork;
 
         public Repository(MSDbContext dbContext, IUnitOfWork unitOfWork)
         {
             _UnitOfWork = unitOfWork as UnitOfWork;
             if (dbContext == null)
-            {
                 throw new Exception("repository could not work without dbContext");
-            }
             // dbContext.Configuration.AutoDetectChangesEnabled = false;
             if (_UnitOfWork != null)
-            {
                 _UnitOfWork.RegisterDbContext(dbContext);
-            }
             _Container = dbContext;
         }
 
@@ -39,7 +36,7 @@ namespace IFramework.EntityFramework.Repositories
 
         public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class
         {
-            var objectContext = ((IObjectContextAdapter) _Container).ObjectContext;
+            var objectContext = ((IObjectContextAdapter)_Container).ObjectContext;
             var set = objectContext.CreateObjectSet<TMergeOptionEntity>();
             set.MergeOption = mergeOption;
         }
@@ -57,7 +54,7 @@ namespace IFramework.EntityFramework.Repositories
 
         protected override async Task<bool> DoExistsAsync(ISpecification<TEntity> specification)
         {
-            return await CountAsync(specification.GetExpression()) > 0;
+            return await CountAsync(specification.GetExpression()).ConfigureAwait(false) > 0;
         }
 
         protected override TEntity DoFind(ISpecification<TEntity> specification)
@@ -104,62 +101,45 @@ namespace IFramework.EntityFramework.Repositories
             //return query;
         }
 
-        protected override IQueryable<TEntity> DoPageFind(int pageIndex,
-                                                          int pageSize,
-                                                          ISpecification<TEntity> specification,
-                                                          params OrderExpression[] orderExpressions)
+        protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize,
+                                                          ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
         {
             //checking arguments for this query 
             if (pageIndex < 0)
-            {
                 throw new ArgumentException("InvalidPageIndex");
-            }
 
             if (pageSize <= 0)
-            {
                 throw new ArgumentException("InvalidPageCount");
-            }
 
             if (orderExpressions == null || orderExpressions.Length == 0)
-            {
                 throw new ArgumentNullException("OrderByExpressionCannotBeNull");
-            }
 
             if (specification == null)
-            {
                 specification = new AllSpecification<TEntity>();
-            }
             var query = DoFindAll(specification, orderExpressions);
             return query.GetPageElements(pageIndex, pageSize);
         }
 
-        protected override IQueryable<TEntity> DoPageFind(int pageIndex,
-                                                          int pageSize,
-                                                          ISpecification<TEntity> specification,
-                                                          ref long totalCount,
-                                                          params OrderExpression[] orderExpressions)
+        protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize,
+                                                          ISpecification<TEntity> specification, ref long totalCount, params OrderExpression[] orderExpressions)
         {
             var query = DoPageFind(pageIndex, pageSize, specification, orderExpressions);
             totalCount = Count(specification.GetExpression());
             return query;
         }
 
-        protected override async Task<Tuple<IQueryable<TEntity>, long>> DoPageFindAsync(int pageIndex,
-                                                                                        int pageSize,
-                                                                                        ISpecification<TEntity> specification,
-                                                                                        params OrderExpression[] orderExpressions)
+        protected override async Task<Tuple<IQueryable<TEntity>, long>> DoPageFindAsync(int pageIndex, int pageSize,
+                                                                                        ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
         {
             var query = DoPageFind(pageIndex, pageSize, specification, orderExpressions);
-            var totalCount = await CountAsync(specification.GetExpression());
+            var totalCount = await CountAsync(specification.GetExpression()).ConfigureAwait(false);
             return new Tuple<IQueryable<TEntity>, long>(query, totalCount);
         }
 
         protected override void DoAdd(IEnumerable<TEntity> entities)
         {
             foreach (var entity in entities)
-            {
                 DoAdd(entity);
-            }
         }
 
         protected override long DoCount(ISpecification<TEntity> specification)
@@ -180,6 +160,22 @@ namespace IFramework.EntityFramework.Repositories
         protected override Task<long> DoCountAsync(Expression<Func<TEntity, bool>> specification)
         {
             return DbSet.LongCountAsync(specification);
+        }
+
+        protected override void DoReload(TEntity entity)
+        {
+            _Container.Entry(entity).Reload();
+            (entity as AggregateRoot)?.Rollback();
+        }
+
+        protected override async Task DoReloadAsync(TEntity entity)
+        {
+            await _Container.Entry(entity)
+                            .ReloadAsync()
+                            .ConfigureAwait(false);
+
+            (entity as AggregateRoot)?.Rollback();
+
         }
     }
 }
