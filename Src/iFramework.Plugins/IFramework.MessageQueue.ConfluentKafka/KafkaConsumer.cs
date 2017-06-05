@@ -18,7 +18,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
 {
     public delegate void OnKafkaMessageReceived(KafkaConsumer consumer, Message<string, KafkaMessage> message);
 
-    public class KafkaConsumer : ICommitOffsetable
+    public class KafkaConsumer: ICommitOffsetable
     {
         protected CancellationTokenSource _cancellationTokenSource;
         private Consumer<string, KafkaMessage> _consumer;
@@ -56,9 +56,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
             ConsumerConfiguration = new Dictionary<string, object>
             {
                 {"group.id", GroupId},
+                {"client.id", consumerId},
                 {"enable.auto.commit", false},
-                {"statistics.interval.ms", 60000},
-                {"retry.backoff.ms", backOffIncrement},
+                //{"statistics.interval.ms", 60000},
+                //{"retry.backoff.ms", backOffIncrement},
                 {"bootstrap.servers", BrokerList},
                 {
                     "default.topic.config", new Dictionary<string, object>
@@ -135,6 +136,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             _cancellationTokenSource?.Cancel(true);
             _consumerTask?.Wait();
             _consumerTask?.Dispose();
+            _consumer?.Dispose();
             _consumerTask = null;
             _cancellationTokenSource = null;
             SlidingDoors.Clear();
@@ -149,14 +151,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
         private void ReceiveMessages(CancellationTokenSource cancellationTokenSource)
         {
             #region peek messages that not been consumed since last time
-
+            Console.WriteLine($"ReceiveMessages start");
             while (!cancellationTokenSource.IsCancellationRequested)
             {
                 try
                 {
                     //var linkedTimeoutCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token,
                     //                                                                       new CancellationTokenSource(3000).Token);
-                    _consumer.Poll(new TimeSpan(0, 0, 0, 0, 200));
+                    _consumer.Poll(100);
                 }
                 catch (OperationCanceledException)
                 {
@@ -212,11 +214,13 @@ namespace IFramework.MessageQueue.ConfluentKafka
         }
 
 
-        public void CommitOffset(int partition, long offset)
+
+        public async Task CommitOffsetAsync(int partition, long offset)
         {
             // kafka not use broker in cluster mode
-            var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(Topic, partition), offset);
-            var committedOffset = _consumer.CommitAsync(new[] {topicPartitionOffset}).Result;
+            var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(Topic, partition), offset + 1);
+            var committedOffset = await _consumer.CommitAsync(new[] { topicPartitionOffset })
+                                                 .ConfigureAwait(false);
             if (committedOffset.Error.Code != ErrorCode.NoError)
             {
                 _logger.Error($"{Id} committed offset failed {committedOffset.Error}");
@@ -227,10 +231,15 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
+        public void CommitOffset(int partition, long offset)
+        {
+            CommitOffsetAsync(partition, offset).Wait();
+        }
+
         public void CommitOffset(string broker, int partition, long offset)
         {
             // kafka not use broker in cluster mode
-            CommitOffset(partition, offset);
+            CommitOffsetAsync(partition, offset).Wait();
         }
     }
 }

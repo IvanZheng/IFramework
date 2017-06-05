@@ -23,8 +23,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
             _topic = topic;
             var producerConfiguration = new Dictionary<string, object>
             {
-                { "bootstrap.servers", _brokerList }
-               // {"queue.buffering.max.ms", 1}
+                { "bootstrap.servers", _brokerList },
+             //   {"delivery.report.only.error", true},
+                {"acks", 1},
+                {"queue.buffering.max.ms", 10}
             };
 
             _producer = new Producer<string, KafkaMessage>(producerConfiguration, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
@@ -34,10 +36,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             try
             {
-                if (_producer != null)
-                {
-                    _producer.Dispose();
-                }
+                _producer?.Dispose();
             }
             catch (Exception ex)
             {

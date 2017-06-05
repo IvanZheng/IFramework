@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
@@ -35,10 +36,10 @@ namespace MSKafka.Test
             {
                 var message = Encoding.UTF8.GetString(kafkaMessage.Value.Payload);
                 var sendTime = DateTime.Parse(message.Split('@')[1]);
-
-                kafkaConsumer.CommitOffset(kafkaMessage.Partition, kafkaMessage.Offset);
                 Console.WriteLine(
                                   $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds} partition:{kafkaMessage.Partition} offset:{kafkaMessage.Offset}");
+                kafkaConsumer.CommitOffsetAsync(kafkaMessage.Partition, kafkaMessage.Offset);
+
             };
             var consumer = new KafkaConsumer(zkConnectionString, commandQueue,
                                              $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
@@ -53,19 +54,27 @@ namespace MSKafka.Test
                 consumers.Add(CreateConsumer(commandQueue, i.ToString()));
             }
             var queueClient = new KafkaProducer(commandQueue, zkConnectionString);
+            int times = 0;
             while (true)
             {
+                //if (times++ % 100 == 0)
+                //{
+                //    Task.Delay(2000).Wait();
+                //}
+               // var message = string.Empty;
                 var message = Console.ReadLine();
                 if (message.Equals("q"))
                 {
                     consumers.ForEach(consumer => consumer.Stop());
                     queueClient.Stop();
-                    ZookeeperConsumerConnector.zkClientStatic?.Dispose();
+                    //ZookeeperConsumerConnector.zkClientStatic?.Dispose();
                     break;
                 }
+                Console.WriteLine($"receive input {message}");
                 message = $"{message} @{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffffff}";
                 var kafkaMessage = new KafkaMessage(Encoding.UTF8.GetBytes(message));
                 //var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
+
                 while (true)
                 {
                     try
@@ -105,9 +114,9 @@ namespace MSKafka.Test
 
 
             var products = _commandBus.SendAsync(new GetProducts
-                                      {
-                                          ProductIds = new List<Guid> {reduceProduct.ProductId}
-                                      }, true)
+            {
+                ProductIds = new List<Guid> { reduceProduct.ProductId }
+            }, true)
                                       .Result.ReadAsAsync<List<Project>>()
                                       .Result;
 

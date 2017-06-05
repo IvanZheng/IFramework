@@ -18,9 +18,9 @@ namespace MSKafka.Test
     internal class ProgramMSKafka
     {
         private static readonly string commandQueue = "iframework.groupcommandqueue";
-        private static readonly string zkConnectionString = Configuration.GetAppConfig("zkConnectionString");
+        private static readonly string zkConnectionString = "localhost:2181";
 
-        private static void MainMSKafka(string[] args)
+        private static void Main2(string[] args)
         {
             Configuration.Instance
                          .UseUnityContainer()
