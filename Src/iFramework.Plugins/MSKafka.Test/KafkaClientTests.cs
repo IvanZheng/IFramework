@@ -2,10 +2,8 @@
 using System.Text;
 using System.Threading;
 using IFramework.Config;
-using IFramework.MessageQueue.MSKafka;
-using Kafka.Client.Consumers;
-using Kafka.Client.Messages;
-using Kafka.Client.Producers;
+using IFramework.MessageQueue.ConfluentKafka;
+using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MSKafka.Test
@@ -14,7 +12,7 @@ namespace MSKafka.Test
     public class KafkaClientTests
     {
         private static readonly string commandQueue = "seop.groupcommandqueue";
-        private readonly string _zkConnection = "localhost:2181";
+        private readonly string _zkConnection = "localhost:9092";
 
         [TestInitialize]
         public void Initialize()
@@ -29,7 +27,7 @@ namespace MSKafka.Test
         {
             try
             {
-                var client = new KafkaClient(_zkConnection);
+                var client = new ConfluentKafkaClient(_zkConnection);
                 client.CreateTopic("testtopic3");
             }
             catch (Exception ex)
@@ -45,13 +43,13 @@ namespace MSKafka.Test
             var queueClient = new KafkaProducer(commandQueue, _zkConnection);
 
             var message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff");
-            var kafkaMessage = new Message(Encoding.UTF8.GetBytes(message));
-            var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
+            var kafkaMessage = new KafkaMessage(Encoding.UTF8.GetBytes(message));
+            //var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
 
-            queueClient.Send(data);
+            queueClient.Send(message, kafkaMessage);
             Console.WriteLine($"send message: {message}");
             queueClient.Stop();
-            ZookeeperConsumerConnector.zkClientStatic?.Dispose();
+            //ZookeeperConsumerConnector.zkClientStatic?.Dispose();
         }
 
         [TestMethod]
@@ -60,7 +58,7 @@ namespace MSKafka.Test
             var consumer = Program.CreateConsumer(commandQueue, "ConsumerTest");
             Thread.Sleep(100);
             consumer.Stop();
-            ZookeeperConsumerConnector.zkClientStatic?.Dispose();
+            //ZookeeperConsumerConnector.zkClientStatic?.Dispose();
         }
     }
 }

@@ -6,7 +6,9 @@ using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.IoC;
-using IFramework.MessageQueue.MSKafka;
+using IFramework.MessageQueue.ConfluentKafka;
+using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
+//using IFramework.MessageQueue.MSKafka;
 using Kafka.Client.Consumers;
 using Kafka.Client.Messages;
 using Kafka.Client.Producers;
@@ -18,7 +20,7 @@ namespace MSKafka.Test
     internal class Program
     {
         private static readonly string commandQueue = "iframework.groupcommandqueue";
-        private static readonly string zkConnectionString = "localhost:2181";
+        private static readonly string zkConnectionString = "localhost:9092";
 
         private static void Main(string[] args)
         {
@@ -33,11 +35,12 @@ namespace MSKafka.Test
         {
             OnKafkaMessageReceived onMessageReceived = (kafkaConsumer, kafkaMessage) =>
             {
-                var message = Encoding.UTF8.GetString(kafkaMessage.Payload);
+                var message = Encoding.UTF8.GetString(kafkaMessage.Value.Payload);
                 var sendTime = DateTime.Parse(message.Split('@')[1]);
+              
+                kafkaConsumer.CommitOffset(kafkaMessage.Partition, kafkaMessage.Offset);
                 Console.WriteLine(
-                                  $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds}");
-                kafkaConsumer.CommitOffset(kafkaMessage.PartitionId.Value, kafkaMessage.Offset);
+                                  $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds} partition:{kafkaMessage.Partition} offset:{kafkaMessage.Offset}");
             };
             var consumer = new KafkaConsumer(zkConnectionString, commandQueue,
                                              $"{Environment.MachineName}.{commandQueue}", consumerId, onMessageReceived);
@@ -63,14 +66,14 @@ namespace MSKafka.Test
                     break;
                 }
                 message = $"{message} @{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffffff}";
-                var kafkaMessage = new Message(Encoding.UTF8.GetBytes(message));
-                var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
+                var kafkaMessage = new KafkaMessage(Encoding.UTF8.GetBytes(message));
+                //var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
                 while (true)
                 {
                     try
                     {
-                        queueClient.Send(data);
-                        Console.WriteLine($"send message: {message}");
+                        var result = queueClient.Send(message, kafkaMessage);
+                        Console.WriteLine($"send message: {message} partition:{result.Partition} offset:{result.Offset}");
                         break;
                     }
                     catch (Exception ex)

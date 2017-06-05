@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iFramework", "iFramework", "{87E489A9-46B4-4FB8-9F6B-085FBB27C3B7}"
 EndProject
@@ -104,6 +104,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParties", "ThirdParties", "{3B957FDD-F43D-4D2E-B5AE-603C09137A4C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaNET.Library", "iFramework.Plugins\ThirdParties\KafkaNET.Library\KafkaNET.Library.csproj", "{A92DD03B-EE4F-4A78-9FB2-279B6348C7D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.ConfluentKafka", "iFramework.Plugins\IFramework.MessageQueue.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj", "{185B5FD4-016C-416E-9213-522573AFEF13}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -820,6 +822,24 @@ Global
 		{A92DD03B-EE4F-4A78-9FB2-279B6348C7D2}.Release|x64.Build.0 = Release|x64
 		{A92DD03B-EE4F-4A78-9FB2-279B6348C7D2}.Release|x86.ActiveCfg = Release|Win32
 		{A92DD03B-EE4F-4A78-9FB2-279B6348C7D2}.Release|x86.Build.0 = Release|Win32
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Debug|x64.Build.0 = Debug|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Debug|x86.Build.0 = Debug|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Integration|Any CPU.ActiveCfg = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Integration|Any CPU.Build.0 = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Integration|x64.ActiveCfg = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Integration|x64.Build.0 = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Integration|x86.ActiveCfg = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Integration|x86.Build.0 = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Release|x64.ActiveCfg = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Release|x64.Build.0 = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Release|x86.ActiveCfg = Release|Any CPU
+		{185B5FD4-016C-416E-9213-522573AFEF13}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -873,6 +893,7 @@ Global
 		{4B92FC46-E4FD-4581-B4B4-B2CD4FD06A30} = {9EBB3C53-3EC8-4E7D-A0A0-B67E369E3279}
 		{3B957FDD-F43D-4D2E-B5AE-603C09137A4C} = {3BE1E22F-5A4C-4472-8E03-F965D537294E}
 		{A92DD03B-EE4F-4A78-9FB2-279B6348C7D2} = {3B957FDD-F43D-4D2E-B5AE-603C09137A4C}
+		{185B5FD4-016C-416E-9213-522573AFEF13} = {3BE1E22F-5A4C-4472-8E03-F965D537294E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35

@@ -11,6 +11,7 @@ using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using IFramework.Message;
 using IFramework.MessageQueue;
+using IFramework.MessageQueue.ConfluentKafka.Config;
 using IFramework.MessageQueue.MSKafka.Config;
 using Sample.Command;
 using Sample.Persistence;
@@ -41,7 +42,8 @@ namespace Sample.CommandService
                              .MessageQueueUseMachineNameFormat()
                              .UseMessageQueue()
                              .UseMessageStore<SampleModelContext>()
-                             .UseKafka("localhost:2181")
+                             .UseConfluentKafka("localhost:9092")
+                             //.UseKafka("localhost:2181")
                              //.UseEQueue()
                              .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                              .UseMessagePublisher("eventTopic");
