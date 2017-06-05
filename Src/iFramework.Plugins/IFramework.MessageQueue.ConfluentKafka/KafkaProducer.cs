@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using Confluent.Kafka;
@@ -20,7 +21,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             _brokerList = brokerList;
             _topic = topic;
-            var producerConfiguration = new Dictionary<string, object> { { "bootstrap.servers", _brokerList } };
+            var producerConfiguration = new Dictionary<string, object>
+            {
+                { "bootstrap.servers", _brokerList }
+               // {"queue.buffering.max.ms", 1}
+            };
 
             _producer = new Producer<string, KafkaMessage>(producerConfiguration, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
         }
@@ -43,6 +48,13 @@ namespace IFramework.MessageQueue.ConfluentKafka
         public Message<string, KafkaMessage> Send(string key, KafkaMessage message)
         {
             var result = _producer.ProduceAsync(_topic, key, message).Result;
+            _logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
+            return result;
+        }
+
+        public async Task<Message<string, KafkaMessage>> SendAsync(string key, KafkaMessage message)
+        {
+            var result = await _producer.ProduceAsync(_topic, key, message);
             _logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
             return result;
         }

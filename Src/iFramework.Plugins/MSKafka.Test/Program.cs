@@ -8,12 +8,10 @@ using IFramework.Infrastructure;
 using IFramework.IoC;
 using IFramework.MessageQueue.ConfluentKafka;
 using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
-//using IFramework.MessageQueue.MSKafka;
 using Kafka.Client.Consumers;
-using Kafka.Client.Messages;
-using Kafka.Client.Producers;
 using Sample.Command;
 using Sample.DTO;
+//using IFramework.MessageQueue.MSKafka;
 
 namespace MSKafka.Test
 {
@@ -37,7 +35,7 @@ namespace MSKafka.Test
             {
                 var message = Encoding.UTF8.GetString(kafkaMessage.Value.Payload);
                 var sendTime = DateTime.Parse(message.Split('@')[1]);
-              
+
                 kafkaConsumer.CommitOffset(kafkaMessage.Partition, kafkaMessage.Offset);
                 Console.WriteLine(
                                   $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds} partition:{kafkaMessage.Partition} offset:{kafkaMessage.Offset}");
@@ -72,8 +70,14 @@ namespace MSKafka.Test
                 {
                     try
                     {
-                        var result = queueClient.Send(message, kafkaMessage);
-                        Console.WriteLine($"send message: {message} partition:{result.Partition} offset:{result.Offset}");
+                        var start = DateTime.Now;
+                        queueClient.SendAsync(message, kafkaMessage)
+                                   .ContinueWith(t =>
+                                   {
+                                       var result = t.Result;
+                                       Console.WriteLine($"send message: {message} partition:{result.Partition} offset:{result.Offset} cost: {(DateTime.Now - start).TotalMilliseconds}");
+                                   });
+
                         break;
                     }
                     catch (Exception ex)
