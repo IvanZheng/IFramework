@@ -231,15 +231,15 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        public void CommitOffset(int partition, long offset)
-        {
-            CommitOffsetAsync(partition, offset).Wait();
-        }
+        //public void CommitOffset(int partition, long offset)
+        //{
+        //    CommitOffsetAsync(partition, offset).Wait();
+        //}
 
         public void CommitOffset(string broker, int partition, long offset)
         {
             // kafka not use broker in cluster mode
-            CommitOffsetAsync(partition, offset).Wait();
+            CommitOffsetAsync(partition, offset);
         }
     }
 }

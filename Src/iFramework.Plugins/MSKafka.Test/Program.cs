@@ -18,7 +18,7 @@ namespace MSKafka.Test
 {
     internal class Program
     {
-        private static readonly string commandQueue = "iframework.groupcommandqueue";
+        private static readonly string commandQueue = "iframework.groupcommandqueue1";
         private static readonly string zkConnectionString = "localhost:9092";
 
         private static void Main(string[] args)
@@ -57,11 +57,11 @@ namespace MSKafka.Test
             int times = 0;
             while (true)
             {
-                //if (times++ % 100 == 0)
+                //if (times++ % 10 == 0)
                 //{
-                //    Task.Delay(2000).Wait();
+                //    Task.Delay(10).Wait();
                 //}
-               // var message = string.Empty;
+                //var message = string.Empty;
                 var message = Console.ReadLine();
                 if (message.Equals("q"))
                 {
@@ -70,7 +70,7 @@ namespace MSKafka.Test
                     //ZookeeperConsumerConnector.zkClientStatic?.Dispose();
                     break;
                 }
-                Console.WriteLine($"receive input {message}");
+                //Console.WriteLine($"receive input {message}");
                 message = $"{message} @{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffffff}";
                 var kafkaMessage = new KafkaMessage(Encoding.UTF8.GetBytes(message));
                 //var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);

@@ -12,12 +12,13 @@ using Kafka.Client.Messages;
 using Kafka.Client.Producers;
 using Sample.Command;
 using Sample.DTO;
+using System.Threading.Tasks;
 
 namespace MSKafka.Test
 {
     internal class ProgramMSKafka
     {
-        private static readonly string commandQueue = "iframework.groupcommandqueue";
+        private static readonly string commandQueue = "iframework.groupcommandqueue2";
         private static readonly string zkConnectionString = "localhost:2181";
 
         private static void Main2(string[] args)
@@ -52,8 +53,14 @@ namespace MSKafka.Test
                 consumers.Add(CreateConsumer(commandQueue, i.ToString()));
             }
             var queueClient = new KafkaProducer(commandQueue, zkConnectionString);
+            int times = 0;
             while (true)
             {
+                //if (times++ % 10 == 0)
+                //{
+                //    Task.Delay(1000).Wait();
+                //}
+                //var message = string.Empty;
                 var message = Console.ReadLine();
                 if (message.Equals("q"))
                 {
