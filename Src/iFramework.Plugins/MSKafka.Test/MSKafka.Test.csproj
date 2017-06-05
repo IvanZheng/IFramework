@@ -80,6 +80,7 @@
     <Compile Include="Command.cs" />
     <Compile Include="DomainEvent.cs" />
     <Compile Include="KafkaClientTests.cs" />
+    <Compile Include="Program.MSKafka.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -118,6 +119,10 @@
     <ProjectReference Include="..\IFramework.MessageQueue.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj">
       <Project>{185b5fd4-016c-416e-9213-522573afef13}</Project>
       <Name>IFramework.MessageQueue.ConfluentKafka</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj">
+      <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>
+      <Name>IFramework.MessageQueue.MSKafka</Name>
     </ProjectReference>
     <ProjectReference Include="..\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.6.csproj">
       <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
