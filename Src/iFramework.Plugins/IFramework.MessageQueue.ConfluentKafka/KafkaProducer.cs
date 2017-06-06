@@ -44,18 +44,38 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        public Message<string, KafkaMessage> Send(string key, KafkaMessage message)
-        {
-            var result = _producer.ProduceAsync(_topic, key, message).Result;
-            //_logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
-            return result;
-        }
+        //public Message<string, KafkaMessage> Send(string key, KafkaMessage message)
+        //{
+        //    var result = _producer.ProduceAsync(_topic, key, message).Result;
+        //    //_logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
+        //    return result;
+        //}
 
         public async Task<Message<string, KafkaMessage>> SendAsync(string key, KafkaMessage message)
         {
-            var result = await _producer.ProduceAsync(_topic, key, message);
+            while (true)
+            {
+                try
+                {
+                    var result = await _producer.ProduceAsync(_topic, key, message);
+                    if (result.Error != ErrorCode.NoError)
+                    {
+                        _logger.Error($"send message failed topic: {_topic} Partition: {result.Partition} key:{key}");
+                        await Task.Delay(1000);
+                    }
+                    else
+                    {
+                        return result;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.Error($"send message failed topic: {_topic} key:{key}", e);
+                    await Task.Delay(1000);
+                }
+               
+            }
             //_logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
-            return result;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using IFramework.Message;
+﻿using System.Threading.Tasks;
+using IFramework.Message;
 using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue
@@ -6,10 +7,6 @@ namespace IFramework.MessageQueue
     public class MockMessageQueueClient : IMessageQueueClient
     {
         public void Dispose() { }
-
-        public void Publish(IMessageContext messageContext, string topic) { }
-
-        public void Send(IMessageContext messageContext, string queue) { }
 
         public ICommitOffsetable StartQueueClient(string commandQueueName,
                                                   string consumerId,
@@ -28,6 +25,16 @@ namespace IFramework.MessageQueue
                                                          int waitInterval = 1000)
         {
             return null;
+        }
+
+        public Task SendAsync(IMessageContext messageContext, string queue)
+        {
+            return Task.FromResult<object>(null);
+        }
+
+        public Task PublishAsync(IMessageContext messageContext, string topic)
+        {
+            return Task.FromResult<object>(null);
         }
 
         public IMessageContext WrapMessage(object message,

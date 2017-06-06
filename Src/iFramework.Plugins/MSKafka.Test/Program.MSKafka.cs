@@ -76,7 +76,7 @@ namespace KafkaClient.Test
                 {
                     try
                     {
-                        queueClient.Send(data);
+                        queueClient.SendAsync(data).Wait();
                         Console.WriteLine($"send message: {message}");
                         break;
                     }

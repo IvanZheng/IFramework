@@ -37,7 +37,6 @@ namespace IFramework.Infrastructure
     {
         private const string k_base36_digits = "0123456789abcdefghijklmnopqrstuvwxyz";
         private static readonly uint[] _lookup32 = CreateLookup32();
-
         public static IPAddress[] GetLocalIPAddresses()
         {
             Dns.GetHostName();

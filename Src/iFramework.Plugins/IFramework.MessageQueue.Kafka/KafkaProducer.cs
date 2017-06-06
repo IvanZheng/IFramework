@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using Kafka.Client.Cfg;
@@ -42,9 +43,21 @@ namespace IFramework.MessageQueue.MSKafka
             }
         }
 
-        public void Send(ProducerData<string, Kafka.Client.Messages.Message> data)
+        public async Task SendAsync(ProducerData<string, Kafka.Client.Messages.Message> data)
         {
-            _producer.Send(data);
+            while (true)
+            {
+                try
+                {
+                    _producer.Send(data);
+                    return;
+                }
+                catch (Exception e)
+                {
+                    _logger.Error($"topic: {_topic} send message error", e);
+                    await Task.Delay(1000);
+                }
+            }
         }
     }
 }

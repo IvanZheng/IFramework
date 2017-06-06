@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using EQueue.Clients.Producers;
 
 namespace IFramework.MessageQueue.EQueue
@@ -33,17 +34,13 @@ namespace IFramework.MessageQueue.EQueue
             Producer?.Shutdown();
         }
 
-        public void Send(global::EQueue.Protocols.Message equeueMessage, string key)
+        public Task SendAsync(global::EQueue.Protocols.Message equeueMessage, string key)
         {
             if (key == null)
             {
                 key = string.Empty;
             }
-            var result = Producer.Send(equeueMessage, key);
-            if (result.SendStatus != SendStatus.Success)
-            {
-                throw new Exception(result.ErrorMessage);
-            }
+            return Producer.SendAsync(equeueMessage, key);
         }
     }
 }

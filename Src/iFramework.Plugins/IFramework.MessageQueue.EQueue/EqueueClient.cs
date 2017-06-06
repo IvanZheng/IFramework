@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
@@ -41,14 +42,14 @@ namespace IFramework.MessageQueue.EQueue
             _producer.Stop();
         }
 
-        public void Publish(IMessageContext messageContext, string topic)
+        public Task PublishAsync(IMessageContext messageContext, string topic)
         {
-            _producer.Send(GetEQueueMessage(messageContext, topic), messageContext.Key);
+            return _producer.SendAsync(GetEQueueMessage(messageContext, topic), messageContext.Key);
         }
 
-        public void Send(IMessageContext messageContext, string queue)
+        public Task SendAsync(IMessageContext messageContext, string queue)
         {
-            _producer.Send(GetEQueueMessage(messageContext, queue), messageContext.Key);
+            return _producer.SendAsync(GetEQueueMessage(messageContext, queue), messageContext.Key);
         }
 
         public ICommitOffsetable StartQueueClient(string commandQueueName,

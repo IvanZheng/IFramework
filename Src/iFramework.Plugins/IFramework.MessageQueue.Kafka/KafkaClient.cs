@@ -47,7 +47,7 @@ namespace IFramework.MessageQueue.MSKafka
         //}
 
 
-        public void Publish(IMessageContext messageContext, string topic)
+        public Task PublishAsync(IMessageContext messageContext, string topic)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
@@ -55,10 +55,10 @@ namespace IFramework.MessageQueue.MSKafka
             var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
             var producerData =
                 new ProducerData<string, Kafka.Client.Messages.Message>(topic, messageContext.Key, message);
-            topicClient.Send(producerData);
+            return topicClient.SendAsync(producerData);
         }
 
-        public void Send(IMessageContext messageContext, string queue)
+        public Task SendAsync(IMessageContext messageContext, string queue)
         {
             queue = Configuration.Instance.FormatMessageQueueName(queue);
             var queueClient = GetQueueClient(queue);
@@ -67,7 +67,7 @@ namespace IFramework.MessageQueue.MSKafka
             var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
             var producerData =
                 new ProducerData<string, Kafka.Client.Messages.Message>(queue, messageContext.Key, message);
-            queueClient.Send(producerData);
+            return queueClient.SendAsync(producerData);
         }
 
         public ICommitOffsetable StartQueueClient(string commandQueueName,

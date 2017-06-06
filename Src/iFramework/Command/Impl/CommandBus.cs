@@ -212,9 +212,11 @@ namespace IFramework.Command.Impl
             }
         }
 
-        protected override void Send(IMessageContext messageContext, string queue)
+        protected override async Task SendMessageStateAsync(MessageState messageState)
         {
-            _messageQueueClient.Send(messageContext, queue);
+            var messageContext = messageState.MessageContext;
+            await _messageQueueClient.SendAsync(messageContext, messageContext.Topic ?? _defaultTopic);
+            CompleteSendingMessage(messageState);
         }
 
         protected override void CompleteSendingMessage(MessageState messageState)

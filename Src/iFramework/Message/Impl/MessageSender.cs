@@ -12,7 +12,7 @@ using IFramework.MessageQueue;
 
 namespace IFramework.Message.Impl
 {
-    public abstract class MessageSender : IMessageSender
+    public abstract class MessageSender: IMessageSender
     {
         protected string _defaultTopic;
         protected ILogger _logger;
@@ -88,17 +88,14 @@ namespace IFramework.Message.Impl
         }
 
         protected abstract IEnumerable<IMessageContext> GetAllUnSentMessages();
-        protected abstract void Send(IMessageContext messageContext, string topic);
+        protected abstract Task SendMessageStateAsync(MessageState messageState);
         protected abstract void CompleteSendingMessage(MessageState messageState);
 
 
         protected virtual void OnSendCancel(object state)
         {
             var sendTaskCompletionSource = state as TaskCompletionSource<MessageResponse>;
-            if (sendTaskCompletionSource != null)
-            {
-                sendTaskCompletionSource.TrySetCanceled();
-            }
+            sendTaskCompletionSource?.TrySetCanceled();
         }
 
         private void SendMessages(CancellationTokenSource cancellationTokenSource)
@@ -108,21 +105,7 @@ namespace IFramework.Message.Impl
                 try
                 {
                     var messageState = _messageStateQueue.Take(cancellationTokenSource.Token);
-                    while (true)
-                    {
-                        try
-                        {
-                            var messageContext = messageState.MessageContext;
-                            Send(messageContext, messageContext.Topic ?? _defaultTopic);
-                            CompleteSendingMessage(messageState);
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger?.Error(ex);
-                            Thread.Sleep(2000);
-                        }
-                    }
+                    SendMessageStateAsync(messageState);
                 }
                 catch (OperationCanceledException)
                 {

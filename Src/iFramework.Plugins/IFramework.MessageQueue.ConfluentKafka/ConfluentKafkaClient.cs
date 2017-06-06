@@ -43,21 +43,21 @@ namespace IFramework.MessageQueue.ConfluentKafka
         //}
 
 
-        public void Publish(IMessageContext messageContext, string topic)
+        public Task PublishAsync(IMessageContext messageContext, string topic)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
             var message = ((MessageContext) messageContext).KafkaMessage;
-            topicClient.Send(messageContext.Key, message);
+            return topicClient.SendAsync(messageContext.Key, message);
         }
 
-        public void Send(IMessageContext messageContext, string queue)
+        public Task SendAsync(IMessageContext messageContext, string queue)
         {
             queue = Configuration.Instance.FormatMessageQueueName(queue);
             var queueClient = GetQueueClient(queue);
 
             var message = ((MessageContext) messageContext).KafkaMessage;
-            queueClient.Send(messageContext.Key, message);
+            return queueClient.SendAsync(messageContext.Key, message);
         }
 
         public ICommitOffsetable StartQueueClient(string commandQueueName,

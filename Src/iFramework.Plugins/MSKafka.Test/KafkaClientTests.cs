@@ -80,7 +80,7 @@ namespace KafkaClient.Test
                 var message = $"message:{i}";
                 var kafkaMessage = new Message(Encoding.UTF8.GetBytes(message));
                 var data = new ProducerData<string, Message>(mscommandQueue, message, kafkaMessage);
-                queueClient.Send(data);
+                queueClient.SendAsync(data).Wait();
             }
             
             Console.WriteLine($"send message completed cost: {(DateTime.Now - start).TotalMilliseconds}");

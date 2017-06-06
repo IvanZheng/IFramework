@@ -9,6 +9,7 @@ using IFramework.Message.Impl;
 using IFramework.MessageQueue.ServiceBus.MessageFormat;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
+using System.Threading.Tasks;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
@@ -31,7 +32,7 @@ namespace IFramework.MessageQueue.ServiceBus
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType());
         }
 
-        public void Publish(IMessageContext messageContext, string topic)
+        public async Task PublishAsync(IMessageContext messageContext, string topic)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
@@ -40,7 +41,7 @@ namespace IFramework.MessageQueue.ServiceBus
             {
                 try
                 {
-                    topicClient.Send(brokeredMessage);
+                    await topicClient.SendAsync(brokeredMessage);
                     break;
                 }
                 catch (InvalidOperationException)
@@ -50,7 +51,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-        public void Send(IMessageContext messageContext, string queue)
+        public async Task SendAsync(IMessageContext messageContext, string queue)
         {
             var commandKey = messageContext.Key;
             queue = Configuration.Instance.FormatMessageQueueName(queue);
@@ -73,7 +74,7 @@ namespace IFramework.MessageQueue.ServiceBus
             {
                 try
                 {
-                    queueClient.Send(brokeredMessage);
+                    await queueClient.SendAsync(brokeredMessage);
                     break;
                 }
                 catch (InvalidOperationException)

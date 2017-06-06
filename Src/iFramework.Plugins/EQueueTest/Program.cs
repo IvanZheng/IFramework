@@ -65,8 +65,11 @@ namespace EQueueTest
                 {
                     try
                     {
-                        producer.Send(queueMessage, message);
-                        Console.WriteLine($"send message: {message}");
+                        producer.SendAsync(queueMessage, message)
+                                .ContinueWith(t =>
+                                {
+                                    Console.WriteLine($"send message: {message}");
+                                });
                         break;
                     }
                     catch (Exception ex)

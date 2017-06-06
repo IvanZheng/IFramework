@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using IFramework.Message;
 using IFramework.Message.Impl;
 
@@ -7,16 +8,6 @@ namespace IFramework.MessageQueue.ZeroMQ
     public class ZeroMQClient : IMessageQueueClient
     {
         public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Publish(IMessageContext messageContext, string topic)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Send(IMessageContext messageContext, string queue)
         {
             throw new NotImplementedException();
         }
@@ -36,6 +27,16 @@ namespace IFramework.MessageQueue.ZeroMQ
                                                          OnMessagesReceived onMessagesReceived,
                                                          int fullLoadThreshold = 1000,
                                                          int waitInterval = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SendAsync(IMessageContext messageContext, string queue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PublishAsync(IMessageContext messageContext, string topic)
         {
             throw new NotImplementedException();
         }
