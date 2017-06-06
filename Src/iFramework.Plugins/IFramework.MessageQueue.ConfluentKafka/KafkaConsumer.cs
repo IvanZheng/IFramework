@@ -64,7 +64,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {
                     "default.topic.config", new Dictionary<string, object>
                     {
-                        {"auto.offset.reset", "largest"}
+                        {"auto.offset.reset", "smallest"}
                     }
                 }
             };

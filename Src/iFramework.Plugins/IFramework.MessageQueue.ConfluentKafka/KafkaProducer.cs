@@ -25,7 +25,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 { "bootstrap.servers", _brokerList },
              //   {"delivery.report.only.error", true},
-                {"acks", 1},
+                {"request.required.acks", 1},
                // {"queue.buffering.max.ms", 1}
             };
 
@@ -47,14 +47,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
         public Message<string, KafkaMessage> Send(string key, KafkaMessage message)
         {
             var result = _producer.ProduceAsync(_topic, key, message).Result;
-            _logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
+            //_logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
             return result;
         }
 
         public async Task<Message<string, KafkaMessage>> SendAsync(string key, KafkaMessage message)
         {
             var result = await _producer.ProduceAsync(_topic, key, message);
-            _logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
+            //_logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
             return result;
         }
     }

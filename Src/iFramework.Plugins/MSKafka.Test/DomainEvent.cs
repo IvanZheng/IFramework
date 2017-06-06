@@ -1,7 +1,7 @@
 ﻿using IFramework.Event;
 using IFramework.Infrastructure;
 
-namespace MSKafka.Test
+namespace KafkaClient.Test
 {
     public class DomainEvent : IDomainEvent
     {

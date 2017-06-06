@@ -1,7 +1,7 @@
 ﻿using IFramework.Command;
 using IFramework.Infrastructure;
 
-namespace MSKafka.Test
+namespace KafkaClient.Test
 {
     public class Command : ICommand
     {

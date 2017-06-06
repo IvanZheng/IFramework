@@ -196,8 +196,9 @@ namespace IFramework.MessageQueue.MSKafka
                     var allPartitions = kafkaManager.GetTopicPartitionsFromZK(topic);
                     return allPartitions.Count > 0;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine(ex.GetBaseException().Message);
                     return false;
                 }
             }
@@ -216,7 +217,7 @@ namespace IFramework.MessageQueue.MSKafka
             var producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>())
             {
                 RequiredAcks = -1,
-                TotalNumPartitions = 3,
+                TotalNumPartitions = 0,
                 ZooKeeper = GetZooKeeperConfiguration(_zkConnectionString)
             };
             while (true)

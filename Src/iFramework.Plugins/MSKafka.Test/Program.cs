@@ -14,11 +14,11 @@ using Sample.Command;
 using Sample.DTO;
 //using IFramework.MessageQueue.MSKafka;
 
-namespace MSKafka.Test
+namespace KafkaClient.Test
 {
     internal class Program
     {
-        private static readonly string commandQueue = "iframework.groupcommandqueue1";
+        private static readonly string commandQueue = "confluentconsole.groupcommandqueue";
         private static readonly string zkConnectionString = "localhost:9092";
 
         private static void Main(string[] args)

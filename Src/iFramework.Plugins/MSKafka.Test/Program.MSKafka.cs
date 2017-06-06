@@ -14,7 +14,7 @@ using Sample.Command;
 using Sample.DTO;
 using System.Threading.Tasks;
 
-namespace MSKafka.Test
+namespace KafkaClient.Test
 {
     internal class ProgramMSKafka
     {

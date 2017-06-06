@@ -67,7 +67,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DAL", "DAL", "{78358E57-4F4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.MSKafka", "iFramework.Plugins\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj", "{C52B89CF-D3A6-48FC-BA3B-0DAFF977FA6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSKafka.Test", "iFramework.Plugins\MSKafka.Test\MSKafka.Test.csproj", "{E25B1872-A666-4995-A7C3-C517DBE3E5C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaClient.Test", "iFramework.Plugins\MSKafka.Test\KafkaClient.Test.csproj", "{E25B1872-A666-4995-A7C3-C517DBE3E5C8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kafka", "Kafka", "{3BE1E22F-5A4C-4472-8E03-F965D537294E}"
 EndProject
