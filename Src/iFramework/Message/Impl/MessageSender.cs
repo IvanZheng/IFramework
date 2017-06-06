@@ -26,7 +26,7 @@ namespace IFramework.Message.Impl
             _defaultTopic = defaultTopic;
             _needMessageStore = Configuration.Instance.NeedMessageStore;
             _messageStateQueue = new BlockingCollection<MessageState>();
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType()) : null;
+            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name) : null;
         }
 
         protected BlockingCollection<MessageState> _messageStateQueue { get; set; }
@@ -82,6 +82,11 @@ namespace IFramework.Message.Impl
         public Task<MessageResponse[]> SendAsync(params MessageState[] messageStates)
         {
             messageStates.ForEach(messageState => { _messageStateQueue.Add(messageState); });
+            messageStates.ForEach(ms =>
+            {
+                _logger.Debug($"send message enqueue msgId: {ms.MessageID} topic:{ms.MessageContext.Topic}");
+
+            });
             return Task.WhenAll(messageStates.Where(s => s.SendTaskCompletionSource != null)
                                              .Select(s => s.SendTaskCompletionSource.Task)
                                              .ToArray());

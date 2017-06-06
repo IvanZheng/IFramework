@@ -53,7 +53,7 @@ namespace KafkaClient.Test
             var start = DateTime.Now;
             //var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
             var tasks = new List<Task>();
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100000; i++)
             {
                 var message = $"message:{i}";
                 var kafkaMessage = new KafkaMessage(Encoding.UTF8.GetBytes(message));
@@ -75,7 +75,7 @@ namespace KafkaClient.Test
            
             var tasks = new List<Task>();
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100000; i++)
             {
                 var message = $"message:{i}";
                 var kafkaMessage = new Message(Encoding.UTF8.GetBytes(message));

@@ -33,6 +33,8 @@
             });
         };
 
+
+
         var doCommand = function(commandName, command) {
             $.ajax({
                 cache: false,
@@ -58,17 +60,37 @@
                 url: '@Url.Content("~/api/BatchCommand/")' + commandName,
                 data: command,
                 success: function(data) {
-                    if (data.ErrorCode == 0) {
+                    if (data.errorCode == 0) {
                         showResult(data);
                     } else {
-                        showResult(data.Message);
+                        showResult(data.message);
                     }
                 }
 
             });
         };
 
-        $(function() {
+        $(function () {
+
+            $("#pressureBtn").click(function() {
+                $.ajax(
+                    {
+                        cache: false,
+                        type: "POST",
+                        url: '@Url.Content("~/api/values")',
+                        data: {},
+                        success: function(data) {
+                            if (data.errorCode == 0) {
+                                showResult(data);
+                            } else {
+                                showResult(data.message);
+                            }
+                        }
+
+                    }
+                );
+            });
+
             $("#loginCommandSaga").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
@@ -166,6 +188,9 @@
 <div>
     <input type="text" value="email" id="email"/>
     <input id="modifyCommand" type="button" value="ModifyCommand"/>
+</div>
+<div>
+    <input type="button" value="Api pressure test" id="pressureBtn"/>
 </div>
 <div id="result">
 

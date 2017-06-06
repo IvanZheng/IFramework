@@ -10,7 +10,7 @@ using Sample.DTO;
 
 namespace Sample.CommandService.Controllers
 {
-    public class CommandController : ApiController
+    public class CommandController : ApiControllerBase
     {
         public CommandController(ICommandBus commandBus)
         {
@@ -19,25 +19,22 @@ namespace Sample.CommandService.Controllers
 
         private ICommandBus _CommandBus { get; }
 
-        public async Task<ApiResult> Post([FromBody] ICommand command)
+        public Task<ApiResult<object>> Post([FromBody] ICommand command)
         {
-            if (ModelState.IsValid)
-            {
-                return await ExceptionManager.ProcessAsync(async () =>
-                {
-                    return await _CommandBus.ExecuteAsync(command); //, TimeSpan.FromMilliseconds(2000));
-                    //var messageResponse = await _CommandBus.SendAsync(command, TimeSpan.FromSeconds(5));
-                    //return await messageResponse.Reply.Timeout(TimeSpan.FromMilliseconds(2000));
-                });
-            }
-            return
-                new ApiResult
-                {
-                    ErrorCode = ErrorCode.CommandInvalid,
-                    Message = string.Join(",", ModelState.Values
-                                                         .SelectMany(v => v.Errors
-                                                                           .Select(e => e.ErrorMessage)))
-                };
+            return ProcessAsync(() => _CommandBus.ExecuteAsync(command));
+
+            //if (ModelState.IsValid)
+            //{
+            //    return await ExceptionManager.;
+            //}
+            //return
+            //    new ApiResult
+            //    {
+            //        ErrorCode = ErrorCode.CommandInvalid,
+            //        Message = string.Join(",", ModelState.Values
+            //                                             .SelectMany(v => v.Errors
+            //                                                               .Select(e => e.ErrorMessage)))
+            //    };
         }
 
 

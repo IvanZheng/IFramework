@@ -138,6 +138,8 @@ namespace IFramework.Command.Impl
             var commandContext = WrapCommand(command, needReply);
             var commandState = BuildCommandState(commandContext, sendCancellationToken, timeout, replyCancellationToken,
                                                  needReply);
+
+            _logger.Debug($"enter in command bus send {commandState.MessageID} topic:{commandState.MessageContext.Topic}");
             if (needReply)
             {
                 _commandStateQueues.GetOrAdd(commandState.MessageID, commandState);
@@ -214,8 +216,10 @@ namespace IFramework.Command.Impl
 
         protected override async Task SendMessageStateAsync(MessageState messageState)
         {
+            _logger.Debug($"send message start msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
             var messageContext = messageState.MessageContext;
             await _messageQueueClient.SendAsync(messageContext, messageContext.Topic ?? _defaultTopic);
+            _logger.Debug($"send message complete msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
             CompleteSendingMessage(messageState);
         }
 
