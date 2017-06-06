@@ -39,14 +39,24 @@ namespace Sample.CommandHttpClient
     {
         private static void Main(string[] args)
         {
+            var batch = 10;
             try
             {
-                HttpClientGetTest();
+                int.TryParse(args[0], out batch);
             }
             catch (Exception e)
             {
-                throw e;
+                batch = 10;
             }
+            new CommandApiTest(batch).ExecuteCommandTest();
+            //try
+            //{
+            //    HttpClientGetTest();
+            //}
+            //catch (Exception e)
+            //{
+            //    throw e;
+            //}
 
             //var apiClient = new HttpClient();
             //// apiClient.BaseAddress = new System.Uri("http://localhost:6357");

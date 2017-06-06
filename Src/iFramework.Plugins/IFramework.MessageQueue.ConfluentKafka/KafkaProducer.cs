@@ -24,9 +24,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
             var producerConfiguration = new Dictionary<string, object>
             {
                 { "bootstrap.servers", _brokerList },
-             //   {"delivery.report.only.error", true},
                 {"request.required.acks", 1},
-               // {"queue.buffering.max.ms", 1}
+                {"socket.nagle.disable", true},
+                {"socket.blocking.max.ms", 1},
+                {"queue.buffering.max.ms", 1}
             };
 
             _producer = new Producer<string, KafkaMessage>(producerConfiguration, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
@@ -57,10 +58,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 try
                 {
-                    var result = await _producer.ProduceAsync(_topic, key, message);
+                    var result = await _producer.ProduceAsync(_topic, key, message)
+                                                .ConfigureAwait(false);
                     if (result.Error != ErrorCode.NoError)
                     {
-                        _logger.Error($"send message failed topic: {_topic} Partition: {result.Partition} key:{key}");
+                        _logger.Error($"send message failed topic: {_topic} Partition: {result.Partition} key:{key} error:{result.Error}");
                         await Task.Delay(1000);
                     }
                     else

@@ -58,13 +58,16 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {"group.id", GroupId},
                 {"client.id", consumerId},
                 {"enable.auto.commit", false},
+                {"socket.blocking.max.ms", 1},
+                {"fetch.error.backoff.ms", 1 },
+                {"socket.nagle.disable", true},
                 //{"statistics.interval.ms", 60000},
                 //{"retry.backoff.ms", backOffIncrement},
                 {"bootstrap.servers", BrokerList},
                 {
                     "default.topic.config", new Dictionary<string, object>
                     {
-                        {"auto.offset.reset", "smallest"}
+                        {"auto.offset.reset", "largest"}
                     }
                 }
             };

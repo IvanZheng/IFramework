@@ -56,9 +56,10 @@ namespace Sample.CommandHandler.Community
                 throw ex;
             }
 
-            _EventBus.Publish(new AccountLogined {AccountID = account.ID, LoginTime = DateTime.Now});
-            await _UnitOfWork.CommitAsync()
-                             .ConfigureAwait(false);
+            _EventBus.Publish(new AccountLogined {AccountID = account.ID, LoginTime = DateTime.Now}); 
+
+            //await _UnitOfWork.CommitAsync()
+            //                 .ConfigureAwait(false);
             _CommandContext.Reply = account.ID;
         }
 
