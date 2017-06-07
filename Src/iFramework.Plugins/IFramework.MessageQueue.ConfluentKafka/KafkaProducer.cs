@@ -54,8 +54,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public async Task<Message<string, KafkaMessage>> SendAsync(string key, KafkaMessage message)
         {
+            var retryTimes = 0;
             while (true)
             {
+                retryTimes++;
+                // 每次发送失败后线性增长等待发送时间 如: 5s, 10s, 15s, 20s .... max:5 minutes
+                var waitTime = Math.Min(retryTimes * 1000 * 5, 60000 * 5);
                 try
                 {
                     var result = await _producer.ProduceAsync(_topic, key, message)
@@ -63,7 +67,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                     if (result.Error != ErrorCode.NoError)
                     {
                         _logger.Error($"send message failed topic: {_topic} Partition: {result.Partition} key:{key} error:{result.Error}");
-                        await Task.Delay(1000);
+                        await Task.Delay(waitTime);
                     }
                     else
                     {
@@ -73,7 +77,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 catch (Exception e)
                 {
                     _logger.Error($"send message failed topic: {_topic} key:{key}", e);
-                    await Task.Delay(1000);
+                    await Task.Delay(waitTime);
                 }
                
             }
