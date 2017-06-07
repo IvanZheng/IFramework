@@ -50,7 +50,7 @@ namespace IFramework.MessageQueue.MSKafka
                 try
                 {
                     _producer.Send(data);
-                    return;
+                    break;
                 }
                 catch (Exception e)
                 {
