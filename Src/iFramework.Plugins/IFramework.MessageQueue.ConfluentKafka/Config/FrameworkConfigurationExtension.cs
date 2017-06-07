@@ -13,7 +13,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.Config
         {
             IoCFactory.Instance.CurrentContainer
                       .RegisterType<IMessageQueueClient, ConfluentKafkaClient>(Lifetime.Singleton,
-                                                                      new ConstructInjection(new ParameterInjection("brokerlist", brokerlist)));
+                                                                      new ConstructInjection(new ParameterInjection("brokerList", brokerlist)));
             _backOffIncrement = backOffIncrement;
             return configuration;
         }
