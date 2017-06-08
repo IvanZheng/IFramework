@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -759,6 +760,24 @@ namespace IFramework.Infrastructure
         public static string MapPath(string virtualPath)
         {
             return HostingEnvironment.MapPath(virtualPath);
+        }
+
+        public static string GetDescription(this object obj)
+        {
+            if (obj == null)
+            {
+                return null;
+            }
+            var fi = obj.GetType().GetField(obj.ToString());
+            if (fi != null)
+            {
+                var arrDesc = fi.GetCustomAttribute<DescriptionAttribute>(false);
+                if (arrDesc != null)
+                {
+                    return arrDesc.Description;
+                }
+            }
+            return null;
         }
     }
 }

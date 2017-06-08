@@ -49,7 +49,7 @@ namespace IFramework.EntityFramework.Config
                                                          Lifetime lifetime = Lifetime.Hierarchical)
         {
             container = container ?? IoCFactory.Instance.CurrentContainer;
-            container.RegisterType(typeof(IRepository<>), typeof(Repository<>), lifetime);
+            container.RegisterType(typeof(IRepository<>), typeof(Repository<>));
             container.RegisterType<IDomainRepository, DomainRepository>(lifetime);
             return configuration;
         }

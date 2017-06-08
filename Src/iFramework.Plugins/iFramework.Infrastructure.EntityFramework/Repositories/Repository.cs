@@ -49,12 +49,12 @@ namespace IFramework.EntityFramework.Repositories
 
         protected override bool DoExists(ISpecification<TEntity> specification)
         {
-            return Count(specification.GetExpression()) > 0;
+            return DbSet.Any(specification.GetExpression());
         }
 
         protected override async Task<bool> DoExistsAsync(ISpecification<TEntity> specification)
         {
-            return await CountAsync(specification.GetExpression()).ConfigureAwait(false) > 0;
+            return await DbSet.AnyAsync(specification.GetExpression()).ConfigureAwait(false);
         }
 
         protected override TEntity DoFind(ISpecification<TEntity> specification)

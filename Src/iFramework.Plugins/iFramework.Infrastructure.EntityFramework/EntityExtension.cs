@@ -140,5 +140,12 @@ namespace IFramework.EntityFramework
             collection.Remove(entity);
             entity.MarkAsDeleted();
         }
+
+        public static void ClearEntities<T>(this ICollection<T> collection)
+            where T : Entity
+        {
+            collection?.ToList()
+                      .ForEach(collection.RemoveEntity);
+        }
     }
 }

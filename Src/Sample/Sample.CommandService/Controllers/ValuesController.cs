@@ -9,9 +9,9 @@ namespace Sample.CommandService.Controllers
     public class ValuesController : ApiControllerBase
     {
         // GET api/<controller>
-        public Task<ApiResult<string[]>> Get()
+        public async Task<ApiResult<string[]>> Get()
         {
-            return ProcessAsync(() => Task.FromResult(new[] {"value1", "value2"}));
+            return await ProcessAsync(() => Task.FromResult(new[] {"value1", "value2"}));
         }
 
         // GET api/<controller>/5

@@ -14,7 +14,7 @@ using IFramework.Message.Impl;
 
 namespace IFramework.MessageStoring
 {
-    public abstract class MessageStore : MSDbContext, IMessageStore
+    public abstract class MessageStore: MSDbContext, IMessageStore
     {
         private static readonly object EventLock = new object();
         protected readonly ILogger _logger;
@@ -23,9 +23,7 @@ namespace IFramework.MessageStoring
             : base(connectionString ?? "MessageStore")
         {
             if (IoCFactory.IsInit())
-            {
                 _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType());
-            }
         }
 
         public DbSet<Command> Commands { get; set; }
@@ -36,8 +34,7 @@ namespace IFramework.MessageStoring
         public DbSet<UnSentCommand> UnSentCommands { get; set; }
         public DbSet<UnPublishedEvent> UnPublishedEvents { get; set; }
 
-        public void SaveCommand(IMessageContext commandContext,
-                                object result = null,
+        public void SaveCommand(IMessageContext commandContext, object result = null,
                                 params IMessageContext[] messageContexts)
         {
             if (commandContext != null)
@@ -54,8 +51,7 @@ namespace IFramework.MessageStoring
             SaveChanges();
         }
 
-        public void SaveFailedCommand(IMessageContext commandContext,
-                                      Exception ex = null,
+        public void SaveFailedCommand(IMessageContext commandContext, Exception ex = null,
                                       params IMessageContext[] eventContexts)
         {
             if (commandContext != null)
@@ -64,16 +60,48 @@ namespace IFramework.MessageStoring
                 command.Status = MessageStatus.Failed;
                 Commands.Add(command);
 
-                if (eventContexts != null)
+                eventContexts?.ForEach(eventContext =>
                 {
-                    eventContexts.ForEach(eventContext =>
-                    {
-                        eventContext.CorrelationID = commandContext.MessageID;
-                        Events.Add(BuildEvent(eventContext));
-                        UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
-                    });
-                }
+                    eventContext.CorrelationID = commandContext.MessageID;
+                    Events.Add(BuildEvent(eventContext));
+                    UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
+                });
                 SaveChanges();
+            }
+        }
+
+
+        internal Event InternalSaveEvent(IMessageContext eventContext)
+        {
+            // lock (EventLock)
+            {
+                var retryTimes = 5;
+                while (true)
+                {
+                    try
+                    {
+                        var @event = Events.Find(eventContext.MessageID);
+                        if (@event == null)
+                        {
+                            @event = BuildEvent(eventContext);
+                            Events.Add(@event);
+                            SaveChanges();
+                        }
+                        return @event;
+                    }
+                    catch (Exception)
+                    {
+                        if (--retryTimes > 0)
+                        {
+                            Task.Delay(50).Wait();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
+
             }
         }
 
@@ -85,8 +113,7 @@ namespace IFramework.MessageStoring
 
         // if not subscribe the same event message by topic's mulitple subscriptions
         // we don't need EventLock to assure Events.Add(@event) having no conflict.
-        public void HandleEvent(IMessageContext eventContext,
-                                string subscriptionName,
+        public void HandleEvent(IMessageContext eventContext, string subscriptionName,
                                 IEnumerable<IMessageContext> commandContexts,
                                 IEnumerable<IMessageContext> messageContexts)
         {
@@ -106,9 +133,7 @@ namespace IFramework.MessageStoring
             SaveChanges();
         }
 
-        public void SaveFailHandledEvent(IMessageContext eventContext,
-                                         string subscriptionName,
-                                         Exception e,
+        public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e,
                                          params IMessageContext[] messageContexts)
         {
             var @event = InternalSaveEvent(eventContext);
@@ -128,13 +153,11 @@ namespace IFramework.MessageStoring
             CommandHandledInfo commandHandledInfo = null;
             var command = Commands.FirstOrDefault(c => c.ID == commandId);
             if (command != null)
-            {
                 commandHandledInfo = new CommandHandledInfo
                 {
                     Result = command.Reply,
                     Id = command.ID
                 };
-            }
             return commandHandledInfo;
         }
 
@@ -170,48 +193,12 @@ namespace IFramework.MessageStoring
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
 
-
-        internal Event InternalSaveEvent(IMessageContext eventContext)
-        {
-            // lock (EventLock)
-            {
-                var retryTimes = 5;
-                while (true)
-                {
-                    try
-                    {
-                        var @event = Events.Find(eventContext.MessageID);
-                        if (@event == null)
-                        {
-                            @event = BuildEvent(eventContext);
-                            Events.Add(@event);
-                            SaveChanges();
-                        }
-                        return @event;
-                    }
-                    catch (Exception)
-                    {
-                        if (--retryTimes > 0)
-                        {
-                            Task.Delay(50).Wait();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
-            }
-        }
-
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<HandledEvent>()
-                        .HasKey(e => new {e.Id, e.SubscriptionName})
+            modelBuilder.Entity<HandledEvent>().HasKey(e => new { e.Id, e.SubscriptionName })
                         .Property(handledEvent => handledEvent.SubscriptionName)
                         .HasMaxLength(322);
-
             //modelBuilder.Entity<Message>()
             //    .Map<Command>(map =>
             //    {
@@ -232,42 +219,42 @@ namespace IFramework.MessageStoring
                         .Ignore(c => c.Reply)
                         .ToTable("msgs_Commands")
                         .Property(c => c.CorrelationID)
-                        .HasMaxLength(200)
-                        .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                                             new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
+                        .HasMaxLength(200);
+            //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
+            //    new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
             modelBuilder.Entity<Command>()
                         .Property(c => c.Name)
-                        .HasMaxLength(200)
-                        .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                                             new IndexAnnotation(new IndexAttribute("NameIndex")));
+                        .HasMaxLength(200);
+            //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
+            //    new IndexAnnotation(new IndexAttribute("NameIndex")));
             modelBuilder.Entity<Command>()
                         .Property(c => c.Topic)
-                        .HasMaxLength(200)
-                        .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                                             new IndexAnnotation(new IndexAttribute("TopicIndex")));
+                        .HasMaxLength(200);
+            //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
+            //    new IndexAnnotation(new IndexAttribute("TopicIndex")));
 
 
             modelBuilder.Entity<Event>()
                         .ToTable("msgs_Events")
                         .Property(e => e.CorrelationID)
-                        .HasMaxLength(200)
-                        .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                                             new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
+                        .HasMaxLength(200);
+            //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
+            //    new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
             modelBuilder.Entity<Event>()
                         .Property(e => e.Name)
-                        .HasMaxLength(200)
-                        .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                                             new IndexAnnotation(new IndexAttribute("NameIndex")));
+                        .HasMaxLength(200);
+            //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
+            //    new IndexAnnotation(new IndexAttribute("NameIndex")));
             modelBuilder.Entity<Event>()
                         .Property(e => e.AggregateRootID)
-                        .HasMaxLength(200)
-                        .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                                             new IndexAnnotation(new IndexAttribute("AGRootIdIndex")));
+                        .HasMaxLength(200);
+            //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
+            //    new IndexAnnotation(new IndexAttribute("AGRootIdIndex")));
             modelBuilder.Entity<Event>()
                         .Property(e => e.Topic)
-                        .HasMaxLength(200)
-                        .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                                             new IndexAnnotation(new IndexAttribute("TopicIndex")));
+                        .HasMaxLength(200);
+            //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
+            //    new IndexAnnotation(new IndexAttribute("TopicIndex")));
 
             modelBuilder.Entity<UnSentMessage>()
                         .Map<UnSentCommand>(map =>
@@ -297,30 +284,28 @@ namespace IFramework.MessageStoring
             where TMessage : UnSentMessage
         {
             var messageContexts = new List<IMessageContext>();
-            Set<TMessage>()
-                .ToList()
-                .ForEach(message =>
+            Set<TMessage>().ToList().ForEach(message =>
+            {
+                try
                 {
-                    try
+                    var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type)) as IMessage;
+                    if (rawMessage != null)
                     {
-                        var rawMessage = message.MessageBody.ToJsonObject(Type.GetType(message.Type)) as IMessage;
-                        if (rawMessage != null)
-                        {
-                            messageContexts.Add(wrapMessage(message.ID, rawMessage, message.Topic, message.CorrelationID,
-                                                            message.ReplyToEndPoint, message.SagaInfo, message.Producer));
-                        }
-                        else
-                        {
-                            Set<TMessage>().Remove(message);
-                            _logger?.ErrorFormat("get unsent message error: {0}", message.ToJson());
-                        }
+                        messageContexts.Add(wrapMessage(message.ID, rawMessage, message.Topic, message.CorrelationID,
+                                                        message.ReplyToEndPoint, message.SagaInfo, message.Producer));
                     }
-                    catch (Exception)
+                    else
                     {
                         Set<TMessage>().Remove(message);
                         _logger?.ErrorFormat("get unsent message error: {0}", message.ToJson());
                     }
-                });
+                }
+                catch (Exception)
+                {
+                    Set<TMessage>().Remove(message);
+                    _logger?.ErrorFormat("get unsent message error: {0}", message.ToJson());
+                }
+            });
             SaveChanges();
             return messageContexts;
         }
