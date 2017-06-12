@@ -101,13 +101,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.5.1.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj">
       <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
-      <Name>IFramework.EntityFramework4.5.1</Name>
+      <Name>IFramework.EntityFramework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net4.5.1.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
-      <Name>IFramework.Log4Net4.5.1</Name>
+      <Name>IFramework.Log4Net</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj">
       <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>
@@ -117,9 +117,9 @@
       <Project>{081bb2eb-cc5d-4512-b61e-917cd7aa795d}</Project>
       <Name>IFramework.MessageQueue.ServiceBus4.6</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.6.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStore.EntityFramework.csproj">
       <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
-      <Name>IFramework.MessageStoring.EntityFramework4.6</Name>
+      <Name>IFramework.MessageStore.EntityFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Unity\IFramework.Unity.csproj">
       <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
@@ -133,9 +133,9 @@
       <Project>{a92dd03b-ee4f-4a78-9fb2-279b6348c7d2}</Project>
       <Name>KafkaNET.Library</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework4.5.1.csproj">
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
       <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework4.5.1</Name>
+      <Name>IFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sample.CommandHandler\Sample.CommandHandler.csproj">
       <Project>{6760ea99-c3b6-4cb2-92eb-945ab3c3b04a}</Project>

@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("IFramework.MessageQueue.EQueue")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("IFramework.MessageQueue.EQueue")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Ivan")]
 [assembly: AssemblyProduct("IFramework.MessageQueue.EQueue")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
@@ -33,3 +33,6 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+// nuget pack -build -properties configuration=release
+// nuget push IFramework.MessageQueue.EQueue.1.0.0.nupkg -source https://www.nuget.org/api/v2/package

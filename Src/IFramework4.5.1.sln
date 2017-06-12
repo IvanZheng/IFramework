@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{254092
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iPlugins", "iPlugins", "{C50A9449-A6FB-4758-8584-6E03345F91CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework4.5.1", "iFramework\IFramework4.5.1.csproj", "{0B36292C-8849-441D-8FB8-A053D43A8E72}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework", "iFramework\IFramework.csproj", "{0B36292C-8849-441D-8FB8-A053D43A8E72}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Log4Net", "iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj", "{8EDC415A-2E94-402A-81F0-BAF71A3BF6D7}"
 EndProject
