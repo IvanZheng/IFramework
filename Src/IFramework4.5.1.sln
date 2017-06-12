@@ -11,13 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iPlugins", "iPlugins", "{C5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework4.5.1", "iFramework\IFramework4.5.1.csproj", "{0B36292C-8849-441D-8FB8-A053D43A8E72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Log4Net4.5.1", "iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net4.5.1.csproj", "{8EDC415A-2E94-402A-81F0-BAF71A3BF6D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Log4Net", "iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj", "{8EDC415A-2E94-402A-81F0-BAF71A3BF6D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageStoring.EntityFramework4.6", "iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStoring.EntityFramework4.6.csproj", "{78F72AB4-4F97-4B82-99EA-EB2D46CB63CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageStore.EntityFramework", "iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStore.EntityFramework.csproj", "{78F72AB4-4F97-4B82-99EA-EB2D46CB63CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.AspNet", "iFramework.Plugins\IFramework.WebApi\IFramework.AspNet.csproj", "{BAFCA280-6B58-44E8-B0E7-ED6F51C0EAEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EntityFramework4.5.1", "iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework4.5.1.csproj", "{C00B8AD6-47C2-4642-877E-2C759D05DCFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EntityFramework", "iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj", "{C00B8AD6-47C2-4642-877E-2C759D05DCFE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.ServiceBus4.6", "iFramework.Plugins\IFramework.MessageQueue.ServiceBus\IFramework.MessageQueue.ServiceBus4.6.csproj", "{081BB2EB-CC5D-4512-B61E-917CD7AA795D}"
 EndProject

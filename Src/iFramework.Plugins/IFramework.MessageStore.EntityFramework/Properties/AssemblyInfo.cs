@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("IFramework.MessageStore.EntityFramework")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("IFramework.MessageStoring.EntityFramework")]
+[assembly: AssemblyDescription("IFramework.MessageStoring.EntityFramework")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("IFramework.MessageStore.EntityFramework")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCompany("Ivan")]
+[assembly: AssemblyProduct("IFramework.MessageStoring.EntityFramework")]
+[assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,3 +33,5 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+// nuget pack -build -properties configuration=release
+// nuget push IFramework.MessageStoring.EntityFramework.1.0.0.nupkg -source https://www.nuget.org/api/v2/package

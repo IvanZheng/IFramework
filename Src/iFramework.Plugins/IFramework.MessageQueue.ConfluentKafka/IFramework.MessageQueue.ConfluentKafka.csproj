@@ -66,6 +66,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="IFramework.MessageQueue.ConfluentKafka.1.0.0.nupkg" />
+    <None Include="IFramework.MessageQueue.ConfluentKafka.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
