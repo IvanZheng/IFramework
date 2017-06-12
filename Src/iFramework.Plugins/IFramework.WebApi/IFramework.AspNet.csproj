@@ -121,6 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="IFramework.AspNet.1.0.0.nupkg" />
     <None Include="IFramework.AspNet.nuspec" />
     <None Include="packages.config">
       <SubType>Designer</SubType>

@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="IFramework.Unity.Mvc.1.0.0.nupkg" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

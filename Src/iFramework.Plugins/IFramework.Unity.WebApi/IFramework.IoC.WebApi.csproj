@@ -80,6 +80,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="IFramework.Autofac.WebApi.1.0.0.nupkg" />
+    <None Include="IFramework.Unity.WebApi.1.0.0.nupkg" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

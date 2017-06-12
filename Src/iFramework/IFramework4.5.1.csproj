@@ -216,6 +216,7 @@
     <Compile Include="UnitOfWork\MockUnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="IFramework.1.0.0.nupkg" />
     <None Include="IFramework4.5.1.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>

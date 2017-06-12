@@ -89,6 +89,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="IFramework.Autofac.1.0.0.nupkg" />
+    <None Include="IFramework.Autofac.Mvc.1.0.0.nupkg" />
+    <None Include="IFramework.Autofac.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
