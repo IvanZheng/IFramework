@@ -7,20 +7,19 @@ using IFramework.Infrastructure;
 
 namespace IFramework.Domain
 {
-    [Serializable]
     public abstract class ValueObject<T>
     {
         public T Clone(object newValues = null)
         {
-            var cloned = default(T);
-            using (var ms = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(ms, this);
-                ms.Position = 0;
-                cloned = (T) formatter.Deserialize(ms);
-            }
-
+            //var cloned = default(T);
+            //using (var ms = new MemoryStream())
+            //{
+            //    var formatter = new BinaryFormatter();
+            //    formatter.Serialize(ms, this);
+            //    ms.Position = 0;
+            //    cloned = (T) formatter.Deserialize(ms);
+            //}
+            var cloned = this.ToJson().ToJsonObject<T>();
             newValues?.GetType().GetProperties().ForEach(p => { cloned.SetValueByKey(p.Name, p.GetValue(newValues)); });
             return cloned;
         }

@@ -10,7 +10,6 @@ namespace IFramework.Infrastructure
     /// <summary>
     ///     Represents an ObjectId
     /// </summary>
-    [Serializable]
     public struct ObjectId : IComparable<ObjectId>, IEquatable<ObjectId>
     {
         // private static fields
