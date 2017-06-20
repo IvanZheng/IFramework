@@ -26,8 +26,8 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 { "bootstrap.servers", _brokerList },
                 {"request.required.acks", 1},
                 {"socket.nagle.disable", true},
-                {"socket.blocking.max.ms", 1},
-                {"queue.buffering.max.ms", 1}
+                {"socket.blocking.max.ms", 10},
+                {"queue.buffering.max.ms", 10}
             };
 
             _producer = new Producer<string, KafkaMessage>(producerConfiguration, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using IFramework.Infrastructure.Logging;
@@ -31,76 +32,26 @@ namespace IFramework.Infrastructure
 
     public static class JsonHelper
     {
+        private static readonly ConcurrentDictionary<string, JsonSerializerSettings> SettingDictionary = new ConcurrentDictionary<string, JsonSerializerSettings>();
+
         private static readonly ILogger _JsonLogger = IoCFactory.IsInit()
                                                           ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(JsonHelper).Name)
                                                           : null;
 
-        private static JsonSerializerSettings _NonPublicSerializerSettings;
-
-        private static readonly JsonSerializerSettings DefaultSerializerSettings = new JsonSerializerSettings();
-
-        private static readonly JsonSerializerSettings LoopSerializeSerializerSettings = new JsonSerializerSettings
+        internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPulibc,
+                                                                                       bool loopSerialize,
+                                                                                       bool useCamelCase)
         {
-            PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-            ReferenceLoopHandling = ReferenceLoopHandling.Serialize
-        };
-
-        private static JsonSerializerSettings _NonPublicLoopSerializeSerializerSettings;
-
-        private static JsonSerializerSettings NonPublicSerializerSettings
-        {
-            get
+            var customSettings = new JsonSerializerSettings();
+            if (serializeNonPulibc)
             {
-                if (_NonPublicSerializerSettings == null)
-                {
-                    _NonPublicSerializerSettings = new JsonSerializerSettings
-                    {
-                        ContractResolver = new NonPublicContractResolver()
-                    };
-                }
-                return _NonPublicSerializerSettings;
+                customSettings.ContractResolver = new NonPublicContractResolver();
             }
-        }
-
-        private static JsonSerializerSettings NonPublicLoopSerializeSerializerSettings
-        {
-            get
+            if (loopSerialize)
             {
-                if (_NonPublicLoopSerializeSerializerSettings == null)
-                {
-                    _NonPublicLoopSerializeSerializerSettings = new JsonSerializerSettings
-                    {
-                        ContractResolver = new NonPublicContractResolver(),
-                        PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-                        ReferenceLoopHandling = ReferenceLoopHandling.Serialize
-                    };
-                }
-                return _NonPublicLoopSerializeSerializerSettings;
+                customSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
+                customSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
             }
-        }
-
-        public static JsonSerializerSettings GetCustomJsonSerializerSettings(bool serializeNonPulibc,
-                                                                             bool loopSerialize,
-                                                                             bool useCamelCase)
-        {
-            JsonSerializerSettings customSettings = null;
-            if (serializeNonPulibc && loopSerialize)
-            {
-                customSettings = NonPublicLoopSerializeSerializerSettings;
-            }
-            else if (serializeNonPulibc)
-            {
-                customSettings = NonPublicSerializerSettings;
-            }
-            else if (loopSerialize)
-            {
-                customSettings = LoopSerializeSerializerSettings;
-            }
-            else
-            {
-                customSettings = DefaultSerializerSettings;
-            }
-
             if (useCamelCase)
             {
                 var resolver = customSettings.ContractResolver as DefaultContractResolver;
@@ -116,8 +67,29 @@ namespace IFramework.Infrastructure
             return customSettings;
         }
 
+        public static JsonSerializerSettings GetCustomJsonSerializerSettings(bool serializeNonPulibc,
+                                                                             bool loopSerialize,
+                                                                             bool useCamelCase,
+                                                                             bool useCached = true)
+        {
+            JsonSerializerSettings settings = null;
+            if (useCached)
+            {
+                var key = $"{serializeNonPulibc}{loopSerialize}{useCamelCase}";
+                settings = SettingDictionary.GetOrAdd(key,
+                                                      k => InternalGetCustomJsonSerializerSettings(serializeNonPulibc,
+                                                                                                   loopSerialize,
+                                                                                                   useCamelCase));
+            }
+            else
+            {
+                settings = InternalGetCustomJsonSerializerSettings(serializeNonPulibc, loopSerialize, useCamelCase);
+            }
+            return settings;
+        }
+
         public static string ToJson(this object obj,
-                                    bool serializeNonPublic = false,
+                                    bool serializeNonPublic = true,
                                     bool loopSerialize = false,
                                     bool useCamelCase = false)
         {

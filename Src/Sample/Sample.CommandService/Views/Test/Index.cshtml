@@ -40,7 +40,7 @@
                 cache: false,
                 contentType: "application/command+form;command=" + commandName,
                 type: "POST",
-                url: '@Url.Content("~/api/Command")',
+                url: '@Url.Content("~/api/Command")?t=' + new Date().getTime().toString(),
                 data: command,
                 success: function(data) {
                     if (data.errorCode == 0) {
