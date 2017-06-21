@@ -3,6 +3,7 @@ using IFramework.IoC;
 using IFramework.Unity;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
+using Microsoft.Practices.Unity.InterceptionExtension;
 
 namespace IFramework.Config
 {
@@ -38,6 +39,8 @@ namespace IFramework.Config
                     Console.WriteLine(ex.GetBaseException().Message);
                 }
             }
+
+            unityContainer.AddNewExtension<Interception>();
 
             #region register lifetimemanager
 

@@ -1,7 +1,10 @@
 using System;
+using IFramework.Autofac;
 using IFramework.Config;
 using IFramework.EntityFramework.Config;
 using IFramework.IoC;
+using IFramework.Unity;
+using Sample.CommandHandler.Community;
 using Sample.Domain;
 using Sample.Persistence;
 using Sample.Persistence.Repositories;
@@ -13,21 +16,21 @@ namespace Sample.CommandService.App_Start
     /// </summary>
     public class IoCConfig
     {
-        private static readonly Lazy<IContainer> container = new Lazy<IContainer>(() =>
+        private static readonly Lazy<IContainer> Container = new Lazy<IContainer>(() =>
         {
             Configuration.Instance
                          //.UseAutofacContainer()
-                         //.RegisterAssemblyTypes("Sample.Web", "Sample.Application")
+                         //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
                          .UseUnityContainer()
-                         .RegisterCommonComponents()
-                         .UseUnityMvc();
+                         .UseUnityMvc()
+                         .RegisterCommonComponents();
 
             var container = IoCFactory.Instance.CurrentContainer;
             RegisterTypes(container, Lifetime.Hierarchical);
             return container;
         });
 
-        private static readonly Lazy<IContainer> mvcContainer = new Lazy<IContainer>(() =>
+        private static readonly Lazy<IContainer> MvcContainer = new Lazy<IContainer>(() =>
         {
             var container = GetConfiguredContainer().CreateChildContainer();
             RegisterTypes(container, Lifetime.PerRequest);
@@ -36,12 +39,13 @@ namespace Sample.CommandService.App_Start
 
         public static IContainer GetMvcConfiguredContainer()
         {
-            return mvcContainer.Value;
+            return MvcContainer.Value;
         }
 
 
         /// <summary>Registers the type mappings with the Unity container.</summary>
         /// <param name="container">The unity container to configure.</param>
+        /// <param name="lifetime"></param>
         /// <remarks>
         ///     There is no need to register concrete types such as controllers or API controllers (unless you want to
         ///     change the defaults), as Unity allows resolving a concrete type even if it was not previously registered.
@@ -57,8 +61,14 @@ namespace Sample.CommandService.App_Start
             Configuration.Instance
                          .RegisterDefaultEventBus(container, lifetime)
                          .RegisterEntityFrameworkComponents(container, lifetime);
-            container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime);
+
             container.RegisterType<SampleModelContext, SampleModelContext>(lifetime);
+            container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime,
+                                                                              new InterfaceInterceptorInjection(),
+                                                                              new InterceptionBehaviorInjection<UnityLogInterceptor>());
+            container.RegisterType<CommunityCommandHandler, CommunityCommandHandler>(lifetime,
+                                                                                     new VirtualMethodInterceptorInjection(),
+                                                                                     new InterceptionBehaviorInjection<UnityLogInterceptor>());
         }
 
         #region Unity Container
@@ -68,7 +78,7 @@ namespace Sample.CommandService.App_Start
         /// </summary>
         public static IContainer GetConfiguredContainer()
         {
-            return container.Value;
+            return Container.Value;
         }
 
         #endregion

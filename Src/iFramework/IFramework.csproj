@@ -64,6 +64,7 @@
     <Compile Include="Infrastructure\Logging\MockLogger.cs" />
     <Compile Include="Infrastructure\Logging\MockLoggerFactory.cs" />
     <Compile Include="Infrastructure\QueryExtension.cs" />
+    <Compile Include="IoC\AopInjection.cs" />
     <Compile Include="IoC\IContainer.cs" />
     <Compile Include="IoC\Injection.cs" />
     <Compile Include="IoC\Lifetime.cs" />

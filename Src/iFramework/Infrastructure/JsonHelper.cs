@@ -7,6 +7,7 @@ using IFramework.IoC;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Converters;
 
 namespace IFramework.Infrastructure
 {
@@ -40,7 +41,8 @@ namespace IFramework.Infrastructure
 
         internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPulibc,
                                                                                        bool loopSerialize,
-                                                                                       bool useCamelCase)
+                                                                                       bool useCamelCase,
+                                                                                       bool useStringEnumConvert)
         {
             var customSettings = new JsonSerializerSettings();
             if (serializeNonPulibc)
@@ -51,6 +53,10 @@ namespace IFramework.Infrastructure
             {
                 customSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
                 customSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
+            }
+            if (useStringEnumConvert)
+            {
+                customSettings.Converters.Add(new StringEnumConverter());
             }
             if (useCamelCase)
             {
@@ -70,20 +76,25 @@ namespace IFramework.Infrastructure
         public static JsonSerializerSettings GetCustomJsonSerializerSettings(bool serializeNonPulibc,
                                                                              bool loopSerialize,
                                                                              bool useCamelCase,
+                                                                             bool useStringEnumConvert = true,
                                                                              bool useCached = true)
         {
             JsonSerializerSettings settings = null;
             if (useCached)
             {
-                var key = $"{serializeNonPulibc}{loopSerialize}{useCamelCase}";
+                var key = $"{serializeNonPulibc}{loopSerialize}{useCamelCase}{useStringEnumConvert}";
                 settings = SettingDictionary.GetOrAdd(key,
                                                       k => InternalGetCustomJsonSerializerSettings(serializeNonPulibc,
                                                                                                    loopSerialize,
-                                                                                                   useCamelCase));
+                                                                                                   useCamelCase,
+                                                                                                   useStringEnumConvert));
             }
             else
             {
-                settings = InternalGetCustomJsonSerializerSettings(serializeNonPulibc, loopSerialize, useCamelCase);
+                settings = InternalGetCustomJsonSerializerSettings(serializeNonPulibc,
+                                                                   loopSerialize,
+                                                                   useCamelCase,
+                                                                   useStringEnumConvert);
             }
             return settings;
         }
@@ -161,7 +172,7 @@ namespace IFramework.Infrastructure
             {
                 if (typeof(T) == typeof(List<dynamic>))
                 {
-                    return (T) (object) json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
+                    return (T)(object)json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
                 }
                 if (typeof(T) == typeof(object))
                 {

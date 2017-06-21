@@ -42,9 +42,9 @@ namespace Sample.CommandService
                              .MessageQueueUseMachineNameFormat()
                              .UseMessageQueue()
                              .UseMessageStore<SampleModelContext>()
-                             //.UseConfluentKafka("localhost:9092")
+                             .UseConfluentKafka("localhost:9092")
                              //.UseKafka("localhost:2181")
-                             .UseEQueue()
+                             //.UseEQueue()
                              .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                              .UseMessagePublisher("eventTopic");
                 _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Practices.Unity;
+using Microsoft.Practices.Unity.InterceptionExtension;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.IoC;
-using Microsoft.Practices.Unity;
 
 namespace IFramework.Unity
 {
@@ -16,7 +17,7 @@ namespace IFramework.Unity
         }
     }
 
-    public class ObjectContainer : IContainer
+    public class ObjectContainer: IContainer
     {
         private bool _disposed;
         internal IUnityContainer _unityContainer;
@@ -64,8 +65,7 @@ namespace IFramework.Unity
             return this;
         }
 
-        public IContainer RegisterInstance<TInterface>(string name,
-                                                       TInterface instance,
+        public IContainer RegisterInstance<TInterface>(string name, TInterface instance,
                                                        Lifetime life = Lifetime.Singleton)
             where TInterface : class
         {
@@ -76,53 +76,46 @@ namespace IFramework.Unity
 
         public IContainer RegisterType(Type from, Type to, string name = null, params Injection[] injections)
         {
-            var injectionMembers = GetInjectionParameters(injections);
+            var injectionMembers = GetInjectionParameters(from, injections);
             if (string.IsNullOrEmpty(name))
-            {
                 _unityContainer.RegisterType(from, to, injectionMembers);
-            }
             else
-            {
                 _unityContainer.RegisterType(from, to, name, injectionMembers);
-            }
             return this;
         }
 
         public IContainer RegisterType(Type from, Type to, Lifetime lifetime, params Injection[] injections)
         {
-            var injectionMembers = GetInjectionParameters(injections);
+            var injectionMembers = GetInjectionParameters(from, injections);
             _unityContainer.RegisterType(from, to, GetLifeTimeManager(lifetime), injectionMembers);
             return this;
         }
 
-        public IContainer RegisterType(Type from,
-                                       Type to,
-                                       string name,
-                                       Lifetime lifetime,
+        public IContainer RegisterType(Type from, Type to, string name, Lifetime lifetime,
                                        params Injection[] injections)
         {
-            var injectionMembers = GetInjectionParameters(injections);
+            var injectionMembers = GetInjectionParameters(from, injections);
             _unityContainer.RegisterType(from, to, name, GetLifeTimeManager(lifetime), injectionMembers);
             return this;
         }
 
         public IContainer RegisterType<TFrom, TTo>(Lifetime lifetime, params Injection[] injections) where TTo : TFrom
         {
-            var injectionMembers = GetInjectionParameters(injections);
+            var injectionMembers = GetInjectionParameters(typeof(TFrom), injections);
             _unityContainer.RegisterType<TFrom, TTo>(GetLifeTimeManager(lifetime), injectionMembers);
             return this;
         }
 
         public IContainer RegisterType<TFrom, TTo>(params Injection[] injections) where TTo : TFrom
         {
-            var injectionMembers = GetInjectionParameters(injections);
+            var injectionMembers = GetInjectionParameters(typeof(TFrom), injections);
             _unityContainer.RegisterType<TFrom, TTo>(injectionMembers);
             return this;
         }
 
         public IContainer RegisterType<TFrom, TTo>(string name, params Injection[] injections) where TTo : TFrom
         {
-            var injectionMembers = GetInjectionParameters(injections);
+            var injectionMembers = GetInjectionParameters(typeof(TFrom), injections);
             _unityContainer.RegisterType<TFrom, TTo>(name, injectionMembers);
             return this;
         }
@@ -130,7 +123,7 @@ namespace IFramework.Unity
         public IContainer RegisterType<TFrom, TTo>(string name, Lifetime lifetime, params Injection[] injections)
             where TTo : TFrom
         {
-            var injectionMembers = GetInjectionParameters(injections);
+            var injectionMembers = GetInjectionParameters(typeof(TFrom), injections);
             _unityContainer.RegisterType<TFrom, TTo>(name, GetLifeTimeManager(lifetime), injectionMembers);
             return this;
         }
@@ -170,29 +163,49 @@ namespace IFramework.Unity
             LifetimeManager lifetimeManager = null;
             lifetimeManager = Resolve<LifetimeManager>(Configuration.Instance.GetLifetimeManagerKey(lifetime));
             if (lifetimeManager == null)
-            {
                 throw new Exception($"{lifetime} is not supported.");
-            }
             return lifetimeManager;
         }
 
-        private InjectionMember[] GetInjectionParameters(Injection[] injections)
+        private static readonly HashSet<string> _registeredInterception = new HashSet<string>();
+        private InjectionMember[] GetInjectionParameters(Type from, Injection[] injections)
         {
             var injectionMembers = new List<InjectionMember>();
             injections.ForEach(injection =>
             {
                 if (injection is ConstructInjection)
                 {
-                    var constructInjection = injection as ConstructInjection;
+                    var constructInjection = (ConstructInjection)injection;
                     injectionMembers.Add(new InjectionConstructor(constructInjection.Parameters
-                                                                                    .Select(p => p.ParameterValue)
-                                                                                    .ToArray()));
+                                                                                    .Select(p => p.ParameterValue).ToArray()));
                 }
                 else if (injection is ParameterInjection)
                 {
-                    var propertyInjection = injection as ParameterInjection;
+                    var propertyInjection = (ParameterInjection)injection;
                     injectionMembers.Add(new InjectionProperty(propertyInjection.ParameterName,
                                                                propertyInjection.ParameterValue));
+                }
+                else if (injection is InterceptionBehaviorInjection)
+                {
+                    var behaviorType = ((InterceptionBehaviorInjection)injection).BehaviorType;
+                    var fromBehaviorType = $"{from}.{behaviorType}";
+                    if (!_registeredInterception.Contains(fromBehaviorType))
+                    {
+                        _registeredInterception.Add(fromBehaviorType);
+                        injectionMembers.Add(new InterceptionBehavior(behaviorType));
+                    }
+                }
+                else if (injection is InterfaceInterceptorInjection)
+                {
+                    injectionMembers.Add(new Interceptor<InterfaceInterceptor>());
+                }
+                else if (injection is TransparentProxyInterceptorInjection)
+                {
+                    injectionMembers.Add(new Interceptor<TransparentProxyInterceptor>());
+                }
+                else if (injection is VirtualMethodInterceptorInjection)
+                {
+                    injectionMembers.Add(new Interceptor<VirtualMethodInterceptor>());
                 }
             });
             return injectionMembers.ToArray();
@@ -203,7 +216,10 @@ namespace IFramework.Unity
         {
             var resolverOverrides = new List<ResolverOverride>();
             //resolverOverrides.Add(new ParameterOverride("container", this));
-            parameters.ForEach(parameter => { resolverOverrides.Add(new ParameterOverride(parameter.Name, parameter.Value)); });
+            parameters.ForEach(parameter =>
+            {
+                resolverOverrides.Add(new ParameterOverride(parameter.Name, parameter.Value));
+            });
             return resolverOverrides.ToArray();
         }
     }
