@@ -4,6 +4,7 @@ using IFramework.Command;
 using IFramework.Message;
 using IFramework.UnitOfWork;
 using Sample.Command;
+using Sample.Domain;
 using Sample.Domain.Model;
 using Sample.DTO;
 using Sample.Persistence.Repositories;
@@ -17,11 +18,11 @@ namespace Sample.CommandHandler.Products
         //   IEventBus _EventBus;
         private readonly IMessageContext _CommandContext;
 
-        private readonly CommunityRepository _DomainRepository;
+        private readonly ICommunityRepository _DomainRepository;
         private readonly IUnitOfWork _UnitOfWork;
 
         public ProdutCommandHandler(IUnitOfWork unitOfWork,
-                                    CommunityRepository domainRepository,
+                                    ICommunityRepository domainRepository,
                                     // IEventBus eventBus,
                                     IMessageContext commandContext)
         {

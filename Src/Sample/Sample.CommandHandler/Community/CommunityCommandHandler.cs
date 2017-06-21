@@ -7,6 +7,7 @@ using IFramework.Message;
 using IFramework.UnitOfWork;
 using Sample.ApplicationEvent;
 using Sample.Command;
+using Sample.Domain;
 using Sample.DomainEvents;
 using Sample.DTO;
 using Sample.Persistence.Repositories;
@@ -19,22 +20,22 @@ namespace Sample.CommandHandler.Community
                                            ICommandHandler<Modify>
     {
         private readonly IMessageContext _CommandContext;
-        private readonly CommunityRepository _DomainRepository;
+        private readonly ICommunityRepository _DomainRepository;
         private readonly IEventBus _EventBus;
         private readonly IUnitOfWork _UnitOfWork;
-        private IContainer _container;
+       // private IContainer _container;
 
         public CommunityCommandHandler(IUnitOfWork unitOfWork,
-                                       CommunityRepository domainRepository,
+                                       ICommunityRepository domainRepository,
                                        IEventBus eventBus,
-                                       IMessageContext commandContext,
-                                       IContainer container)
+                                       IMessageContext commandContext
+                                       )
         {
             _UnitOfWork = unitOfWork;
             _DomainRepository = domainRepository;
             _CommandContext = commandContext;
             _EventBus = eventBus;
-            _container = container;
+           // _container = container;
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace Sample.CommandHandler.Community
         ///     and no need to enter the domain layer!
         /// </summary>
         /// <param name="command"></param>
-        public async Task Handle(Login command)
+        public virtual async Task Handle(Login command)
         {
             var account = await _DomainRepository.FindAsync<Account>(a => a.UserName.Equals(command.UserName)
                                                                           && a.Password.Equals(command.Password))
@@ -63,7 +64,7 @@ namespace Sample.CommandHandler.Community
             _CommandContext.Reply = account.ID;
         }
 
-        public void Handle(Modify command)
+        public virtual void Handle(Modify command)
         {
             var account = _DomainRepository.Find<Account>(a => a.UserName == command.UserName);
             if (account == null)
@@ -75,7 +76,7 @@ namespace Sample.CommandHandler.Community
             //_DomainRepository.Update(account);
         }
 
-        public void Handle(Register command)
+        public virtual void Handle(Register command)
         {
             if (_DomainRepository.Find<Account>(a => a.UserName == command.UserName) != null)
             {
