@@ -65,7 +65,7 @@ namespace IFramework.Unity
                             r = ((dynamic)t).Result;
                         }
                     }
-                    LeaveMethod(input, logger, start, r, isFaulted);
+                    LeaveMethod(input, logger, start, r, isFaulted, t.Exception);
                 });
             }
             else
@@ -75,17 +75,18 @@ namespace IFramework.Unity
                     isFaulted = true;
                     LogException(input, logger, result.Exception);
                 }
-                LeaveMethod(input, logger, start, result.ReturnValue, isFaulted);
+                LeaveMethod(input, logger, start, result.ReturnValue, isFaulted, result.Exception);
             }
             return result;
         }
 
-        private static void LeaveMethod(IMethodInvocation input, ILogger logger, DateTime start, object result, bool isFaulted)
+        private static void LeaveMethod(IMethodInvocation input, ILogger logger, DateTime start, object result, bool isFaulted, Exception e)
         {
             var costTime = (DateTime.Now - start).TotalMilliseconds;
             logger?.DebugFormat("Leave method: {0} isFaulted: {1} thread: {2} returnValue: {3} cost: {4} target: {5}",
                                 input.MethodBase.Name,
                                 isFaulted,
+                                e != null ? $"exception: {e.GetBaseException().Message} stackTrace: {e.GetBaseException().StackTrace}" : string.Empty,
                                 Thread.CurrentThread.ManagedThreadId,
                                 result,
                                 costTime,

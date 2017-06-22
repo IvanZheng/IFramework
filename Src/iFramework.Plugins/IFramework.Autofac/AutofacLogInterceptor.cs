@@ -21,6 +21,7 @@ namespace IFramework.Autofac
         public void Intercept(IInvocation invocation)
         {
             bool isFaulted = false;
+            Exception exception = null;
             var targetType = invocation.TargetType;
             var targetTypeName = targetType.Assembly.IsDynamic ? targetType.BaseType?.Name : targetType.Name;
 
@@ -43,6 +44,7 @@ namespace IFramework.Autofac
             catch (Exception e)
             {
                 isFaulted = true;
+                exception = e;
                 //发生错误记录日志
                 LogException(invocation, logger, e);
                 throw;
@@ -68,22 +70,23 @@ namespace IFramework.Autofac
                                 result = ((dynamic)t).Result;
                             }
                         }
-                        LeaveMethod(invocation, logger, start, result, isFaulted);
+                        LeaveMethod(invocation, logger, start, result, isFaulted, t.Exception);
                     });
                 }
                 else
                 {
-                    LeaveMethod(invocation, logger, start, invocation.ReturnValue, isFaulted);
+                    LeaveMethod(invocation, logger, start, invocation.ReturnValue, isFaulted, exception);
                 }
             }
         }
 
-        private static void LeaveMethod(IInvocation invocation, ILogger logger, DateTime start, object result, bool isFaulted)
+        private static void LeaveMethod(IInvocation invocation, ILogger logger, DateTime start, object result, bool isFaulted, Exception e)
         {
             var costTime = (DateTime.Now - start).TotalMilliseconds;
             logger?.DebugFormat("Leave method: {0} isFaulted: {1} thread: {2} returnValue: {3} cost: {4} target: {5}",
                                 invocation.Method.Name,
                                 isFaulted,
+                                e != null ? $"exception: {e.GetBaseException().Message} stackTrace: {e.GetBaseException().StackTrace}" : string.Empty,
                                 Thread.CurrentThread.ManagedThreadId,
                                 result,
                                 costTime,
