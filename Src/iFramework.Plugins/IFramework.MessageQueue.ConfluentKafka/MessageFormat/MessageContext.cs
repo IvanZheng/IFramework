@@ -124,7 +124,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
                 object messageType = null;
                 if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
                 {
-                    var jsonValue = Encoding.UTF8.GetString(KafkaMessage.Payload);
+                    var jsonValue = KafkaMessage.Payload;
                     _Message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
                 }
                 return _Message;
@@ -132,7 +132,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             protected set
             {
                 _Message = value;
-                KafkaMessage.Payload = Encoding.UTF8.GetBytes(value.ToJson());
+                KafkaMessage.Payload = value.ToJson();
                 if (value != null)
                 {
                     Headers["MessageType"] = value.GetType().AssemblyQualifiedName;

@@ -42,7 +42,7 @@ namespace Sample.CommandService
                              .MessageQueueUseMachineNameFormat()
                              .UseMessageQueue()
                              .UseMessageStore<SampleModelContext>()
-                             .UseConfluentKafka("localhost:9092")
+                             .UseConfluentKafka("192.168.99.60:9092")
                              //.UseKafka("localhost:2181")
                              //.UseEQueue()
                              .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())

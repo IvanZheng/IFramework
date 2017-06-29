@@ -56,7 +56,7 @@ namespace KafkaClient.Test
             for (int i = 0; i < 100000; i++)
             {
                 var message = $"message:{i}";
-                var kafkaMessage = new KafkaMessage(Encoding.UTF8.GetBytes(message));
+                var kafkaMessage = new KafkaMessage(message);
                 tasks.Add(queueClient.SendAsync(message, kafkaMessage));
             }
             Task.WhenAll(tasks).Wait();

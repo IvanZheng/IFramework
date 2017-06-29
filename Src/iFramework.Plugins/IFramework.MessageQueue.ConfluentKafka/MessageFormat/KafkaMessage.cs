@@ -4,13 +4,13 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
     public class KafkaMessage
     {
-        public KafkaMessage(byte[] payload = null)
+        public KafkaMessage(string payload = null)
         {
             Headers = new Dictionary<string, object>();
             Payload = payload;
         }
 
         public IDictionary<string, object> Headers { get; }
-        public byte[] Payload { get; set; }
+        public string Payload { get; set; }
     }
 }

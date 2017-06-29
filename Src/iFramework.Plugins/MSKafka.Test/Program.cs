@@ -32,7 +32,7 @@ namespace KafkaClient.Test
         {
             OnKafkaMessageReceived onMessageReceived = (kafkaConsumer, kafkaMessage) =>
             {
-                var message = Encoding.UTF8.GetString(kafkaMessage.Value.Payload);
+                var message = kafkaMessage.Value.Payload;
                 var sendTime = DateTime.Parse(message.Split('@')[1]);
                 Console.WriteLine(
                                   $"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now.ToString("HH:mm:ss.fff")} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds} partition:{kafkaMessage.Partition} offset:{kafkaMessage.Offset}");
@@ -69,7 +69,7 @@ namespace KafkaClient.Test
                 }
                 //Console.WriteLine($"receive input {message}");
                 var message = $"{key} @{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffffff}";
-                var kafkaMessage = new KafkaMessage(Encoding.UTF8.GetBytes(message));
+                var kafkaMessage = new KafkaMessage(message);
                 //var data = new ProducerData<string, Message>(commandQueue, message, kafkaMessage);
 
 
