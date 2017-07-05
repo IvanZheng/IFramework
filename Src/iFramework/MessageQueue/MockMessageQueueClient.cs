@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using IFramework.Message;
 using IFramework.Message.Impl;
 
@@ -27,12 +28,12 @@ namespace IFramework.MessageQueue
             return null;
         }
 
-        public Task SendAsync(IMessageContext messageContext, string queue)
+        public Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken)
         {
             return Task.FromResult<object>(null);
         }
 
-        public Task PublishAsync(IMessageContext messageContext, string topic)
+        public Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken)
         {
             return Task.FromResult<object>(null);
         }

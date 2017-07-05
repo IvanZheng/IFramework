@@ -14,14 +14,6 @@ using OptimisticConcurrencyException = System.Data.OptimisticConcurrencyExceptio
 
 namespace IFramework.EntityFramework
 {
-    public static class QueryableCollectionInitializer
-    {
-        public static void InitializeQueryableCollections(this MSDbContext context, object entity)
-        {
-            (entity as Entity)?.SetDomainContext(context);
-        }
-    }
-
     public class MSDbContext : DbContext, IDbContext
     {
         private ObjectContext _objectContext;

@@ -15,7 +15,7 @@ using IFramework.MessageQueue;
 
 namespace IFramework.Command.Impl
 {
-    public class CommandBus : MessageSender, ICommandBus
+    public class CommandBus: MessageSender, ICommandBus
     {
         /// <summary>
         ///     cache command states for command reply. When reply comes, make replyTaskCompletionSouce completed
@@ -110,30 +110,30 @@ namespace IFramework.Command.Impl
         }
 
         public async Task<MessageResponse> StartSaga(ICommand command,
-                                               CancellationToken sendCancellationToken,
-                                               TimeSpan sendTimeout,
-                                               CancellationToken replyCancellationToken,
-                                               string sagaId = null)
+                                                     CancellationToken sendCancellationToken,
+                                                     TimeSpan sendTimeout,
+                                                     CancellationToken replyCancellationToken,
+                                                     string sagaId = null)
         {
             sagaId = sagaId ?? ObjectId.GenerateNewId().ToString();
             SagaInfo sagaInfo = null;
             if (!string.IsNullOrEmpty(sagaId))
             {
-                sagaInfo = new SagaInfo {SagaId = sagaId, ReplyEndPoint = _replyTopicName};
+                sagaInfo = new SagaInfo { SagaId = sagaId, ReplyEndPoint = _replyTopicName };
             }
             var commandContext = WrapCommand(command, false, sagaInfo);
             var commandState = BuildCommandState(commandContext, sendCancellationToken, sendTimeout,
                                                  replyCancellationToken, true);
             _commandStateQueues.GetOrAdd(sagaId, commandState);
             return (await SendAsync(commandState).ConfigureAwait(false))
-                                                 .FirstOrDefault();
+                .FirstOrDefault();
         }
 
         public async Task<MessageResponse> SendAsync(ICommand command,
-                                               CancellationToken sendCancellationToken,
-                                               TimeSpan timeout,
-                                               CancellationToken replyCancellationToken,
-                                               bool needReply = false)
+                                                     CancellationToken sendCancellationToken,
+                                                     TimeSpan timeout,
+                                                     CancellationToken replyCancellationToken,
+                                                     bool needReply = false)
         {
             var commandContext = WrapCommand(command, needReply);
             var commandState = BuildCommandState(commandContext, sendCancellationToken, timeout, replyCancellationToken,
@@ -214,11 +214,11 @@ namespace IFramework.Command.Impl
             }
         }
 
-        protected override async Task SendMessageStateAsync(MessageState messageState)
+        protected override async Task SendMessageStateAsync(MessageState messageState, CancellationToken cancellationToken)
         {
             _logger.Debug($"send message start msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
             var messageContext = messageState.MessageContext;
-            await _messageQueueClient.SendAsync(messageContext, messageContext.Topic ?? _defaultTopic);
+            await _messageQueueClient.SendAsync(messageContext, messageContext.Topic ?? _defaultTopic, cancellationToken);
             _logger.Debug($"send message complete msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
             CompleteSendingMessage(messageState);
         }

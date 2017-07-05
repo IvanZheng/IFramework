@@ -12,7 +12,6 @@ namespace Sample.ApiService.Controllers
         // GET: /Test/
         public ActionResult Index()
         {
-            GC.Collect();
             return View();
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace IFramework.MessageQueue.ServiceBus
 {
-    public class ServiceBusClient : IMessageQueueClient
+    public class ServiceBusClient: IMessageQueueClient
     {
         protected ILogger _logger;
         protected MessagingFactory _messageFactory;
@@ -32,13 +33,14 @@ namespace IFramework.MessageQueue.ServiceBus
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType());
         }
 
-        public async Task PublishAsync(IMessageContext messageContext, string topic)
+        public async Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
-            var brokeredMessage = ((MessageContext) messageContext).BrokeredMessage;
+            var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;
             while (true)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     await topicClient.SendAsync(brokeredMessage);
@@ -51,7 +53,7 @@ namespace IFramework.MessageQueue.ServiceBus
             }
         }
 
-        public async Task SendAsync(IMessageContext messageContext, string queue)
+        public async Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken)
         {
             var commandKey = messageContext.Key;
             queue = Configuration.Instance.FormatMessageQueueName(queue);
@@ -69,9 +71,10 @@ namespace IFramework.MessageQueue.ServiceBus
                 queue = $"{queue}.0";
             }
             var queueClient = GetQueueClient(queue);
-            var brokeredMessage = ((MessageContext) messageContext).BrokeredMessage;
+            var brokeredMessage = ((MessageContext)messageContext).BrokeredMessage;
             while (true)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     await queueClient.SendAsync(brokeredMessage);

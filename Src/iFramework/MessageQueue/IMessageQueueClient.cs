@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -9,8 +10,8 @@ namespace IFramework.MessageQueue
 
     public interface IMessageQueueClient : IDisposable
     {
-        Task SendAsync(IMessageContext messageContext, string queue);
-        Task PublishAsync(IMessageContext messageContext, string topic);
+        Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken);
+        Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken);
 
         IMessageContext WrapMessage(object message,
                                     string correlationId = null,

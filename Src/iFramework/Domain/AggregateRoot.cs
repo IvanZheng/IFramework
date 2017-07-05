@@ -1,17 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using IFramework.Event;
-using Newtonsoft.Json;
 
 namespace IFramework.Domain
 {
     public abstract class AggregateRoot : Entity, IAggregateRoot
     {
-        private readonly Queue<IDomainEvent> EventQueue = new Queue<IDomainEvent>();
+        private readonly Queue<IDomainEvent> _eventQueue = new Queue<IDomainEvent>();
         private string _aggreagetRootType;
 
-        [JsonIgnore]
-        protected string AggregateRootName
+        private string AggregateRootName
         {
             get
             {
@@ -30,28 +28,25 @@ namespace IFramework.Domain
 
         public IEnumerable<IDomainEvent> GetDomainEvents()
         {
-            return EventQueue.ToList();
+            return _eventQueue.ToList();
         }
 
         public virtual void Rollback()
         {
-            EventQueue.Clear();
+            _eventQueue.Clear();
         }
 
         protected virtual void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
         {
             HandleEvent(@event);
             @event.AggregateRootName = AggregateRootName;
-            EventQueue.Enqueue(@event);
+            _eventQueue.Enqueue(@event);
         }
 
         private void HandleEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
         {
             var subscriber = this as IEventSubscriber<TDomainEvent>;
-            if (subscriber != null)
-            {
-                subscriber.Handle(@event);
-            }
+            subscriber?.Handle(@event);
             //else no need to call parent event handler, let client decide it!
             //{
             //    var eventSubscriberInterfaces = this.GetType().GetInterfaces()

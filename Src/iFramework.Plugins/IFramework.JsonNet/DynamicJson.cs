@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
+using SEOP.Framework.Infrastructure;
 
-namespace IFramework.Infrastructure
+namespace SEOP.JsonNet
 {
     public class DynamicJson : DynamicObject
     {
@@ -12,11 +13,6 @@ namespace IFramework.Infrastructure
         public DynamicJson(JObject json)
         {
             _json = json;
-        }
-
-        public string ToJson()
-        {
-            return _json?.ToString();
         }
 
         private dynamic ObjectToDynamic(object value)
@@ -66,13 +62,9 @@ namespace IFramework.Infrastructure
             {
                 var property = _json.Property(binder.Name);
                 if (property != null)
-                {
                     property.Value = JToken.FromObject(val);
-                }
                 else
-                {
                     _json.Add(binder.Name, JToken.FromObject(val));
-                }
             }
             catch (Exception)
             {

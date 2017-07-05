@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
@@ -47,7 +48,7 @@ namespace IFramework.MessageQueue.MSKafka
         //}
 
 
-        public Task PublishAsync(IMessageContext messageContext, string topic)
+        public Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
@@ -58,7 +59,7 @@ namespace IFramework.MessageQueue.MSKafka
             return topicClient.SendAsync(producerData);
         }
 
-        public Task SendAsync(IMessageContext messageContext, string queue)
+        public Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken)
         {
             queue = Configuration.Instance.FormatMessageQueueName(queue);
             var queueClient = GetQueueClient(queue);

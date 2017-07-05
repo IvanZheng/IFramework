@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.Domain;
 
 namespace IFramework.Repositories
 {
@@ -16,6 +17,5 @@ namespace IFramework.Repositories
 
         Task ReloadAsync<TEntity>(TEntity entity)
             where TEntity : class;
-
     }
 }

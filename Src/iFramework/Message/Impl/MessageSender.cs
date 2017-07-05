@@ -93,7 +93,7 @@ namespace IFramework.Message.Impl
         }
 
         protected abstract IEnumerable<IMessageContext> GetAllUnSentMessages();
-        protected abstract Task SendMessageStateAsync(MessageState messageState);
+        protected abstract Task SendMessageStateAsync(MessageState messageState, CancellationToken cancellationToken);
         protected abstract void CompleteSendingMessage(MessageState messageState);
 
 
@@ -110,7 +110,7 @@ namespace IFramework.Message.Impl
                 try
                 {
                     var messageState = _messageStateQueue.Take(cancellationTokenSource.Token);
-                    SendMessageStateAsync(messageState);
+                    SendMessageStateAsync(messageState, cancellationTokenSource.Token);
                 }
                 catch (OperationCanceledException)
                 {

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -7,6 +9,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using IFramework.Command;
 using IFramework.Config;
+using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using IFramework.Message;
@@ -21,7 +24,7 @@ namespace Sample.CommandService
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
     // visit http://go.microsoft.com/?LinkId=9394801
 
-    public class WebApiApplication : HttpApplication
+    public class WebApiApplication: HttpApplication
     {
         private static ILogger _Logger;
         private static IMessagePublisher _MessagePublisher;
@@ -37,12 +40,17 @@ namespace Sample.CommandService
         {
             try
             {
+                var kafkaBrokerList = new[]
+                 {
+                    new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString(),
+                    //"192.168.99.60:9092"
+                };
                 Configuration.Instance
                              .UseLog4Net()
                              .MessageQueueUseMachineNameFormat()
                              .UseMessageQueue()
                              .UseMessageStore<SampleModelContext>()
-                             .UseConfluentKafka("192.168.99.60:9092")
+                             .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                              //.UseKafka("localhost:2181")
                              //.UseEQueue()
                              .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
@@ -120,20 +128,7 @@ namespace Sample.CommandService
         {
             try
             {
-                var endSuccesss = Task.WaitAll(new[]
-                {
-                    Task.Run(() => _CommandConsumer1?.Stop()),
-                    Task.Run(() => _CommandConsumer2?.Stop()),
-                    Task.Run(() => _CommandConsumer3?.Stop()),
-                    Task.Run(() => _DomainEventConsumer?.Stop()),
-                    Task.Run(() => _ApplicationEventConsumer?.Stop()),
-                    Task.Run(() => _CommandBus?.Stop()),
-                    Task.Run(() => _MessagePublisher?.Stop())
-                }, 10000);
-                if (!endSuccesss)
-                {
-                    throw new Exception($"stop message queue client timeout!");
-                }
+                CloseMessageQueue();
             }
             catch (Exception ex)
             {
@@ -144,6 +139,25 @@ namespace Sample.CommandService
                 IoCFactory.Instance.CurrentContainer.Dispose();
             }
             _Logger.Debug($"App Ended");
+        }
+
+
+        public static void CloseMessageQueue()
+        {
+            var endSuccesss = Task.WaitAll(new[]
+              {
+                    Task.Run(() => _CommandConsumer1?.Stop()),
+                    Task.Run(() => _CommandConsumer2?.Stop()),
+                    Task.Run(() => _CommandConsumer3?.Stop()),
+                    Task.Run(() => _DomainEventConsumer?.Stop()),
+                    Task.Run(() => _ApplicationEventConsumer?.Stop()),
+                    Task.Run(() => _CommandBus?.Stop()),
+                    Task.Run(() => _MessagePublisher?.Stop())
+                }, 10000);
+            if (!endSuccesss)
+            {
+                throw new Exception($"stop message queue client timeout!");
+            }
         }
 
         protected void Application_Error(object sender, EventArgs e)

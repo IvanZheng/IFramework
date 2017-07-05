@@ -17,7 +17,6 @@ using System.Web;
 using System.Web.Hosting;
 using System.Xml;
 using System.Xml.Serialization;
-using Newtonsoft.Json.Linq;
 
 namespace IFramework.Infrastructure
 {
@@ -57,7 +56,7 @@ namespace IFramework.Infrastructure
             for (var i = 0; i < 256; i++)
             {
                 var s = i.ToString("X2");
-                result[i] = s[0] + ((uint) s[1] << 16);
+                result[i] = s[0] + ((uint)s[1] << 16);
             }
             return result;
         }
@@ -94,8 +93,8 @@ namespace IFramework.Infrastructure
             for (var i = 0; i < bytes.Length; i++)
             {
                 var val = lookup32[bytes[i]];
-                result[2 * i] = (char) val;
-                result[2 * i + 1] = (char) (val >> 16);
+                result[2 * i] = (char)val;
+                result[2 * i + 1] = (char)(val >> 16);
             }
             return new string(result);
         }
@@ -203,7 +202,7 @@ namespace IFramework.Infrastructure
             }
             else if (obj is FieldInfo)
             {
-                var attrs = ((FieldInfo) obj).GetCustomAttributes(typeof(TAttribute), inherit);
+                var attrs = ((FieldInfo)obj).GetCustomAttributes(typeof(TAttribute), inherit);
                 if (attrs != null && attrs.Length > 0)
                 {
                     return attrs.FirstOrDefault(attr => attr is TAttribute) as TAttribute;
@@ -211,7 +210,7 @@ namespace IFramework.Infrastructure
             }
             else if (obj is PropertyInfo)
             {
-                var attrs = ((PropertyInfo) obj).GetCustomAttributes(inherit);
+                var attrs = ((PropertyInfo)obj).GetCustomAttributes(inherit);
                 if (attrs != null && attrs.Length > 0)
                 {
                     return attrs.FirstOrDefault(attr => attr is TAttribute) as TAttribute;
@@ -327,32 +326,18 @@ namespace IFramework.Infrastructure
             object objValue = null;
             try
             {
-                if (obj is JObject)
+
+                var property = obj.GetType()
+                                  .GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (property != null)
                 {
-                    var jObject = obj as JObject;
-                    var property = jObject.Property(name);
-                    if (property != null)
-                    {
-                        var value = property.Value as JValue;
-                        if (value != null)
-                        {
-                            objValue = value.Value;
-                        }
-                    }
+                    objValue = FastInvoke.GetMethodInvoker(property.GetGetMethod(true))(obj, null);
                 }
-                else
-                {
-                    var property = obj.GetType()
-                                      .GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                    if (property != null)
-                    {
-                        objValue = FastInvoke.GetMethodInvoker(property.GetGetMethod(true))(obj, null);
-                    }
-                }
+
 
                 if (objValue != null)
                 {
-                    retValue = (T) objValue;
+                    retValue = (T)objValue;
                 }
             }
             catch (Exception)
@@ -365,60 +350,25 @@ namespace IFramework.Infrastructure
         public static object GetValueByKey(this object obj, string name)
         {
             object objValue = null;
-            if (obj is JObject)
+            var property = obj.GetType()
+                              .GetProperty(name,
+                                           BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (property != null)
             {
-                var jObject = obj as JObject;
-                var property = jObject.Property(name);
-                if (property != null)
-                {
-                    var value = property.Value as JValue;
-                    if (value != null)
-                    {
-                        objValue = value.Value;
-                    }
-                }
+                objValue = FastInvoke.GetMethodInvoker(property.GetGetMethod(true))(obj, null);
             }
-            else
-            {
-                var property = obj.GetType()
-                                  .GetProperty(name,
-                                               BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (property != null)
-                {
-                    objValue = FastInvoke.GetMethodInvoker(property.GetGetMethod(true))(obj, null);
-                }
-            }
+
             return objValue;
         }
 
         public static void SetValueByKey(this object obj, string name, object value)
         {
-            if (obj is DynamicJson)
+            var property = obj.GetType()
+                              .GetProperty(name,
+                                           BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (property != null)
             {
-                obj = (obj as DynamicJson)._json;
-            }
-            if (obj is JObject)
-            {
-                var jObject = obj as JObject;
-                var property = jObject.Property(name);
-                if (property != null)
-                {
-                    property.Value = JToken.FromObject(value);
-                }
-                else
-                {
-                    jObject.Add(name, JToken.FromObject(value));
-                }
-            }
-            else
-            {
-                var property = obj.GetType()
-                                  .GetProperty(name,
-                                               BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (property != null)
-                {
-                    FastInvoke.GetMethodInvoker(property.GetSetMethod(true))(obj, new[] {value});
-                }
+                FastInvoke.GetMethodInvoker(property.GetSetMethod(true))(obj, new[] { value });
             }
         }
 
@@ -431,7 +381,7 @@ namespace IFramework.Infrastructure
         {
             try
             {
-                return (T) Enum.Parse(typeof(T), val);
+                return (T)Enum.Parse(typeof(T), val);
             }
             catch (Exception)
             {
@@ -558,7 +508,7 @@ namespace IFramework.Infrastructure
             for (var x = 0; x < pToDecrypt.Length / 2; x++)
             {
                 var i = Convert.ToInt32(pToDecrypt.Substring(x * 2, 2), 16);
-                inputByteArray[x] = (byte) i;
+                inputByteArray[x] = (byte)i;
             }
             des.Key = Encoding.ASCII.GetBytes(key);
             des.IV = Encoding.ASCII.GetBytes(key);

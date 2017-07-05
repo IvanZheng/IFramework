@@ -4,6 +4,7 @@ using IFramework.EntityFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.IoC;
 using IFramework.MessageQueue;
+using IFramework.MessageQueue.ConfluentKafka.Config;
 using IFramework.MessageQueue.MSKafka.Config;
 using Sample.Domain;
 using Sample.Persistence;
@@ -24,7 +25,7 @@ namespace Sample.CommandConsumer
                              .MessageQueueUseMachineNameFormat()
                              .UseMessageQueue()
                              .UseMessageStore<SampleModelContext>()
-                             .UseKafka("192.168.99.60:2181")
+                             .UseConfluentKafka("192.168.99.60:2181")
                              .UseMessagePublisher("eventTopic")
                              .RegisterEntityFrameworkComponents();
 

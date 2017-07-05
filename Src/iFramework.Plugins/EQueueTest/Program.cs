@@ -65,7 +65,7 @@ namespace EQueueTest
                 {
                     try
                     {
-                        producer.SendAsync(queueMessage, message)
+                        producer.SendAsync(queueMessage, message, CancellationToken.None)
                                 .ContinueWith(t =>
                                 {
                                     Console.WriteLine($"send message: {message}");

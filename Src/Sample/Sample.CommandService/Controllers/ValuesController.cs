@@ -8,6 +8,7 @@ namespace Sample.CommandService.Controllers
     [IPFilter]
     public class ValuesController : ApiControllerBase
     {
+ 
         // GET api/<controller>
         public async Task<ApiResult<string[]>> Get()
         {
@@ -15,6 +16,7 @@ namespace Sample.CommandService.Controllers
         }
 
         // GET api/<controller>/5
+       
         public string Get(int id)
         {
             return "value";

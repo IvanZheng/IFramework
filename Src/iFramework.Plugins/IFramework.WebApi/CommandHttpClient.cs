@@ -8,6 +8,7 @@ using System.Web;
 using IFramework.Command;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
+using JsonHelper = IFramework.JsonNet.JsonHelper;
 
 namespace IFramework.AspNet
 {

@@ -6,6 +6,7 @@ using System.Web.Configuration;
 using System.Xml.Linq;
 using IFramework.Event;
 using IFramework.Event.Impl;
+using IFramework.Infrastructure;
 using IFramework.Infrastructure.Caching;
 using IFramework.Infrastructure.Caching.Impl;
 using IFramework.Infrastructure.Logging;
@@ -30,6 +31,7 @@ namespace IFramework.Config
         {
             UseNoneLogger();
             UseMemoryCahce();
+            UserDataContractJson();
             UseMessageStore<MockMessageStore>();
             this.UseMockMessageQueueClient();
             this.UseMockMessagePublisher();
@@ -37,6 +39,13 @@ namespace IFramework.Config
             return this;
         }
 
+        private Configuration UserDataContractJson()
+        {
+            IoCFactory.Instance.CurrentContainer
+                      .RegisterInstance(typeof(IJsonConvert)
+                                        , new DataContractJsonConvert());
+            return this;
+        }
 
         public Configuration UseMemoryCahce(Lifetime lifetime = Lifetime.Hierarchical)
         {

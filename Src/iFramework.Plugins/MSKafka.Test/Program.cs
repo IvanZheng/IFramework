@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
@@ -74,7 +75,7 @@ namespace KafkaClient.Test
 
 
                 var start = DateTime.Now;
-                queueClient.SendAsync(key, kafkaMessage)
+                queueClient.SendAsync(key, kafkaMessage, CancellationToken.None)
                            .ContinueWith(t =>
                            {
                                var result = t.Result;

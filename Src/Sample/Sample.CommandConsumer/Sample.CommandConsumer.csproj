@@ -108,6 +108,10 @@
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
       <Name>IFramework.Log4Net</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj">
+      <Project>{185B5FD4-016C-416E-9213-522573AFEF13}</Project>
+      <Name>IFramework.MessageQueue.ConfluentKafka</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj">
       <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>
       <Name>IFramework.MessageQueue.MSKafka</Name>

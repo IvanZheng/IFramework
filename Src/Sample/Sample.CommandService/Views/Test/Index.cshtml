@@ -151,6 +151,16 @@
                     refreshCommandDistributorStatus();
                 })
                 .click();
+
+            $("#closeMqBtn").click(function() {
+                $.get("@Url.Content("~/api/mq/CloseMessageQueue")", null, function(data) {
+                    if (data.errorCode === 0) {
+                        showResult(data);
+                    } else {
+                        showResult(data.message);
+                    }
+                });
+            });
         });
         var refreshCommandDistributorStatus = function() {
             $.get("@Url.Content("~/Test/CommandDistributorStatus")",
@@ -170,7 +180,7 @@
 
 </div>
 <br/>
-
+<input type="button" value="CloseMessageQueue" id="closeMqBtn"/>
 <input type="text" value="1000" id="batchCount"/>
 <input type="text" value="ivan" id="username"/>
 <input type="password" value="123456" id="password"/>

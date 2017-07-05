@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.IoC;
 using IFramework.MessageQueue;
@@ -32,10 +33,10 @@ namespace IFramework.Message.Impl
             }
         }
 
-        protected override async Task SendMessageStateAsync(MessageState messageState)
+        protected override async Task SendMessageStateAsync(MessageState messageState, CancellationToken cancellationToken)
         {
             var messageContext = messageState.MessageContext;
-            await _messageQueueClient.PublishAsync(messageContext, messageContext.Topic ?? _defaultTopic);
+            await _messageQueueClient.PublishAsync(messageContext, messageContext.Topic ?? _defaultTopic, cancellationToken);
             CompleteSendingMessage(messageState);
         }
 

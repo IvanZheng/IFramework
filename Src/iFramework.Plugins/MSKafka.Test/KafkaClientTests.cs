@@ -57,7 +57,7 @@ namespace KafkaClient.Test
             {
                 var message = $"message:{i}";
                 var kafkaMessage = new KafkaMessage(message);
-                tasks.Add(queueClient.SendAsync(message, kafkaMessage));
+                tasks.Add(queueClient.SendAsync(message, kafkaMessage, CancellationToken.None));
             }
             Task.WhenAll(tasks).Wait();
             Console.WriteLine($"send message completed cost: {(DateTime.Now - start).TotalMilliseconds}");

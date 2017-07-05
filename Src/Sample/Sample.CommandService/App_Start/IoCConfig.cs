@@ -23,7 +23,8 @@ namespace Sample.CommandService.App_Start
                          //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
                          .UseUnityContainer()
                          .UseUnityMvc()
-                         .RegisterCommonComponents();
+                         .RegisterCommonComponents()
+                         .UseJsonNet();
 
             var container = IoCFactory.Instance.CurrentContainer;
             RegisterTypes(container, Lifetime.Hierarchical);

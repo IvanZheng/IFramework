@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
@@ -43,21 +44,21 @@ namespace IFramework.MessageQueue.ConfluentKafka
         //}
 
 
-        public Task PublishAsync(IMessageContext messageContext, string topic)
+        public Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
-            var message = ((MessageContext) messageContext).KafkaMessage;
-            return topicClient.SendAsync(messageContext.Key, message);
+            var message = ((MessageContext)messageContext).KafkaMessage;
+            return topicClient.SendAsync(messageContext.Key, message, cancellationToken);
         }
 
-        public Task SendAsync(IMessageContext messageContext, string queue)
+        public Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken)
         {
             queue = Configuration.Instance.FormatMessageQueueName(queue);
             var queueClient = GetQueueClient(queue);
 
-            var message = ((MessageContext) messageContext).KafkaMessage;
-            return queueClient.SendAsync(messageContext.Key, message);
+            var message = ((MessageContext)messageContext).KafkaMessage;
+            return queueClient.SendAsync(messageContext.Key, message, cancellationToken);
         }
 
         public ICommitOffsetable StartQueueClient(string commandQueueName,

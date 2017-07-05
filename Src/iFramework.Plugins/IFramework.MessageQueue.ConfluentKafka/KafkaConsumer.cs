@@ -92,7 +92,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             _cancellationTokenSource = new CancellationTokenSource();
             _consumer = new Consumer<string, KafkaMessage>(ConsumerConfiguration, new StringDeserializer(Encoding.UTF8), new KafkaMessageDeserializer());
             _consumer.Subscribe(Topic);
-            _consumer.OnError += (sender, error) => _logger.Error(error.ToString());
+            _consumer.OnError += (sender, error) => _logger.Error($"consumer({Id}) error: {error.ToJson()}");
             _consumer.OnMessage += _consumer_OnMessage;
 
             _consumerTask = Task.Factory.StartNew(cs => ReceiveMessages(cs as CancellationTokenSource),
@@ -196,13 +196,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         protected void AddMessage(Message<string, KafkaMessage> message)
         {
-            var slidingDoor = SlidingDoors.GetOrAdd(message.Partition, partition =>
-            {
-                return new SlidingDoor(CommitOffset,
-                                       string.Empty,
-                                       partition,
-                                       Configuration.Instance.GetCommitPerMessage());
-            });
+            var slidingDoor = SlidingDoors.GetOrAdd(message.Partition, partition => new SlidingDoor(CommitOffset,
+                                                                                                    string.Empty,
+                                                                                                    partition,
+                                                                                                    Configuration.Instance.GetCommitPerMessage()));
             slidingDoor.AddOffset(message.Offset);
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -31,12 +32,12 @@ namespace IFramework.MessageQueue.ZeroMQ
             throw new NotImplementedException();
         }
 
-        public Task SendAsync(IMessageContext messageContext, string queue)
+        public Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task PublishAsync(IMessageContext messageContext, string topic)
+        public Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
