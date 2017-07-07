@@ -18,7 +18,7 @@ using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace IFramework.Command.Impl
 {
-    public class CommandConsumer : IMessageConsumer
+    public class CommandConsumer: IMessageConsumer
     {
         protected CancellationTokenSource _cancellationTokenSource;
         protected string _commandQueueName;
@@ -185,17 +185,17 @@ namespace IFramework.Command.Impl
                                     }
 
                                     using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                                       new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
+                                                                                       new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
                                                                                        TransactionScopeAsyncFlowOption.Enabled))
                                     {
                                         if (messageHandlerType.IsAsync)
                                         {
-                                            await ((dynamic) messageHandler).Handle((dynamic) command)
-                                                                            .ConfigureAwait(false);
+                                            await ((dynamic)messageHandler).Handle((dynamic)command)
+                                                                           .ConfigureAwait(false);
                                         }
                                         else
                                         {
-                                            await Task.Run(() => { ((dynamic) messageHandler).Handle((dynamic) command); }).ConfigureAwait(false);
+                                            await Task.Run(() => { ((dynamic)messageHandler).Handle((dynamic)command); }).ConfigureAwait(false);
                                         }
                                         if (needReply)
                                         {
@@ -236,13 +236,14 @@ namespace IFramework.Command.Impl
                                 catch (Exception e)
                                 {
                                     eventMessageStates.Clear();
+                                    messageStore.Rollback();
+
                                     if (e is OptimisticConcurrencyException && needRetry)
                                     {
                                         eventBus.ClearMessages();
                                     }
                                     else
                                     {
-                                        messageStore.Rollback();
                                         if (needReply)
                                         {
                                             messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(),
@@ -263,10 +264,17 @@ namespace IFramework.Command.Impl
                                                 });
                                         if (e is DomainException)
                                         {
-                                            var exceptionMessage = _messageQueueClient.WrapMessage(e.GetBaseException(),
-                                                                                                   commandContext.MessageID,
-                                                                                                   producer: Producer);
-                                            eventMessageStates.Add(new MessageState(exceptionMessage));
+                                            var domainExceptionEvent = ((DomainException)e).DomainExceptionEvent;
+                                            if (domainExceptionEvent != null)
+                                            {
+                                                var topic = domainExceptionEvent.GetFormatTopic();
+
+                                                var exceptionMessage = _messageQueueClient.WrapMessage(domainExceptionEvent,
+                                                                                                       commandContext.MessageID,
+                                                                                                       topic,
+                                                                                                       producer: Producer);
+                                                eventMessageStates.Add(new MessageState(exceptionMessage));
+                                            }
                                             _logger?.Warn(command.ToJson(), e);
                                         }
                                         else
@@ -287,7 +295,7 @@ namespace IFramework.Command.Impl
                             } while (needRetry);
                         }
                     }
-                    if (_messagePublisher != null && eventMessageStates.Count > 0)
+                    if (eventMessageStates.Count > 0)
                     {
                         var sendTask = _messagePublisher.SendAsync(eventMessageStates.ToArray());
                         // we don't need to wait the send task complete here.

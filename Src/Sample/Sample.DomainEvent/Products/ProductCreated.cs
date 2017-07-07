@@ -2,7 +2,7 @@
 
 namespace Sample.DomainEvents.Products
 {
-    public class ProductCreated : DomainEvent
+    public class ProductCreated : AggregateRootEvent
     {
         public ProductCreated(Guid productId, string name, int count, DateTime createTime)
             : base(productId)

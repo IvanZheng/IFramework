@@ -6,7 +6,8 @@ using Sample.DomainEvents.Products;
 namespace Sample.AsyncDomainEventSubscriber.Products
 {
     public class ProductEventSubscriber :
-        IEventSubscriber<ProductCreated>
+        IEventSubscriber<ProductCreated>,
+        IEventSubscriber<ProductCountNotEnough>
     {
         private readonly IEventBus _EventBus;
 
@@ -20,6 +21,11 @@ namespace Sample.AsyncDomainEventSubscriber.Products
             Console.Write("subscriber1: {0} has registered.", @event.ToJson());
 
             _EventBus.FinishSaga(@event);
+        }
+
+        public void Handle(ProductCountNotEnough @event)
+        {
+            Console.Write("subscriber1: ProductCountNotEnough. {0} ", @event.ToJson());
         }
     }
 }

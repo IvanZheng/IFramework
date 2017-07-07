@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -10,21 +11,19 @@ using IFramework.UnitOfWork;
 
 namespace IFramework.EntityFramework
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork: IUnitOfWork
     {
         protected List<MSDbContext> _dbContexts;
         protected IEventBus _eventBus;
-
+        protected Exception _exception;
         protected ILogger _logger;
-        // IEventPublisher _eventPublisher;
 
         public UnitOfWork(IEventBus eventBus,
-                          ILoggerFactory loggerFactory) //,  IEventPublisher eventPublisher, IMessageStore messageStore*/)
+                          ILoggerFactory loggerFactory)
         {
             _dbContexts = new List<MSDbContext>();
             _eventBus = eventBus;
             _logger = loggerFactory.Create(GetType().Name);
-            //  _eventPublisher = eventPublisher;
         }
 
         public void Dispose()
@@ -40,33 +39,47 @@ namespace IFramework.EntityFramework
 
         #region IUnitOfWork Members
 
-        protected virtual void BeforeCommit() { }
+        protected virtual void BeforeCommit()
+        {
+        }
 
-        protected virtual void AfterCommit() { }
+        protected virtual void AfterCommit()
+        {
+        }
 
         public virtual void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                    TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
-            using (var scope = new TransactionScope(scopOption,
-                                                    new TransactionOptions {IsolationLevel = isolationLevel},
-                                                    TransactionScopeAsyncFlowOption.Enabled))
+            try
             {
-                _dbContexts.ForEach(dbContext =>
+                using (var scope = new TransactionScope(scopOption,
+                                                        new TransactionOptions { IsolationLevel = isolationLevel },
+                                                        TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    dbContext.SaveChanges();
-                    dbContext.ChangeTracker.Entries()
-                             .ForEach(e =>
-                             {
-                                 if (e.Entity is AggregateRoot)
+                    _dbContexts.ForEach(dbContext =>
+                    {
+                        dbContext.SaveChanges();
+                        dbContext.ChangeTracker.Entries()
+                                 .ForEach(e =>
                                  {
-                                     _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
-                                 }
-                             });
-                });
-                BeforeCommit();
-                scope.Complete();
+                                     if (e.Entity is AggregateRoot)
+                                         _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
+                                 });
+                    });
+                    BeforeCommit();
+                    scope.Complete();
+                }
             }
-            AfterCommit();
+            catch (Exception ex)
+            {
+                _exception = ex;
+                throw;
+            }
+            finally
+            {
+                AfterCommit();
+            }
+
         }
 
         public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
@@ -79,34 +92,41 @@ namespace IFramework.EntityFramework
                                               IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                               TransactionScopeOption scopOption = TransactionScopeOption.Required)
         {
-            using (var scope = new TransactionScope(scopOption,
-                                                    new TransactionOptions {IsolationLevel = isolationLevel},
-                                                    TransactionScopeAsyncFlowOption.Enabled))
+            try
             {
-                foreach (var dbContext in _dbContexts)
+                using (var scope = new TransactionScope(scopOption,
+                                                        new TransactionOptions { IsolationLevel = isolationLevel },
+                                                        TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                    dbContext.ChangeTracker.Entries()
-                             .ForEach(e =>
-                             {
-                                 if (e.Entity is AggregateRoot)
-                                 {
-                                     _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
-                                 }
-                             });
+                    foreach (var dbContext in _dbContexts)
+                    {
+                        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                        dbContext.ChangeTracker.Entries().ForEach(e =>
+                        {
+                            if (e.Entity is AggregateRoot)
+                                _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
+                        });
+                    }
+                    BeforeCommit();
+                    scope.Complete();
                 }
-                BeforeCommit();
-                scope.Complete();
             }
-            AfterCommit();
+            catch (Exception ex)
+            {
+                _exception = ex;
+                throw;
+            }
+            finally
+            {
+                AfterCommit();
+            }
+
         }
 
         internal void RegisterDbContext(MSDbContext dbContext)
         {
             if (!_dbContexts.Exists(dbCtx => dbCtx.Equals(dbContext)))
-            {
                 _dbContexts.Add(dbContext);
-            }
         }
 
         #endregion

@@ -15,7 +15,7 @@ using IFramework.MessageQueue;
 
 namespace IFramework.Event.Impl
 {
-    public class EventSubscriber : IMessageConsumer
+    public class EventSubscriber: IMessageConsumer
     {
         private readonly string _topic;
         protected ICommandBus _commandBus;
@@ -119,8 +119,7 @@ namespace IFramework.Event.Impl
                     {
                         scope.RegisterInstance(typeof(IMessageContext), eventContext);
                         var messageStore = scope.Resolve<IMessageStore>();
-                        var subscriptionName =
-                            string.Format("{0}.{1}", _subscriptionName, messageHandlerType.Type.FullName);
+                        var subscriptionName = $"{_subscriptionName}.{messageHandlerType.Type.FullName}";
                         if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                         {
                             var eventMessageStates = new List<MessageState>();
@@ -138,12 +137,12 @@ namespace IFramework.Event.Impl
                                 {
                                     if (messageHandlerType.IsAsync)
                                     {
-                                        await ((dynamic) messageHandler).Handle((dynamic) message)
-                                                                        .ConfigureAwait(false);
+                                        await ((dynamic)messageHandler).Handle((dynamic)message)
+                                                                       .ConfigureAwait(false);
                                     }
                                     else
                                     {
-                                        await Task.Run(() => { ((dynamic) messageHandler).Handle((dynamic) message); })
+                                        await Task.Run(() => { ((dynamic)messageHandler).Handle((dynamic)message); })
                                                   .ConfigureAwait(false);
                                     }
 
@@ -192,13 +191,20 @@ namespace IFramework.Event.Impl
                             }
                             catch (Exception e)
                             {
+                                eventMessageStates.Clear();
                                 messageStore.Rollback();
                                 if (e is DomainException)
                                 {
-                                    var exceptionMessage = _messageQueueClient.WrapMessage(e.GetBaseException(),
-                                                                                           eventContext.MessageID,
-                                                                                           producer: Producer);
-                                    eventMessageStates.Add(new MessageState(exceptionMessage));
+                                    var domainExceptionEvent = ((DomainException)e).DomainExceptionEvent;
+                                    if (domainExceptionEvent != null)
+                                    {
+                                        var topic = domainExceptionEvent.GetFormatTopic();
+                                        var exceptionMessage = _messageQueueClient.WrapMessage(domainExceptionEvent,
+                                                                                               eventContext.MessageID,
+                                                                                               topic,
+                                                                                               producer: Producer);
+                                        eventMessageStates.Add(new MessageState(exceptionMessage));
+                                    }
                                     _logger?.Warn(message.ToJson(), e);
                                 }
                                 else

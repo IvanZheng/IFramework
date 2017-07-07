@@ -2,7 +2,7 @@
 
 namespace Sample.DomainEvents.Community
 {
-    public class ItemRegisted : DomainEvent
+    public class ItemRegisted : AggregateRootEvent
     {
         public ItemRegisted(Guid id)
             : base(id) { }
@@ -38,7 +38,7 @@ namespace Sample.DomainEvents.Community
         public string Email { get; }
     }
 
-    public class AccountModified : DomainEvent
+    public class AccountModified : AggregateRootEvent
     {
         public AccountModified(Guid accountId, string email)
             : base(accountId)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using IFramework.Event;
+using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Message;
@@ -11,8 +12,9 @@ using IFramework.UnitOfWork;
 
 namespace IFramework.EntityFramework
 {
-    public class AppUnitOfWork : UnitOfWork, IAppUnitOfWork
+    public class AppUnitOfWork: UnitOfWork, IAppUnitOfWork
     {
+        protected List<MessageState> _anywayPublishEventMessageStates;
         protected List<MessageState> _eventMessageStates;
         protected IMessagePublisher _messagePublisher;
         protected IMessageQueueClient _messageQueueClient;
@@ -25,12 +27,11 @@ namespace IFramework.EntityFramework
                              IMessageStore messageStore)
             : base(eventBus, loggerFactory)
         {
-            _dbContexts = new List<MSDbContext>();
-            _eventBus = eventBus;
             _messageStore = messageStore;
             _messagePublisher = eventPublisher;
             _messageQueueClient = messageQueueClient;
             _eventMessageStates = new List<MessageState>();
+            _anywayPublishEventMessageStates = new List<MessageState>();
         }
 
         protected override void BeforeCommit()
@@ -50,27 +51,71 @@ namespace IFramework.EntityFramework
                      {
                          var topic = @event.GetFormatTopic();
                          var eventContext = _messageQueueClient.WrapMessage(@event, null, topic, @event.Key);
-                         _eventMessageStates.Add(new MessageState(eventContext));
+                         _anywayPublishEventMessageStates.Add(new MessageState(eventContext));
                      });
-            _messageStore.SaveCommand(null, null, _eventMessageStates.Select(s => s.MessageContext).ToArray());
+            var allMessageStates = _eventMessageStates.Union(_anywayPublishEventMessageStates)
+                                                      .ToList();
+            if (allMessageStates.Count > 0)
+            {
+                _messageStore.SaveCommand(null, null, allMessageStates.Select(s => s.MessageContext).ToArray());
+            }
         }
 
         protected override void AfterCommit()
         {
             base.AfterCommit();
-
-            _eventBus.ClearMessages();
-            try
+            if (_exception == null)
             {
-                if (_messagePublisher != null && _eventMessageStates.Count > 0)
+                try
                 {
-                    _messagePublisher.SendAsync(_eventMessageStates.ToArray());
+                    var allMessageStates = _eventMessageStates.Union(_anywayPublishEventMessageStates)
+                                                              .ToList();
+
+                    if (allMessageStates.Count > 0)
+                    {
+                        _messagePublisher.SendAsync(_eventMessageStates.ToArray());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"_messagePublisher SendAsync error", ex);
                 }
             }
-            catch (Exception ex)
+            else
             {
-                _logger.Error($"_messagePublisher SendAsync error", ex);
+                _messageStore.Rollback();
+                if (_exception is DomainException)
+                {
+                    var exceptionEvent = ((DomainException)_exception).DomainExceptionEvent;
+                    if (exceptionEvent != null)
+                    {
+                        var topic = exceptionEvent.GetFormatTopic();
+
+                        var exceptionMessage = _messageQueueClient.WrapMessage(exceptionEvent,
+                                                                               null,
+                                                                               topic);
+                        _anywayPublishEventMessageStates.Add(new MessageState(exceptionMessage));
+                    }
+                }
+
+                try
+                {
+                    if (_anywayPublishEventMessageStates.Count > 0)
+                    {
+                        _messageStore.SaveFailedCommand(null,
+                                                        _exception,
+                                                        _anywayPublishEventMessageStates.Select(s => s.MessageContext)
+                                                                                        .ToArray());
+                        _messagePublisher.SendAsync(_anywayPublishEventMessageStates.ToArray());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"_messagePublisher SendAsync error", ex);
+                }
+
             }
+            _eventBus.ClearMessages();
         }
     }
 }

@@ -3,18 +3,18 @@ using IFramework.Infrastructure;
 
 namespace KafkaClient.Test
 {
-    public class DomainEvent : IDomainEvent
+    public class AggregateRootEvent : IAggregateRootEvent
     {
-        public DomainEvent() { }
+        public AggregateRootEvent() { }
 
-        public DomainEvent(string body)
+        public AggregateRootEvent(string body)
         {
             Body = body;
             ID = ObjectId.GenerateNewId().ToString();
         }
 
 
-        public DomainEvent(object aggregateRootID, string body)
+        public AggregateRootEvent(object aggregateRootID, string body)
             : this(body)
         {
             AggregateRootID = aggregateRootID;

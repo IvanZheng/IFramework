@@ -108,7 +108,6 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 AddMessage(message);
                 _onMessageReceived(this, message);
-                BlockIfFullLoad();
             }
             catch (OperationCanceledException)
             {
@@ -162,6 +161,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                     //var linkedTimeoutCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token,
                     //                                                                       new CancellationTokenSource(3000).Token);
                     _consumer.Poll(100);
+                    BlockIfFullLoad();
                 }
                 catch (OperationCanceledException)
                 {

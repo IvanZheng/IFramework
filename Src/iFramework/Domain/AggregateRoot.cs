@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using IFramework.Event;
+using IFramework.Exceptions;
 
 namespace IFramework.Domain
 {
-    public abstract class AggregateRoot : Entity, IAggregateRoot
+    public abstract class AggregateRoot: Entity, IAggregateRoot
     {
-        private readonly Queue<IDomainEvent> _eventQueue = new Queue<IDomainEvent>();
         private string _aggreagetRootType;
+        private readonly Queue<IAggregateRootEvent> _eventQueue = new Queue<IAggregateRootEvent>();
 
         private string AggregateRootName
         {
@@ -17,16 +18,14 @@ namespace IFramework.Domain
                 {
                     var aggreagetRootType = GetType();
                     if ("EntityProxyModule" == GetType().Module.ToString())
-                    {
                         aggreagetRootType = aggreagetRootType.BaseType;
-                    }
                     _aggreagetRootType = aggreagetRootType.FullName;
                 }
                 return _aggreagetRootType;
             }
         }
 
-        public IEnumerable<IDomainEvent> GetDomainEvents()
+        public IEnumerable<IAggregateRootEvent> GetDomainEvents()
         {
             return _eventQueue.ToList();
         }
@@ -36,14 +35,20 @@ namespace IFramework.Domain
             _eventQueue.Clear();
         }
 
-        protected virtual void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
+        protected virtual void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IAggregateRootEvent
         {
             HandleEvent(@event);
             @event.AggregateRootName = AggregateRootName;
             _eventQueue.Enqueue(@event);
         }
 
-        private void HandleEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IDomainEvent
+        protected virtual void OnException<TDomainException>(TDomainException exception) where TDomainException : IAggregateRootExceptionEvent
+        {
+            exception.AggregateRootName = AggregateRootName;
+            throw new DomainException(exception);
+        }
+
+        private void HandleEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IAggregateRootEvent
         {
             var subscriber = this as IEventSubscriber<TDomainEvent>;
             subscriber?.Handle(@event);

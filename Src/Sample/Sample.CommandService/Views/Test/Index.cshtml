@@ -161,6 +161,17 @@
                     }
                 });
             });
+
+            $("#btnReduceProduct").click(function () {
+                var productId = $("#productId").val();
+                var reduceCount = $("#reduceCount").val();
+
+                var reduceProduct = {
+                    productId: productId,
+                    reduceCount: reduceCount
+                };
+                doCommand("ReduceProduct", reduceProduct);
+            });
         });
         var refreshCommandDistributorStatus = function() {
             $.get("@Url.Content("~/Test/CommandDistributorStatus")",
@@ -201,6 +212,11 @@
 </div>
 <div>
     <input type="button" value="Api pressure test" id="pressureBtn"/>
+</div>
+<div>
+    <input type="text" placeholder="productId" id="productId" />
+    <input type="text" placeholder="reduceCount" id="reduceCount"/>
+    <input id="btnReduceProduct" type="button" value="ReduceProduct"/>
 </div>
 <div id="result">
 

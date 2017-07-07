@@ -7,8 +7,7 @@ using Sample.DomainEvents.Community;
 namespace Sample.AsyncDomainEventSubscriber.Community
 {
     public class AccountEventSubscriber :
-        IEventSubscriber<AccountRegistered>,
-        IEventSubscriber<SampleDomainException>
+        IEventSubscriber<AccountRegistered>
     {
         private readonly IEventBus _EventBus;
 
@@ -27,11 +26,6 @@ namespace Sample.AsyncDomainEventSubscriber.Community
                 UserName = @event.UserName
             };
             _EventBus.Publish(applicationEvent);
-        }
-
-        public void Handle(SampleDomainException message)
-        {
-            Console.Write($"{message.ErrorCode} {message.Message} {message.StackTrace}");
         }
     }
 

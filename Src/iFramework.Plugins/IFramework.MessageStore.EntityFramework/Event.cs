@@ -10,7 +10,7 @@ namespace IFramework.MessageStoring
         public Event(IMessageContext messageContext) :
             base(messageContext)
         {
-            var domainEvent = messageContext.Message as IDomainEvent;
+            var domainEvent = messageContext.Message as IAggregateRootEvent;
             if (domainEvent != null)
             {
                 AggregateRootID = domainEvent.AggregateRootID.ToString();

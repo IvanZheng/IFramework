@@ -78,7 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
-    <Compile Include="DomainEvent.cs" />
+    <Compile Include="AggregateRootEvent.cs" />
     <Compile Include="KafkaClientTests.cs" />
     <Compile Include="Program.MSKafka.cs" />
     <Compile Include="Program.cs" />

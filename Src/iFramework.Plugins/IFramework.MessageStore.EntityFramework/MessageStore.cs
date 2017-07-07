@@ -42,7 +42,7 @@ namespace IFramework.MessageStoring
                 var command = BuildCommand(commandContext, result);
                 Commands.Add(command);
             }
-            messageContexts.ForEach(eventContext =>
+            messageContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationID = commandContext?.MessageID;
                 Events.Add(BuildEvent(eventContext));
@@ -59,15 +59,15 @@ namespace IFramework.MessageStoring
                 var command = BuildCommand(commandContext, ex);
                 command.Status = MessageStatus.Failed;
                 Commands.Add(command);
-
-                eventContexts?.ForEach(eventContext =>
-                {
-                    eventContext.CorrelationID = commandContext.MessageID;
-                    Events.Add(BuildEvent(eventContext));
-                    UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
-                });
-                SaveChanges();
             }
+            eventContexts?.ForEach(eventContext =>
+            {
+                eventContext.CorrelationID = commandContext?.MessageID;
+                Events.Add(BuildEvent(eventContext));
+                UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
+            });
+            SaveChanges();
+
         }
 
 

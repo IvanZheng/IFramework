@@ -38,11 +38,12 @@ namespace Sample.Domain.Model
 
         public void ReduceCount(int reduceCount)
         {
-            Count = Count - reduceCount;
-            if (Count < 0)
+            var count = Count - reduceCount;
+            if (count < 0)
             {
-                throw new SampleDomainException(ErrorCode.CountNotEnougth);
+                OnException(new ProductCountNotEnough(Id, reduceCount, Count));
             }
+            Count = count;
         }
     }
 }

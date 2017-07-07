@@ -43,7 +43,7 @@ namespace Sample.CommandService
                 var kafkaBrokerList = new[]
                  {
                     new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString(),
-                    //"192.168.99.60:9092"
+                    "192.168.99.60:9092"
                 };
                 Configuration.Instance
                              .UseLog4Net()

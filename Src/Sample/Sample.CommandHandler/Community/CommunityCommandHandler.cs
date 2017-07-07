@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.Event;
+using IFramework.Exceptions;
 using IFramework.IoC;
 using IFramework.Message;
 using IFramework.UnitOfWork;
@@ -9,9 +10,9 @@ using Sample.ApplicationEvent;
 using Sample.Command;
 using Sample.Domain;
 using Sample.DomainEvents;
-using Sample.DTO;
 using Sample.Persistence.Repositories;
 using Account = Sample.Domain.Model.Account;
+using ErrorCode = Sample.DTO.ErrorCode;
 
 namespace Sample.CommandHandler.Community
 {
@@ -51,7 +52,7 @@ namespace Sample.CommandHandler.Community
                                                  .ConfigureAwait(false);
             if (account == null)
             {
-                var ex = new SampleDomainException(ErrorCode.WrongUsernameOrPassword,
+                var ex = new DomainException(ErrorCode.WrongUsernameOrPassword,
                                                    new[] {command.UserName});
                 _EventBus.FinishSaga(ex);
                 throw ex;
@@ -69,7 +70,7 @@ namespace Sample.CommandHandler.Community
             var account = _DomainRepository.Find<Account>(a => a.UserName == command.UserName);
             if (account == null)
             {
-                throw new SampleDomainException(ErrorCode.UserNotExists);
+                throw new DomainException(ErrorCode.UserNotExists);
             }
             account.Modify(command.Email);
             _UnitOfWork.Commit();
@@ -80,8 +81,8 @@ namespace Sample.CommandHandler.Community
         {
             if (_DomainRepository.Find<Account>(a => a.UserName == command.UserName) != null)
             {
-                throw new SampleDomainException(ErrorCode.UsernameAlreadyExists,
-                                                string.Format("Username {0} exists!", command.UserName));
+                throw new DomainException(ErrorCode.UsernameAlreadyExists,
+                                          $"Username {command.UserName} exists!");
             }
 
             var account = new Account(command.UserName, command.Password, command.Email);

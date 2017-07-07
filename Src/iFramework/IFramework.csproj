@@ -58,6 +58,8 @@
     <Compile Include="Bus\IBus.cs" />
     <Compile Include="Command\CommandBusExtension.cs" />
     <Compile Include="Command\ICommandAsyncHandler.cs" />
+    <Compile Include="Event\IAggregateRootExceptionEvent.cs" />
+    <Compile Include="Event\IDomainExceptionEvent.cs" />
     <Compile Include="Event\IEventAsyncSubscriber.cs" />
     <Compile Include="Infrastructure\DataContractJsonConvert.cs" />
     <Compile Include="Infrastructure\IJsonConvert.cs" />
@@ -157,7 +159,7 @@
     <Compile Include="Domain\Entity.cs" />
     <Compile Include="Domain\IAggregateRoot.cs" />
     <Compile Include="Domain\IEntity.cs" />
-    <Compile Include="Event\IDomainEvent.cs" />
+    <Compile Include="Event\IAggregateRootEvent.cs" />
     <Compile Include="Event\IEventBus.cs" />
     <Compile Include="Event\IEventSubscriber.cs" />
     <Compile Include="Event\IEventSubscriberProvider.cs" />

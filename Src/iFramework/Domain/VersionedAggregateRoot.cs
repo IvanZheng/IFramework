@@ -2,18 +2,15 @@
 
 namespace IFramework.Domain
 {
-    public class VersionedAggregateRoot : AggregateRoot
+    public class VersionedAggregateRoot: AggregateRoot
     {
         private int _newVersion;
-
         private int NewVersion
         {
             get
             {
                 if (_newVersion == 0)
-                {
                     _newVersion = Version + 1;
-                }
                 return _newVersion;
             }
         }
@@ -32,6 +29,12 @@ namespace IFramework.Domain
             @event.Version = NewVersion;
             Version = NewVersion;
             base.OnEvent(@event);
+        }
+
+        protected override void OnException<TDomainException>(TDomainException exception)
+        {
+            exception.Version = Version;
+            base.OnException(exception);
         }
     }
 }
