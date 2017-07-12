@@ -18,30 +18,26 @@ namespace IFramework.MessageQueue.EQueue
 {
     public delegate void OnEQueueMessageReceived(EQueueConsumer consumer, EQueueMessages.QueueMessage message);
 
-    public class EQueueConsumer : ICommitOffsetable
+    public class EQueueConsumer: ICommitOffsetable
     {
         private readonly OnEQueueMessageReceived _onMessageReceived;
         protected CancellationTokenSource _cancellationTokenSource;
         protected Task _consumerTask;
-        protected int _fullLoadThreshold;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(EQueueConsumer).Name);
-        protected int _waitInterval;
-
+        protected ConsumerConfig _consumerConfig;
         public EQueueConsumer(string clusterName,
                               List<IPEndPoint> nameServerList,
                               string topic,
                               string groupId,
                               string consumerId,
                               OnEQueueMessageReceived onMessageReceived,
-                              int fullLoadThreshold = 1000,
-                              int waitInterval = 1000,
+                              ConsumerConfig consumerConfig = null,
                               bool start = true)
         {
             _onMessageReceived = onMessageReceived;
             ClusterName = clusterName;
+            _consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             NameServerList = nameServerList;
-            _fullLoadThreshold = fullLoadThreshold;
-            _waitInterval = waitInterval;
             SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
             Topic = topic;
             GroupId = groupId;
@@ -67,7 +63,8 @@ namespace IFramework.MessageQueue.EQueue
             var setting = new EQueueConsumers.ConsumerSetting
             {
                 AutoPull = false,
-                ConsumeFromWhere = EQueueMessages.ConsumeFromWhere.FirstOffset,
+                ConsumeFromWhere = (_consumerConfig.AutoOffsetReset == AutoOffsetReset.Smallest || _consumerConfig.AutoOffsetReset == AutoOffsetReset.Earliest) ?
+                EQueueMessages.ConsumeFromWhere.FirstOffset : EQueueMessages.ConsumeFromWhere.LastOffset,
                 ClusterName = ClusterName,
                 NameServerList = NameServerList
             };
@@ -98,9 +95,9 @@ namespace IFramework.MessageQueue.EQueue
 
         public void BlockIfFullLoad()
         {
-            while (SlidingDoors.Sum(d => d.Value.MessageCount) > _fullLoadThreshold)
+            while (SlidingDoors.Sum(d => d.Value.MessageCount) > _consumerConfig.FullLoadThreshold)
             {
-                Thread.Sleep(_waitInterval);
+                Thread.Sleep(_consumerConfig.WaitInterval);
                 _logger.Warn($"working is full load sleep 1000 ms");
             }
         }

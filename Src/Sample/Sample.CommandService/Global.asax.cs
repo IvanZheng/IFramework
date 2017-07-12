@@ -70,7 +70,7 @@ namespace Sample.CommandService
                 #region event subscriber init
 
                 _DomainEventConsumer = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
-                                                                                 Environment.MachineName, 100, "DomainEventSubscriber");
+                                                                                 Environment.MachineName, new []{"DomainEventSubscriber"});
                 _DomainEventConsumer.Start();
 
                 #endregion
@@ -78,7 +78,7 @@ namespace Sample.CommandService
                 #region application event subscriber init
 
                 _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber",
-                                                                                      Environment.MachineName, 100, "ApplicationEventSubscriber");
+                                                                                      Environment.MachineName, new []{"ApplicationEventSubscriber"});
                 _ApplicationEventConsumer.Start();
 
                 #endregion
@@ -94,15 +94,15 @@ namespace Sample.CommandService
 
                 var commandQueueName = "commandqueue";
                 _CommandConsumer1 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", 100, "CommandHandlers");
+                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new []{"CommandHandlers"});
                 _CommandConsumer1.Start();
 
                 _CommandConsumer2 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", 100, "CommandHandlers");
+                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new []{"CommandHandlers"});
                 _CommandConsumer2.Start();
 
                 _CommandConsumer3 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", 100, "CommandHandlers");
+                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new []{"CommandHandlers"});
                 _CommandConsumer3.Start();
 
                 #endregion

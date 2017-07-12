@@ -19,7 +19,7 @@ using Kafka.Client.Producers;
 
 namespace IFramework.MessageQueue.MSKafka
 {
-    public class KafkaClient : IMessageQueueClient
+    public class KafkaClient: IMessageQueueClient
     {
         protected bool _disposed;
         protected ILogger _logger;
@@ -52,7 +52,7 @@ namespace IFramework.MessageQueue.MSKafka
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var topicClient = GetTopicClient(topic);
-            var jsonValue = ((MessageContext) messageContext).KafkaMessage.ToJson();
+            var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
             var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
             var producerData =
                 new ProducerData<string, Kafka.Client.Messages.Message>(topic, messageContext.Key, message);
@@ -64,7 +64,7 @@ namespace IFramework.MessageQueue.MSKafka
             queue = Configuration.Instance.FormatMessageQueueName(queue);
             var queueClient = GetQueueClient(queue);
 
-            var jsonValue = ((MessageContext) messageContext).KafkaMessage.ToJson();
+            var jsonValue = ((MessageContext)messageContext).KafkaMessage.ToJson();
             var message = new Kafka.Client.Messages.Message(Encoding.UTF8.GetBytes(jsonValue));
             var producerData =
                 new ProducerData<string, Kafka.Client.Messages.Message>(queue, messageContext.Key, message);
@@ -74,13 +74,12 @@ namespace IFramework.MessageQueue.MSKafka
         public ICommitOffsetable StartQueueClient(string commandQueueName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000)
+                                                  ConsumerConfig consumerConfig = null)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
             var queueConsumer = CreateQueueConsumer(commandQueueName, onMessagesReceived, consumerId,
-                                                    Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
+                                                    consumerConfig);
             _queueConsumers.Add(queueConsumer);
             return queueConsumer;
         }
@@ -89,13 +88,12 @@ namespace IFramework.MessageQueue.MSKafka
                                                          string subscriptionName,
                                                          string consumerId,
                                                          OnMessagesReceived onMessagesReceived,
-                                                         int fullLoadThreshold = 1000,
-                                                         int waitInterval = 1000)
+                                                         ConsumerConfig consumerConfig = null)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, consumerId,
-                                                              Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
+                                                              consumerConfig);
             _subscriptionClients.Add(subscriptionClient);
             return subscriptionClient;
         }
@@ -255,14 +253,13 @@ namespace IFramework.MessageQueue.MSKafka
         private KafkaConsumer CreateQueueConsumer(string queue,
                                                   OnMessagesReceived onMessagesReceived,
                                                   string consumerId = null,
-                                                  int backOffIncrement = 30,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000)
+                                                  ConsumerConfig consumerConfig = null)
         {
             CreateTopicIfNotExists(queue);
             var queueConsumer = new KafkaConsumer(_zkConnectionString, queue, $"{queue}.consumer", consumerId,
                                                   BuildOnKafkaMessageReceived(onMessagesReceived),
-                                                  backOffIncrement, fullLoadThreshold, waitInterval);
+                                                  consumerConfig,
+                                                  true);
             return queueConsumer;
         }
 
@@ -283,13 +280,12 @@ namespace IFramework.MessageQueue.MSKafka
                                                        string subscriptionName,
                                                        OnMessagesReceived onMessagesReceived,
                                                        string consumerId = null,
-                                                       int backOffIncrement = 30,
-                                                       int fullLoadThreshold = 1000,
-                                                       int waitInterval = 1000)
+                                                       ConsumerConfig consumerConfig = null)
         {
             CreateTopicIfNotExists(topic);
             return new KafkaConsumer(_zkConnectionString, topic, subscriptionName, consumerId,
-                                     BuildOnKafkaMessageReceived(onMessagesReceived), backOffIncrement, fullLoadThreshold, waitInterval);
+                                     BuildOnKafkaMessageReceived(onMessagesReceived), consumerConfig,
+                                     true);
         }
 
         private OnKafkaMessageReceived BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)

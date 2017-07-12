@@ -20,46 +20,41 @@ namespace IFramework.MessageQueue.MSKafka
 {
     public delegate void OnKafkaMessageReceived(KafkaConsumer consumer, KafkaMessages.Message message);
 
-    public class KafkaConsumer : ICommitOffsetable
+    public class KafkaConsumer: ICommitOffsetable
     {
         protected CancellationTokenSource _cancellationTokenSource;
         protected Task _consumerTask;
-        protected int _fullLoadThreshold;
-
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer).Name);
-
         protected OnKafkaMessageReceived _onMessageReceived;
-
         private IDictionary<string, IList<KafkaMessageStream<KafkaMessages.Message>>> _streams;
-        protected int _waitInterval;
+        protected ConsumerConfig _consumerConfig;
+
+
 
         public KafkaConsumer(string zkConnectionString,
                              string topic,
                              string groupId,
                              string consumerId,
                              OnKafkaMessageReceived onMessageReceived,
-                             int backOffIncrement = 30,
-                             int fullLoadThreshold = 1000,
-                             int waitInterval = 1000,
+                             ConsumerConfig consumerConfig = null,
                              bool start = true)
         {
-            _fullLoadThreshold = fullLoadThreshold;
-            _waitInterval = waitInterval;
-            ZkConnectionString = zkConnectionString;
+            _consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
+             ZkConnectionString = zkConnectionString;
             Topic = topic;
             GroupId = groupId;
             ConsumerId = consumerId ?? string.Empty;
             SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
             ConsumerConfiguration = new ConsumerConfiguration
             {
-                BackOffIncrement = backOffIncrement,
+                BackOffIncrement = _consumerConfig.BackOffIncrement,
                 AutoCommit = false,
                 GroupId = GroupId,
                 ConsumerId = ConsumerId,
                 BufferSize = ConsumerConfiguration.DefaultBufferSize,
                 MaxFetchBufferLength = ConsumerConfiguration.DefaultMaxFetchBufferLength,
                 FetchSize = ConsumerConfiguration.DefaultFetchSize,
-                AutoOffsetReset = OffsetRequest.LargestTime,
+                AutoOffsetReset = _consumerConfig.AutoOffsetReset,
                 ZooKeeper = KafkaClient.GetZooKeeperConfiguration(zkConnectionString),
                 ShutdownTimeout = 100
             };
@@ -218,9 +213,9 @@ namespace IFramework.MessageQueue.MSKafka
 
         protected void BlockIfFullLoad()
         {
-            while (SlidingDoors.Sum(d => d.Value.MessageCount) > _fullLoadThreshold)
+            while (SlidingDoors.Sum(d => d.Value.MessageCount) > _consumerConfig.FullLoadThreshold)
             {
-                Thread.Sleep(_waitInterval);
+                Thread.Sleep(_consumerConfig.WaitInterval);
                 _logger.Warn($"working is full load sleep 1000 ms");
             }
         }

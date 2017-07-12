@@ -23,32 +23,24 @@ namespace IFramework.Command.Impl
         protected CancellationTokenSource _cancellationTokenSource;
         protected string _commandQueueName;
         protected string _consumerId;
-        protected int _fullLoadThreshold;
         protected IHandlerProvider _handlerProvider;
         protected ICommitOffsetable _internalConsumer;
-
         protected ILogger _logger;
-
         //protected Task _consumeMessageTask;
         protected MessageProcessor _messageProcessor;
-
         protected IMessagePublisher _messagePublisher;
         protected IMessageQueueClient _messageQueueClient;
-
+        protected ConsumerConfig _consumerConfig;
         private string _producer;
-        protected int _waitInterval;
 
         public CommandConsumer(IMessageQueueClient messageQueueClient,
                                IMessagePublisher messagePublisher,
                                IHandlerProvider handlerProvider,
                                string commandQueueName,
                                string consumerId,
-                               int fullLoadThreshold = 1000,
-                               int waitInterval = 1000,
-                               int mailboxProcessBatchCount = 100)
+                               ConsumerConfig consumerConfig = null)
         {
-            _fullLoadThreshold = fullLoadThreshold;
-            _waitInterval = waitInterval;
+            _consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             _commandQueueName = commandQueueName;
             _handlerProvider = handlerProvider;
             _messagePublisher = messagePublisher;
@@ -56,7 +48,7 @@ namespace IFramework.Command.Impl
             _cancellationTokenSource = new CancellationTokenSource();
             _messageQueueClient = messageQueueClient;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
-                                                     mailboxProcessBatchCount);
+                                                     _consumerConfig.MailboxProcessBatchCount);
             _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name) : null;
         }
 
@@ -69,7 +61,8 @@ namespace IFramework.Command.Impl
                 if (!string.IsNullOrWhiteSpace(_commandQueueName))
                 {
                     _internalConsumer = _messageQueueClient.StartQueueClient(_commandQueueName, _consumerId,
-                                                                             OnMessageReceived, _fullLoadThreshold, _waitInterval);
+                                                                             OnMessageReceived,
+                                                                             _consumerConfig);
                 }
                 _messageProcessor.Start();
             }

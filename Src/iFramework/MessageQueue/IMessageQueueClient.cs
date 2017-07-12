@@ -8,7 +8,7 @@ namespace IFramework.MessageQueue
 {
     public delegate void OnMessagesReceived(params IMessageContext[] messageContext);
 
-    public interface IMessageQueueClient : IDisposable
+    public interface IMessageQueueClient: IDisposable
     {
         Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken);
         Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken);
@@ -26,13 +26,11 @@ namespace IFramework.MessageQueue
                                                   string subscriptionName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000);
+                                                  ConsumerConfig consumerConfig = null);
 
         ICommitOffsetable StartQueueClient(string commandQueueName,
                                            string consumerId,
                                            OnMessagesReceived onMessagesReceived,
-                                           int fullLoadThreshold = 1000,
-                                           int waitInterval = 1000);
+                                           ConsumerConfig consumerConfig = null);
     }
 }

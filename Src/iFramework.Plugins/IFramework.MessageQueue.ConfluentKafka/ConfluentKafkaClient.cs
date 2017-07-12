@@ -64,13 +64,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
         public ICommitOffsetable StartQueueClient(string commandQueueName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000)
+                                                  ConsumerConfig consumerConfig = null)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
             var queueConsumer = CreateQueueConsumer(commandQueueName, onMessagesReceived, consumerId,
-                                                    Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
+                                                    consumerConfig);
             _queueConsumers.Add(queueConsumer);
             return queueConsumer;
         }
@@ -79,13 +78,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                          string subscriptionName,
                                                          string consumerId,
                                                          OnMessagesReceived onMessagesReceived,
-                                                         int fullLoadThreshold = 1000,
-                                                         int waitInterval = 1000)
+                                                         ConsumerConfig consumerConfig =null)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, consumerId,
-                                                              Configuration.Instance.GetBackOffIncrement(), fullLoadThreshold, waitInterval);
+                                                              consumerConfig);
             _subscriptionClients.Add(subscriptionClient);
             return subscriptionClient;
         }
@@ -236,14 +234,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
         private KafkaConsumer CreateQueueConsumer(string queue,
                                                   OnMessagesReceived onMessagesReceived,
                                                   string consumerId = null,
-                                                  int backOffIncrement = 30,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000)
+                                                  ConsumerConfig consumerConfig = null)
         {
             CreateTopicIfNotExists(queue);
             var queueConsumer = new KafkaConsumer(_brokerList, queue, $"{queue}.consumer", consumerId,
                                                   BuildOnKafkaMessageReceived(onMessagesReceived),
-                                                  backOffIncrement, fullLoadThreshold, waitInterval);
+                                                  consumerConfig);
             return queueConsumer;
         }
 
@@ -264,13 +260,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                        string subscriptionName,
                                                        OnMessagesReceived onMessagesReceived,
                                                        string consumerId = null,
-                                                       int backOffIncrement = 30,
-                                                       int fullLoadThreshold = 1000,
-                                                       int waitInterval = 1000)
+                                                       ConsumerConfig consumerConfig = null)
         {
             CreateTopicIfNotExists(topic);
             return new KafkaConsumer(_brokerList, topic, subscriptionName, consumerId,
-                                     BuildOnKafkaMessageReceived(onMessagesReceived), backOffIncrement, fullLoadThreshold, waitInterval);
+                                     BuildOnKafkaMessageReceived(onMessagesReceived), consumerConfig);
         }
 
         private OnKafkaMessageReceived BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)

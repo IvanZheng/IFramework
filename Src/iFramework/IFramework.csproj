@@ -71,7 +71,9 @@
     <Compile Include="IoC\Injection.cs" />
     <Compile Include="IoC\Lifetime.cs" />
     <Compile Include="IoC\Parameter.cs" />
+    <Compile Include="MessageQueue\AutoOffsetReset.cs" />
     <Compile Include="MessageQueue\Configuration.cs" />
+    <Compile Include="MessageQueue\ConsumerConfig.cs" />
     <Compile Include="MessageQueue\ICommitOffsetable.cs" />
     <Compile Include="MessageQueue\ISlidingDoor.cs" />
     <Compile Include="MessageQueue\MessageQueueFactory.cs" />

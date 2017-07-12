@@ -23,19 +23,16 @@ namespace IFramework.MessageQueue.ConfluentKafka
         protected CancellationTokenSource _cancellationTokenSource;
         private Consumer<string, KafkaMessage> _consumer;
         protected Task _consumerTask;
-        protected int _fullLoadThreshold;
         protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer).Name);
         protected OnKafkaMessageReceived _onMessageReceived;
-        protected int _waitInterval;
+        protected ConsumerConfig _consumerConfig;
 
         public KafkaConsumer(string brokerList,
                              string topic,
                              string groupId,
                              string consumerId,
                              OnKafkaMessageReceived onMessageReceived,
-                             int backOffIncrement = 30,
-                             int fullLoadThreshold = 1000,
-                             int waitInterval = 1000,
+                             ConsumerConfig consumerConfig = null,
                              bool start = true)
         {
             if (string.IsNullOrWhiteSpace(brokerList))
@@ -46,8 +43,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(groupId));
             }
-            _fullLoadThreshold = fullLoadThreshold;
-            _waitInterval = waitInterval;
+            _consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             BrokerList = brokerList;
             Topic = topic;
             GroupId = groupId;
@@ -62,12 +58,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {"fetch.error.backoff.ms", 10 },
                 {"socket.nagle.disable", true},
                 //{"statistics.interval.ms", 60000},
-                //{"retry.backoff.ms", backOffIncrement},
+                {"retry.backoff.ms", _consumerConfig.BackOffIncrement},
                 {"bootstrap.servers", BrokerList},
                 {
                     "default.topic.config", new Dictionary<string, object>
                     {
-                        {"auto.offset.reset", "largest"}
+                        {"auto.offset.reset", _consumerConfig.AutoOffsetReset}
                     }
                 }
             };
@@ -187,9 +183,9 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         protected void BlockIfFullLoad()
         {
-            while (SlidingDoors.Sum(d => d.Value.MessageCount) > _fullLoadThreshold)
+            while (SlidingDoors.Sum(d => d.Value.MessageCount) > _consumerConfig.FullLoadThreshold)
             {
-                Thread.Sleep(_waitInterval);
+                Thread.Sleep(_consumerConfig.WaitInterval);
                 _logger.Warn($"working is full load sleep 1000 ms");
             }
         }

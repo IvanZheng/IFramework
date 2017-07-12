@@ -56,13 +56,11 @@ namespace IFramework.MessageQueue.EQueue
         public ICommitOffsetable StartQueueClient(string commandQueueName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000)
+                                                  ConsumerConfig consumerConfig = null)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
-            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, fullLoadThreshold, waitInterval,
-                                                    onMessagesReceived);
+            var queueConsumer = CreateQueueConsumer(commandQueueName, consumerId, onMessagesReceived, consumerConfig);
             _queueConsumers.Add(queueConsumer);
             return queueConsumer;
         }
@@ -72,13 +70,12 @@ namespace IFramework.MessageQueue.EQueue
                                                          string subscriptionName,
                                                          string consumerId,
                                                          OnMessagesReceived onMessagesReceived,
-                                                         int fullLoadThreshold = 1000,
-                                                         int waitInterval = 1000)
+                                                         ConsumerConfig consumerConfig = null)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived,
-                                                              consumerId, fullLoadThreshold, waitInterval);
+                                                              consumerId, consumerConfig);
             _subscriptionClients.Add(subscriptionClient);
             return subscriptionClient;
         }
@@ -142,25 +139,23 @@ namespace IFramework.MessageQueue.EQueue
                                                         string subscriptionName,
                                                         OnMessagesReceived onMessagesReceived,
                                                         string consumerId = null,
-                                                        int fullLoadThreshold = 1000,
-                                                        int waitInterval = 1000)
+                                                        ConsumerConfig consumerConfig = null)
         {
             var consumer = new EQueueConsumer(ClusterName, NameServerList, topic, subscriptionName, consumerId,
                                               BuildOnEQueueMessageReceived(onMessagesReceived),
-                                              fullLoadThreshold, waitInterval);
+                                              consumerConfig);
             return consumer;
         }
 
         private EQueueConsumer CreateQueueConsumer(string commandQueueName,
                                                    string consumerId,
-                                                   int fullLoadThreshold,
-                                                   int waitInterval,
-                                                   OnMessagesReceived onMessagesReceived)
+                                                   OnMessagesReceived onMessagesReceived,
+                                                   ConsumerConfig consumerConfig = null)
         {
             var consumer = new EQueueConsumer(ClusterName, NameServerList, commandQueueName,
                                               commandQueueName, consumerId,
                                               BuildOnEQueueMessageReceived(onMessagesReceived),
-                                              fullLoadThreshold, waitInterval);
+                                              consumerConfig);
             return consumer;
         }
 

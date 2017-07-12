@@ -16,8 +16,7 @@ namespace IFramework.MessageQueue.ZeroMQ
         public ICommitOffsetable StartQueueClient(string commandQueueName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000)
+                                                  ConsumerConfig consumerConfig = null)
         {
             throw new NotImplementedException();
         }
@@ -26,8 +25,7 @@ namespace IFramework.MessageQueue.ZeroMQ
                                                          string subscriptionName,
                                                          string consumerId,
                                                          OnMessagesReceived onMessagesReceived,
-                                                         int fullLoadThreshold = 1000,
-                                                         int waitInterval = 1000)
+                                                         ConsumerConfig consumerConfig = null)
         {
             throw new NotImplementedException();
         }

@@ -79,21 +79,18 @@ namespace IFramework.Config
             return configuration;
         }
 
-        public static Configuration UseCommandBus(this Configuration configuration,
-                                                  string consumerId,
-                                                  string replyTopic = "replyTopic",
-                                                  string replySubscription = "replySubscription",
+        public static Configuration UseCommandBus(this Configuration configuration, string consumerId,
+                                                  string replyTopic = "replyTopic", string replySubscription = "replySubscription",
                                                   ILinearCommandManager linerCommandManager = null,
-                                                  int mailboxProcessBatchCount = 100)
+                                                  ConsumerConfig consumerConfig = null)
         {
+            consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             var container = IoCFactory.Instance.CurrentContainer;
             if (linerCommandManager == null)
-            {
                 linerCommandManager = new LinearCommandManager();
-            }
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
             var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic,
-                                            replySubscription, mailboxProcessBatchCount);
+                                            replySubscription, consumerConfig);
             container.RegisterInstance<ICommandBus>(commandBus);
             return configuration;
         }

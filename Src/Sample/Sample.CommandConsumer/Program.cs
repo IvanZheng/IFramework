@@ -44,7 +44,9 @@ namespace Sample.CommandConsumer
 
                 var commandQueueName = "commandqueue";
                 var commandConsumer = MessageQueueFactory.CreateCommandConsumer(commandQueueName,
-                                                                                ObjectId.GenerateNewId().ToString(), 100, "CommandHandlers");
+                                                                                ObjectId.GenerateNewId().ToString(),
+                                                                                new []{"CommandHandlers"},
+                                                                                ConsumerConfig.DefaultConfig);
                 commandConsumer.Start();
 
                 #endregion

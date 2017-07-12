@@ -125,8 +125,7 @@ namespace IFramework.MessageQueue.ServiceBus
         public ICommitOffsetable StartQueueClient(string commandQueueName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000)
+                                                  ConsumerConfig consumerConfig = null)
         {
             commandQueueName = $"{commandQueueName}.{consumerId}";
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
@@ -138,8 +137,7 @@ namespace IFramework.MessageQueue.ServiceBus
                                                          string subscriptionName,
                                                          string consumerId,
                                                          OnMessagesReceived onMessagesReceived,
-                                                         int fullLoadThreshold = 1000,
-                                                         int waitInterval = 1000)
+                                                         ConsumerConfig consumerConfig = null)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);

@@ -8,19 +8,12 @@ namespace IFramework.MessageQueue.ConfluentKafka.Config
         private static int _backOffIncrement = 30;
 
         public static Configuration UseConfluentKafka(this Configuration configuration,
-                                                      string brokerList,
-                                                      int backOffIncrement = 30)
+                                                      string brokerList)
         {
             IoCFactory.Instance.CurrentContainer
                       .RegisterType<IMessageQueueClient, ConfluentKafkaClient>(Lifetime.Singleton,
                                                                                new ConstructInjection(new ParameterInjection("brokerList", brokerList)));
-            _backOffIncrement = backOffIncrement;
             return configuration;
-        }
-
-        public static int GetBackOffIncrement(this Configuration configuration)
-        {
-            return _backOffIncrement;
         }
     }
 }

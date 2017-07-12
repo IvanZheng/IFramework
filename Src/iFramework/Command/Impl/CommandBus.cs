@@ -30,18 +30,19 @@ namespace IFramework.Command.Impl
         private readonly MessageProcessor _messageProcessor;
         private readonly string _replySubscriptionName;
         private readonly string _replyTopicName;
-
+        private readonly string _autoOffsetReset;
         private ICommitOffsetable _internalConsumer;
+        private ConsumerConfig _consumerConfig;
 
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
                           string consumerId,
-                          //string[] commandQueueNames,
                           string replyTopicName,
                           string replySubscriptionName,
-                          int mailboxProcessBatchCount = 100)
+                          ConsumerConfig consumerConfig = null)
             : base(messageQueueClient)
         {
+            _consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             _consumerId = consumerId;
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();
             _linearCommandManager = linearCommandManager;
@@ -49,7 +50,7 @@ namespace IFramework.Command.Impl
             _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
             // _commandQueueNames = commandQueueNames;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
-                                                     mailboxProcessBatchCount);
+                                                     _consumerConfig.MailboxProcessBatchCount);
         }
 
         public override void Start()
@@ -65,7 +66,8 @@ namespace IFramework.Command.Impl
                     _internalConsumer = _messageQueueClient.StartSubscriptionClient(_replyTopicName,
                                                                                     _replySubscriptionName,
                                                                                     _consumerId,
-                                                                                    OnMessagesReceived);
+                                                                                    OnMessagesReceived,
+                                                                                    _consumerConfig);
                 }
             }
             catch (Exception e)

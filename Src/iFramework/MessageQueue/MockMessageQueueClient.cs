@@ -5,32 +5,10 @@ using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue
 {
-    public class MockMessageQueueClient : IMessageQueueClient
+    public class MockMessageQueueClient: IMessageQueueClient
     {
-        public void Dispose() { }
-
-        public ICommitOffsetable StartQueueClient(string commandQueueName,
-                                                  string consumerId,
-                                                  OnMessagesReceived onMessagesReceived,
-                                                  int fullLoadThreshold = 1000,
-                                                  int waitInterval = 1000)
+        public void Dispose()
         {
-            return null;
-        }
-
-        public ICommitOffsetable StartSubscriptionClient(string topic,
-                                                         string subscriptionName,
-                                                         string consumerId,
-                                                         OnMessagesReceived onMessagesReceived,
-                                                         int fullLoadThreshold = 1000,
-                                                         int waitInterval = 1000)
-        {
-            return null;
-        }
-
-        public Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken)
-        {
-            return Task.FromResult<object>(null);
         }
 
         public Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken)
@@ -38,13 +16,27 @@ namespace IFramework.MessageQueue
             return Task.FromResult<object>(null);
         }
 
-        public IMessageContext WrapMessage(object message,
-                                           string correlationId = null,
-                                           string topic = null,
-                                           string key = null,
-                                           string replyEndPoint = null,
-                                           string messageId = null,
-                                           SagaInfo sagaInfo = null,
+
+
+        public Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<object>(null);
+        }
+
+        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId,
+                                                  OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
+        {
+            return null;
+        }
+
+        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId,
+                                                         OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
+        {
+            return null;
+        }
+
+        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null,
+                                           string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null,
                                            string producer = null)
         {
             return new EmptyMessageContext();
