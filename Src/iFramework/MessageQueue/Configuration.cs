@@ -84,7 +84,6 @@ namespace IFramework.Config
                                                   ILinearCommandManager linerCommandManager = null,
                                                   ConsumerConfig consumerConfig = null)
         {
-            consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             var container = IoCFactory.Instance.CurrentContainer;
             if (linerCommandManager == null)
                 linerCommandManager = new LinearCommandManager();

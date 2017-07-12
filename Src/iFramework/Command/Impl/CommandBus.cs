@@ -30,9 +30,8 @@ namespace IFramework.Command.Impl
         private readonly MessageProcessor _messageProcessor;
         private readonly string _replySubscriptionName;
         private readonly string _replyTopicName;
-        private readonly string _autoOffsetReset;
         private ICommitOffsetable _internalConsumer;
-        private ConsumerConfig _consumerConfig;
+        private readonly ConsumerConfig _consumerConfig;
 
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
