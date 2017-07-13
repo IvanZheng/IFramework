@@ -43,7 +43,8 @@ namespace IFramework.JsonNet
         internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPulibc,
                                                                                        bool loopSerialize,
                                                                                        bool useCamelCase,
-                                                                                       bool useStringEnumConvert)
+                                                                                       bool useStringEnumConvert,
+                                                                                       bool ignoreSerializableAttribute)
         {
             var customSettings = new JsonSerializerSettings();
             if (serializeNonPulibc)
@@ -59,6 +60,9 @@ namespace IFramework.JsonNet
             {
                 customSettings.Converters.Add(new StringEnumConverter());
             }
+          
+            ((DefaultContractResolver)customSettings.ContractResolver).IgnoreSerializableAttribute = ignoreSerializableAttribute;
+            
             if (useCamelCase)
             {
                 var resolver = customSettings.ContractResolver as DefaultContractResolver;
@@ -78,6 +82,7 @@ namespace IFramework.JsonNet
                                                                              bool loopSerialize,
                                                                              bool useCamelCase,
                                                                              bool useStringEnumConvert = true,
+                                                                             bool ignoreSerializableAttribute = true,
                                                                              bool useCached = true)
         {
             JsonSerializerSettings settings = null;
@@ -88,14 +93,16 @@ namespace IFramework.JsonNet
                                                       k => InternalGetCustomJsonSerializerSettings(serializeNonPulibc,
                                                                                                    loopSerialize,
                                                                                                    useCamelCase,
-                                                                                                   useStringEnumConvert));
+                                                                                                   useStringEnumConvert,
+                                                                                                   ignoreSerializableAttribute));
             }
             else
             {
                 settings = InternalGetCustomJsonSerializerSettings(serializeNonPulibc,
                                                                    loopSerialize,
                                                                    useCamelCase,
-                                                                   useStringEnumConvert);
+                                                                   useStringEnumConvert,
+                                                                   ignoreSerializableAttribute);
             }
             return settings;
         }
