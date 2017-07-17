@@ -13,9 +13,10 @@ namespace IFramework.Infrastructure
         public static string ToJson(this object obj,
                                     bool serializeNonPublic = true,
                                     bool loopSerialize = false,
-                                    bool useCamelCase = false)
+                                    bool useCamelCase = false,
+                                    bool ignoreNullValue = false)
         {
-            return JsonConvert.SerializeObject(obj, serializeNonPublic, loopSerialize, useCamelCase);
+            return JsonConvert.SerializeObject(obj, serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue);
         }
 
         public static object ToJsonObject(this string json,

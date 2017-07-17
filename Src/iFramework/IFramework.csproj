@@ -63,6 +63,10 @@
     <Compile Include="Event\IEventAsyncSubscriber.cs" />
     <Compile Include="Infrastructure\DataContractJsonConvert.cs" />
     <Compile Include="Infrastructure\IJsonConvert.cs" />
+    <Compile Include="Infrastructure\Logging\AopEnteringLog.cs" />
+    <Compile Include="Infrastructure\Logging\AopExceptionLog.cs" />
+    <Compile Include="Infrastructure\Logging\AopLeavingLog.cs" />
+    <Compile Include="Infrastructure\Logging\JsonLogBase.cs" />
     <Compile Include="Infrastructure\Logging\MockLogger.cs" />
     <Compile Include="Infrastructure\Logging\MockLoggerFactory.cs" />
     <Compile Include="Infrastructure\QueryExtension.cs" />

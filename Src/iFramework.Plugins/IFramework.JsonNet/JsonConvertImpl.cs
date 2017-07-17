@@ -8,9 +8,11 @@ namespace IFramework.JsonNet
 {
     public class JsonConvertImpl: IJsonConvert
     {
-        public string SerializeObject(object value, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
+        public string SerializeObject(object value, bool serializeNonPublic = true, 
+                                      bool loopSerialize = false, bool useCamelCase = false,
+                                      bool ignoreNullValue = false)
         {
-            return value.ToJson(serializeNonPublic, loopSerialize, useCamelCase);
+            return value.ToJson(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue);
         }
 
         public object DeserializeObject(string value, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)

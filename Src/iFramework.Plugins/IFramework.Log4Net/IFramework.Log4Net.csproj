@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JsonLogLayout.cs" />
     <Compile Include="Config\Configuration.cs" />
     <Compile Include="Log4NetLogger.cs" />
     <Compile Include="Log4NetLoggerFactory.cs" />

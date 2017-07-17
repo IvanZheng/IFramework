@@ -44,7 +44,8 @@ namespace IFramework.JsonNet
                                                                                        bool loopSerialize,
                                                                                        bool useCamelCase,
                                                                                        bool useStringEnumConvert,
-                                                                                       bool ignoreSerializableAttribute)
+                                                                                       bool ignoreSerializableAttribute,
+                                                                                       bool ignoreNullValue)
         {
             var customSettings = new JsonSerializerSettings();
             if (serializeNonPulibc)
@@ -75,6 +76,10 @@ namespace IFramework.JsonNet
                     };
                 }
             }
+            if (ignoreNullValue)
+            {
+                customSettings.NullValueHandling = NullValueHandling.Ignore;
+            }
             return customSettings;
         }
 
@@ -83,6 +88,7 @@ namespace IFramework.JsonNet
                                                                              bool useCamelCase,
                                                                              bool useStringEnumConvert = true,
                                                                              bool ignoreSerializableAttribute = true,
+                                                                             bool ignoreNullValue = false,
                                                                              bool useCached = true)
         {
             JsonSerializerSettings settings = null;
@@ -94,7 +100,8 @@ namespace IFramework.JsonNet
                                                                                                    loopSerialize,
                                                                                                    useCamelCase,
                                                                                                    useStringEnumConvert,
-                                                                                                   ignoreSerializableAttribute));
+                                                                                                   ignoreSerializableAttribute,
+                                                                                                   ignoreNullValue));
             }
             else
             {
@@ -102,7 +109,8 @@ namespace IFramework.JsonNet
                                                                    loopSerialize,
                                                                    useCamelCase,
                                                                    useStringEnumConvert,
-                                                                   ignoreSerializableAttribute);
+                                                                   ignoreSerializableAttribute,
+                                                                   ignoreNullValue);
             }
             return settings;
         }
@@ -110,10 +118,11 @@ namespace IFramework.JsonNet
         public static string ToJson(this object obj,
                                     bool serializeNonPublic = true,
                                     bool loopSerialize = false,
-                                    bool useCamelCase = false)
+                                    bool useCamelCase = false,
+                                    bool ignoreNullValue = false)
         {
             return JsonConvert.SerializeObject(obj,
-                                               GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
+                                               GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue: ignoreNullValue));
         }
 
         public static object ToJsonObject(this string json,

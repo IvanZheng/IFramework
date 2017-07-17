@@ -26,22 +26,27 @@ namespace IFramework.Unity
 
         public IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptionBehaviorDelegate getNext)
         {
-            bool isFaulted = false;
             var inputType = input.Target.GetType();
             var inputTypeName = inputType.Assembly.IsDynamic ? inputType.BaseType?.Name : inputType.Name;
 
             var logger = _loggerFactory.Create(!string.IsNullOrWhiteSpace(inputTypeName) ? inputTypeName : inputType.Name);
 
-            var parameters = new List<string>();
+            var parameters = new Dictionary<string, object>();
             for (var i = 0; i < input.Arguments.Count; i++)
             {
-                parameters.Add($"{input.Arguments.ParameterName(i)}: {input.Arguments[i]}");
+                parameters.Add(input.Arguments.ParameterName(i), input.Arguments[i]);
             }
-            logger?.DebugFormat("Enter method: {0} parameters: {1} thread: {2} target: {3}",
-                                input.MethodBase.Name,
-                                string.Join(",", parameters),
-                                Thread.CurrentThread.ManagedThreadId,
-                                input.Target.GetHashCode());
+            logger?.Info(new AopEnteringLog
+            {
+                Method = input.MethodBase.Name,
+                Target = input.Target.GetHashCode().ToString(),
+                Parameters = parameters
+            });
+            //"Enter method: {0} parameters: {1} thread: {2} target: {3}",}
+                                //input.MethodBase.Name,
+                                //string.Join(",", parameters),
+                                //Thread.CurrentThread.ManagedThreadId,
+                                //input.Target.GetHashCode());
 
             var start = DateTime.Now;
             var result = getNext()(input, getNext); //在这里执行方法
@@ -54,7 +59,6 @@ namespace IFramework.Unity
                     object r = null;
                     if (t.IsFaulted)
                     {
-                        isFaulted = true;
                         LogException(input, logger, t.Exception);
                     }
                     else
@@ -65,43 +69,54 @@ namespace IFramework.Unity
                             r = ((dynamic)t).Result;
                         }
                     }
-                    LeaveMethod(input, logger, start, r, isFaulted, t.Exception);
+                    LeaveMethod(input, logger, start, r, t.Exception);
                 });
             }
             else
             {
                 if (result.Exception != null)
                 {
-                    isFaulted = true;
                     LogException(input, logger, result.Exception);
                 }
-                LeaveMethod(input, logger, start, result.ReturnValue, isFaulted, result.Exception);
+                LeaveMethod(input, logger, start, result.ReturnValue, result.Exception);
             }
             return result;
         }
 
-        private static void LeaveMethod(IMethodInvocation input, ILogger logger, DateTime start, object result, bool isFaulted, Exception e)
+        private static void LeaveMethod(IMethodInvocation input, ILogger logger, DateTime start, object result, Exception e)
         {
             var costTime = (DateTime.Now - start).TotalMilliseconds;
-            logger?.DebugFormat("Leave method: {0} isFaulted: {1} thread: {2} returnValue: {3} cost: {4} target: {5}",
-                                input.MethodBase.Name,
-                                isFaulted,
-                                e != null ? $"exception: {e.GetBaseException().Message} stackTrace: {e.GetBaseException().StackTrace}" : string.Empty,
-                                Thread.CurrentThread.ManagedThreadId,
-                                result,
-                                costTime,
-                                input.Target.GetHashCode());
+            logger?.Info(new AopLeavingLog
+            {
+                Method = input.MethodBase.Name,
+                Target = input.Target.GetHashCode().ToString(),
+                CostTime = costTime,
+                Result = result
+            }, e);
+            //"Leave method: {0} isFaulted: {1} thread: {2} returnValue: {3} cost: {4} target: {5}",
+            //                input.MethodBase.Name,
+            //                isFaulted,
+            //                e != null ? $"exception: {e.GetBaseException().Message} stackTrace: {e.GetBaseException().StackTrace}" : string.Empty,
+            //                Thread.CurrentThread.ManagedThreadId,
+            //                result,
+            //                costTime,
+            //                input.Target.GetHashCode());
         }
 
         private static void LogException(IMethodInvocation input, ILogger logger, Exception e)
         {
             //发生错误记录日志
-            logger?.ErrorFormat("Method: {0} threw exception: {1} {2} thread: {3} target: {4}",
-                                input.MethodBase.Name,
-                                e.GetBaseException().Message,
-                                e.GetBaseException().StackTrace,
-                                Thread.CurrentThread.ManagedThreadId,
-                                input.Target.GetHashCode());
+            logger?.Error(new AopExceptionLog
+            {
+                Method = input.MethodBase.Name,
+                Target = input.Target.GetHashCode().ToString()
+            }, e);
+            //"Method: {0} threw exception: {1} {2} thread: {3} target: {4}",
+            //                input.MethodBase.Name,
+            //                e.GetBaseException().Message,
+            //                e.GetBaseException().StackTrace,
+            //                Thread.CurrentThread.ManagedThreadId,
+            //                input.Target.GetHashCode());
         }
     }
 }

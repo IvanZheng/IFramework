@@ -23,6 +23,7 @@ namespace Sample.WcfService
                          //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
                          .UseUnityContainer()
                          .RegisterCommonComponents()
+                         .UseLog4Net()
                          .UseJsonNet();
 
             var container = IoCFactory.Instance.CurrentContainer;
@@ -49,14 +50,11 @@ namespace Sample.WcfService
                          .RegisterDefaultEventBus(container, lifetime)
                          .RegisterEntityFrameworkComponents(container, lifetime);
 
-            container.RegisterType<IService1, Service1>();
+            container.RegisterType<IService1, Service1>(new InterfaceInterceptorInjection(),
+                                                        new InterceptionBehaviorInjection<UnityLogInterceptor>());
             container.RegisterType<SampleModelContext, SampleModelContext>(lifetime);
-            container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime,
-                                                                              new InterfaceInterceptorInjection(),
-                                                                              new InterceptionBehaviorInjection<UnityLogInterceptor>());
-            container.RegisterType<CommunityCommandHandler, CommunityCommandHandler>(lifetime,
-                                                                                     new VirtualMethodInterceptorInjection(),
-                                                                                     new InterceptionBehaviorInjection<UnityLogInterceptor>());
+            container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime);
+            container.RegisterType<CommunityCommandHandler, CommunityCommandHandler>(lifetime);
         }
 
         #region Unity Container

@@ -10,7 +10,7 @@ namespace IFramework.Infrastructure
 {
     public interface IJsonConvert
     {
-        string SerializeObject(object value, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false);
+        string SerializeObject(object value, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false, bool ignoreNullValue = false);
         object DeserializeObject(string value, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false);
 
         dynamic DeserializeDynamicObject(string json, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false);
