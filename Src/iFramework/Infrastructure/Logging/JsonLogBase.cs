@@ -20,7 +20,7 @@ namespace IFramework.Infrastructure.Logging
         public string Method { get; set; }
         public string Thread { get; set; }
         public string Target { get; set; }
-        public string Message { get; set; }
+        public object Message { get; set; }
         public LogException Exception { get; set; }
     }
 

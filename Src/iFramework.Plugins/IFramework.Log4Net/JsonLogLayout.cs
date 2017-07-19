@@ -33,7 +33,7 @@ namespace IFramework.Log4Net
         {
             var log = loggingEvent.MessageObject as JsonLogBase ?? new JsonLogBase
             {
-                Message = loggingEvent.RenderedMessage
+                Message = loggingEvent.MessageObject
             };
             var stackFrame = loggingEvent.LocationInformation.StackFrames[1];
             log.Method = log.Method ?? stackFrame.Method.Name;

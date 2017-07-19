@@ -53,7 +53,9 @@ namespace Sample.WcfService
             container.RegisterType<IService1, Service1>(new InterfaceInterceptorInjection(),
                                                         new InterceptionBehaviorInjection<UnityLogInterceptor>());
             container.RegisterType<SampleModelContext, SampleModelContext>(lifetime);
-            container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime);
+            container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime,
+                                                                              new InterfaceInterceptorInjection(),
+                                                                              new InterceptionBehaviorInjection<UnityLogInterceptor>());
             container.RegisterType<CommunityCommandHandler, CommunityCommandHandler>(lifetime);
         }
 

@@ -44,7 +44,7 @@ namespace Sample.WcfService
             var accounts = _repository.FindAll<Account>().ToList();
             composite.StringValue = accounts.Count.ToString();
             _logger.Debug($"repository find account {accounts.Count}");
-            _logger.DebugFormat("return composite {0}", composite);
+            _logger.Debug(composite);
             return composite;
         }
     }
