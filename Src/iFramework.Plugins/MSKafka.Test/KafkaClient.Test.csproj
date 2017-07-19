@@ -112,6 +112,10 @@
       <Project>{07b18368-3d3f-4c12-b2f1-e38fc709226a}</Project>
       <Name>Sample.Persistence</Name>
     </ProjectReference>
+    <ProjectReference Include="..\IFramework.JsonNet\IFramework.JsonNet.csproj">
+      <Project>{891d983d-f28a-4eb5-9ea4-a72296ef7569}</Project>
+      <Name>IFramework.JsonNet</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IFramework.Log4Net\IFramework.Log4Net.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
       <Name>IFramework.Log4Net</Name>
