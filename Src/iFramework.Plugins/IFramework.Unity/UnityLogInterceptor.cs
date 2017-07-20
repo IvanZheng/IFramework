@@ -12,11 +12,8 @@ namespace IFramework.Unity
 {
     public class UnityLogInterceptor: LogInterceptionBehavior, IInterceptionBehavior
     {
-        private readonly ILoggerFactory _loggerFactory;
-
-        public UnityLogInterceptor(ILoggerFactory loggerFactory)
+        public UnityLogInterceptor(ILoggerFactory loggerFactory):base(loggerFactory)
         {
-            _loggerFactory = loggerFactory;
         }
 
         public bool WillExecute => true;
@@ -28,7 +25,7 @@ namespace IFramework.Unity
 
         public IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptionBehaviorDelegate getNext)
         {
-            var logger = GetTargetLogger(_loggerFactory, input.Target.GetType());
+            var logger = GetTargetLogger(input.Target.GetType());
 
             BeforeInvoke(logger,
                          (MethodInfo)input.MethodBase,

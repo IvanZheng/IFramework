@@ -11,11 +11,8 @@ namespace IFramework.Autofac
 {
     public class AutofacLogInterceptor: LogInterceptionBehavior, IInterceptor
     {
-        private readonly ILoggerFactory _loggerFactory;
-
-        public AutofacLogInterceptor(ILoggerFactory loggerFactory)
+        public AutofacLogInterceptor(ILoggerFactory loggerFactory):base(loggerFactory)
         {
-            _loggerFactory = loggerFactory;
         }
 
 
@@ -23,7 +20,7 @@ namespace IFramework.Autofac
         {
             Exception exception = null;
 
-            var logger = GetTargetLogger(_loggerFactory, invocation.TargetType);
+            var logger = GetTargetLogger(invocation.TargetType);
             
             BeforeInvoke(logger, invocation.Method, invocation.Proxy, invocation.Arguments);
 

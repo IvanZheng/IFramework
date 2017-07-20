@@ -20,9 +20,9 @@ namespace Sample.WcfService
         private static readonly Lazy<IContainer> Container = new Lazy<IContainer>(() =>
         {
             Configuration.Instance
-                         .UseAutofacContainer()
-                         .RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
-                         //.UseUnityContainer()
+                         //.UseAutofacContainer()
+                         //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
+                         .UseUnityContainer()
                          .RegisterCommonComponents()
                          .UseLog4Net()
                          .UseJsonNet();
@@ -50,13 +50,14 @@ namespace Sample.WcfService
             Configuration.Instance
                          .RegisterDefaultEventBus(container, lifetime)
                          .RegisterEntityFrameworkComponents(container, lifetime);
-
+            
             container.RegisterType<IService1, Service1>(new InterfaceInterceptorInjection(),
-                                                        new InterceptionBehaviorInjection<AutofacLogInterceptor>());
+                                                        new InterceptionBehaviorInjection<UnityLogInterceptor>());
+
             container.RegisterType<SampleModelContext, SampleModelContext>(lifetime);
             container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime,
                                                                               new InterfaceInterceptorInjection(),
-                                                                              new InterceptionBehaviorInjection<AutofacLogInterceptor>());
+                                                                              new InterceptionBehaviorInjection<UnityLogInterceptor>());
             container.RegisterType<CommunityCommandHandler, CommunityCommandHandler>(lifetime);
         }
 

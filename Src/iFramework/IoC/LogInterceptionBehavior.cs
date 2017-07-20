@@ -7,6 +7,13 @@ namespace IFramework.IoC
 {
     public abstract class LogInterceptionBehavior : ILogInterceptionBehavior
     {
+        private readonly ILoggerFactory _loggerFactory;
+
+        protected LogInterceptionBehavior(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
         public void BeforeInvoke(ILogger logger, MethodInfo method, object target, object[] arguments)
         {
             var serializeAttribute = GetLogInterceptionSerializeAttribute(method);
@@ -55,10 +62,10 @@ namespace IFramework.IoC
                    new LogInterceptionSerializeAttribute();
         }
 
-        protected virtual ILogger GetTargetLogger(ILoggerFactory loggerFactory, Type targetType)
+        protected virtual ILogger GetTargetLogger(Type targetType)
         {
             var targetTypeName = targetType.Assembly.IsDynamic ? targetType.BaseType?.Name : targetType.Name;
-            return loggerFactory.Create(!string.IsNullOrWhiteSpace(targetTypeName) ? targetTypeName : targetType.Name);
+            return _loggerFactory.Create(!string.IsNullOrWhiteSpace(targetTypeName) ? targetTypeName : targetType.Name);
         }
     }
 }
