@@ -5,11 +5,13 @@ using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
+using IFramework.IoC;
 
 namespace Sample.WcfService
 {
     // NOTE: You can use the "Rename" command on the "Refactor" menu to change the interface name "IService1" in both code and config file together.
     [ServiceContract]
+    [LogInterceptionSerialize(SerializeArguments = true)]
     public interface IService1
     {
 
@@ -17,6 +19,7 @@ namespace Sample.WcfService
         string GetData(int value);
 
         [OperationContract]
+        [LogInterceptionSerialize(SerializeArguments = true, SerializeReturnValue = true)]
         CompositeType GetDataUsingDataContract(CompositeType composite);
 
         // TODO: Add your service operations here

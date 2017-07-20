@@ -5,10 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 
 namespace IFramework.Autofac
 {
-    public class AutofacLogInterceptor: IInterceptor
+    public class AutofacLogInterceptor: LogInterceptionBehavior, IInterceptor
     {
         private readonly ILoggerFactory _loggerFactory;
 
@@ -20,22 +21,12 @@ namespace IFramework.Autofac
 
         public void Intercept(IInvocation invocation)
         {
-            bool isFaulted = false;
             Exception exception = null;
-            var targetType = invocation.TargetType;
-            var targetTypeName = targetType.Assembly.IsDynamic ? targetType.BaseType?.Name : targetType.Name;
 
-            var logger = _loggerFactory.Create(!string.IsNullOrWhiteSpace(targetTypeName) ? targetTypeName : targetType.Name);
+            var logger = GetTargetLogger(_loggerFactory, invocation.TargetType);
+            
+            BeforeInvoke(logger, invocation.Method, invocation.Proxy, invocation.Arguments);
 
-            var parameters = invocation.Arguments
-                                       .Select(a => (a ?? "").ToString())
-                                       .ToList();
-
-            logger?.DebugFormat("Enter method: {0} parameters: {1} thread: {2} target: {3}",
-                                invocation.Method.Name,
-                                string.Join(",", parameters),
-                                Thread.CurrentThread.ManagedThreadId,
-                                invocation.Proxy.GetHashCode());
             var start = DateTime.Now;
             try
             {
@@ -43,10 +34,9 @@ namespace IFramework.Autofac
             }
             catch (Exception e)
             {
-                isFaulted = true;
                 exception = e;
                 //发生错误记录日志
-                LogException(invocation, logger, e);
+                HandleException(logger, invocation.Method, invocation.Proxy, e);
                 throw;
             }
             finally
@@ -59,8 +49,7 @@ namespace IFramework.Autofac
                         object result = null;
                         if (t.IsFaulted)
                         {
-                            isFaulted = true;
-                            LogException(invocation, logger, t.Exception);
+                            HandleException(logger, invocation.Method, invocation.Proxy, t.Exception);
                         }
                         else
                         {
@@ -70,38 +59,14 @@ namespace IFramework.Autofac
                                 result = ((dynamic)t).Result;
                             }
                         }
-                        LeaveMethod(invocation, logger, start, result, isFaulted, t.Exception);
+                        AfterInvoke(logger, invocation.Method, invocation.Proxy, start, result, t.Exception);
                     });
                 }
                 else
                 {
-                    LeaveMethod(invocation, logger, start, invocation.ReturnValue, isFaulted, exception);
+                    AfterInvoke(logger, invocation.Method, invocation.Proxy, start, invocation.ReturnValue, exception);
                 }
             }
-        }
-
-        private static void LeaveMethod(IInvocation invocation, ILogger logger, DateTime start, object result, bool isFaulted, Exception e)
-        {
-            var costTime = (DateTime.Now - start).TotalMilliseconds;
-            logger?.DebugFormat("Leave method: {0} isFaulted: {1} thread: {2} returnValue: {3} cost: {4} target: {5}",
-                                invocation.Method.Name,
-                                isFaulted,
-                                e != null ? $"exception: {e.GetBaseException().Message} stackTrace: {e.GetBaseException().StackTrace}" : string.Empty,
-                                Thread.CurrentThread.ManagedThreadId,
-                                result,
-                                costTime,
-                                invocation.Proxy.GetHashCode());
-        }
-
-        private static void LogException(IInvocation invocation, ILogger logger, Exception e)
-        {
-            //发生错误记录日志
-            logger?.ErrorFormat("Method: {0} threw exception: {1} {2} thread:{3} target: {4}",
-                                invocation.Method.Name,
-                                e.GetBaseException().Message,
-                                e.GetBaseException().StackTrace,
-                                Thread.CurrentThread.ManagedThreadId,
-                                invocation.Proxy.GetHashCode());
         }
     }
 }

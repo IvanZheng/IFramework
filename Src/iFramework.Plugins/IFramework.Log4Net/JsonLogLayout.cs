@@ -12,6 +12,7 @@ namespace IFramework.Log4Net
     {
         public string App { get; set; }
         public string Module { get; set; }
+        public bool SerializeMessageObject { get; set; } = false;
         public JsonLogLayout()
         {
             IgnoresException = false;
@@ -33,7 +34,7 @@ namespace IFramework.Log4Net
         {
             var log = loggingEvent.MessageObject as JsonLogBase ?? new JsonLogBase
             {
-                Message = loggingEvent.MessageObject
+                Message = SerializeMessageObject ? loggingEvent.MessageObject : loggingEvent.RenderedMessage
             };
             var stackFrame = loggingEvent.LocationInformation.StackFrames[1];
             log.Method = log.Method ?? stackFrame.Method.Name;
@@ -44,22 +45,6 @@ namespace IFramework.Log4Net
             log.Host = log.Host ?? Environment.MachineName;
             log.LogLevel = loggingEvent.Level.ToString();
             log.Logger = loggingEvent.LoggerName;
-            
-
-            //var obj = new LogstashEvent
-            //{
-            //    version = 1,
-            //    timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture),
-            //    app = App,
-            //    source_host = Environment.MachineName,
-            //    thread_name = loggingEvent.ThreadName,
-            //    @class = loggingEvent.LocationInformation.ClassName,
-            //    method = loggingEvent.LocationInformation.MethodName,
-            //    line_number = loggingEvent.LocationInformation.LineNumber,
-            //    level = loggingEvent.Level.ToString(),
-            //    logger_name = loggingEvent.LoggerName,
-            //    message = loggingEvent.RenderedMessage
-            //};
 
             if (loggingEvent.ExceptionObject != null)
             {

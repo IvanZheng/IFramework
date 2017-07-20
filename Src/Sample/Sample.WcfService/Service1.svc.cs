@@ -6,6 +6,7 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 using IFramework.Infrastructure.Logging;
+using IFramework.IoC;
 using IFramework.UnitOfWork;
 using Sample.CommandHandler.Community;
 using Sample.Domain;
@@ -28,14 +29,14 @@ namespace Sample.WcfService
         }
         public string GetData(int value)
         {
-            return string.Format("You entered: {0}", value);
+            return $"You entered: {value}";
         }
 
         public CompositeType GetDataUsingDataContract(CompositeType composite)
         {
             if (composite == null)
             {
-                throw new ArgumentNullException("composite");
+                throw new ArgumentNullException(nameof(composite));
             }
             if (composite.BoolValue)
             {
