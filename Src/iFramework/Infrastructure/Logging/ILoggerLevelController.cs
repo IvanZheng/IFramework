@@ -10,5 +10,6 @@ namespace IFramework.Infrastructure.Logging
     {
         object GetLoggerLevel(string name);
         void SetLoggerLevel(string name, object level);
+        void SetDefaultLoggerLevel(object level);
     }
 }
