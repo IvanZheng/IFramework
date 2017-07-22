@@ -63,6 +63,7 @@ namespace IFramework.Config
 
         public Configuration UseNoneLogger()
         {
+            IoCFactory.Instance.CurrentContainer.RegisterType<ILoggerLevelController, LoggerLevelController>(Lifetime.Singleton);
             IoCFactory.Instance.CurrentContainer
                       .RegisterInstance(typeof(ILoggerFactory)
                                         , new MockLoggerFactory());

@@ -66,9 +66,11 @@
     <Compile Include="Infrastructure\Logging\AopEnteringLog.cs" />
     <Compile Include="Infrastructure\Logging\AopExceptionLog.cs" />
     <Compile Include="Infrastructure\Logging\AopLeavingLog.cs" />
+    <Compile Include="Infrastructure\Logging\ILoggerLevelController.cs" />
     <Compile Include="Infrastructure\Logging\JsonLogBase.cs" />
     <Compile Include="Infrastructure\Logging\MockLogger.cs" />
     <Compile Include="Infrastructure\Logging\MockLoggerFactory.cs" />
+    <Compile Include="Infrastructure\Logging\LoggerLevelController.cs" />
     <Compile Include="Infrastructure\QueryExtension.cs" />
     <Compile Include="IoC\AopInjection.cs" />
     <Compile Include="IoC\ILogInterceptionBehavior.cs" />

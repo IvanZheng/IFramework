@@ -12,9 +12,10 @@ namespace IFramework.Config
         /// <returns></returns>
         public static Configuration UseLog4Net(this Configuration configuration, string configFile = "log4net.config")
         {
+            var loggerLevelController = IoCFactory.Resolve<ILoggerLevelController>();
             IoCFactory.Instance.CurrentContainer
                       .RegisterInstance(typeof(ILoggerFactory)
-                                        , new Log4NetLoggerFactory(configFile));
+                                        , new Log4NetLoggerFactory(configFile, loggerLevelController));
             return configuration;
         }
     }

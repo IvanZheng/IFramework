@@ -1,34 +1,43 @@
 ﻿using System;
 using IFramework.Infrastructure.Logging;
 using log4net;
+using log4net.Core;
+using ILogger = IFramework.Infrastructure.Logging.ILogger;
 
 namespace IFramework.Log4Net
 {
     /// <summary>
     ///     Log4Net based logger implementation.
     /// </summary>
-    public class Log4NetLogger : ILogger
+    public class Log4NetLogger: ILogger
     {
         private readonly ILog _log;
+        private readonly ILoggerLevelController _loggerLevelController;
 
         /// <summary>
         ///     Parameterized constructor.
         /// </summary>
         /// <param name="log"></param>
-        public Log4NetLogger(ILog log)
+        /// <param name="loggerLevelController"></param>
+        public Log4NetLogger(ILog log, ILoggerLevelController loggerLevelController)
         {
             _log = log;
+            _loggerLevelController = loggerLevelController;
         }
 
         #region ILogger Members
-        
+
+        private Level CurrentLevel => (Level)_loggerLevelController.GetLoggerLevel(_log.Logger.Name) ?? Level.All;
 
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
         public void Debug(object message)
         {
-            _log.Debug(message);
+            if (Level.Debug >= CurrentLevel)
+            {
+                _log.Debug(message);
+            }
         }
 
         /// <summary>
@@ -37,7 +46,10 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void DebugFormat(string format, params object[] args)
         {
-            _log.DebugFormat(format, args);
+            if (Level.Debug >= CurrentLevel)
+            {
+                _log.DebugFormat(format, args);
+            }
         }
 
         /// <summary>
@@ -46,7 +58,10 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Debug(object message, Exception exception)
         {
-            _log.Debug(message, exception);
+            if (Level.Debug >= CurrentLevel)
+            {
+                _log.Debug(message, exception);
+            }
         }
 
         /// <summary>
@@ -54,7 +69,10 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Info(object message)
         {
-            _log.Info(message);
+            if (Level.Info >= CurrentLevel)
+            {
+                _log.Info(message);
+            }
         }
 
         /// <summary>
@@ -63,7 +81,10 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void InfoFormat(string format, params object[] args)
         {
-            _log.InfoFormat(format, args);
+            if (Level.Info >= CurrentLevel)
+            {
+                _log.InfoFormat(format, args);
+            }
         }
 
         /// <summary>
@@ -72,7 +93,10 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Info(object message, Exception exception)
         {
-            _log.Info(message, exception);
+            if (Level.Info >= CurrentLevel)
+            {
+                _log.Info(message, exception);
+            }
         }
 
         /// <summary>
@@ -80,7 +104,10 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Error(object message)
         {
-            _log.Error(message);
+            if (Level.Error >= CurrentLevel)
+            {
+                _log.Error(message);
+            }
         }
 
         /// <summary>
@@ -89,7 +116,10 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void ErrorFormat(string format, params object[] args)
         {
-            _log.ErrorFormat(format, args);
+            if (Level.Error >= CurrentLevel)
+            {
+                _log.ErrorFormat(format, args);
+            }
         }
 
         /// <summary>
@@ -98,7 +128,10 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Error(object message, Exception exception)
         {
-            _log.Error(message, exception);
+            if (Level.Error >= CurrentLevel)
+            {
+                _log.Error(message, exception);
+            }
         }
 
         /// <summary>
@@ -106,7 +139,10 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Warn(object message)
         {
-            _log.Warn(message);
+            if (Level.Warn >= CurrentLevel)
+            {
+                _log.Warn(message);
+            }
         }
 
         /// <summary>
@@ -115,7 +151,10 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void WarnFormat(string format, params object[] args)
         {
-            _log.WarnFormat(format, args);
+            if (Level.Warn >= CurrentLevel)
+            {
+                _log.WarnFormat(format, args);
+            }
         }
 
         /// <summary>
@@ -124,7 +163,10 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Warn(object message, Exception exception)
         {
-            _log.Warn(message, exception);
+            if (Level.Warn >= CurrentLevel)
+            {
+                _log.Warn(message, exception);
+            }
         }
 
         /// <summary>
@@ -132,7 +174,10 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Fatal(object message)
         {
-            _log.Fatal(message);
+            if (Level.Fatal >= CurrentLevel)
+            {
+                _log.Fatal(message);
+            }
         }
 
         /// <summary>
@@ -141,7 +186,10 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void FatalFormat(string format, params object[] args)
         {
-            _log.FatalFormat(format, args);
+            if (Level.Fatal >= CurrentLevel)
+            {
+                _log.FatalFormat(format, args);
+            }
         }
 
         /// <summary>
@@ -150,7 +198,10 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Fatal(object message, Exception exception)
         {
-            _log.Fatal(message, exception);
+            if (Level.Fatal >= CurrentLevel)
+            {
+                _log.Fatal(message, exception);
+            }
         }
 
         #endregion

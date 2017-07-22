@@ -14,13 +14,17 @@ namespace IFramework.Log4Net
     /// </summary>
     public class Log4NetLoggerFactory : ILoggerFactory
     {
+        private readonly ILoggerLevelController _loggerLevelController;
         static readonly ConcurrentDictionary<string, ILogger> Loggers = new ConcurrentDictionary<string, ILogger>();
+
         /// <summary>
         ///     Parameterized constructor.
         /// </summary>
         /// <param name="configFile"></param>
-        public Log4NetLoggerFactory(string configFile)
+        /// <param name="loggerLevelController"></param>
+        public Log4NetLoggerFactory(string configFile, ILoggerLevelController loggerLevelController)
         {
+            _loggerLevelController = loggerLevelController;
             var file = new FileInfo(configFile);
             if (!file.Exists)
             {
@@ -44,7 +48,7 @@ namespace IFramework.Log4Net
         /// <returns></returns>
         public ILogger Create(string name)
         {
-            return Loggers.GetOrAdd(name, key => new Log4NetLogger(LogManager.GetLogger(key)));
+            return Loggers.GetOrAdd(name, key => new Log4NetLogger(LogManager.GetLogger(key), _loggerLevelController));
         }
 
         /// <summary>
