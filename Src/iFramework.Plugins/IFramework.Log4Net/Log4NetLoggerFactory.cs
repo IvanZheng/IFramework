@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using IFramework.Infrastructure.Logging;
 using log4net;
@@ -13,6 +14,7 @@ namespace IFramework.Log4Net
     /// </summary>
     public class Log4NetLoggerFactory : ILoggerFactory
     {
+        static readonly ConcurrentDictionary<string, ILogger> Loggers = new ConcurrentDictionary<string, ILogger>();
         /// <summary>
         ///     Parameterized constructor.
         /// </summary>
@@ -42,7 +44,7 @@ namespace IFramework.Log4Net
         /// <returns></returns>
         public ILogger Create(string name)
         {
-            return new Log4NetLogger(LogManager.GetLogger(name));
+            return Loggers.GetOrAdd(name, key => new Log4NetLogger(LogManager.GetLogger(key)));
         }
 
         /// <summary>
@@ -52,7 +54,7 @@ namespace IFramework.Log4Net
         /// <returns></returns>
         public ILogger Create(Type type)
         {
-            return new Log4NetLogger(LogManager.GetLogger(type));
+            return Create(type.FullName);
         }
     }
 }

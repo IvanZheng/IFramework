@@ -21,20 +21,14 @@ namespace IFramework.Log4Net
         }
 
         #region ILogger Members
-
-        /// <summary>
-        /// </summary>
-        public bool IsDebugEnabled => _log.IsDebugEnabled;
+        
 
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
         public void Debug(object message)
         {
-            if (_log.IsDebugEnabled)
-            {
-                _log.Debug(message);
-            }
+            _log.Debug(message);
         }
 
         /// <summary>
@@ -43,10 +37,7 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void DebugFormat(string format, params object[] args)
         {
-            if (_log.IsDebugEnabled)
-            {
-                _log.DebugFormat(format, args);
-            }
+            _log.DebugFormat(format, args);
         }
 
         /// <summary>
@@ -55,10 +46,7 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Debug(object message, Exception exception)
         {
-            if (_log.IsDebugEnabled)
-            {
-                _log.Debug(message, exception);
-            }
+            _log.Debug(message, exception);
         }
 
         /// <summary>

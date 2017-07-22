@@ -4,7 +4,7 @@ namespace IFramework.Infrastructure.Logging
 {
     internal class MockLogger : ILogger
     {
-        public static MockLogger Instance = new MockLogger();
+        public static readonly MockLogger Instance = new MockLogger();
 
         private MockLogger() { }
 
