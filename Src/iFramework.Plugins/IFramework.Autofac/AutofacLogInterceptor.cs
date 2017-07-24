@@ -20,7 +20,7 @@ namespace IFramework.Autofac
         {
             Exception exception = null;
 
-            var logger = GetTargetLogger(invocation.TargetType);
+            var logger = GetTargetLogger(invocation.TargetType, invocation.Method);
             
             BeforeInvoke(logger, invocation.Method, invocation.Proxy, invocation.Arguments);
 

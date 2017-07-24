@@ -78,7 +78,7 @@
     <Compile Include="IoC\Injection.cs" />
     <Compile Include="IoC\Lifetime.cs" />
     <Compile Include="IoC\LogInterceptionBehavior.cs" />
-    <Compile Include="IoC\LogInterceptionSerializeAttribute.cs" />
+    <Compile Include="IoC\LogInterceptionAttribute.cs" />
     <Compile Include="IoC\Parameter.cs" />
     <Compile Include="MessageQueue\AutoOffsetReset.cs" />
     <Compile Include="MessageQueue\Configuration.cs" />

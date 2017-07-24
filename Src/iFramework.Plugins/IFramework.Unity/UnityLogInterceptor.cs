@@ -25,7 +25,7 @@ namespace IFramework.Unity
 
         public IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptionBehaviorDelegate getNext)
         {
-            var logger = GetTargetLogger(input.Target.GetType());
+            var logger = GetTargetLogger(input.Target.GetType(), (MethodInfo)input.MethodBase);
 
             BeforeInvoke(logger,
                          (MethodInfo)input.MethodBase,

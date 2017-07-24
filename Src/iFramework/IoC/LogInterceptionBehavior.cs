@@ -28,7 +28,7 @@ namespace IFramework.IoC
             logger?.Info(new AopEnteringLog
             {
                 Method = method.Name,
-                Target = target.GetHashCode().ToString(),
+                Target = $"{target.GetType().FullName}({target.GetHashCode()})",
                 Parameters = parameters
             });
         }
@@ -40,7 +40,7 @@ namespace IFramework.IoC
             logger?.Info(new AopLeavingLog
             {
                 Method = method.Name,
-                Target = target.GetHashCode().ToString(),
+                Target = $"{target.GetType().FullName}({target.GetHashCode()})",
                 CostTime = costTime,
                 Result = serializeAttribute.SerializeReturnValue ? result : result?.ToString()
             }, exception);
@@ -51,21 +51,33 @@ namespace IFramework.IoC
             logger?.Error(new AopExceptionLog
             {
                 Method = method.Name,
-                Target = target.GetHashCode().ToString()
+                Target = $"{target.GetType().FullName}({target.GetHashCode()})"
             }, exception);
         }
 
-        private static LogInterceptionSerializeAttribute GetLogInterceptionSerializeAttribute(MethodInfo method)
+        private static LogInterceptionAttribute GetLogInterceptionSerializeAttribute(MethodInfo method)
         {
-            return method.GetCustomAttribute<LogInterceptionSerializeAttribute>() ??
-                   method.DeclaringType.GetCustomAttribute<LogInterceptionSerializeAttribute>() ??
-                   new LogInterceptionSerializeAttribute();
+            return method.GetCustomAttribute<LogInterceptionAttribute>() ??
+                   method.DeclaringType.GetCustomAttribute<LogInterceptionAttribute>() ??
+                   new LogInterceptionAttribute();
         }
 
-        protected virtual ILogger GetTargetLogger(Type targetType)
+        protected virtual ILogger GetTargetLogger(Type targetType, MethodInfo method)
         {
-            var targetTypeName = targetType.Assembly.IsDynamic ? targetType.BaseType?.Name : targetType.Name;
-            return _loggerFactory.Create(!string.IsNullOrWhiteSpace(targetTypeName) ? targetTypeName : targetType.Name);
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            var targetTypeName = method.GetCustomAttribute<LogInterceptionAttribute>()?.LoggerName ??
+                                 method.DeclaringType.GetCustomAttribute<LogInterceptionAttribute>()?.LoggerName;
+
+            if (string.IsNullOrWhiteSpace(targetTypeName))
+            {
+                targetTypeName = targetType.Assembly.IsDynamic ? targetType.BaseType?.FullName : targetType.FullName;
+                targetTypeName = targetTypeName ?? targetType.FullName;
+            }
+            return _loggerFactory.Create(targetTypeName);
         }
     }
 }
