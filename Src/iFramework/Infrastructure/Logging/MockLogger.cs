@@ -23,6 +23,10 @@ namespace IFramework.Infrastructure.Logging
         public void Fatal(object message) { }
 
         public void Fatal(object message, Exception exception) { }
+        public void ChangeLogLevel(object level)
+        {
+            
+        }
 
         public void FatalFormat(string format, params object[] args) { }
 

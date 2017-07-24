@@ -204,6 +204,11 @@ namespace IFramework.Log4Net
             }
         }
 
+        public void ChangeLogLevel(object level)
+        {
+            (_log.Logger as log4net.Repository.Hierarchy.Logger).Level = (Level) level;
+        }
+
         #endregion
     }
 }
