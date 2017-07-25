@@ -18,7 +18,7 @@ namespace IFramework.Log4Net
         ///     Parameterized constructor.
         /// </summary>
         /// <param name="log"></param>
-        /// <param name="loggerLevelController"></param>
+        /// <param name="level"></param>
         public Log4NetLogger(ILog log, object level = null)
         {
             _log = log;
