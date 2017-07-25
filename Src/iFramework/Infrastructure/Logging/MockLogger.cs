@@ -28,6 +28,8 @@ namespace IFramework.Infrastructure.Logging
             
         }
 
+        public object Level { get; }
+
         public void FatalFormat(string format, params object[] args) { }
 
         public void Info(object message) { }

@@ -10,11 +10,11 @@ namespace IFramework.Infrastructure.Logging
         /// <summary>
         ///     Create a logger with the given logger name.
         /// </summary>
-        ILogger Create(string name);
+        ILogger Create(string name, object level = null);
 
         /// <summary>
         ///     Create a logger with the given type.
         /// </summary>
-        ILogger Create(Type type);
+        ILogger Create(Type type,  object level = null);
     }
 }
