@@ -27,3 +27,4 @@ obj
 /Src/.vs
 /Src/packages.bat
 /Src/Sample/Sample.WcfService/log
+/Src/package.bat

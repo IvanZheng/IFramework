@@ -2,6 +2,7 @@
 using IFramework.Config;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using log4netCore = log4net.Core;
 
 namespace IFramework.Log4NetTests
