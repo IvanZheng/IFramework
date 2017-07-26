@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using IFramework.Config;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
 using log4netCore = log4net.Core;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IFramework.Log4NetTests
 {
@@ -53,7 +51,7 @@ namespace IFramework.Log4NetTests
             LogTest(logger, message);
         }
 
-        void LogTest(ILogger logger, string message)
+        private void LogTest(ILogger logger, string message)
         {
             logger.Debug(message);
             logger.Info(message);
