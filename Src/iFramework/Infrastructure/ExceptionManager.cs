@@ -112,7 +112,7 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
-                            _logger?.Debug(ex);
+                            _logger?.Warn(ex);
                         }
                         else
                         {
@@ -196,6 +196,7 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
+                            _logger?.Warn(ex);
                         }
                         else
                         {
@@ -275,6 +276,7 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
+                            _logger?.Warn(ex);
                         }
                         else
                         {
@@ -301,14 +303,8 @@ namespace IFramework.Infrastructure
                 {
                     var result = func();
                     needRetry = false;
-                    if (result != null)
-                    {
-                        apiResult = new ApiResult<T>(result);
-                    }
-                    else
-                    {
-                        apiResult = new ApiResult<T>();
-                    }
+                    apiResult = result != null ? new ApiResult<T>(result) 
+                                               : new ApiResult<T>();
                 }
                 catch (Exception ex)
                 {
@@ -319,6 +315,7 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
+                            _logger?.Warn(ex);
                         }
                         else
                         {
