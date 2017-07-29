@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Exceptions;
@@ -8,6 +9,7 @@ using IFramework.IoC;
 
 namespace IFramework.Infrastructure
 {
+    [DataContract]
     public class ApiResult
     {
         public ApiResult()
@@ -16,18 +18,23 @@ namespace IFramework.Infrastructure
             ErrorCode = 0;
         }
 
-        public ApiResult(object errorCode, string message = null)
+        public ApiResult(int errorCode, string message = null)
         {
             ErrorCode = errorCode;
             Message = message;
             Success = false;
         }
 
+
+        [DataMember]
         public bool Success { get; set; }
-        public object ErrorCode { get; set; }
+        [DataMember]
+        public int ErrorCode { get; set; }
+        [DataMember]
         public string Message { get; set; }
     }
 
+    [DataContract]
     public class ApiResult<TResult> : ApiResult
     {
         public ApiResult()
@@ -41,9 +48,10 @@ namespace IFramework.Infrastructure
             Result = result;
         }
 
-        public ApiResult(object errorCode, string message = null)
+        public ApiResult(int errorCode, string message = null)
             : base(errorCode, message) { }
 
+        [DataMember]
         public TResult Result { get; set; }
     }
 

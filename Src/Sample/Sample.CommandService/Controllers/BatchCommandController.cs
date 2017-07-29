@@ -72,7 +72,7 @@ namespace Sample.CommandService.Controllers
             return
                 new ApiResult
                 {
-                    ErrorCode = ErrorCode.CommandInvalid,
+                    ErrorCode = (int)ErrorCode.CommandInvalid,
                     Message = string.Join(",", ModelState.Values
                                                          .SelectMany(v => v.Errors
                                                                            .Select(e => e.ErrorMessage)))
