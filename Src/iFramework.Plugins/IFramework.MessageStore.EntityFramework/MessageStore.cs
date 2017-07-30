@@ -195,6 +195,11 @@ namespace IFramework.MessageStoring
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Command>().Property(c => c.MessageBody).HasColumnType("ntext");
+            modelBuilder.Entity<Event>().Property(c => c.MessageBody).HasColumnType("ntext");
+            modelBuilder.Entity<UnSentCommand>().Property(c => c.MessageBody).HasColumnType("ntext");
+            modelBuilder.Entity<UnPublishedEvent>().Property(c => c.MessageBody).HasColumnType("ntext");
+
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<HandledEvent>().HasKey(e => new { e.Id, e.SubscriptionName })
                         .Property(handledEvent => handledEvent.SubscriptionName)
