@@ -16,25 +16,31 @@ using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public delegate void OnKafkaMessageReceived(KafkaConsumer consumer, Message<string, KafkaMessage> message);
+    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, Message<TKey, TValue> message);
 
-    public class KafkaConsumer: ICommitOffsetable
+    public class KafkaConsumer<TKey, TValue> : ICommitOffsetable
     {
         protected CancellationTokenSource _cancellationTokenSource;
-        private Consumer<string, KafkaMessage> _consumer;
+        private Consumer<TKey, TValue> _consumer;
         protected Task _consumerTask;
-        protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer).Name);
-        protected OnKafkaMessageReceived _onMessageReceived;
+        protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer<TKey, TValue>).Name);
+        protected OnKafkaMessageReceived<TKey, TValue> _onMessageReceived;
         protected ConsumerConfig _consumerConfig;
-
+        private readonly IDeserializer<TKey> _keyDeserializer;
+        private readonly IDeserializer<TValue> _valueDeserializer;
         public KafkaConsumer(string brokerList,
                              string topic,
                              string groupId,
                              string consumerId,
-                             OnKafkaMessageReceived onMessageReceived,
+                             OnKafkaMessageReceived<TKey, TValue> onMessageReceived,
+                             IDeserializer<TKey> keyDeserializer,
+                             IDeserializer<TValue> valueDeserializer,
                              ConsumerConfig consumerConfig = null,
                              bool start = true)
         {
+            _keyDeserializer = keyDeserializer ?? throw new ArgumentNullException(nameof(keyDeserializer));
+            _valueDeserializer = valueDeserializer ?? throw new ArgumentNullException(nameof(valueDeserializer));
+
             if (string.IsNullOrWhiteSpace(brokerList))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(brokerList));
@@ -86,7 +92,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         public void Start()
         {
             _cancellationTokenSource = new CancellationTokenSource();
-            _consumer = new Consumer<string, KafkaMessage>(ConsumerConfiguration, new StringDeserializer(Encoding.UTF8), new KafkaMessageDeserializer());
+            _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);//new StringDeserializer(Encoding.UTF8), new KafkaMessageDeserializer());
             _consumer.Subscribe(Topic);
             _consumer.OnError += (sender, error) => _logger.Error($"consumer({Id}) error: {error.ToJson()}");
             _consumer.OnMessage += _consumer_OnMessage;
@@ -98,7 +104,9 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                   TaskScheduler.Default);
         }
 
-        private void _consumer_OnMessage(object sender, Message<string, KafkaMessage> message)
+
+
+        private void _consumer_OnMessage(object sender, Message<TKey, TValue> message)
         {
             try
             {
@@ -115,7 +123,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
             catch (Exception ex)
             {
-                if (message.Value?.Payload != null)
+                if (message.Value != null)
                 {
                     RemoveMessage(message.Partition, message.Offset);
                 }
@@ -171,7 +179,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {
                     if (!cancellationTokenSource.IsCancellationRequested)
                     {
-                        Thread.Sleep(1000);
+                        Task.Delay(1000).Wait();
                         _logger.Error(ex.GetBaseException().Message, ex);
                     }
                 }
@@ -185,12 +193,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             while (SlidingDoors.Sum(d => d.Value.MessageCount) > _consumerConfig.FullLoadThreshold)
             {
-                Thread.Sleep(_consumerConfig.WaitInterval);
+                Task.Delay(_consumerConfig.WaitInterval).Wait();
                 _logger.Warn($"working is full load sleep 1000 ms");
             }
         }
 
-        protected void AddMessage(Message<string, KafkaMessage> message)
+        protected void AddMessage(Message<TKey, TValue> message)
         {
             var slidingDoor = SlidingDoors.GetOrAdd(message.Partition, partition => new SlidingDoor(CommitOffset,
                                                                                                     string.Empty,
@@ -227,12 +235,13 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        //public void CommitOffset(int partition, long offset)
-        //{
-        //    CommitOffsetAsync(partition, offset).Wait();
-        //}
+        public void CommitOffset(int partition, long offset)
+        {
+            // kafka not use broker in cluster mode
+            CommitOffset(null, partition, offset);
+        }
 
-        public void CommitOffset(string broker, int partition, long offset)
+        private void CommitOffset(string broker, int partition, long offset)
         {
             // kafka not use broker in cluster mode
             CommitOffsetAsync(partition, offset);

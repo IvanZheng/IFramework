@@ -12,15 +12,19 @@ using IFramework.Infrastructure;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public class KafkaProducer
+    public class KafkaProducer<TKey, TValue>
     {
-        private readonly ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaProducer).Name);
-        private readonly Producer<string, KafkaMessage> _producer;
+        private readonly ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaProducer<TKey, TValue>).Name);
+        private readonly Producer<TKey, TValue> _producer;
         private readonly string _topic;
         private readonly string _brokerList;
+        private readonly ISerializer<TKey> _keySerializer;
+        private readonly ISerializer<TValue> _valueSerializer;
 
-        public KafkaProducer(string topic, string brokerList)
+        public KafkaProducer(string topic, string brokerList, ISerializer<TKey> keySerializer, ISerializer<TValue> valueSerializer)
         {
+            _keySerializer = keySerializer ?? throw new ArgumentNullException(nameof(keySerializer));
+            _valueSerializer = valueSerializer ?? throw new ArgumentNullException(nameof(valueSerializer));
             _brokerList = brokerList;
             _topic = topic;
             var producerConfiguration = new Dictionary<string, object>
@@ -32,7 +36,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {"queue.buffering.max.ms", 10}
             };
 
-            _producer = new Producer<string, KafkaMessage>(producerConfiguration, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
+            _producer = new Producer<TKey, TValue>(producerConfiguration, _keySerializer, valueSerializer);
             _producer.OnError += _producer_OnError;
         }
 
@@ -60,7 +64,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         //    return result;
         //}
 
-        public async Task<Message<string, KafkaMessage>> SendAsync(string key, KafkaMessage message, CancellationToken cancellationToken)
+        public async Task<Message<TKey, TValue>> SendAsync(TKey key, TValue message, CancellationToken cancellationToken)
         {
             var retryTimes = 0;
             while (true)

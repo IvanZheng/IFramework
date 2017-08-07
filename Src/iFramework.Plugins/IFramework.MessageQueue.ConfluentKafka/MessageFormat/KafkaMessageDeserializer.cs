@@ -8,7 +8,7 @@ using IFramework.Infrastructure;
 
 namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
-    class KafkaMessageDeserializer: IDeserializer<KafkaMessage>
+    public class KafkaMessageDeserializer: IDeserializer<KafkaMessage>
     {
         public KafkaMessage Deserialize(byte[] data)
         {

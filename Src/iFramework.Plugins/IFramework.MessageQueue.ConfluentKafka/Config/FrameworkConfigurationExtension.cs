@@ -5,8 +5,6 @@ namespace IFramework.MessageQueue.ConfluentKafka.Config
 {
     public static class FrameworkConfigurationExtension
     {
-        private static int _backOffIncrement = 30;
-
         public static Configuration UseConfluentKafka(this Configuration configuration,
                                                       string brokerList)
         {

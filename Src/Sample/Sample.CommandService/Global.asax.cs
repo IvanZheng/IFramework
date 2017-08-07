@@ -43,7 +43,7 @@ namespace Sample.CommandService
                 var kafkaBrokerList = new[]
                  {
                     new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString(),
-                    "192.168.99.60:9092"
+                    //"192.168.99.60:9092"
                 };
                 Configuration.Instance
                              .UseLog4Net()
@@ -60,17 +60,27 @@ namespace Sample.CommandService
 
                 _Logger.Debug($"App Started");
 
-                #region EventPublisher init
+                #region Command Consuemrs init
 
-                _MessagePublisher = MessageQueueFactory.GetMessagePublisher();
-                _MessagePublisher.Start();
+                var commandQueueName = "commandqueue";
+                _CommandConsumer1 =
+                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
+                _CommandConsumer1.Start();
+
+                _CommandConsumer2 =
+                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
+                _CommandConsumer2.Start();
+
+                _CommandConsumer3 =
+                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
+                _CommandConsumer3.Start();
 
                 #endregion
 
                 #region event subscriber init
 
                 _DomainEventConsumer = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
-                                                                                 Environment.MachineName, new []{"DomainEventSubscriber"});
+                                                                                 Environment.MachineName, new[] { "DomainEventSubscriber" });
                 _DomainEventConsumer.Start();
 
                 #endregion
@@ -78,8 +88,15 @@ namespace Sample.CommandService
                 #region application event subscriber init
 
                 _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber",
-                                                                                      Environment.MachineName, new []{"ApplicationEventSubscriber"});
+                                                                                      Environment.MachineName, new[] { "ApplicationEventSubscriber" });
                 _ApplicationEventConsumer.Start();
+
+                #endregion
+
+                #region EventPublisher init
+
+                _MessagePublisher = MessageQueueFactory.GetMessagePublisher();
+                _MessagePublisher.Start();
 
                 #endregion
 
@@ -87,23 +104,6 @@ namespace Sample.CommandService
 
                 _CommandBus = MessageQueueFactory.GetCommandBus();
                 _CommandBus.Start();
-
-                #endregion
-
-                #region Command Consuemrs init'
-
-                var commandQueueName = "commandqueue";
-                _CommandConsumer1 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new []{"CommandHandlers"});
-                _CommandConsumer1.Start();
-
-                _CommandConsumer2 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new []{"CommandHandlers"});
-                _CommandConsumer2.Start();
-
-                _CommandConsumer3 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new []{"CommandHandlers"});
-                _CommandConsumer3.Start();
 
                 #endregion
             }
@@ -136,9 +136,9 @@ namespace Sample.CommandService
             }
             finally
             {
+                _Logger.Debug($"App Ended");
                 IoCFactory.Instance.CurrentContainer.Dispose();
             }
-            _Logger.Debug($"App Ended");
         }
 
 

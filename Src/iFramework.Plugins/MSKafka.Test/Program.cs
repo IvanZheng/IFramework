@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Confluent.Kafka;
+using Confluent.Kafka.Serialization;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
@@ -31,32 +32,35 @@ namespace KafkaClient.Test
             IoCFactory.Instance.CurrentContainer.Dispose();
         }
 
-        public static KafkaConsumer CreateConsumer(string commandQueue, string consumerId)
+        public static KafkaConsumer<string, KafkaMessage> CreateConsumer(string commandQueue, string consumerId)
         {
-            void OnMessageReceived(KafkaConsumer kafkaConsumer, Message<string, KafkaMessage> kafkaMessage)
+            void OnMessageReceived(KafkaConsumer<string, KafkaMessage> kafkaConsumer, Message<string, KafkaMessage> kafkaMessage)
             {
                 var message = kafkaMessage.Value.Payload;
                 var sendTime = DateTime.Parse(message.Split('@')[1]);
                 Console.WriteLine($"consumer:{kafkaConsumer.ConsumerId} {DateTime.Now:HH:mm:ss.fff} consume message: {message} cost: {(DateTime.Now - sendTime).TotalMilliseconds} partition:{kafkaMessage.Partition} offset:{kafkaMessage.Offset}");
-                kafkaConsumer.CommitOffsetAsync(kafkaMessage.Partition, kafkaMessage.Offset);
+                kafkaConsumer.CommitOffset(kafkaMessage.Partition, kafkaMessage.Offset);
             }
 
-            var consumer = new KafkaConsumer(brokerList, commandQueue,
-                                             $"{Environment.MachineName}.{commandQueue}", consumerId, OnMessageReceived);
+            var consumer = new KafkaConsumer<string, KafkaMessage>(brokerList, commandQueue,
+                                                                   $"{Environment.MachineName}.{commandQueue}",
+                                                                   consumerId,
+                                                                   OnMessageReceived,
+                                                                   new StringDeserializer(Encoding.UTF8),
+                                                                   new KafkaMessageDeserializer());
             return consumer;
         }
 
         private static void GroupConsuemrTest()
         {
-            var consumers = new List<KafkaConsumer>();
+            var consumers = new List<KafkaConsumer<string, KafkaMessage>>();
             for (var i = 0; i < 1; i++)
             {
                 consumers.Add(CreateConsumer(commandQueue, i.ToString()));
             }
-            var queueClient = new KafkaProducer(commandQueue, brokerList);
+            var queueClient = new KafkaProducer<string, KafkaMessage>(commandQueue, brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
             while (true)
             {
-                
                 var key = Console.ReadLine();
                 if (key.Equals("q"))
                 {
