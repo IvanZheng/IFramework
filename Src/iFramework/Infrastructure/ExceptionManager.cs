@@ -68,22 +68,9 @@ namespace IFramework.Infrastructure
             _UnKnownMessage = unknownMessage;
         }
 
-
-        private static string GetUnknownErrorMessage(Exception ex)
-        {
-            var unknownErrorMessage = _UnKnownMessage;
-            var compliationSection = Configuration.GetCompliationSection();
-            if (compliationSection != null && compliationSection.Debug)
-            {
-                unknownErrorMessage = ex.Message;
-            }
-            return unknownErrorMessage;
-        }
-
-
         private static string GetExceptionMessage(Exception ex)
         {
-            return GetUnknownErrorMessage(ex);
+            return ex.Message;
         }
 
         public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
