@@ -107,8 +107,8 @@ namespace IFramework.Infrastructure.Logging
         /// <param name="exception"></param>
         void Fatal(object message, Exception exception);
 
-        void ChangeLogLevel(object level);
+        void ChangeLogLevel(Level level);
 
-        object Level { get; }
+        Level Level { get; }
     }
 }

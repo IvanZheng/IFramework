@@ -7,23 +7,29 @@ using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Logging
 {
-    public class LoggerLevelController: ILoggerLevelController
+    public class LoggerLevelController : ILoggerLevelController
     {
-        protected object DefaultLoggerLevel { get; set; }
-        protected static ConcurrentDictionary<string, object> LoggerLevels = new ConcurrentDictionary<string, object>();
-        public virtual object GetLoggerLevel(string name)
+        protected Level DefaultLevel { get; set; }
+        protected static ConcurrentDictionary<string, Level> LoggerLevels = new ConcurrentDictionary<string, Level>();
+
+        public virtual Level GetOrAddLoggerLevel(string name, Level? level = null)
         {
-            return LoggerLevels.TryGetValue(name, DefaultLoggerLevel);
+            return LoggerLevels.GetOrAdd(name, key => level ?? DefaultLevel);
         }
 
-        public virtual void SetLoggerLevel(string name, object level)
+        public virtual void SetLoggerLevel(string name, Level? level = null)
         {
-            LoggerLevels.AddOrUpdate(name, key => level, (key, value) => level);
+            level = LoggerLevels.AddOrUpdate(name,
+                                             key => level ?? DefaultLevel,
+                                             (key, value) => level ?? DefaultLevel);
+            OnLoggerLevelChanged?.Invoke(name, level.Value);
         }
 
-        public void SetDefaultLoggerLevel(object level)
+        public void SetDefaultLoggerLevel(Level level)
         {
-            DefaultLoggerLevel = level;
+            DefaultLevel = level;
         }
+
+        public event LoggerLevelChanged OnLoggerLevelChanged;
     }
 }

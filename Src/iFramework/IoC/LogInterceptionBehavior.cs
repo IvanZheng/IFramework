@@ -5,6 +5,12 @@ using IFramework.Infrastructure.Logging;
 
 namespace IFramework.IoC
 {
+    public static class AopAction
+    {
+        public const string Enter = "enter";
+        public const string Leave = "leave";
+    }
+
     public abstract class LogInterceptionBehavior : ILogInterceptionBehavior
     {
         private readonly ILoggerFactory _loggerFactory;
@@ -29,7 +35,11 @@ namespace IFramework.IoC
             {
                 Method = method.Name,
                 Target = $"{target.GetType().FullName}({target.GetHashCode()})",
-                Parameters = parameters
+                Message = new
+                {
+                    Action = AopAction.Enter,
+                    Parameters = parameters
+                }
             });
         }
 
@@ -41,8 +51,12 @@ namespace IFramework.IoC
             {
                 Method = method.Name,
                 Target = $"{target.GetType().FullName}({target.GetHashCode()})",
-                CostTime = costTime,
-                Result = serializeAttribute.SerializeReturnValue ? result : result?.ToString()
+                Message = new
+                {
+                    Action = AopAction.Leave,
+                    CostTime = costTime,
+                    Result = serializeAttribute.SerializeReturnValue ? result : result?.ToString()
+                }
             }, exception);
         }
 

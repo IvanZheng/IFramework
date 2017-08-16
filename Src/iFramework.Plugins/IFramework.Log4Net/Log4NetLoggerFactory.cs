@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
-using IFramework.Infrastructure.Logging;
 using log4net;
 using log4net.Appender;
 using log4net.Config;
-using log4net.Core;
 using log4net.Layout;
-using ILogger = IFramework.Infrastructure.Logging.ILogger;
+using IFramework.Infrastructure.Logging;
+using IFramework.Infrastructure;
 
 namespace IFramework.Log4Net
 {
     /// <summary>
     ///     Log4Net based logger factory.
     /// </summary>
-    public class Log4NetLoggerFactory: ILoggerFactory
+    public class Log4NetLoggerFactory : ILoggerFactory
     {
         private readonly ILoggerLevelController _loggerLevelController;
         static readonly ConcurrentDictionary<string, ILogger> Loggers = new ConcurrentDictionary<string, ILogger>();
@@ -24,10 +23,12 @@ namespace IFramework.Log4Net
         /// </summary>
         /// <param name="configFile"></param>
         /// <param name="loggerLevelController"></param>
-        public Log4NetLoggerFactory(string configFile, ILoggerLevelController loggerLevelController, object defaultLevel = null)
+        /// <param name="defaultLevel"></param>
+        public Log4NetLoggerFactory(string configFile, ILoggerLevelController loggerLevelController, Level defaultLevel = Level.Debug)
         {
             _loggerLevelController = loggerLevelController;
             _loggerLevelController.SetDefaultLoggerLevel(defaultLevel);
+            _loggerLevelController.OnLoggerLevelChanged += _loggerLevelController_OnLoggerLevelChanged;
             var file = new FileInfo(configFile);
             if (!file.Exists)
             {
@@ -44,16 +45,21 @@ namespace IFramework.Log4Net
             }
         }
 
+        private void _loggerLevelController_OnLoggerLevelChanged(string logger, Level level)
+        {
+            Loggers.TryGetValue(logger, null)?.ChangeLogLevel(level);
+        }
+
         /// <summary>
         ///     Create a new Log4NetLogger instance.
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="level"></param>
         /// <returns></returns>
-        public ILogger Create(string name, object level = null)
+        public ILogger Create(string name, Level level = Level.Debug)
         {
             return Loggers.GetOrAdd(name, key => new Log4NetLogger(LogManager.GetLogger(key),
-                                                                   level ??
-                                                                   _loggerLevelController.GetLoggerLevel(key)));
+                                                                   _loggerLevelController.GetOrAddLoggerLevel(key, level)));
         }
 
         /// <summary>
@@ -61,7 +67,7 @@ namespace IFramework.Log4Net
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public ILogger Create(Type type, object level = null)
+        public ILogger Create(Type type, Level level = Level.Debug)
         {
             return Create(type.FullName, level);
         }

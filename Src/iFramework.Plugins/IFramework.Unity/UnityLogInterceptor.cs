@@ -10,9 +10,9 @@ using IFramework.IoC;
 
 namespace IFramework.Unity
 {
-    public class UnityLogInterceptor: LogInterceptionBehavior, IInterceptionBehavior
+    public class UnityLogInterceptor : LogInterceptionBehavior, IInterceptionBehavior
     {
-        public UnityLogInterceptor(ILoggerFactory loggerFactory):base(loggerFactory)
+        public UnityLogInterceptor(ILoggerFactory loggerFactory) : base(loggerFactory)
         {
         }
 
@@ -46,7 +46,7 @@ namespace IFramework.Unity
                     if (t.IsFaulted)
                     {
                         HandleException(logger,
-                                        (MethodInfo)input.MethodBase, 
+                                        (MethodInfo)input.MethodBase,
                                         input.Target,
                                         t.Exception);
                     }
@@ -59,10 +59,10 @@ namespace IFramework.Unity
                         }
                     }
                     AfterInvoke(logger,
-                                (MethodInfo)input.MethodBase, 
+                                (MethodInfo)input.MethodBase,
                                 input.Target,
                                 start,
-                                r, 
+                                r,
                                 t.Exception);
                 });
             }
@@ -70,16 +70,16 @@ namespace IFramework.Unity
             {
                 if (result.Exception != null)
                 {
-                    HandleException(logger, 
-                                    (MethodInfo)input.MethodBase, 
+                    HandleException(logger,
+                                    (MethodInfo)input.MethodBase,
                                     input.Target,
                                     result.Exception);
                 }
                 AfterInvoke(logger,
                             (MethodInfo)input.MethodBase,
                             input.Target,
-                            start, 
-                            result.ReturnValue, 
+                            start,
+                            result.ReturnValue,
                             result.Exception);
             }
             return result;

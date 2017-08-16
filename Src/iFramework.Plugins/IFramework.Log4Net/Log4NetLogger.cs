@@ -1,9 +1,10 @@
 ﻿using System;
-using IFramework.Infrastructure.Logging;
 using log4net;
 using log4net.Core;
 using log4net.Repository.Hierarchy;
+using IFramework.Infrastructure.Logging;
 using ILogger = IFramework.Infrastructure.Logging.ILogger;
+using Level = log4net.Core.Level;
 
 namespace IFramework.Log4Net
 {
@@ -19,7 +20,7 @@ namespace IFramework.Log4Net
         /// </summary>
         /// <param name="log"></param>
         /// <param name="level"></param>
-        public Log4NetLogger(ILog log, object level = null)
+        public Log4NetLogger(ILog log, Infrastructure.Logging.Level level = Infrastructure.Logging.Level.Debug)
         {
             _log = log;
             ChangeLogLevel(level);
@@ -157,12 +158,71 @@ namespace IFramework.Log4Net
             _log.Fatal(message, exception);
         }
 
-        public void ChangeLogLevel(object level)
+        public void ChangeLogLevel(Infrastructure.Logging.Level level)
         {
-            ((Logger) _log.Logger).Level = (Level) level;
+            ((Logger)_log.Logger).Level = ToLog4NetLevel(level);
         }
 
-        public object Level => ((Logger) _log.Logger).Level;
+
+
+        public static Level ToLog4NetLevel(Infrastructure.Logging.Level level)
+        {
+            var log4NetLevel = log4net.Core.Level.Debug;
+            switch (level)
+            {
+                case Infrastructure.Logging.Level.All:
+                    log4NetLevel = log4net.Core.Level.All;
+                    break;
+                case Infrastructure.Logging.Level.Debug:
+                    log4NetLevel = log4net.Core.Level.Debug;
+                    break;
+                case Infrastructure.Logging.Level.Info:
+                    log4NetLevel = log4net.Core.Level.Info;
+                    break;
+                case Infrastructure.Logging.Level.Warn:
+                    log4NetLevel = log4net.Core.Level.Warn;
+                    break;
+                case Infrastructure.Logging.Level.Error:
+                    log4NetLevel = log4net.Core.Level.Error;
+                    break;
+                case Infrastructure.Logging.Level.Fatal:
+                    log4NetLevel = log4net.Core.Level.Fatal;
+                    break;
+            }
+            return log4NetLevel;
+        }
+
+        public static Infrastructure.Logging.Level ToLoggingLevel(Level level)
+        {
+            var loggingLevel = Infrastructure.Logging.Level.Debug;
+            if (level == log4net.Core.Level.All)
+            {
+                loggingLevel = Infrastructure.Logging.Level.All;
+            }
+            else if (level == log4net.Core.Level.Debug)
+            {
+                loggingLevel = Infrastructure.Logging.Level.Debug;
+            }
+            else if (level == log4net.Core.Level.Info)
+            {
+                loggingLevel = Infrastructure.Logging.Level.Info;
+            }
+            else if (level == log4net.Core.Level.Warn)
+            {
+                loggingLevel = Infrastructure.Logging.Level.Warn;
+            }
+            else if (level == log4net.Core.Level.Error)
+            {
+                loggingLevel = Infrastructure.Logging.Level.Error;
+            }
+            else if (level == log4net.Core.Level.Fatal)
+            {
+                loggingLevel = Infrastructure.Logging.Level.Fatal;
+            }
+            return loggingLevel;
+        }
+
+        public Infrastructure.Logging.Level Level => ToLoggingLevel(((Logger)_log.Logger).Level);
 
         #endregion
     }

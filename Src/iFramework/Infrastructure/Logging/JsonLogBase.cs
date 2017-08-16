@@ -8,9 +8,8 @@ namespace IFramework.Infrastructure.Logging
 {
     public class JsonLogBase
     {
-        public const string Entering = "Entering";
-        public const string Leaving = "Leaving";
         public string Host { get; set; }
+        public string Ip { get; set; }
         public string App { get; set; }
         public string Module { get; set; }
         public string UserName { get; set; }

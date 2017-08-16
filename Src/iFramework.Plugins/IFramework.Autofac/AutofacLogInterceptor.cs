@@ -9,9 +9,9 @@ using IFramework.IoC;
 
 namespace IFramework.Autofac
 {
-    public class AutofacLogInterceptor: LogInterceptionBehavior, IInterceptor
+    public class AutofacLogInterceptor : LogInterceptionBehavior, IInterceptor
     {
-        public AutofacLogInterceptor(ILoggerFactory loggerFactory):base(loggerFactory)
+        public AutofacLogInterceptor(ILoggerFactory loggerFactory) : base(loggerFactory)
         {
         }
 
@@ -21,7 +21,7 @@ namespace IFramework.Autofac
             Exception exception = null;
 
             var logger = GetTargetLogger(invocation.TargetType, invocation.Method);
-            
+
             BeforeInvoke(logger, invocation.Method, invocation.Proxy, invocation.Arguments);
 
             var start = DateTime.Now;

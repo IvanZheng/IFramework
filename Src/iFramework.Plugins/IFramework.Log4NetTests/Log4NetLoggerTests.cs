@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using IFramework.Config;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using log4netCore = log4net.Core;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IFramework.Log4NetTests
 {
@@ -31,28 +32,28 @@ namespace IFramework.Log4NetTests
             Console.WriteLine(logger.Level);
             LogTest(logger, message);
 
-            logger.ChangeLogLevel(log4netCore.Level.Debug);
+            logger.ChangeLogLevel(Level.Debug);
             Console.WriteLine(logger.Level);
             LogTest(logger, message);
 
-            logger.ChangeLogLevel(log4netCore.Level.Info);
+            logger.ChangeLogLevel(Level.Info);
             Console.WriteLine(logger.Level);
             LogTest(logger, message);
 
-            logger.ChangeLogLevel(log4netCore.Level.Warn);
+            logger.ChangeLogLevel(Level.Warn);
             Console.WriteLine(logger.Level);
             LogTest(logger, message);
 
-            logger.ChangeLogLevel(log4netCore.Level.Error);
+            logger.ChangeLogLevel(Level.Error);
             Console.WriteLine(logger.Level);
             LogTest(logger, message);
 
-            logger.ChangeLogLevel(log4netCore.Level.Fatal);
+            logger.ChangeLogLevel(Level.Fatal);
             Console.WriteLine(logger.Level);
             LogTest(logger, message);
         }
 
-        private void LogTest(ILogger logger, string message)
+        void LogTest(ILogger logger, string message)
         {
             logger.Debug(message);
             logger.Info(message);
