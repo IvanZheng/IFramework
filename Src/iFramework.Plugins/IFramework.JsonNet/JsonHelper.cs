@@ -12,23 +12,44 @@ using IFramework.IoC;
 
 namespace IFramework.JsonNet
 {
-    public class NonPublicContractResolver : DefaultContractResolver
+    public class CustomContractResolver : DefaultContractResolver
     {
+        private readonly bool _serializeNonPulibc;
+        private readonly bool _lowerCase;
+
+        public CustomContractResolver(bool serializeNonPulibc, bool lowerCase)
+        {
+            _serializeNonPulibc = serializeNonPulibc;
+            _lowerCase = lowerCase;
+        }
+
+        protected override string ResolvePropertyName(string propertyName)
+        {
+            return _lowerCase ? propertyName.ToLower() : propertyName;
+        }
+
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
-            //TODO: Maybe cache
-            var prop = base.CreateProperty(member, memberSerialization);
-
-            if (!prop.Writable)
+            if (_serializeNonPulibc)
             {
-                var property = member as PropertyInfo;
-                if (property != null)
+                //TODO: Maybe cache
+                var prop = base.CreateProperty(member, memberSerialization);
+
+                if (!prop.Writable)
                 {
-                    var hasPrivateSetter = property.GetSetMethod(true) != null;
-                    prop.Writable = hasPrivateSetter;
+                    var property = member as PropertyInfo;
+                    if (property != null)
+                    {
+                        var hasPrivateSetter = property.GetSetMethod(true) != null;
+                        prop.Writable = hasPrivateSetter;
+                    }
                 }
+                return prop;
             }
-            return prop;
+            else
+            {
+                return base.CreateProperty(member, memberSerialization);
+            }
         }
     }
 
@@ -45,16 +66,14 @@ namespace IFramework.JsonNet
                                                                                        bool useCamelCase,
                                                                                        bool useStringEnumConvert,
                                                                                        bool ignoreSerializableAttribute,
-                                                                                       bool ignoreNullValue)
+                                                                                       bool ignoreNullValue,
+                                                                                       bool lowerCase)
         {
             var customSettings = new JsonSerializerSettings
             {
-                ContractResolver = new DefaultContractResolver()
+                ContractResolver = new CustomContractResolver(serializeNonPulibc, lowerCase)
             };
-            if (serializeNonPulibc)
-            {
-                customSettings.ContractResolver = new NonPublicContractResolver();
-            }
+          
             if (loopSerialize)
             {
                 customSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
@@ -92,7 +111,8 @@ namespace IFramework.JsonNet
                                                                              bool useStringEnumConvert = true,
                                                                              bool ignoreSerializableAttribute = true,
                                                                              bool ignoreNullValue = false,
-                                                                             bool useCached = true)
+                                                                             bool useCached = true,
+                                                                             bool lowerCase = false)
         {
             JsonSerializerSettings settings = null;
             if (useCached)
@@ -104,7 +124,8 @@ namespace IFramework.JsonNet
                                                                                                    useCamelCase,
                                                                                                    useStringEnumConvert,
                                                                                                    ignoreSerializableAttribute,
-                                                                                                   ignoreNullValue));
+                                                                                                   ignoreNullValue,
+                                                                                                   lowerCase));
             }
             else
             {
@@ -113,7 +134,8 @@ namespace IFramework.JsonNet
                                                                    useCamelCase,
                                                                    useStringEnumConvert,
                                                                    ignoreSerializableAttribute,
-                                                                   ignoreNullValue);
+                                                                   ignoreNullValue,
+                                                                   lowerCase);
             }
             return settings;
         }
