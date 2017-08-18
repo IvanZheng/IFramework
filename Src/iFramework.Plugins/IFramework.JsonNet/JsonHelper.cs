@@ -47,7 +47,10 @@ namespace IFramework.JsonNet
                                                                                        bool ignoreSerializableAttribute,
                                                                                        bool ignoreNullValue)
         {
-            var customSettings = new JsonSerializerSettings();
+            var customSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver()
+            };
             if (serializeNonPulibc)
             {
                 customSettings.ContractResolver = new NonPublicContractResolver();
