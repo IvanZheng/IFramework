@@ -144,10 +144,11 @@ namespace IFramework.JsonNet
                                     bool serializeNonPublic = true,
                                     bool loopSerialize = false,
                                     bool useCamelCase = false,
-                                    bool ignoreNullValue = false)
+                                    bool ignoreNullValue = false,
+                                    bool useStringEnumConvert = true)
         {
             return JsonConvert.SerializeObject(obj,
-                                               GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue: ignoreNullValue));
+                                               GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, useStringEnumConvert, ignoreNullValue: ignoreNullValue));
         }
 
         public static object ToJsonObject(this string json,

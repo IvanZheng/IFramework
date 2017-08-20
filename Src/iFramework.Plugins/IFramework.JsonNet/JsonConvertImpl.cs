@@ -10,9 +10,9 @@ namespace IFramework.JsonNet
     {
         public string SerializeObject(object value, bool serializeNonPublic = true, 
                                       bool loopSerialize = false, bool useCamelCase = false,
-                                      bool ignoreNullValue = false)
+                                      bool ignoreNullValue = false, bool useStringEnumConvert = true)
         {
-            return value.ToJson(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue);
+            return value.ToJson(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue, useStringEnumConvert);
         }
 
         public object DeserializeObject(string value, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
