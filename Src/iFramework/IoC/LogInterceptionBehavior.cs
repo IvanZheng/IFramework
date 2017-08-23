@@ -91,7 +91,10 @@ namespace IFramework.IoC
                 targetTypeName = targetType.Assembly.IsDynamic ? targetType.BaseType?.FullName : targetType.FullName;
                 targetTypeName = targetTypeName ?? targetType.FullName;
             }
-            return _loggerFactory.Create(targetTypeName);
+            var module = method.GetCustomAttribute<LogInterceptionAttribute>()?.Module ??
+                         method.DeclaringType.GetCustomAttribute<LogInterceptionAttribute>()?.Module;
+
+            return _loggerFactory.Create(targetTypeName, module: module);
         }
     }
 }

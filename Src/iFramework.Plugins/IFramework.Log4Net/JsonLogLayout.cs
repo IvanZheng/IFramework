@@ -29,7 +29,7 @@ namespace IFramework.Log4Net
 
             writer.Write(message + "\r\n");
         }
-        private JsonLogBase GetJsonObject(LoggingEvent loggingEvent)
+        private object GetJsonObject(LoggingEvent loggingEvent)
         {
             var log = loggingEvent.MessageObject as JsonLogBase ?? new JsonLogBase
             {
@@ -40,7 +40,7 @@ namespace IFramework.Log4Net
             log.Thread = log.Thread ?? loggingEvent.ThreadName;
             log.Time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fffffff", CultureInfo.InvariantCulture);
             log.App = log.App ?? App;
-            log.Module = log.Module ?? Module;
+            log.Module = log.Module ?? log4net.LogicalThreadContext.Properties[nameof(log.Module)]?.ToString() ?? Module;
             log.Host = log.Host ?? Environment.MachineName;
             log.Ip = Utility.GetLocalIPV4().ToString();
             log.LogLevel = loggingEvent.Level.ToString();

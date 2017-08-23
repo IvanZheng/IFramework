@@ -55,21 +55,26 @@ namespace IFramework.Log4Net
         /// </summary>
         /// <param name="name"></param>
         /// <param name="level"></param>
+        /// <param name="module"></param>
         /// <returns></returns>
-        public ILogger Create(string name, Level level = Level.Debug)
+        public ILogger Create(string name, Level level = Level.Debug, object module = null)
         {
-            return Loggers.GetOrAdd(name, key => new Log4NetLogger(LogManager.GetLogger(key),
-                                                                   _loggerLevelController.GetOrAddLoggerLevel(key, level)));
+            var logger = Loggers.GetOrAdd(name, key => new Log4NetLogger(LogManager.GetLogger(key),
+                                                                         _loggerLevelController.GetOrAddLoggerLevel(key, level),
+                                                                         module));
+            logger.SetModule(module);
+            return logger;
         }
 
         /// <summary>
         ///     Create a new Log4NetLogger instance.
         /// </summary>
         /// <param name="type"></param>
+        /// <param name="module"></param>
         /// <returns></returns>
-        public ILogger Create(Type type, Level level = Level.Debug)
+        public ILogger Create(Type type, Level level = Level.Debug, object module = null)
         {
-            return Create(type.FullName, level);
+            return Create(type.FullName, level, module);
         }
     }
 }

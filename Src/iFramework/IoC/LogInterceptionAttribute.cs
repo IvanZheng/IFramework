@@ -11,5 +11,7 @@ namespace IFramework.IoC
         public string LoggerName { get; set; }
         public bool SerializeArguments { get; set; }
         public bool SerializeReturnValue { get; set; }
+        public string Module { get; set; }
+
     }
 }

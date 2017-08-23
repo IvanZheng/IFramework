@@ -110,5 +110,7 @@ namespace IFramework.Infrastructure.Logging
         void ChangeLogLevel(Level level);
 
         Level Level { get; }
+        void SetModule(object module);
+        object Module { get; }
     }
 }

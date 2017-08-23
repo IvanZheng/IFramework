@@ -28,7 +28,9 @@ namespace IFramework.Infrastructure.Logging
 
         }
 
-        public Level Level { get; }
+        public Level Level { get; set; }
+
+        public object Module { get; }
 
         public void FatalFormat(string format, params object[] args) { }
 
@@ -43,5 +45,9 @@ namespace IFramework.Infrastructure.Logging
         public void Warn(object message, Exception exception) { }
 
         public void WarnFormat(string format, params object[] args) { }
+
+        public void SetModule(object module)
+        {
+        }
     }
 }
