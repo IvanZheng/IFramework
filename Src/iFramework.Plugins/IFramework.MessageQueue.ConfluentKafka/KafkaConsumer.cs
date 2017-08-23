@@ -125,7 +125,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 if (message.Value != null)
                 {
-                    RemoveMessage(message.Partition, message.Offset);
+                    FinishConsumingMessage(message.Partition, message.Offset);
                 }
                 _logger.Error(ex.GetBaseException().Message, ex);
             }
@@ -134,7 +134,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         public void CommitOffset(IMessageContext messageContext)
         {
             var message = messageContext as MessageContext;
-            RemoveMessage(message.Partition, message.Offset);
+            FinishConsumingMessage(message.Partition, message.Offset);
         }
 
         public void Stop()
@@ -206,8 +206,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                                                                     Configuration.Instance.GetCommitPerMessage()));
             slidingDoor.AddOffset(message.Offset);
         }
-
-        internal void RemoveMessage(int partition, long offset)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="partition"></param>
+        /// <param name="offset"></param>
+        public void FinishConsumingMessage(int partition, long offset)
         {
             var slidingDoor = SlidingDoors.TryGetValue(partition);
             if (slidingDoor == null)
@@ -235,6 +239,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
+        //public void CommitOffset(int partition, long offset)
+        //{
+        //    CommitOffsetAsync(partition, offset).Wait();
+        //}
         public void CommitOffset(int partition, long offset)
         {
             // kafka not use broker in cluster mode
