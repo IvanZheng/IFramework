@@ -4,7 +4,6 @@ using System.Text;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
-using Newtonsoft.Json.Linq;
 
 namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
@@ -72,12 +71,12 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             {
                 if (_sagaInfo == null)
                 {
-                    var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
+                    var sagaInfoJson = Headers.TryGetValue("SagaInfo");
                     if (sagaInfoJson != null)
                     {
                         try
                         {
-                            _sagaInfo = ((JObject) Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
+                            _sagaInfo = sagaInfoJson.ToJson().ToJsonObject<SagaInfo>();
                         }
                         catch (Exception) { }
                     }
