@@ -16,14 +16,14 @@ namespace Sample.WcfService
 {
     // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "Service1" in code, svc and config file together.
     // NOTE: In order to launch WCF Test Client for testing this service, please select Service1.svc or Service1.svc.cs at the Solution Explorer and start debugging.
-    public class Service1: IService1
+    public class Service1 : IService1
     {
         private ILogger _logger;
         private ICommunityRepository _repository;
         private IUnitOfWork _unitOfWork;
-        public Service1(ICommunityRepository repository, IAppUnitOfWork unitOfWork,ILoggerFactory loggerFactory)
+        public Service1(ICommunityRepository repository, IAppUnitOfWork unitOfWork, ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.Create(this.GetType().Name);
+            _logger = loggerFactory.Create(this.GetType().Name, additionalProperties: new { Additional1 = "additional1" });
             _repository = repository;
             _unitOfWork = unitOfWork;
         }

@@ -55,14 +55,14 @@ namespace IFramework.Log4Net
         /// </summary>
         /// <param name="name"></param>
         /// <param name="level"></param>
-        /// <param name="module"></param>
+        /// <param name="additionalProperties"></param>
         /// <returns></returns>
-        public ILogger Create(string name, Level level = Level.Debug, object module = null)
+        public ILogger Create(string name, Level level = Level.Debug, object additionalProperties = null)
         {
             var logger = Loggers.GetOrAdd(name, key => new Log4NetLogger(LogManager.GetLogger(key),
                                                                          _loggerLevelController.GetOrAddLoggerLevel(key, level),
-                                                                         module));
-            logger.SetModule(module);
+                                                                         additionalProperties));
+            logger.SetAdditionalProperties(additionalProperties);
             return logger;
         }
 
@@ -70,11 +70,11 @@ namespace IFramework.Log4Net
         ///     Create a new Log4NetLogger instance.
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="module"></param>
+        /// <param name="additionalProperties"></param>
         /// <returns></returns>
-        public ILogger Create(Type type, Level level = Level.Debug, object module = null)
+        public ILogger Create(Type type, Level level = Level.Debug, object additionalProperties = null)
         {
-            return Create(type.FullName, level, module);
+            return Create(type.FullName, level, additionalProperties);
         }
     }
 }

@@ -12,17 +12,17 @@ namespace IFramework.Infrastructure.Logging
         /// </summary>
         /// <param name="name"></param>
         /// <param name="level"></param>
-        /// <param name="module"></param>
+        /// <param name="additionalProperties"></param>
         /// <returns></returns>
-        ILogger Create(string name, Level level = Level.Debug, object module = null);
+        ILogger Create(string name, Level level = Level.Debug, object additionalProperties = null);
 
         /// <summary>
         ///  Create a logger with the given type.
         /// </summary>
         /// <param name="type"></param>
         /// <param name="level"></param>
-        /// <param name="module"></param>
+        /// <param name="additionalProperties"></param>
         /// <returns></returns>
-        ILogger Create(Type type, Level level = Level.Debug, object module = null);
+        ILogger Create(Type type, Level level = Level.Debug, object additionalProperties = null);
     }
 }

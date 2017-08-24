@@ -47,8 +47,6 @@ namespace IFramework.Repositories
         ///     Finds all the aggregate roots from repository, sorting by using the provided sort predicate
         ///     and the specified sort order.
         /// </summary>
-        /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="Framework.Enumerations.SortOrder" /> enum which specifies the sort order.</param>
         /// <returns>
         ///     All the aggregate roots got from the repository, with the aggregate roots being sorted by
         ///     using the provided sort predicate and the sort order.
@@ -60,8 +58,7 @@ namespace IFramework.Repositories
         ///     by using the provided sort predicate and the specified sort order.
         /// </summary>
         /// <param name="specification">The specification with which the aggregate roots should match.</param>
-        /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="Framework.Enumerations.SortOrder" /> enum which specifies the sort order.</param>
+       /// <param name="orderByExpressions"></param>
         /// <returns>
         ///     All the aggregate roots that match the given specification and were sorted by using the given sort predicate
         ///     and the sort order.

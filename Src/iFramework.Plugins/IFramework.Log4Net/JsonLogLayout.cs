@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using log4net.Core;
@@ -10,6 +12,7 @@ namespace IFramework.Log4Net
 {
     public class JsonLogLayout : LayoutSkeleton
     {
+        private const string AdditionalPropertiesKey = "AdditionalProperties";
         public string App { get; set; }
         public string Module { get; set; }
         public JsonLogLayout()
@@ -31,6 +34,11 @@ namespace IFramework.Log4Net
         }
         private object GetJsonObject(LoggingEvent loggingEvent)
         {
+            var additionalProperties = log4net.LogicalThreadContext
+                                              .Properties[AdditionalPropertiesKey]?
+                                              .ToJson()
+                                              .ToJsonObject<Dictionary<string, object>>();
+
             var log = loggingEvent.MessageObject as JsonLogBase ?? new JsonLogBase
             {
                 Message = loggingEvent.MessageObject
@@ -39,8 +47,8 @@ namespace IFramework.Log4Net
             log.Method = log.Method ?? stackFrame.Method.Name;
             log.Thread = log.Thread ?? loggingEvent.ThreadName;
             log.Time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fffffff", CultureInfo.InvariantCulture);
-            log.App = log.App ?? App;
-            log.Module = log.Module ?? log4net.LogicalThreadContext.Properties[nameof(log.Module)]?.ToString() ?? Module;
+            log.App = log.App ?? additionalProperties?.TryGetValue(nameof(log.App), null)?.ToString() ?? App;
+            log.Module = log.Module ?? additionalProperties?.TryGetValue(nameof(log.Module), null)?.ToString() ?? Module;
             log.Host = log.Host ?? Environment.MachineName;
             log.Ip = Utility.GetLocalIPV4().ToString();
             log.LogLevel = loggingEvent.Level.ToString();
@@ -55,7 +63,15 @@ namespace IFramework.Log4Net
                     StackTrace = loggingEvent.ExceptionObject.StackTrace
                 };
             }
-            return log;
+            var logDict = log.ToJson().ToJsonObject<Dictionary<string, object>>();
+            additionalProperties.ForEach(p =>
+            {
+                if (p.Key != nameof(App) && p.Key != nameof(Module))
+                {
+                    logDict[p.Key] = p.Value;
+                }
+            });
+            return logDict;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Sample.WcfService
 {
     // NOTE: You can use the "Rename" command on the "Refactor" menu to change the interface name "IService1" in both code and config file together.
     [ServiceContract]
-    [LogInterception(LoggerName = "Aop.IService1", SerializeArguments = true)]
+    [LogInterception(LoggerName = "Aop.IService1", SerializeArguments = true, App = "App1", Module = "Module1")]
     public interface IService1
     {
 

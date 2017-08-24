@@ -14,28 +14,28 @@ namespace IFramework.Log4Net
     public class Log4NetLogger : ILogger
     {
         private readonly ILog _log;
-        public object Module { get; protected set; }
+        public object AdditionalProperties { get; protected set; }
 
         /// <summary>
         ///     Parameterized constructor.
         /// </summary>
         /// <param name="log"></param>
         /// <param name="level"></param>
-        /// <param name="module"></param>
-        public Log4NetLogger(ILog log, Infrastructure.Logging.Level level = Infrastructure.Logging.Level.Debug, object module = null)
+        /// <param name="additionalProperties"></param>
+        public Log4NetLogger(ILog log, Infrastructure.Logging.Level level = Infrastructure.Logging.Level.Debug, object additionalProperties = null)
         {
             _log = log;
             ChangeLogLevel(level);
-            Module = module;
+            AdditionalProperties = additionalProperties;
         }
 
-        public void SetModule(object module)
+        public void SetAdditionalProperties(object additionalProperties)
         {
-            Module = module;
+            AdditionalProperties = additionalProperties;
         }
-        void SetModule()
+        void SetAdditionalProperties()
         {
-            LogicalThreadContext.Properties[nameof(Module)] = Module;
+            LogicalThreadContext.Properties[nameof(AdditionalProperties)] = AdditionalProperties;
         }
 
         #region ILogger Members
@@ -45,7 +45,7 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Debug(object message)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Debug(message);
         }
 
@@ -55,7 +55,7 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void DebugFormat(string format, params object[] args)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.DebugFormat(format, args);
         }
 
@@ -65,7 +65,7 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Debug(object message, Exception exception)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Debug(message, exception);
         }
 
@@ -74,7 +74,7 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Info(object message)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Info(message);
         }
 
@@ -84,7 +84,7 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void InfoFormat(string format, params object[] args)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.InfoFormat(format, args);
         }
 
@@ -94,7 +94,7 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Info(object message, Exception exception)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Info(message, exception);
         }
 
@@ -103,7 +103,7 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Error(object message)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Error(message);
         }
 
@@ -113,7 +113,7 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void ErrorFormat(string format, params object[] args)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.ErrorFormat(format, args);
         }
 
@@ -123,7 +123,7 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Error(object message, Exception exception)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Error(message, exception);
         }
 
@@ -132,7 +132,7 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Warn(object message)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Warn(message);
         }
 
@@ -142,7 +142,7 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void WarnFormat(string format, params object[] args)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.WarnFormat(format, args);
         }
 
@@ -152,7 +152,7 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Warn(object message, Exception exception)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Warn(message, exception);
         }
 
@@ -161,7 +161,7 @@ namespace IFramework.Log4Net
         /// <param name="message"></param>
         public void Fatal(object message)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Fatal(message);
         }
 
@@ -171,7 +171,7 @@ namespace IFramework.Log4Net
         /// <param name="args"></param>
         public void FatalFormat(string format, params object[] args)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.FatalFormat(format, args);
         }
 
@@ -181,7 +181,7 @@ namespace IFramework.Log4Net
         /// <param name="exception"></param>
         public void Fatal(object message, Exception exception)
         {
-            SetModule();
+            SetAdditionalProperties();
             _log.Fatal(message, exception);
         }
 
