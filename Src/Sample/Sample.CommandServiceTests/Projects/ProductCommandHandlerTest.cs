@@ -32,7 +32,7 @@ namespace Sample.CommandServiceTests.Products
         [TestInitialize]
         public void Initialize()
         {
-            Configuration.Instance.UseLog4Net();
+            Configuration.Instance.UseLog4Net("ProductCommandHandlerTest");
             _createProducts = new List<CreateProduct>();
             var tasks = new List<Task>();
             for (var i = 0; i < productCount; i++)

@@ -8,13 +8,15 @@ namespace IFramework.Infrastructure.Logging
     public interface ILoggerFactory
     {
         /// <summary>
-        /// Create a logger with the given logger name.
+        /// Create a logger with the given logger name, app, module.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="level"></param>
+        /// <param name="app"></param>
+        /// <param name="module"></param>
         /// <param name="additionalProperties"></param>
         /// <returns></returns>
-        ILogger Create(string name, Level level = Level.Debug, object additionalProperties = null);
+        ILogger Create(string name, string app = null, string module = null, Level? level = null, object additionalProperties = null);
 
         /// <summary>
         ///  Create a logger with the given type.
@@ -23,6 +25,6 @@ namespace IFramework.Infrastructure.Logging
         /// <param name="level"></param>
         /// <param name="additionalProperties"></param>
         /// <returns></returns>
-        ILogger Create(Type type, Level level = Level.Debug, object additionalProperties = null);
+        ILogger Create(Type type, Level? level = null, object additionalProperties = null);
     }
 }

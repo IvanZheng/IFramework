@@ -110,7 +110,5 @@ namespace IFramework.Infrastructure.Logging
         void ChangeLogLevel(Level level);
 
         Level Level { get; }
-        void SetAdditionalProperties(object additionalProperties);
-        object AdditionalProperties { get; }
     }
 }

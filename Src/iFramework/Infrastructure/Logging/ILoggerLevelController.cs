@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Logging
 {
-    public delegate void LoggerLevelChanged(string logger, Level level);
+    public delegate void LoggerLevelChanged(string app, string logger, Level level);
 
     public interface ILoggerLevelController
     {
-        Level GetOrAddLoggerLevel(string name, Level? level = null);
-        void SetLoggerLevel(string name, Level? level = null);
-        void SetDefaultLoggerLevel(Level level);
+        void SetDefaultLevel(Level defaultLevel);
+        Level GetOrAddLoggerLevel(string app, string name, Level? level);
+        void SetLoggerLevel(string app, string name, Level level);
+        void SetAppDefaultLevel(string app, Level level);
         event LoggerLevelChanged OnLoggerLevelChanged;
     }
 }

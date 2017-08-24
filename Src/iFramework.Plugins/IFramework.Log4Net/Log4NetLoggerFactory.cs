@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using IFramework.Config;
 using log4net;
 using log4net.Appender;
 using log4net.Config;
@@ -17,17 +18,20 @@ namespace IFramework.Log4Net
     {
         private readonly ILoggerLevelController _loggerLevelController;
         static readonly ConcurrentDictionary<string, ILogger> Loggers = new ConcurrentDictionary<string, ILogger>();
+        private readonly string _defaultApp;
 
         /// <summary>
         ///     Parameterized constructor.
         /// </summary>
         /// <param name="configFile"></param>
         /// <param name="loggerLevelController"></param>
+        /// <param name="defaultApp"></param>
         /// <param name="defaultLevel"></param>
-        public Log4NetLoggerFactory(string configFile, ILoggerLevelController loggerLevelController, Level defaultLevel = Level.Debug)
+        public Log4NetLoggerFactory(string configFile, ILoggerLevelController loggerLevelController, string defaultApp, Level defaultLevel = Level.Debug)
         {
+            _defaultApp = defaultApp;
             _loggerLevelController = loggerLevelController;
-            _loggerLevelController.SetDefaultLoggerLevel(defaultLevel);
+            _loggerLevelController.SetDefaultLevel(defaultLevel);
             _loggerLevelController.OnLoggerLevelChanged += _loggerLevelController_OnLoggerLevelChanged;
             var file = new FileInfo(configFile);
             if (!file.Exists)
@@ -45,24 +49,33 @@ namespace IFramework.Log4Net
             }
         }
 
-        private void _loggerLevelController_OnLoggerLevelChanged(string logger, Level level)
+        private void _loggerLevelController_OnLoggerLevelChanged(string app, string logger, Level level)
         {
             Loggers.TryGetValue(logger, null)?.ChangeLogLevel(level);
         }
 
         /// <summary>
-        ///     Create a new Log4NetLogger instance.
+        /// 
         /// </summary>
         /// <param name="name"></param>
         /// <param name="level"></param>
+        /// <param name="app"></param>
+        /// <param name="module"></param>
         /// <param name="additionalProperties"></param>
         /// <returns></returns>
-        public ILogger Create(string name, Level level = Level.Debug, object additionalProperties = null)
+        public ILogger Create(string name, string app = null, string module = null, Level? level = null, object additionalProperties = null)
         {
-            var logger = Loggers.GetOrAdd(name, key => new Log4NetLogger(LogManager.GetLogger(key),
-                                                                         _loggerLevelController.GetOrAddLoggerLevel(key, level),
-                                                                         additionalProperties));
-            logger.SetAdditionalProperties(additionalProperties);
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+            app = app ?? _defaultApp;
+            var loggerKey = $"{app}{name}";
+            var logger = Loggers.GetOrAdd(loggerKey, key => new Log4NetLogger(LogManager.GetLogger(key),
+                                                                              _loggerLevelController.GetOrAddLoggerLevel(app, name, level),
+                                                                              app,
+                                                                              module,
+                                                                              additionalProperties));
             return logger;
         }
 
@@ -70,11 +83,12 @@ namespace IFramework.Log4Net
         ///     Create a new Log4NetLogger instance.
         /// </summary>
         /// <param name="type"></param>
+        /// <param name="level"></param>
         /// <param name="additionalProperties"></param>
         /// <returns></returns>
-        public ILogger Create(Type type, Level level = Level.Debug, object additionalProperties = null)
+        public ILogger Create(Type type, Level? level = null, object additionalProperties = null)
         {
-            return Create(type.FullName, level, additionalProperties);
+            return Create(type.FullName, null, null, level, additionalProperties);
         }
     }
 }

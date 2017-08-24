@@ -28,7 +28,7 @@ namespace KafkaClient.Test
         {
             Configuration.Instance.UseUnityContainer()
                          .MessageQueueUseMachineNameFormat(false)
-                         .UseLog4Net();
+                         .UseLog4Net("KafkaClientTest");
         }
 
         [TestMethod]

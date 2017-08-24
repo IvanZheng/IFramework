@@ -9,25 +9,35 @@ namespace IFramework.Infrastructure.Logging
 {
     public class LoggerLevelController : ILoggerLevelController
     {
-        protected Level DefaultLevel { get; set; }
-        protected static ConcurrentDictionary<string, Level> LoggerLevels = new ConcurrentDictionary<string, Level>();
+        protected Level DefaultLevel;
 
-        public virtual Level GetOrAddLoggerLevel(string name, Level? level = null)
+        protected static ConcurrentDictionary<string, ConcurrentDictionary<string, Level>> AppLoggerLevels = new ConcurrentDictionary<string, ConcurrentDictionary<string, Level>>();
+        protected static ConcurrentDictionary<string, Level> AppDefaultLevels = new ConcurrentDictionary<string, Level>();
+        public virtual Level GetOrAddLoggerLevel(string app, string name, Level? level)
         {
-            return LoggerLevels.GetOrAdd(name, key => level ?? DefaultLevel);
+            var appLoggerLevels = AppLoggerLevels.GetOrAdd(app, key => new ConcurrentDictionary<string, Level>());
+            return appLoggerLevels.GetOrAdd(name, key => level ?? AppDefaultLevels.TryGetValue(app, DefaultLevel));
         }
 
-        public virtual void SetLoggerLevel(string name, Level? level = null)
+        public virtual void SetAppDefaultLevel(string app, Level level)
         {
-            level = LoggerLevels.AddOrUpdate(name,
-                                             key => level ?? DefaultLevel,
-                                             (key, value) => level ?? DefaultLevel);
-            OnLoggerLevelChanged?.Invoke(name, level.Value);
+            AppDefaultLevels.AddOrUpdate(app,
+                                         key => level,
+                                         (key, value) => level);
         }
 
-        public void SetDefaultLoggerLevel(Level level)
+        public virtual void SetLoggerLevel(string app, string name, Level level)
         {
-            DefaultLevel = level;
+            var appLoggerLevels = AppLoggerLevels.GetOrAdd(app, key => new ConcurrentDictionary<string, Level>());
+            level = appLoggerLevels.AddOrUpdate(name,
+                                                key => level ,
+                                                (key, value) => level);
+            OnLoggerLevelChanged?.Invoke(app, name, level);
+        }
+
+        public void SetDefaultLevel(Level defaultLevel)
+        {
+            DefaultLevel = defaultLevel;
         }
 
         public event LoggerLevelChanged OnLoggerLevelChanged;

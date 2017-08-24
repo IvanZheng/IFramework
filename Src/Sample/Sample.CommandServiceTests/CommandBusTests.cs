@@ -36,7 +36,7 @@ namespace Sample.CommandService.Tests
         public void Initialize()
         {
             Configuration.Instance.UseUnityContainer()
-                         .UseLog4Net()
+                         .UseLog4Net("CommandBusTest")
                          .UseKafka(_zkConnectionString)
                          //    .SetCommitPerMessage(true)//for servicebus !!!
                          .MessageQueueUseMachineNameFormat()

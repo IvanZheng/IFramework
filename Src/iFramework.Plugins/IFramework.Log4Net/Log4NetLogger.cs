@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using IFramework.Infrastructure;
 using log4net;
 using log4net.Core;
 using log4net.Repository.Hierarchy;
@@ -14,24 +16,43 @@ namespace IFramework.Log4Net
     public class Log4NetLogger : ILogger
     {
         private readonly ILog _log;
-        public object AdditionalProperties { get; protected set; }
+        public Dictionary<string, object> AdditionalProperties { get; protected set; }
+        public string App { get; protected set; }
+        public string Module { get; protected set; }
 
         /// <summary>
-        ///     Parameterized constructor.
+        ///     Log4NetLogger constructor.
         /// </summary>
         /// <param name="log"></param>
         /// <param name="level"></param>
+        /// <param name="app"></param>
+        /// <param name="module"></param>
         /// <param name="additionalProperties"></param>
-        public Log4NetLogger(ILog log, Infrastructure.Logging.Level level = Infrastructure.Logging.Level.Debug, object additionalProperties = null)
+        public Log4NetLogger(ILog log, 
+                             Infrastructure.Logging.Level level = Infrastructure.Logging.Level.Debug, 
+                             string app = null, 
+                             string module = null, 
+                             object additionalProperties = null)
         {
             _log = log;
             ChangeLogLevel(level);
-            AdditionalProperties = additionalProperties;
+            App = app;
+            Module = module;
+            SetAdditionalProperties(additionalProperties);
         }
 
-        public void SetAdditionalProperties(object additionalProperties)
+        protected void SetAdditionalProperties(object additionalProperties)
         {
-            AdditionalProperties = additionalProperties;
+            var additionalDict = additionalProperties?.ToJson().ToJsonObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
+            if (!string.IsNullOrWhiteSpace(App))
+            {
+                additionalDict[nameof(App)] = App;
+            }
+            if (!string.IsNullOrWhiteSpace(Module))
+            {
+                additionalDict[nameof(Module)] = Module;
+            }
+            AdditionalProperties = additionalDict;
         }
         void SetAdditionalProperties()
         {

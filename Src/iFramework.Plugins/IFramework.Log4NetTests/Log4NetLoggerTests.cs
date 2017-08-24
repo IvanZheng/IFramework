@@ -20,7 +20,7 @@ namespace IFramework.Log4NetTests
                          //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
                          .UseUnityContainer()
                          .RegisterCommonComponents()
-                         .UseLog4Net();
+                         .UseLog4Net("Log4NetLoggerTest");
         }
 
         [TestMethod]

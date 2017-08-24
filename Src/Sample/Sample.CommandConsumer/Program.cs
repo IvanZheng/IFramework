@@ -21,7 +21,7 @@ namespace Sample.CommandConsumer
                 Configuration.Instance
                              .UseUnityContainer()
                              .RegisterCommonComponents()
-                             .UseLog4Net()
+                             .UseLog4Net("Sample.CommandConsumer")
                              .MessageQueueUseMachineNameFormat()
                              .UseMessageQueue()
                              .UseMessageStore<SampleModelContext>()

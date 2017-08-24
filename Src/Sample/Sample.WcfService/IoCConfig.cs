@@ -24,7 +24,7 @@ namespace Sample.WcfService
                          //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
                          .UseUnityContainer()
                          .RegisterCommonComponents()
-                         .UseLog4Net()
+                         .UseLog4Net("Sample.WcfService")
                          .UseJsonNet();
 
             var container = IoCFactory.Instance.CurrentContainer;

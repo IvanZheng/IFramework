@@ -52,7 +52,7 @@ namespace IFramework.Log4Net
             log.Host = log.Host ?? Environment.MachineName;
             log.Ip = Utility.GetLocalIPV4().ToString();
             log.LogLevel = loggingEvent.Level.ToString();
-            log.Logger = loggingEvent.LoggerName;
+            log.Logger = loggingEvent.LoggerName.StartsWith(log.App) ? loggingEvent.LoggerName.Substring(log.App.Length) : loggingEvent.LoggerName;
 
             if (loggingEvent.ExceptionObject != null)
             {

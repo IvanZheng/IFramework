@@ -46,7 +46,7 @@ namespace Sample.CommandService
                     //"192.168.99.60:9092"
                 };
                 Configuration.Instance
-                             .UseLog4Net()
+                             .UseLog4Net("CommandService")
                              .MessageQueueUseMachineNameFormat()
                              .UseMessageQueue()
                              .UseMessageStore<SampleModelContext>()

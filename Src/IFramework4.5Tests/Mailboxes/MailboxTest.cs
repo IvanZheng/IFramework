@@ -17,7 +17,7 @@ namespace IFramework4._5Tests
 
         public MailboxTest()
         {
-            Configuration.Instance.UseLog4Net();
+            Configuration.Instance.UseLog4Net("MailBoxTest");
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(MailboxTest));
         }
 
