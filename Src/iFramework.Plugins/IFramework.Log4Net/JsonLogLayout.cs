@@ -47,12 +47,12 @@ namespace IFramework.Log4Net
             log.Method = log.Method ?? stackFrame.Method.Name;
             log.Thread = log.Thread ?? loggingEvent.ThreadName;
             log.Time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fffffff", CultureInfo.InvariantCulture);
-            log.App = log.App ?? additionalProperties?.TryGetValue(nameof(log.App), null)?.ToString() ?? App;
-            log.Module = log.Module ?? additionalProperties?.TryGetValue(nameof(log.Module), null)?.ToString() ?? Module;
+            log.App = log.App ?? additionalProperties?.TryGetValue(nameof(log.App), App)?.ToString();
+            log.Module = log.Module ?? additionalProperties?.TryGetValue(nameof(log.Module), Module)?.ToString();
+            log.Logger = log.Logger ?? additionalProperties?.TryGetValue(nameof(log.Logger), loggingEvent.LoggerName).ToString();
             log.Host = log.Host ?? Environment.MachineName;
             log.Ip = Utility.GetLocalIPV4().ToString();
             log.LogLevel = loggingEvent.Level.ToString();
-            log.Logger = loggingEvent.LoggerName.StartsWith(log.App) ? loggingEvent.LoggerName.Substring(log.App.Length) : loggingEvent.LoggerName;
 
             if (loggingEvent.ExceptionObject != null)
             {

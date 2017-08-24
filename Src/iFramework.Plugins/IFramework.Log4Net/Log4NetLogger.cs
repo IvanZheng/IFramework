@@ -52,6 +52,10 @@ namespace IFramework.Log4Net
             {
                 additionalDict[nameof(Module)] = Module;
             }
+            if (Name.StartsWith(App))
+            {
+                additionalDict["Logger"] = Name.Substring(App.Length);
+            }
             AdditionalProperties = additionalDict;
         }
         void SetAdditionalProperties()
@@ -271,6 +275,8 @@ namespace IFramework.Log4Net
         }
 
         public Infrastructure.Logging.Level Level => ToLoggingLevel(((Logger)_log.Logger).Level);
+
+        public string Name => ((Logger) _log.Logger).Name;
 
         #endregion
     }
