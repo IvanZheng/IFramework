@@ -13,9 +13,7 @@ namespace IFramework.Infrastructure
         {
             // Short-circuit #1: infinite timeout or task already completed
             if (task.IsCompleted || timeout == Infinite)
-            {
                 return task;
-            }
 
             // tcs.Task will be returned as a proxy to the caller
             var tcs = new TaskCompletionSource<object>();
@@ -53,9 +51,7 @@ namespace IFramework.Infrastructure
         {
             // Short-circuit #1: infinite timeout or task already completed
             if (task.IsCompleted || timeout == Infinite)
-            {
                 return task;
-            }
 
             // tcs.Task will be returned as a proxy to the caller
             var tcs = new TaskCompletionSource<TResult>();
@@ -93,9 +89,7 @@ namespace IFramework.Infrastructure
                                                     TimeSpan timeout)
         {
             if (timeout == Infinite)
-            {
                 return antecedentTask.ContinueWith(t => continuationFunc(t));
-            }
 
             TaskCompletionSource<T2> taskCompletionSource = null;
             Timer timer = null;
@@ -205,15 +199,13 @@ namespace IFramework.Infrastructure
         /// <param name="isResultValid">Predicate that determines if the result is valid, or if it should continue polling</param>
         /// <param name="pollInterval">Polling interval.</param>
         /// <param name="timeout">The timeout interval.</param>
+        /// <param name="immediatelyStart"></param>
         /// <returns>
         ///     The result returned by the specified function, or <see langword="null" /> if the result is not valid and the
         ///     task times out.
         /// </returns>
-        public static Task<T> StartNew<T>(Func<T> getResult,
-                                          Func<T, bool> isResultValid,
-                                          TimeSpan pollInterval,
-                                          TimeSpan timeout,
-                                          bool immediatelyStart = true)
+        public static Task<T> StartNew<T>(Func<T> getResult, Func<T, bool> isResultValid, TimeSpan pollInterval,
+                                          TimeSpan timeout, bool immediatelyStart = true)
         {
             Timer timer = null;
             TaskCompletionSource<T> taskCompletionSource = null;
@@ -232,16 +224,15 @@ namespace IFramework.Infrastructure
                         }
 
                         var valid = false;
-                        var result = default(T);
-                        if (immediatelyStart)
-                        {
-                            result = getResult();
-                            valid = isResultValid(result);
-                        }
-                        else
-                        {
-                            immediatelyStart = true;
-                        }
+                        //if (immediatelyStart)
+                        //{
+                        var result = getResult();
+                        valid = isResultValid(result);
+                        //}
+                        //else
+                        //{
+                        //    immediatelyStart = true;
+                        //}
                         if (valid)
                         {
                             timer.Dispose();
@@ -262,8 +253,7 @@ namespace IFramework.Infrastructure
 
             taskCompletionSource = new TaskCompletionSource<T>(timer);
 
-            timer.Change(pollInterval, DoNotRepeat);
-
+            timer.Change(immediatelyStart ? TimeSpan.Zero : pollInterval, DoNotRepeat);
             return taskCompletionSource.Task;
         }
     }
