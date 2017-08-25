@@ -42,6 +42,7 @@ namespace IFramework.IoC
 
         public static IContainer SetContainer(IContainer container)
         {
+            _CurrentContainer?.Dispose();
             _CurrentContainer = container;
             return _CurrentContainer;
         }

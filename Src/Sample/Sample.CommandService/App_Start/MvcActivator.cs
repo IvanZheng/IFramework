@@ -6,8 +6,8 @@ using Microsoft.Practices.Unity.Mvc;
 using IFramework.Unity;
 using IFramework.IoC;
 
-[assembly: WebActivatorEx.PreApplicationStartMethod(typeof(Sample.CommandService.App_Start.UnityMvcActivator), "Start")]
-[assembly: WebActivatorEx.ApplicationShutdownMethod(typeof(Sample.CommandService.App_Start.UnityMvcActivator), "Shutdown")]
+[assembly: WebActivatorEx.PreApplicationStartMethod(typeof(Sample.CommandService.App_Start.AutofacMvcActivator), "Start")]
+[assembly: WebActivatorEx.ApplicationShutdownMethod(typeof(Sample.CommandService.App_Start.AutofacMvcActivator), "Shutdown")]
 
 namespace Sample.CommandService.App_Start
 {

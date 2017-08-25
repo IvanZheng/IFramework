@@ -19,10 +19,10 @@ namespace Sample.CommandService.App_Start
         private static readonly Lazy<IContainer> Container = new Lazy<IContainer>(() =>
         {
             Configuration.Instance
-                         //.UseAutofacContainer()
+                         .UseAutofacContainer()
                          //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
-                         .UseUnityContainer()
-                         .UseUnityMvc()
+                         //.UseUnityContainer()
+                         //.UseUnityMvc()
                          .RegisterCommonComponents()
                          .UseJsonNet();
 
@@ -66,10 +66,10 @@ namespace Sample.CommandService.App_Start
             container.RegisterType<SampleModelContext, SampleModelContext>(lifetime);
             container.RegisterType<ICommunityRepository, CommunityRepository>(lifetime,
                                                                               new InterfaceInterceptorInjection(),
-                                                                              new InterceptionBehaviorInjection<UnityLogInterceptor>());
+                                                                              new InterceptionBehaviorInjection<AutofacLogInterceptor>());
             container.RegisterType<CommunityCommandHandler, CommunityCommandHandler>(lifetime,
                                                                                      new VirtualMethodInterceptorInjection(),
-                                                                                     new InterceptionBehaviorInjection<UnityLogInterceptor>());
+                                                                                     new InterceptionBehaviorInjection<AutofacLogInterceptor>());
         }
 
         #region Unity Container

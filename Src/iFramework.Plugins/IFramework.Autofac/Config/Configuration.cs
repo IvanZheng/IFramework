@@ -1,10 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Autofac;
 using Autofac.Configuration;
 using IFramework.Autofac;
 using IFramework.IoC;
+using Microsoft.Extensions.Configuration;
 using IContainer = Autofac.IContainer;
 
 namespace IFramework.Config
@@ -39,7 +41,7 @@ namespace IFramework.Config
         /// <returns></returns>
         public static Configuration UseAutofacContainer(this Configuration configuration,
                                                         IContainer container = null,
-                                                        string configurationSector = "autofac")
+                                                        string configFile = "autofac.xml")
         {
             if (IoCFactory.IsInit())
             {
@@ -48,17 +50,25 @@ namespace IFramework.Config
             var builder = new ContainerBuilder();
             if (container == null)
             {
-                try
+
+                // Add the configuration to the ConfigurationBuilder.
+                var config = new ConfigurationBuilder();
+                // config.AddJsonFile comes from Microsoft.Extensions.Configuration.Json
+                // config.AddXmlFile comes from Microsoft.Extensions.Configuration.Xml
+                var fi = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configFile));
+                if (fi.Exists)
                 {
-                    var settingsReader = new ConfigurationSettingsReader(configurationSector);
-                    if (settingsReader != null)
+                    if (fi.Extension.Equals(".xml", StringComparison.OrdinalIgnoreCase))
                     {
-                        builder.RegisterModule(settingsReader);
+                        config.AddXmlFile(configFile);
                     }
-                }
-                catch (Exception)
-                {
-                    //Console.WriteLine(ex.GetBaseException().Message);
+                    else if (fi.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        config.AddJsonFile(configFile);
+                    }
+                    // Register the ConfigurationModule with Autofac.
+                    var module = new ConfigurationModule(config.Build());
+                    builder.RegisterModule(module);
                 }
                 builder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies());
                 container = builder.Build();
