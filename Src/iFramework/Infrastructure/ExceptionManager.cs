@@ -12,7 +12,6 @@ namespace IFramework.Infrastructure
     /// <summary>
     /// API 响应结果
     /// </summary>
-    [DataContract]
     public class ApiResult
     {
         public ApiResult()
@@ -31,25 +30,22 @@ namespace IFramework.Infrastructure
         /// <summary>
         /// API 执行是否成功
         /// </summary>
-        [DataMember]
         public bool Success { get; set; }
         /// <summary>
         /// ErrorCode 为 0 表示执行无异常
         /// </summary>
-        [DataMember]
         public int ErrorCode { get; set; }
         /// <summary>
         /// 当API执行有异常时, 对应的错误信息
         /// </summary>
-        [DataMember]
         public string Message { get; set; }
     }
 
+    /// <inheritdoc />
     /// <summary>
     /// Api返回结果
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    [DataContract]
     public class ApiResult<TResult> : ApiResult
     {
         public ApiResult()
@@ -69,7 +65,6 @@ namespace IFramework.Infrastructure
         /// <summary>
         /// API 执行返回的结果
         /// </summary>
-        [DataMember]
         public TResult Result { get; set; }
     }
 
