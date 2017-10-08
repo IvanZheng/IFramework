@@ -70,20 +70,20 @@ namespace IFramework.Infrastructure
 
     public static class ExceptionManager
     {
-        private static readonly ILogger _logger = IoCFactory.IsInit()
+        private static readonly ILogger Logger = IoCFactory.IsInit()
                                                       ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager))
                                                       : null;
 
-        private static string _UnKnownMessage = ErrorCode.UnknownError.ToString();
+        private static string _unKnownMessage = ErrorCode.UnknownError.ToString();
 
         public static void SetUnKnownMessage(string unknownMessage)
         {
-            _UnKnownMessage = unknownMessage;
+            _unKnownMessage = unknownMessage;
         }
 
         private static string GetExceptionMessage(Exception ex)
         {
-            return ex.Message;
+            return ex.GetBaseException().Message;
         }
 
         public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
@@ -112,12 +112,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
-                            _logger?.Warn(ex);
+                            Logger?.Warn(ex);
                         }
                         else
                         {
                             apiResult = new ApiResult<T>(ErrorCode.UnknownError, getExceptionMessage(ex));
-                            _logger?.Error(ex);
+                            Logger?.Error(ex);
                         }
                         needRetry = false;
                     }
@@ -196,12 +196,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
-                            _logger?.Warn(ex);
+                            Logger?.Warn(ex);
                         }
                         else
                         {
                             apiResult = new ApiResult(ErrorCode.UnknownError, getExceptionMessage(ex));
-                            _logger?.Error(ex);
+                            Logger?.Error(ex);
                         }
                         needRetry = false;
                     }
@@ -276,12 +276,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
-                            _logger?.Warn(ex);
+                            Logger?.Warn(ex);
                         }
                         else
                         {
                             apiResult = new ApiResult(ErrorCode.UnknownError, getExceptionMessage(ex));
-                            _logger?.Error(ex);
+                            Logger?.Error(ex);
                         }
                         needRetry = false;
                     }
@@ -315,12 +315,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
-                            _logger?.Warn(ex);
+                            Logger?.Warn(ex);
                         }
                         else
                         {
                             apiResult = new ApiResult<T>(ErrorCode.UnknownError, getExceptionMessage(ex));
-                            _logger?.Error(ex);
+                            Logger?.Error(ex);
                         }
                         needRetry = false;
                     }
