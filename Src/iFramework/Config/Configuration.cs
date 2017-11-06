@@ -75,6 +75,19 @@ namespace IFramework.Config
             return RegisterDefaultEventBus(null, lifetime);
         }
 
+        /// <summary>
+        /// should use after RegisterCommonComponents
+        /// </summary>
+        /// <param name="eventSubscriberProviders"></param>
+        /// <returns></returns>
+        public Configuration UseSyncEventSubscriberProvider(params string[] eventSubscriberProviders)
+        {
+            var provider = new SyncEventSubscriberProvider(eventSubscriberProviders);
+            IoCFactory.Instance.CurrentContainer
+                      .RegisterInstance(provider);
+            return this;
+        }
+
         public Configuration RegisterDefaultEventBus(IContainer contaienr, Lifetime lifetime = Lifetime.Hierarchical)
         {
             var container = contaienr ?? IoCFactory.Instance.CurrentContainer;

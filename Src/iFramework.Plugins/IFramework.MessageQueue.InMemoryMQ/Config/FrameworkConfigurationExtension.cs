@@ -13,14 +13,6 @@ namespace IFramework.MessageQueue.InMemoryMQ
 {
     public static class FrameworkConfigurationExtension
     {
-        public static Configuration UseSyncEventSubscriberProvider(this Configuration configuration, params string[] eventSubscriberProviders)
-        {
-            var provider = new SyncEventSubscriberProvider(eventSubscriberProviders);
-            IoCFactory.Instance.CurrentContainer
-                      .RegisterInstance(provider);
-            return configuration;
-        }
-
         public static Configuration UseInMemoryMessageQueue(this Configuration configuration)
         {
             IoCFactory.Instance.CurrentContainer

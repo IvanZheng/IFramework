@@ -36,12 +36,12 @@ namespace Sample.CommandService.Tests
         public void Initialize()
         {
             Configuration.Instance.UseUnityContainer()
+                         .RegisterCommonComponents()
                          .UseLog4Net("CommandBusTest")
                          .UseKafka(_zkConnectionString)
                          //    .SetCommitPerMessage(true)//for servicebus !!!
                          .MessageQueueUseMachineNameFormat()
                          .UseCommandBus("CommandBusTest", "CommandBusTest.ReplyTopic", "CommandBusTest.ReplySubscription")
-                         .RegisterDefaultEventBus()
                          .RegisterEntityFrameworkComponents();
 
             _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(CommandBusTests));
