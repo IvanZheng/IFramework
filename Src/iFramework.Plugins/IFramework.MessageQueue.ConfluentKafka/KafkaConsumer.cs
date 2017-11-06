@@ -115,11 +115,9 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
             catch (OperationCanceledException)
             {
-                return;
             }
             catch (ThreadAbortException)
             {
-                return;
             }
             catch (Exception ex)
             {

@@ -15,6 +15,7 @@ using IFramework.IoC;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.ConfluentKafka.Config;
+using IFramework.MessageQueue.InMemoryMQ;
 using IFramework.MessageQueue.MSKafka.Config;
 using Sample.Command;
 using Sample.Persistence;
@@ -50,6 +51,7 @@ namespace Sample.CommandService
                              .MessageQueueUseMachineNameFormat()
                              .UseMessageQueue()
                              .UseMessageStore<SampleModelContext>()
+                             //.UseInMemoryMessageQueue()
                              .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                              //.UseKafka("localhost:2181")
                              //.UseEQueue()

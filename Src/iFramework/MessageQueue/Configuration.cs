@@ -41,11 +41,11 @@ namespace IFramework.Config
             return configuration;
         }
 
-        public static Configuration UseDefaultEventBus(this Configuration configuration)
-        {
-            IoCFactory.Instance.CurrentContainer.RegisterType<IEventBus, EventBus>(Lifetime.Hierarchical);
-            return configuration;
-        }
+        //public static Configuration UseDefaultEventBus(this Configuration configuration)
+        //{
+        //    IoCFactory.Instance.CurrentContainer.RegisterType<IEventBus, EventBus>(Lifetime.Hierarchical);
+        //    return configuration;
+        //}
 
 
         public static Configuration UseMockMessageQueueClient(this Configuration configuration)

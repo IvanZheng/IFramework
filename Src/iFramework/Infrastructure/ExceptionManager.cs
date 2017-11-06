@@ -83,7 +83,11 @@ namespace IFramework.Infrastructure
 
         private static string GetExceptionMessage(Exception ex)
         {
+#if DEBUG
+            return $"Message:{ex.GetBaseException().Message}\r\nStackTrace:{ex.GetBaseException().StackTrace}";
+#else
             return ex.GetBaseException().Message;
+#endif
         }
 
         public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
@@ -125,7 +129,7 @@ namespace IFramework.Infrastructure
             } while (needRetry && retryCount-- > 0);
             return apiResult;
 
-            #region Old Method for .net 4
+#region Old Method for .net 4
 
             /*
              * old method for .net 4
@@ -168,7 +172,7 @@ namespace IFramework.Infrastructure
             }).Unwrap();
             */
 
-            #endregion
+#endregion
         }
 
         public static async Task<ApiResult> ProcessAsync(Func<Task> func,
@@ -209,7 +213,7 @@ namespace IFramework.Infrastructure
             } while (needRetry && retryCount-- > 0);
             return apiResult;
 
-            #region Old Method for .net 4
+#region Old Method for .net 4
 
             //return func().ContinueWith<Task<ApiResult>>(t =>
             //{
@@ -249,7 +253,7 @@ namespace IFramework.Infrastructure
             //    return Task.FromResult(apiResult);
             //}).Unwrap();
 
-            #endregion
+#endregion
         }
 
         public static ApiResult Process(Action action,

@@ -78,6 +78,7 @@ namespace IFramework.Config
         public Configuration RegisterDefaultEventBus(IContainer contaienr, Lifetime lifetime = Lifetime.Hierarchical)
         {
             var container = contaienr ?? IoCFactory.Instance.CurrentContainer;
+            container.RegisterInstance(new SyncEventSubscriberProvider());
             container.RegisterType<IEventBus, EventBus>(lifetime);
             return this;
         }

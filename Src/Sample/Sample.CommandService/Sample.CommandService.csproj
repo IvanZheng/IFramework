@@ -343,6 +343,10 @@
       <Project>{02129813-b7eb-4c7e-aeba-f7c5d40071f9}</Project>
       <Name>IFramework.MessageQueue.EQueue</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.InMemoryMQ\IFramework.MessageQueue.InMemoryMQ.csproj">
+      <Project>{0930403d-6b34-499b-8b04-eb51103316e0}</Project>
+      <Name>IFramework.MessageQueue.InMemoryMQ</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj">
       <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>
       <Name>IFramework.MessageQueue.MSKafka</Name>

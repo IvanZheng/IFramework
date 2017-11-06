@@ -18,7 +18,6 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             KafkaMessage = kafkaMessage;
             Offset = offset;
             Partition = partition;
-            ToBeSentMessageContexts = new List<IMessageContext>();
         }
 
         public MessageContext(object message, string id = null)
@@ -38,7 +37,6 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             {
                 MessageID = ObjectId.GenerateNewId().ToString();
             }
-            ToBeSentMessageContexts = new List<IMessageContext>();
             if (message != null && message is IMessage)
             {
                 Topic = (message as IMessage).GetTopic();
@@ -60,7 +58,6 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 
         public KafkaMessage KafkaMessage { get; protected set; }
         public int Partition { get; protected set; }
-        public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
         public long Offset { get; protected set; }
 
         public IDictionary<string, object> Headers => KafkaMessage.Headers;
