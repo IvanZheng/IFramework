@@ -112,6 +112,10 @@ namespace IFramework.Config
             return ConfigurationManager.GetSection("system.web/compilation") as CompilationSection;
         }
 
+        public static string GetConnectionString(string name)
+        {
+            return ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
+        }
 
         public static T GetAppConfig<T>(string key)
         {

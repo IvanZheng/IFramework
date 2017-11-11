@@ -121,6 +121,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "inmemory", "inmemory", "{CB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.InMemoryMQ", "iFramework.Plugins\IFramework.MessageQueue.InMemoryMQ\IFramework.MessageQueue.InMemoryMQ.csproj", "{0930403D-6B34-499B-8B04-EB51103316E0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DistributedLock", "DistributedLock", "{5F85F374-CBF3-44DF-8E8A-7470D86BE81C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1005,6 +1007,7 @@ Global
 		{B310681E-F64A-420C-B621-28A4D3E7755E} = {35F0CC39-0A19-4CFC-8E45-098A0DA8D640}
 		{CB0B6ECD-16EC-4FB7-B1D3-5B1EAB43A069} = {9C513800-FD27-4334-85AF-97352A71A829}
 		{0930403D-6B34-499B-8B04-EB51103316E0} = {CB0B6ECD-16EC-4FB7-B1D3-5B1EAB43A069}
+		{5F85F374-CBF3-44DF-8E8A-7470D86BE81C} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
