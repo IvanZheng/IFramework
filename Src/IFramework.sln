@@ -123,6 +123,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueue.InM
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DistributedLock", "DistributedLock", "{5F85F374-CBF3-44DF-8E8A-7470D86BE81C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.FoundatioLock", "iFramework.Plugins\IFramework.FoundatioLock\IFramework.FoundatioLock.csproj", "{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.FoundatioLockRedis", "iFramework.Plugins\IFramework.FoundatioLockRedis\IFramework.FoundatioLockRedis.csproj", "{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -946,6 +950,42 @@ Global
 		{0930403D-6B34-499B-8B04-EB51103316E0}.Release|x64.Build.0 = Release|Any CPU
 		{0930403D-6B34-499B-8B04-EB51103316E0}.Release|x86.ActiveCfg = Release|Any CPU
 		{0930403D-6B34-499B-8B04-EB51103316E0}.Release|x86.Build.0 = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Debug|x64.Build.0 = Debug|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Debug|x86.Build.0 = Debug|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Integration|Any CPU.ActiveCfg = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Integration|Any CPU.Build.0 = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Integration|x64.ActiveCfg = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Integration|x64.Build.0 = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Integration|x86.ActiveCfg = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Integration|x86.Build.0 = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Release|x64.ActiveCfg = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Release|x64.Build.0 = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Release|x86.ActiveCfg = Release|Any CPU
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}.Release|x86.Build.0 = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Debug|x64.Build.0 = Debug|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Debug|x86.Build.0 = Debug|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Integration|Any CPU.ActiveCfg = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Integration|Any CPU.Build.0 = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Integration|x64.ActiveCfg = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Integration|x64.Build.0 = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Integration|x86.ActiveCfg = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Integration|x86.Build.0 = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Release|x64.ActiveCfg = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Release|x64.Build.0 = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Release|x86.ActiveCfg = Release|Any CPU
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1008,6 +1048,8 @@ Global
 		{CB0B6ECD-16EC-4FB7-B1D3-5B1EAB43A069} = {9C513800-FD27-4334-85AF-97352A71A829}
 		{0930403D-6B34-499B-8B04-EB51103316E0} = {CB0B6ECD-16EC-4FB7-B1D3-5B1EAB43A069}
 		{5F85F374-CBF3-44DF-8E8A-7470D86BE81C} = {C50A9449-A6FB-4758-8584-6E03345F91CC}
+		{ED7DC1BF-939F-43C8-AEDF-89589AE3701D} = {5F85F374-CBF3-44DF-8E8A-7470D86BE81C}
+		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB} = {5F85F374-CBF3-44DF-8E8A-7470D86BE81C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35

@@ -67,6 +67,8 @@
     <Compile Include="Event\Impl\SyncEventSubscriberProvider.cs" />
     <Compile Include="Infrastructure\DataContractJsonConvert.cs" />
     <Compile Include="Infrastructure\IJsonConvert.cs" />
+    <Compile Include="Infrastructure\ILock.cs" />
+    <Compile Include="Infrastructure\ILockProvider.cs" />
     <Compile Include="Infrastructure\Logging\AopEnteringLog.cs" />
     <Compile Include="Infrastructure\Logging\AopExceptionLog.cs" />
     <Compile Include="Infrastructure\Logging\AopLeavingLog.cs" />

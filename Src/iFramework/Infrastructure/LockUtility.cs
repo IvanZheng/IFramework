@@ -1,92 +1,94 @@
 ﻿using System;
-using System.Collections;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure
 {
-    public class LockUtility
+    public static class LockUtility
     {
-        /// <summary>
-        ///     _lockPool 为锁对象池, 所以引用计数大于0的锁对象都会在池中缓存起来
-        /// </summary>
-        private static readonly Hashtable _lockPool = new Hashtable();
-
-        /// <summary>
-        ///     释放锁对象, 当锁的引用计数为0时, 从锁对象池移除
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="lockObj"></param>
-        private static void ReleaseLock(object key, LockObject lockObj)
+        public static async Task LockAsync(this ILockProvider lockProvider,
+                                           string name,
+                                           Func<Task> func,
+                                           TimeSpan timeout,
+                                           CancellationToken? cancellationToken = null,
+                                           bool continueOnCapturedContext = false)
         {
-            lock (_lockPool)
-            {
-                lockObj.Decrement();
-                //_Logger.DebugFormat("I am thread {0}:lock counter is {1}", Thread.CurrentThread.ManagedThreadId, lockObj.Counter);
-                if (lockObj.Counter == 0)
-                {
-                    _lockPool.Remove(key);
-                }
-            }
-        }
-
-        /// <summary>
-        ///     从锁对象池中获取锁对象, 并且锁对象的引用计数加1.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private static LockObject GetLock(object key)
-        {
-            lock (_lockPool)
-            {
-                var lockObj = _lockPool[key] as LockObject;
-                if (lockObj == null)
-                {
-                    lockObj = new LockObject();
-                    _lockPool[key] = lockObj;
-                }
-                lockObj.Increate();
-                return lockObj;
-            }
-        }
-
-        /// <summary>
-        ///     用法类似系统lock, 参数key为锁对象的键
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="action"></param>
-        public static void Lock(object key, Action action)
-        {
-            var lockObj = GetLock(key);
+            var @lock = await lockProvider.AcquireAsync(name, timeout, cancellationToken ?? CancellationToken.None)
+                                          .ConfigureAwait(continueOnCapturedContext);
             try
             {
-                lock (lockObj)
-                {
-                    action();
-                }
+                await func().ConfigureAwait(continueOnCapturedContext);
             }
             finally
             {
-                ReleaseLock(key, lockObj);
+                await @lock.ReleaseAsync()
+                           .ConfigureAwait(continueOnCapturedContext);
             }
         }
-        //protected static readonly ILogger _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(LockUtility));
 
-        private class LockObject
+        public static async Task<TResult> LockAsync<TResult>(this ILockProvider lockProvider,
+                                                             string name,
+                                                             Func<Task<TResult>> func,
+                                                             TimeSpan timeout,
+                                                             CancellationToken cancellationToken,
+                                                             bool continueOnCapturedContext = false)
         {
-            private volatile int _Counter;
-
-            public int Counter => _Counter;
-
-            internal void Decrement()
+            TResult result;
+            var @lock = await lockProvider.AcquireAsync(name, timeout, cancellationToken)
+                                          .ConfigureAwait(continueOnCapturedContext);
+            try
             {
-                _Counter--;
-                //Interlocked.Decrement(ref _Counter);
+                result = await func().ConfigureAwait(continueOnCapturedContext);
             }
-
-            internal void Increate()
+            finally
             {
-                _Counter++;
-                //Interlocked.Increment(ref _Counter);
+                await @lock.ReleaseAsync()
+                           .ConfigureAwait(continueOnCapturedContext);
             }
+            return result;
+        }
+
+
+        public static async Task LockAsync(this ILockProvider lockProvider,
+                                           string name,
+                                           Action action,
+                                           TimeSpan timeout,
+                                           CancellationToken? cancellationToken = null,
+                                           bool continueOnCapturedContext = false)
+        {
+            var @lock = await lockProvider.AcquireAsync(name, timeout, cancellationToken ?? CancellationToken.None)
+                                          .ConfigureAwait(continueOnCapturedContext);
+            try
+            {
+                action();
+            }
+            finally
+            {
+                await @lock.ReleaseAsync()
+                           .ConfigureAwait(continueOnCapturedContext);
+            }
+        }
+
+        public static async Task<TResult> LockAsync<TResult>(this ILockProvider lockProvider,
+                                                             string name,
+                                                             Func<TResult> func,
+                                                             TimeSpan timeout,
+                                                             CancellationToken cancellationToken,
+                                                             bool continueOnCapturedContext = false)
+        {
+            TResult result;
+            var @lock = await lockProvider.AcquireAsync(name, timeout, cancellationToken)
+                                          .ConfigureAwait(continueOnCapturedContext);
+            try
+            {
+                result = func();
+            }
+            finally
+            {
+                await @lock.ReleaseAsync()
+                           .ConfigureAwait(continueOnCapturedContext);
+            }
+            return result;
         }
     }
 }

@@ -1,52 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Foundatio.Caching;
-using Foundatio.Lock;
-using Foundatio.Messaging;
+using IFramework.Config;
+using IFramework.FoundatioLockRedis.Config;
+using IFramework.Infrastructure;
+using IFramework.IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using StackExchange.Redis;
+using IFramework.FoundatioLock.Config;
 
 namespace IFramework4._5Tests
 {
     [TestClass]
     public class DistributedLockTest
     {
-        static readonly ConnectionMultiplexer Muxer = SharedConnection.GetMuxer();
-        static readonly ILockProvider Locker = new CacheLockProvider(new RedisCacheClient(Muxer), new RedisMessageBus(Muxer.GetSubscriber()));
+        //static readonly ConnectionMultiplexer Muxer = SharedConnection.GetMuxer();
+        //static readonly ILockProvider Locker = new CacheLockProvider(new RedisCacheClient(Muxer), new RedisMessageBus(Muxer.GetSubscriber()));
+        //static ILockProvider Locker = new CacheLockProvider(new InMemoryCacheClient(), new InMemoryMessageBus());
+        private static ILockProvider _lockerProvider;
         private static int _sum = 0;
 
-        [TestMethod]
-        public async Task TestDistributedLock()
+        [TestInitialize]
+        public void Initialize()
         {
-            //ILockProvider locker = new CacheLockProvider(new InMemoryCacheClient(), new InMemoryMessageBus());
+            Configuration.Instance
+                         .UseUnityContainer()
+                         .UseFoundatioLockRedis();
+                        // .UseFoundatioLockInMemory();
+
+            _lockerProvider = IoCFactory.Resolve<ILockProvider>();
+        }
+
+
+        [TestMethod]
+        public void TestDistributedLock()
+        {
             var tasks = new List<Task>();
-            var n = 10;
+            var n = 10000;
             for (int i = 0; i < n; i++)
             {
-                var i1 = i;
-                tasks.Add(AddSum(i1));
+                tasks.Add(AddSum());
             }
             Console.WriteLine($"{DateTime.Now} start waiting");
-            await Task.WhenAll(tasks.ToArray());
-            Console.WriteLine($"{DateTime.Now} start waiting");
+            Task.WaitAll(tasks.ToArray());
+            Console.WriteLine($"{DateTime.Now} end waiting sum:{_sum}");
             Assert.IsTrue(_sum == n);
         }
 
-        private async Task AddSum(int i)
+        private Task AddSum()
         {
-            var @lock = await Locker.AcquireAsync("test", TimeSpan.FromSeconds(10))
-                                    .ConfigureAwait(false);
-            try
+            return _lockerProvider.LockAsync("test", () => _sum ++, TimeSpan.FromSeconds(10));
+        }
+
+        [TestMethod]
+        public async Task TestDistributedLockAsync()
+        {
+            var tasks = new List<Task>();
+            var n = 10000;
+            for (int i = 0; i < n; i++)
             {
-                Console.WriteLine($"{DateTime.Now} {i}: {++_sum}");
+                tasks.Add(AddSumAsync());
             }
-            finally
-            {
-                await @lock.ReleaseAsync()
-                           .ConfigureAwait(false);
-            }
-          
+            Console.WriteLine($"{DateTime.Now} start waiting");
+            await Task.WhenAll(tasks.ToArray());
+            Console.WriteLine($"{DateTime.Now} end waiting sum:{_sum}");
+            Assert.IsTrue(_sum == n);
+        }
+
+        private Task AddSumAsync()
+        {
+            return _lockerProvider.LockAsync("test", DoAsync, TimeSpan.FromSeconds(10));
+        }
+
+        private Task DoAsync()
+        {
+            return Task.Run(() => _sum++);
         }
     }
 }
