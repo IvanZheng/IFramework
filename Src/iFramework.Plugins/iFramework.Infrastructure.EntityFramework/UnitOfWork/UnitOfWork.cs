@@ -62,8 +62,8 @@ namespace IFramework.EntityFramework
                         dbContext.ChangeTracker.Entries()
                                  .ForEach(e =>
                                  {
-                                     if (e.Entity is AggregateRoot)
-                                         _eventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
+                                     if (e.Entity is AggregateRoot root)
+                                         _eventBus.Publish(root.GetDomainEvents());
                                  });
                     });
                     BeforeCommit();

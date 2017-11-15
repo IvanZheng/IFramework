@@ -16,7 +16,7 @@ namespace IFramework4._5Tests
         //static readonly ConnectionMultiplexer Muxer = SharedConnection.GetMuxer();
         //static readonly ILockProvider Locker = new CacheLockProvider(new RedisCacheClient(Muxer), new RedisMessageBus(Muxer.GetSubscriber()));
         //static ILockProvider Locker = new CacheLockProvider(new InMemoryCacheClient(), new InMemoryMessageBus());
-        private static ILockProvider _lockerProvider;
+        private static ILockProvider _lockProvider;
         private static int _sum = 0;
 
         [TestInitialize]
@@ -27,7 +27,7 @@ namespace IFramework4._5Tests
                          .UseFoundatioLockRedis();
                         // .UseFoundatioLockInMemory();
 
-            _lockerProvider = IoCFactory.Resolve<ILockProvider>();
+            _lockProvider = IoCFactory.Resolve<ILockProvider>();
         }
 
 
@@ -48,14 +48,14 @@ namespace IFramework4._5Tests
 
         private Task AddSum()
         {
-            return _lockerProvider.LockAsync("test", () => _sum ++, TimeSpan.FromSeconds(10));
+            return _lockProvider.LockAsync("test", () => _sum ++, TimeSpan.FromSeconds(10));
         }
 
         [TestMethod]
         public async Task TestDistributedLockAsync()
         {
             var tasks = new List<Task>();
-            var n = 10000;
+            var n = 100000;
             for (int i = 0; i < n; i++)
             {
                 tasks.Add(AddSumAsync());
@@ -68,7 +68,7 @@ namespace IFramework4._5Tests
 
         private Task AddSumAsync()
         {
-            return _lockerProvider.LockAsync("test", DoAsync, TimeSpan.FromSeconds(10));
+            return _lockProvider.LockAsync("test", DoAsync, TimeSpan.FromSeconds(10));
         }
 
         private Task DoAsync()
