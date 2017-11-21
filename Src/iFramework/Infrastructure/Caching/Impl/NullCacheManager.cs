@@ -1,9 +1,11 @@
-﻿namespace IFramework.Infrastructure.Caching.Impl
+﻿using System.Threading.Tasks;
+
+namespace IFramework.Infrastructure.Caching.Impl
 {
     /// <summary>
     ///     Represents a NopNullCache
     /// </summary>
-    public class NullCacheManager : ICacheManager
+    public class NullCacheManager : CacheManagerBase
     {
         /// <summary>
         ///     Gets or sets the value associated with the specified key.
@@ -11,10 +13,12 @@
         /// <typeparam name="T">Type</typeparam>
         /// <param name="key">The key of the value to get.</param>
         /// <returns>The value associated with the specified key.</returns>
-        public virtual T Get<T>(string key)
+        public override CacheValue<T> Get<T>(string key)
         {
-            return default(T);
+            return CacheValue<T>.NoValue;
         }
+
+ 
 
         /// <summary>
         ///     Adds the specified key and object to the cache.
@@ -22,14 +26,16 @@
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
         /// <param name="cacheTime">Cache time</param>
-        public virtual void Set(string key, object data, int cacheTime) { }
+        public override void Set(string key, object data, int cacheTime) { }
+
+
 
         /// <summary>
         ///     Gets a value indicating whether the value associated with the specified key is cached
         /// </summary>
         /// <param name="key">key</param>
         /// <returns>Result</returns>
-        public bool IsSet(string key)
+        public override bool IsSet(string key)
         {
             return false;
         }
@@ -38,17 +44,23 @@
         ///     Removes the value with the specified key from the cache
         /// </summary>
         /// <param name="key">/key</param>
-        public virtual void Remove(string key) { }
+        public override void Remove(string key) { }
+
+   
 
         /// <summary>
         ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
-        public virtual void RemoveByPattern(string pattern) { }
+        public override void RemoveByPattern(string pattern) { }
+
+    
 
         /// <summary>
         ///     Clear all cache data
         /// </summary>
-        public virtual void Clear() { }
+        public override void Clear() { }
+
+        
     }
 }

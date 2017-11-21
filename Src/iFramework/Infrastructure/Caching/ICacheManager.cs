@@ -1,4 +1,6 @@
-﻿namespace IFramework.Infrastructure.Caching
+﻿using System.Threading.Tasks;
+
+namespace IFramework.Infrastructure.Caching
 {
     /// Cache manager interface
     /// </summary>
@@ -10,8 +12,9 @@
         /// <typeparam name="T">Type</typeparam>
         /// <param name="key">The key of the value to get.</param>
         /// <returns>The value associated with the specified key.</returns>
-        T Get<T>(string key);
+        CacheValue<T> Get<T>(string key);
 
+        Task<CacheValue<T>> GetAsync<T>(string key);
         /// <summary>
         ///     Adds the specified key and object to the cache.
         /// </summary>
@@ -20,6 +23,8 @@
         /// <param name="cacheTime">Cache time</param>
         void Set(string key, object data, int cacheTime);
 
+        Task SetAsync(string key, object data, int cacheTime);
+
         /// <summary>
         ///     Gets a value indicating whether the value associated with the specified key is cached
         /// </summary>
@@ -27,21 +32,27 @@
         /// <returns>Result</returns>
         bool IsSet(string key);
 
+        Task<bool> IsSetAsync(string key);
+
         /// <summary>
         ///     Removes the value with the specified key from the cache
         /// </summary>
         /// <param name="key">/key</param>
         void Remove(string key);
 
+        Task RemoveAsync(string key);
         /// <summary>
         ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
         void RemoveByPattern(string pattern);
 
+        Task RemoveByPatternAsync(string pattern);
         /// <summary>
         ///     Clear all cache data
         /// </summary>
         void Clear();
+
+        Task ClearAsync();
     }
 }

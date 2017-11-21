@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace IFramework.Infrastructure.Caching.Impl
 {
-    public class PerHttpRequestCacheManager : ICacheManager
+    public class PerHttpRequestCacheManager : CacheManagerBase
     {
         private readonly HttpContextBase _context;
 
@@ -24,16 +25,13 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <typeparam name="T">Type</typeparam>
         /// <param name="key">The key of the value to get.</param>
         /// <returns>The value associated with the specified key.</returns>
-        public virtual T Get<T>(string key)
+        public override CacheValue<T> Get<T>(string key)
         {
             var items = GetItems();
-            if (items == null)
-            {
-                return default(T);
-            }
-
-            return (T) items[key];
+            return items == null ? CacheValue<T>.NoValue : new CacheValue<T>((T)items[key], true);
         }
+
+       
 
         /// <summary>
         ///     Adds the specified key and object to the cache.
@@ -41,7 +39,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
         /// <param name="cacheTime">Cache time</param>
-        public virtual void Set(string key, object data, int cacheTime)
+        public override void Set(string key, object data, int cacheTime)
         {
             var items = GetItems();
             if (items == null)
@@ -62,42 +60,36 @@ namespace IFramework.Infrastructure.Caching.Impl
             }
         }
 
+      
+
         /// <summary>
         ///     Gets a value indicating whether the value associated with the specified key is cached
         /// </summary>
         /// <param name="key">key</param>
         /// <returns>Result</returns>
-        public virtual bool IsSet(string key)
+        public override bool IsSet(string key)
         {
             var items = GetItems();
-            if (items == null)
-            {
-                return false;
-            }
-
-            return items[key] != null;
+            return items?[key] != null;
         }
 
         /// <summary>
         ///     Removes the value with the specified key from the cache
         /// </summary>
         /// <param name="key">/key</param>
-        public virtual void Remove(string key)
+        public override void Remove(string key)
         {
             var items = GetItems();
-            if (items == null)
-            {
-                return;
-            }
 
-            items.Remove(key);
+            items?.Remove(key);
         }
 
+       
         /// <summary>
         ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
-        public virtual void RemoveByPattern(string pattern)
+        public override void RemoveByPattern(string pattern)
         {
             var items = GetItems();
             if (items == null)
@@ -122,10 +114,11 @@ namespace IFramework.Infrastructure.Caching.Impl
             }
         }
 
+      
         /// <summary>
         ///     Clear all cache data
         /// </summary>
-        public virtual void Clear()
+        public override void Clear()
         {
             var items = GetItems();
             if (items == null)
@@ -137,7 +130,10 @@ namespace IFramework.Infrastructure.Caching.Impl
             var keysToRemove = new List<string>();
             while (enumerator.MoveNext())
             {
-                keysToRemove.Add(enumerator.Key.ToString());
+                if (enumerator.Key != null)
+                {
+                    keysToRemove.Add(enumerator.Key.ToString());
+                }
             }
 
             foreach (var key in keysToRemove)
@@ -145,18 +141,13 @@ namespace IFramework.Infrastructure.Caching.Impl
                 items.Remove(key);
             }
         }
-
+       
         /// <summary>
         ///     Creates a new instance of the NopRequestCache class
         /// </summary>
         protected virtual IDictionary GetItems()
         {
-            if (_context != null)
-            {
-                return _context.Items;
-            }
-
-            return null;
+            return _context?.Items;
         }
     }
 }

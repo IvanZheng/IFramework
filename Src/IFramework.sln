@@ -125,7 +125,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DistributedLock", "Distribu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.FoundatioLock", "iFramework.Plugins\IFramework.FoundatioLock\IFramework.FoundatioLock.csproj", "{ED7DC1BF-939F-43C8-AEDF-89589AE3701D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.FoundatioLockRedis", "iFramework.Plugins\IFramework.FoundatioLockRedis\IFramework.FoundatioLockRedis.csproj", "{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.FoundatioRedis", "iFramework.Plugins\IFramework.FoundatioLockRedis\IFramework.FoundatioRedis.csproj", "{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1052,7 +1052,7 @@ Global
 		{5914CAFB-B521-4A9E-9F5D-F0CDC439CFDB} = {5F85F374-CBF3-44DF-8E8A-7470D86BE81C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal

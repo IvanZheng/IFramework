@@ -65,6 +65,8 @@
     <Compile Include="Event\IDomainExceptionEvent.cs" />
     <Compile Include="Event\IEventAsyncSubscriber.cs" />
     <Compile Include="Event\Impl\SyncEventSubscriberProvider.cs" />
+    <Compile Include="Infrastructure\Caching\CacheValue.cs" />
+    <Compile Include="Infrastructure\Caching\Impl\CacheManagerBase.cs" />
     <Compile Include="Infrastructure\DataContractJsonConvert.cs" />
     <Compile Include="Infrastructure\IJsonConvert.cs" />
     <Compile Include="Infrastructure\ILock.cs" />

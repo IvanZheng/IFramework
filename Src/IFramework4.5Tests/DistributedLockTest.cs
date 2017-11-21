@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IFramework.Config;
-using IFramework.FoundatioLockRedis.Config;
 using IFramework.Infrastructure;
 using IFramework.IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using IFramework.FoundatioLock.Config;
+using IFramework.FoundatioRedis.Config;
+using IFramework.Infrastructure.Caching;
 
 namespace IFramework4._5Tests
 {
@@ -16,7 +17,9 @@ namespace IFramework4._5Tests
         //static readonly ConnectionMultiplexer Muxer = SharedConnection.GetMuxer();
         //static readonly ILockProvider Locker = new CacheLockProvider(new RedisCacheClient(Muxer), new RedisMessageBus(Muxer.GetSubscriber()));
         //static ILockProvider Locker = new CacheLockProvider(new InMemoryCacheClient(), new InMemoryMessageBus());
-        private static ILockProvider _lockProvider;
+        private ILockProvider _lockProvider;
+
+        private ICacheManager _cacheManager;
         private static int _sum = 0;
 
         [TestInitialize]
@@ -24,10 +27,12 @@ namespace IFramework4._5Tests
         {
             Configuration.Instance
                          .UseUnityContainer()
+                         .UseFoundatioRedisCache()
                          .UseFoundatioLockRedis();
                         // .UseFoundatioLockInMemory();
 
             _lockProvider = IoCFactory.Resolve<ILockProvider>();
+            _cacheManager = IoCFactory.Resolve<ICacheManager>();
         }
 
 
@@ -55,7 +60,7 @@ namespace IFramework4._5Tests
         public async Task TestDistributedLockAsync()
         {
             var tasks = new List<Task>();
-            var n = 100000;
+            var n = 10000;
             for (int i = 0; i < n; i++)
             {
                 tasks.Add(AddSumAsync());
@@ -74,6 +79,22 @@ namespace IFramework4._5Tests
         private Task DoAsync()
         {
             return Task.Run(() => _sum++);
+        }
+
+
+        [TestMethod]
+        public async Task TestRedisCacheAsync()
+        {
+            await _cacheManager.ClearAsync().ConfigureAwait(false);
+            int t = 0;
+            var result = await _cacheManager.GetAsync<int>("key");
+            Assert.IsTrue(!result.HasValue);
+            for (int i = 0; i < 100; i++)
+            {
+                result = await _cacheManager.GetAsync("key", 1, async () => await Task.FromResult(++t))
+                                            .ConfigureAwait(false);
+            }
+            Assert.IsTrue(result.HasValue && result.Value == 1 && t == 1);
         }
     }
 }

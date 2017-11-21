@@ -7,17 +7,30 @@ using System.Threading.Tasks;
 using Foundatio.Caching;
 using Foundatio.Lock;
 using Foundatio.Messaging;
+using IFramework.FoundatioRedis.Caching;
+using IFramework.Infrastructure.Caching;
 using IFramework.IoC;
 using IFramework.MessageQueue;
 using StackExchange.Redis;
 
-namespace IFramework.FoundatioLockRedis.Config
+namespace IFramework.FoundatioRedis.Config
 {
     public static class FrameworkConfigurationExtension
     {
-        public static Configuration UseFoundatioLockRedis(this Configuration configuration, string redisConnectionString = null)
+        public static Configuration UseFoundatioRedisCache(this Configuration configuration, string redisCacheConnectionString = null, bool preserveAsyncOrder = false)
         {
-            ConnectionMultiplexer muxer = GetMuxer(redisConnectionString);
+            ConnectionMultiplexer muxer = GetMuxer(redisCacheConnectionString, preserveAsyncOrder);
+            var redisCacheManager = new RedisCacheManager(new RedisCacheClient(muxer));
+            IoCFactory.Instance
+                      .CurrentContainer
+                      .RegisterInstance(typeof(ICacheManager), redisCacheManager);
+            return configuration;
+        }
+
+
+        public static Configuration UseFoundatioLockRedis(this Configuration configuration, string redisConnectionString = null, bool preserveAsyncOrder = false)
+        {
+            ConnectionMultiplexer muxer = GetMuxer(redisConnectionString, preserveAsyncOrder);
             ILockProvider lockerProvider = new CacheLockProvider(new RedisCacheClient(muxer), new RedisMessageBus(muxer.GetSubscriber()));
 
             IoCFactory.Instance.CurrentContainer
@@ -25,21 +38,15 @@ namespace IFramework.FoundatioLockRedis.Config
             return configuration;
         }
 
-        private static ConnectionMultiplexer _muxer;
 
-        public static ConnectionMultiplexer GetMuxer(string redisConnectionString = null)
+        public static ConnectionMultiplexer GetMuxer(string redisConnectionString = null, bool preserveAsyncOrder = false)
         {
             string connectionString = Configuration.GetConnectionString(redisConnectionString ?? "RedisConnectionString");
-            if (String.IsNullOrEmpty(connectionString))
+            if (string.IsNullOrEmpty(connectionString))
                 return null;
-
-            if (_muxer == null)
-            {
-                _muxer = ConnectionMultiplexer.Connect(connectionString);
-                _muxer.PreserveAsyncOrder = false;
-            }
-
-            return _muxer;
+            var muxer = ConnectionMultiplexer.Connect(connectionString);
+            muxer.PreserveAsyncOrder = preserveAsyncOrder;
+            return muxer;
         }
     }
 }
