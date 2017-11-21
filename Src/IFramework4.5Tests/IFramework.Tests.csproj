@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>IFramework4._5Tests</RootNamespace>
     <AssemblyName>IFramework4.5Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -39,12 +39,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Foundatio, Version=4.3.1317.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundatio.4.3.1317\lib\net46\Foundatio.dll</HintPath>
-    </Reference>
-    <Reference Include="Foundatio.Redis, Version=4.3.1317.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundatio.Redis.4.3.1317\lib\net46\Foundatio.Redis.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Practices.Unity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6d32ff45e0ccc69f, processorArchitecture=MSIL">
       <HintPath>..\packages\Unity.4.0.1\lib\net45\Microsoft.Practices.Unity.dll</HintPath>
@@ -66,21 +60,6 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Nito.AsyncEx.Coordination, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nito.AsyncEx.Coordination.1.0.2\lib\net46\Nito.AsyncEx.Coordination.dll</HintPath>
-    </Reference>
-    <Reference Include="Nito.AsyncEx.Tasks, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nito.AsyncEx.Tasks.1.1.0\lib\net46\Nito.AsyncEx.Tasks.dll</HintPath>
-    </Reference>
-    <Reference Include="Nito.Collections.Deque, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nito.Collections.Deque.1.0.4\lib\netstandard1.0\Nito.Collections.Deque.dll</HintPath>
-    </Reference>
-    <Reference Include="Nito.Disposables, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nito.Disposables.1.2.3\lib\netstandard1.0\Nito.Disposables.dll</HintPath>
-    </Reference>
-    <Reference Include="StackExchange.Redis, Version=1.2.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\StackExchange.Redis.1.2.6\lib\net46\StackExchange.Redis.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -152,20 +131,11 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="DistributedLockTest.cs" />
     <Compile Include="Mailboxes\MailboxTest.cs" />
     <Compile Include="Mailboxes\MessageContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\iFramework.Plugins\IFramework.FoundatioLockRedis\IFramework.FoundatioRedis.csproj">
-      <Project>{5914cafb-b521-4a9e-9f5d-f0cdc439cfdb}</Project>
-      <Name>IFramework.FoundatioRedis</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\iFramework.Plugins\IFramework.FoundatioLock\IFramework.FoundatioLock.csproj">
-      <Project>{ed7dc1bf-939f-43c8-aedf-89589ae3701d}</Project>
-      <Name>IFramework.FoundatioLock</Name>
-    </ProjectReference>
     <ProjectReference Include="..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
       <Name>IFramework.Log4Net</Name>

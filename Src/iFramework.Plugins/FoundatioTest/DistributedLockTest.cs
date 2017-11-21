@@ -1,13 +1,13 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.Caching;
 using IFramework.IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using IFramework.FoundatioLock.Config;
 using IFramework.FoundatioRedis.Config;
-using IFramework.Infrastructure.Caching;
 
 namespace IFramework4._5Tests
 {
@@ -27,6 +27,7 @@ namespace IFramework4._5Tests
         {
             Configuration.Instance
                          .UseUnityContainer()
+                         .RegisterCommonComponents()
                          .UseFoundatioRedisCache()
                          .UseFoundatioLockRedis();
                         // .UseFoundatioLockInMemory();
@@ -83,17 +84,32 @@ namespace IFramework4._5Tests
 
 
         [TestMethod]
+        public async Task TestAll()
+        {
+            await TestRedisCacheAsync();
+            await TestDistributedLockAsync();
+        }
+
+        [TestMethod]
         public async Task TestRedisCacheAsync()
         {
             await _cacheManager.ClearAsync().ConfigureAwait(false);
             int t = 0;
             var result = await _cacheManager.GetAsync<int>("key");
             Assert.IsTrue(!result.HasValue);
+            result = await _cacheManager.GetAsync("key", 1, async () => await Task.FromResult(++t))
+                                        .ConfigureAwait(false);
+            var tasks = new List<Task>();
+
             for (int i = 0; i < 100; i++)
             {
-                result = await _cacheManager.GetAsync("key", 1, async () => await Task.FromResult(++t))
-                                            .ConfigureAwait(false);
+                tasks.Add(_cacheManager.GetAsync("key", 1, async () => await Task.FromResult(++t)));
             }
+
+            await Task.WhenAll(tasks.ToArray());
+
+            result = await _cacheManager.GetAsync("key", 1, async () => await Task.FromResult(++t))
+                                            .ConfigureAwait(false);
             Assert.IsTrue(result.HasValue && result.Value == 1 && t == 1);
         }
     }
