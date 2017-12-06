@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Data;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using IFramework.Config;
 using IFramework.Exceptions;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
+using System.Data;
 
 namespace IFramework.Infrastructure
 {
@@ -109,7 +107,7 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                    if (!(ex is DBConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
                         if (baseException is DomainException)
@@ -193,7 +191,7 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                    if (!(ex is DBConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
                         if (baseException is DomainException)
@@ -273,7 +271,7 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                    if (!(ex is DBConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
                         if (baseException is DomainException)
@@ -312,7 +310,7 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
+                    if (!(ex is DBConcurrencyException) || !needRetry)
                     {
                         var baseException = ex.GetBaseException();
                         if (baseException is DomainException)

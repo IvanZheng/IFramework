@@ -121,11 +121,12 @@ namespace IFramework.Config
         public static Configuration MessageQueueUseMachineNameFormat(this Configuration configuration,
                                                                      bool onlyInDebug = true)
         {
-            var compliationSection = Configuration.GetCompliationSection();
-            if (!onlyInDebug || compliationSection != null && compliationSection.Debug)
-            {
-                configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
-            }
+            //TODO: 
+            //var compliationSection = Configuration.GetCompliationSection();
+            //if (!onlyInDebug || compliationSection != null && compliationSection.Debug)
+            //{
+            //    configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
+            //}
             return configuration;
         }
 

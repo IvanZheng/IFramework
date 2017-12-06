@@ -2,24 +2,13 @@
 
 namespace IFramework.Config
 {
-    [ConfigurationSectionName("frameworkConfiguration")]
-    public class FrameworkConfigurationSection : ConfigurationSection
+    public class FrameworkConfigurationSection
     {
         /// <summary>
         ///     Gets or sets the configuration settings for handlers.
         /// </summary>
-        [ConfigurationProperty("handlers", IsRequired = false)]
-        public HandlerElementCollection Handlers
-        {
-            get => (HandlerElementCollection) base["handlers"];
-            set => base["handlers"] = value;
-        }
+        public HandlerElementCollection Handlers { get; set; }
 
-        [ConfigurationProperty("messageEndpointMappings", IsRequired = false)]
-        public MessageEndpointElementCollection MessageEndpointMappings
-        {
-            get => (MessageEndpointElementCollection) base["messageEndpointMappings"];
-            set => base["messageEndpointMappings"] = value;
-        }
+        public MessageEndpointElementCollection MessageEndpointMappings { get; set; }
     }
 }

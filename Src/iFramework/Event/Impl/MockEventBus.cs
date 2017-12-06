@@ -8,9 +8,9 @@ namespace IFramework.Event.Impl
     {
         public void Dispose() { }
 
-        public void Publish<TMessage>(TMessage @event) where TMessage : IEvent { }
+        public void Publish(IEvent @event){ }
 
-        public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent { }
+        public void Publish(IEnumerable<IEvent> events){ }
 
         public IEnumerable<IEvent> GetEvents()
         {

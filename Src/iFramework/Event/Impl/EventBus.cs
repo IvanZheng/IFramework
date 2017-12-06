@@ -28,7 +28,7 @@ namespace IFramework.Event.Impl
         }
 
 
-        public void Publish<TEvent>(TEvent @event) where TEvent : IEvent
+        public void Publish(IEvent @event)
         {
             EventQueue.Add(@event);
             if (EventSubscriberProvider != null)
@@ -42,7 +42,7 @@ namespace IFramework.Event.Impl
             }
         }
 
-        public void Publish<TEvent>(IEnumerable<TEvent> events) where TEvent : IEvent
+        public void Publish(IEnumerable<IEvent> events)
         {
             events.ForEach(Publish);
         }

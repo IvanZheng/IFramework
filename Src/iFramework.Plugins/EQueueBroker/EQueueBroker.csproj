@@ -54,10 +54,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0B36292C-8849-441D-8FB8-A053D43A8E72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\IFramework.Autofac\IFramework.Autofac.csproj">
       <Project>{85af5f30-37ac-4b1e-bc74-c84ee031ecc4}</Project>
       <Name>IFramework.Autofac</Name>

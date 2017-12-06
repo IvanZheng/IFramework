@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.Generic;
-using System.Runtime.Caching;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Caching.Impl
 {
@@ -10,7 +11,7 @@ namespace IFramework.Infrastructure.Caching.Impl
     /// </summary>
     public class MemoryCacheManager : CacheManagerBase
     {
-        protected ObjectCache Cache => MemoryCache.Default;
+        protected MemoryCache Cache => new MemoryCache(new MemoryCacheOptions());
 
         /// <summary>
         ///     Gets or sets the value associated with the specified key.
@@ -20,7 +21,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <returns>The value associated with the specified key.</returns>
         public override CacheValue<T> Get<T>(string key)
         {
-            var value = Cache[key];
+            var value = Cache.Get<T>(key);
             return value == null ? CacheValue<T>.NoValue : new CacheValue<T>((T)value, true);
         }
 
@@ -36,12 +37,8 @@ namespace IFramework.Infrastructure.Caching.Impl
             {
                 return;
             }
-
-            var policy = new CacheItemPolicy
-            {
-                AbsoluteExpiration = DateTime.Now + TimeSpan.FromMinutes(cacheTime)
-            };
-            Cache.Add(new CacheItem(key, data), policy);
+            
+            Cache.Set(key, data, DateTime.Now + TimeSpan.FromMinutes(cacheTime));
         }
 
         /// <summary>
@@ -51,7 +48,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <returns>Result</returns>
         public override bool IsSet(string key)
         {
-            return Cache.Contains(key);
+            return Cache.TryGetValue(key, out var result);
         }
 
         /// <summary>
@@ -63,38 +60,35 @@ namespace IFramework.Infrastructure.Caching.Impl
             Cache.Remove(key);
         }
 
+        public override void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         ///     Removes items by pattern
         /// </summary>
         /// <param name="pattern">pattern</param>
         public override void RemoveByPattern(string pattern)
         {
-            var regex = new Regex(pattern, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            var keysToRemove = new List<string>();
+            throw new NotImplementedException();
+            //var regex = new Regex(pattern, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            //var keysToRemove = new List<string>();
+          
+            //foreach (var item in Cache)
+            //{
+            //    if (regex.IsMatch(item.Key))
+            //    {
+            //        keysToRemove.Add(item.Key);
+            //    }
+            //}
 
-            foreach (var item in Cache)
-            {
-                if (regex.IsMatch(item.Key))
-                {
-                    keysToRemove.Add(item.Key);
-                }
-            }
-
-            foreach (var key in keysToRemove)
-            {
-                Remove(key);
-            }
+            //foreach (var key in keysToRemove)
+            //{
+            //    Remove(key);
+            //}
         }
 
-        /// <summary>
-        ///     Clear all cache data
-        /// </summary>
-        public override void Clear()
-        {
-            foreach (var item in Cache)
-            {
-                Remove(item.Key);
-            }
-        }
+        
     }
 }

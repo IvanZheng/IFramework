@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -9,102 +10,85 @@ namespace IFramework.Infrastructure
     {
         public delegate object FastInvokeHandler(object target, object[] paramters);
 
-        private static readonly Hashtable FastInvokeHandlers = new Hashtable();
+        private static readonly ConcurrentDictionary<MethodInfo, FastInvokeHandler> FastInvokeHandlers = new ConcurrentDictionary<MethodInfo, FastInvokeHandler>();
 
         public static FastInvokeHandler GetMethodInvoker(MethodInfo methodInfo)
         {
-            var invoder = FastInvokeHandlers[methodInfo] as FastInvokeHandler;
-            if (invoder == null)
+            return FastInvokeHandlers.GetOrAdd(methodInfo, key =>
             {
-                lock (FastInvokeHandlers)
+                var dynamicMethod = new DynamicMethod(string.Empty, typeof(object),
+                                                      new[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module, true);
+                var il = dynamicMethod.GetILGenerator();
+                var ps = methodInfo.GetParameters();
+                var paramTypes = new Type[ps.Length];
+                for (var i = 0; i < paramTypes.Length; i++)
                 {
-                    invoder = FastInvokeHandlers[methodInfo] as FastInvokeHandler;
-                    if (invoder == null)
+                    if (ps[i].ParameterType.IsByRef)
                     {
-                        var dynamicMethod = new DynamicMethod(string.Empty, typeof(object),
-                                                              new[] {typeof(object), typeof(object[])}, methodInfo.DeclaringType.Module, true);
-                        var il = dynamicMethod.GetILGenerator();
-                        var ps = methodInfo.GetParameters();
-                        var paramTypes = new Type[ps.Length];
-                        for (var i = 0; i < paramTypes.Length; i++)
-                        {
-                            if (ps[i].ParameterType.IsByRef)
-                            {
-                                paramTypes[i] = ps[i].ParameterType.GetElementType();
-                            }
-                            else
-                            {
-                                paramTypes[i] = ps[i].ParameterType;
-                            }
-                        }
-                        var locals = new LocalBuilder[paramTypes.Length];
-
-                        for (var i = 0; i < paramTypes.Length; i++)
-                        {
-                            locals[i] = il.DeclareLocal(paramTypes[i], true);
-                        }
-                        for (var i = 0; i < paramTypes.Length; i++)
-                        {
-                            il.Emit(OpCodes.Ldarg_1);
-                            EmitFastInt(il, i);
-                            il.Emit(OpCodes.Ldelem_Ref);
-                            EmitCastToReference(il, paramTypes[i]);
-                            il.Emit(OpCodes.Stloc, locals[i]);
-                        }
-                        if (!methodInfo.IsStatic)
-                        {
-                            il.Emit(OpCodes.Ldarg_0);
-                        }
-                        for (var i = 0; i < paramTypes.Length; i++)
-                        {
-                            if (ps[i].ParameterType.IsByRef)
-                            {
-                                il.Emit(OpCodes.Ldloca_S, locals[i]);
-                            }
-                            else
-                            {
-                                il.Emit(OpCodes.Ldloc, locals[i]);
-                            }
-                        }
-                        if (methodInfo.IsStatic)
-                        {
-                            il.EmitCall(OpCodes.Call, methodInfo, null);
-                        }
-                        else
-                        {
-                            il.EmitCall(OpCodes.Callvirt, methodInfo, null);
-                        }
-                        if (methodInfo.ReturnType == typeof(void))
-                        {
-                            il.Emit(OpCodes.Ldnull);
-                        }
-                        else
-                        {
-                            EmitBoxIfNeeded(il, methodInfo.ReturnType);
-                        }
-
-                        for (var i = 0; i < paramTypes.Length; i++)
-                        {
-                            if (ps[i].ParameterType.IsByRef)
-                            {
-                                il.Emit(OpCodes.Ldarg_1);
-                                EmitFastInt(il, i);
-                                il.Emit(OpCodes.Ldloc, locals[i]);
-                                if (locals[i].LocalType.IsValueType)
-                                {
-                                    il.Emit(OpCodes.Box, locals[i].LocalType);
-                                }
-                                il.Emit(OpCodes.Stelem_Ref);
-                            }
-                        }
-
-                        il.Emit(OpCodes.Ret);
-                        invoder = (FastInvokeHandler) dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
-                        FastInvokeHandlers.Add(methodInfo, invoder);
+                        paramTypes[i] = ps[i].ParameterType.GetElementType();
+                    }
+                    else
+                    {
+                        paramTypes[i] = ps[i].ParameterType;
                     }
                 }
-            }
-            return invoder;
+                var locals = new LocalBuilder[paramTypes.Length];
+
+                for (var i = 0; i < paramTypes.Length; i++)
+                {
+                    locals[i] = il.DeclareLocal(paramTypes[i], true);
+                }
+                for (var i = 0; i < paramTypes.Length; i++)
+                {
+                    il.Emit(OpCodes.Ldarg_1);
+                    EmitFastInt(il, i);
+                    il.Emit(OpCodes.Ldelem_Ref);
+                    EmitCastToReference(il, paramTypes[i]);
+                    il.Emit(OpCodes.Stloc, locals[i]);
+                }
+                if (!methodInfo.IsStatic)
+                {
+                    il.Emit(OpCodes.Ldarg_0);
+                }
+                for (var i = 0; i < paramTypes.Length; i++)
+                {
+                    if (ps[i].ParameterType.IsByRef)
+                    {
+                        il.Emit(OpCodes.Ldloca_S, locals[i]);
+                    }
+                    else
+                    {
+                        il.Emit(OpCodes.Ldloc, locals[i]);
+                    }
+                }
+                il.EmitCall(methodInfo.IsStatic ? OpCodes.Call : OpCodes.Callvirt, methodInfo, null);
+                if (methodInfo.ReturnType == typeof(void))
+                {
+                    il.Emit(OpCodes.Ldnull);
+                }
+                else
+                {
+                    EmitBoxIfNeeded(il, methodInfo.ReturnType);
+                }
+
+                for (var i = 0; i < paramTypes.Length; i++)
+                {
+                    if (ps[i].ParameterType.IsByRef)
+                    {
+                        il.Emit(OpCodes.Ldarg_1);
+                        EmitFastInt(il, i);
+                        il.Emit(OpCodes.Ldloc, locals[i]);
+                        if (locals[i].LocalType.IsValueType)
+                        {
+                            il.Emit(OpCodes.Box, locals[i].LocalType);
+                        }
+                        il.Emit(OpCodes.Stelem_Ref);
+                    }
+                }
+
+                il.Emit(OpCodes.Ret);
+                return (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
+            });
         }
 
         private static void EmitBoxIfNeeded(ILGenerator il, Type type)
@@ -153,7 +137,7 @@ namespace IFramework.Infrastructure
 
             if (value > -129 && value < 128)
             {
-                il.Emit(OpCodes.Ldc_I4_S, (sbyte) value);
+                il.Emit(OpCodes.Ldc_I4_S, (sbyte)value);
             }
             else
             {

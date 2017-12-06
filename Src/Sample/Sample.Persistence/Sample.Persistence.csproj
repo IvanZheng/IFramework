@@ -98,10 +98,6 @@
       <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
       <Name>IFramework.Unity</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj">
       <Project>{f1f1b380-f3a0-463e-8686-3af27962c100}</Project>
       <Name>Sample.Domain</Name>

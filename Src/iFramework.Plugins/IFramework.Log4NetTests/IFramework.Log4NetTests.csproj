@@ -71,10 +71,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0B36292C-8849-441D-8FB8-A053D43A8E72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\IFramework.Log4Net\IFramework.Log4Net.csproj">
       <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
       <Name>IFramework.Log4Net</Name>

@@ -71,10 +71,6 @@
       <Project>{bafca280-6b58-44e8-b0e7-ed6f51c0eaec}</Project>
       <Name>IFramework.AspNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Sample.Command\Sample.Command.csproj">
       <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
       <Name>Sample.Command</Name>

@@ -144,10 +144,6 @@
       <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
       <Name>IFramework.Unity</Name>
     </ProjectReference>
-    <ProjectReference Include="..\iFramework\IFramework.csproj">
-      <Project>{0B36292C-8849-441D-8FB8-A053D43A8E72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

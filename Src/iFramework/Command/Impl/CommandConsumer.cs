@@ -231,7 +231,7 @@ namespace IFramework.Command.Impl
                                     eventMessageStates.Clear();
                                     messageStore.Rollback();
 
-                                    if (e is OptimisticConcurrencyException && needRetry)
+                                    if (e is DBConcurrencyException && needRetry)
                                     {
                                         eventBus.ClearMessages();
                                     }

@@ -86,10 +86,12 @@ namespace IFramework.Message.Impl
 
         private void RegisterHandlers()
         {
-            var handlerElements = ConfigurationReader.Instance
-                                                     .GetConfigurationSection<FrameworkConfigurationSection>()
-                                                     ?
-                                                     .Handlers;
+            // TODO:
+            HandlerElement[] handlerElements = null;
+                //ConfigurationReader.Instance
+                //                                     .GetConfigurationSection<FrameworkConfigurationSection>()
+                //                                     ?
+                //                                     .Handlers;
             if (handlerElements != null)
             {
                 foreach (HandlerElement handlerElement in handlerElements)

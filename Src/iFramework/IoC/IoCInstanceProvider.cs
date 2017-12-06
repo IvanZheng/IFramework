@@ -1,10 +1,8 @@
 ﻿using System;
-using System.ServiceModel;
-using System.ServiceModel.Dispatcher;
 
 namespace IFramework.IoC
 {
-    public class IocInstanceProvider : IInstanceProvider
+    public class IocInstanceProvider :IInstanceProvider
     {
         private readonly IContainer _container;
         private readonly Type _serviceType;

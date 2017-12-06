@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Web.Configuration;
 using System.Xml.Linq;
 using IFramework.Event;
 using IFramework.Event.Impl;
@@ -107,16 +105,6 @@ namespace IFramework.Config
             return this;
         }
 
-        public static CompilationSection GetCompliationSection()
-        {
-            return ConfigurationManager.GetSection("system.web/compilation") as CompilationSection;
-        }
-
-        public static string GetConnectionString(string name)
-        {
-            return ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
-        }
-
         public static T GetAppConfig<T>(string key)
         {
             var val = default(T);
@@ -132,41 +120,43 @@ namespace IFramework.Config
                     val = (T) Convert.ChangeType(value, typeof(T));
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // ignored
+            }
             return val;
         }
 
         public static string GetAppConfig(string keyname, string configPath = "Config")
         {
-            var config = ConfigurationManager.AppSettings[keyname];
-            try
-            {
-                if (string.IsNullOrWhiteSpace(config))
-                {
-                    var filePath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase, configPath);
-                    if (File.Exists(filePath))
-                    {
-                        using (TextReader reader = new StreamReader(filePath))
-                        {
-                            var xml = XElement.Load(filePath);
-                            if (xml != null)
-                            {
-                                var element = xml.Elements()
-                                                 .SingleOrDefault(e => e.Attribute("key") != null &&
-                                                                       e.Attribute("key").Value.Equals(keyname));
-                                if (element != null)
-                                {
-                                    config = element.Attribute("value").Value;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                config = string.Empty;
-            }
+            //TODO:
+            var config = string.Empty;
+            //var config = ConfigurationManager.AppSettings[keyname];
+            //try
+            //{
+            //    if (string.IsNullOrWhiteSpace(config))
+            //    {
+            //        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configPath);
+            //        if (File.Exists(filePath))
+            //        {
+            //            using (TextReader reader = new StreamReader(filePath))
+            //            {
+            //                var xml = XElement.Load(filePath);
+            //                var element = xml?.Elements()
+            //                                 .SingleOrDefault(e => e.Attribute("key") != null &&
+            //                                                       e.Attribute("key").Value.Equals(keyname));
+            //                if (element != null)
+            //                {
+            //                    config = element.Attribute("value").Value;
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+            //catch (Exception)
+            //{
+            //    config = string.Empty;
+            //}
             return config;
         }
     }

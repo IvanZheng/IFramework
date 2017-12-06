@@ -13,8 +13,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
-using System.Web.Hosting;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -249,37 +247,37 @@ namespace IFramework.Infrastructure
             return source;
         }
 
-        public static string GetTimeToString(DateTime datetime, bool isEnglish)
-        {
-            var lang = isEnglish ? "en-US" : "zh-CN";
-            var timetext = string.Empty;
-            var span = DateTime.Now - datetime;
-            if (span.Days > 30)
-            {
-                timetext = datetime.ToShortDateString();
-            }
-            else if (span.Days >= 1)
-            {
-                timetext = string.Format("{0}{1}", span.Days, GetResource("Day", lang));
-            }
-            else if (span.Hours >= 1)
-            {
-                timetext = string.Format("{0}{1}", span.Hours, GetResource("Hour", lang));
-            }
-            else if (span.Minutes >= 1)
-            {
-                timetext = string.Format("{0}{1}", span.Minutes, GetResource("Minute", lang));
-            }
-            else if (span.Seconds >= 1)
-            {
-                timetext = string.Format("{0}{1}", span.Seconds, GetResource("Second", lang));
-            }
-            else
-            {
-                timetext = string.Format("1{0}", GetResource("Second", lang));
-            }
-            return timetext;
-        }
+        //public static string GetTimeToString(DateTime datetime, bool isEnglish)
+        //{
+        //    var lang = isEnglish ? "en-US" : "zh-CN";
+        //    var timetext = string.Empty;
+        //    var span = DateTime.Now - datetime;
+        //    if (span.Days > 30)
+        //    {
+        //        timetext = datetime.ToShortDateString();
+        //    }
+        //    else if (span.Days >= 1)
+        //    {
+        //        timetext = string.Format("{0}{1}", span.Days, GetResource("Day", lang));
+        //    }
+        //    else if (span.Hours >= 1)
+        //    {
+        //        timetext = string.Format("{0}{1}", span.Hours, GetResource("Hour", lang));
+        //    }
+        //    else if (span.Minutes >= 1)
+        //    {
+        //        timetext = string.Format("{0}{1}", span.Minutes, GetResource("Minute", lang));
+        //    }
+        //    else if (span.Seconds >= 1)
+        //    {
+        //        timetext = string.Format("{0}{1}", span.Seconds, GetResource("Second", lang));
+        //    }
+        //    else
+        //    {
+        //        timetext = string.Format("1{0}", GetResource("Second", lang));
+        //    }
+        //    return timetext;
+        //}
 
         public static IQueryable<T> GetPageElements<T>(this IQueryable<T> query, int pageIndex, int pageSize)
         {
@@ -545,52 +543,52 @@ namespace IFramework.Infrastructure
             return flag;
         }
 
-        public static string GetLocalResource(string path, string key, string lang)
-        {
-            object resource = string.Empty;
-            if (!string.IsNullOrEmpty(lang))
-            {
-                resource = HttpContext.GetLocalResourceObject(path, key, new CultureInfo(lang));
-            }
-            else
-            {
-                resource = HttpContext.GetLocalResourceObject(path, key);
-            }
-            if (resource != null)
-            {
-                return resource.ToString();
-            }
-            return string.Empty;
-        }
+        //public static string GetLocalResource(string path, string key, string lang)
+        //{
+        //    object resource = string.Empty;
+        //    if (!string.IsNullOrEmpty(lang))
+        //    {
+        //        resource = HttpContext.GetLocalResourceObject(path, key, new CultureInfo(lang));
+        //    }
+        //    else
+        //    {
+        //        resource = HttpContext.GetLocalResourceObject(path, key);
+        //    }
+        //    if (resource != null)
+        //    {
+        //        return resource.ToString();
+        //    }
+        //    return string.Empty;
+        //}
 
-        public static string GetLocalResource(string path, string key)
-        {
-            return GetLocalResource(path, key, string.Empty);
-        }
+        //public static string GetLocalResource(string path, string key)
+        //{
+        //    return GetLocalResource(path, key, string.Empty);
+        //}
 
-        public static string GetResource(string key, string lang)
-        {
-            object resource = string.Empty;
-            if (!string.IsNullOrEmpty(lang))
-            {
-                resource = HttpContext.GetGlobalResourceObject("GlobalResource", key, new CultureInfo(lang));
-            }
-            else
-            {
-                resource = HttpContext.GetGlobalResourceObject("GlobalResource", key);
-            }
-            if (resource != null)
-            {
-                return resource.ToString();
-            }
-            return string.Empty;
-        }
+        //public static string GetResource(string key, string lang)
+        //{
+        //    object resource = string.Empty;
+        //    if (!string.IsNullOrEmpty(lang))
+        //    {
+        //        resource = HttpContext.GetGlobalResourceObject("GlobalResource", key, new CultureInfo(lang));
+        //    }
+        //    else
+        //    {
+        //        resource = HttpContext.GetGlobalResourceObject("GlobalResource", key);
+        //    }
+        //    if (resource != null)
+        //    {
+        //        return resource.ToString();
+        //    }
+        //    return string.Empty;
+        //}
 
 
-        public static string GetResource(string key)
-        {
-            return GetResource(key, string.Empty);
-        }
+        //public static string GetResource(string key)
+        //{
+        //    return GetResource(key, string.Empty);
+        //}
 
         public static string StyledSheetEncode(string s)
         {
@@ -698,19 +696,19 @@ namespace IFramework.Infrastructure
         //    return clonedObject;
         //}
 
-        public static string ResolveVirtualPath(string path)
-        {
-            if (string.IsNullOrEmpty(HttpRuntime.AppDomainAppVirtualPath))
-            {
-                return Path.Combine("/", path).Replace('\\', '/').Replace("//", "/");
-            }
-            return Path.Combine(HttpRuntime.AppDomainAppVirtualPath, path).Replace('\\', '/').Replace("//", "/");
-        }
+        //public static string ResolveVirtualPath(string path)
+        //{
+        //    if (string.IsNullOrEmpty(HttpRuntime.AppDomainAppVirtualPath))
+        //    {
+        //        return Path.Combine("/", path).Replace('\\', '/').Replace("//", "/");
+        //    }
+        //    return Path.Combine(HttpRuntime.AppDomainAppVirtualPath, path).Replace('\\', '/').Replace("//", "/");
+        //}
 
-        public static string MapPath(string virtualPath)
-        {
-            return HostingEnvironment.MapPath(virtualPath);
-        }
+        //public static string MapPath(string virtualPath)
+        //{
+        //    return HostingEnvironment.MapPath(virtualPath);
+        //}
 
         public static string GetDescription(this object obj)
         {

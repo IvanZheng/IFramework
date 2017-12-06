@@ -46,10 +46,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj">
       <Project>{7c17f97f-3515-4a1b-aead-01689d087de0}</Project>
       <Name>Sample.ApplicationEvent</Name>

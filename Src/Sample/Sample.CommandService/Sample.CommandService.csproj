@@ -379,10 +379,6 @@
       <Project>{bafca280-6b58-44e8-b0e7-ed6f51c0eaec}</Project>
       <Name>IFramework.AspNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ApplicationEventSubscriber\Sample.ApplicationEventSubscriber.csproj">
       <Project>{46731c1c-71c7-474a-9be7-45f3caa755f9}</Project>
       <Name>Sample.ApplicationEventSubscriber</Name>

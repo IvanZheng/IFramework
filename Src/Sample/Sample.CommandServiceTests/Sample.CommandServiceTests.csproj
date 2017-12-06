@@ -134,10 +134,6 @@
       <Project>{a92dd03b-ee4f-4a78-9fb2-279b6348c7d2}</Project>
       <Name>KafkaNET.Library</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Sample.CommandHandler\Sample.CommandHandler.csproj">
       <Project>{6760ea99-c3b6-4cb2-92eb-945ab3c3b04a}</Project>
       <Name>Sample.CommandHandler</Name>

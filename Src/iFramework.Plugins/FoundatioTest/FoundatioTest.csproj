@@ -90,10 +90,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0b36292c-8849-441d-8fb8-a053d43a8e72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\IFramework.FoundatioLockRedis\IFramework.FoundatioRedis.csproj">
       <Project>{5914cafb-b521-4a9e-9f5d-f0cdc439cfdb}</Project>
       <Name>IFramework.FoundatioRedis</Name>
