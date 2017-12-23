@@ -86,12 +86,16 @@ namespace IFramework.DependencyInjection.Microsoft
 
         public object GetService(Type t, params Parameter[] parameters)
         {
-            throw new NotImplementedException();
+            if (parameters.Length > 0)
+            {
+                throw new NotImplementedException();
+            }
+            return GetService(t);
         }
 
         public T GetService<T>(params Parameter[] overrides)
         {
-            if (overrides != null)
+            if (overrides.Length > 0)
             {
                 throw new NotImplementedException();
             }
@@ -105,7 +109,7 @@ namespace IFramework.DependencyInjection.Microsoft
 
         public IEnumerable<object> GetAllService(Type type, params Parameter[] parameters)
         {
-            if (parameters != null)
+            if (parameters.Length > 0)
             {
                 throw new NotImplementedException();
             }
@@ -115,7 +119,7 @@ namespace IFramework.DependencyInjection.Microsoft
 
         public IEnumerable<T> GetAllService<T>(params Parameter[] parameters)
         {
-            if (parameters != null)
+            if (parameters.Length > 0)
             {
                 throw new NotImplementedException();
             }

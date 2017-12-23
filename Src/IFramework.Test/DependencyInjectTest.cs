@@ -65,7 +65,7 @@ namespace IFramework.Test
             Console.WriteLine($"b: {b.Id}");
 
 
-            using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
+            using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope(ob => ob.RegisterType<IA, A>(ServiceLifetime.Singleton)))
             {
                 scope.GetService<IB>();
                 var scopedServiceProvider = scope.GetService<IServiceProvider>();

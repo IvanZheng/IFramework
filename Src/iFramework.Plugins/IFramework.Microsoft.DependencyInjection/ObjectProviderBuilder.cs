@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace IFramework.DependencyInjection.Microsoft
 {
-    public class ObjectProviderBuilder: IObjectProviderBuilder
+    public class ObjectProviderBuilder : IObjectProviderBuilder
     {
         private readonly IServiceCollection _serviceCollection;
         public ObjectProviderBuilder(IServiceCollection serviceCollection = null)
@@ -17,7 +17,10 @@ namespace IFramework.DependencyInjection.Microsoft
 
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
-            _serviceCollection.Add(serviceCollection);
+            if (serviceCollection != null)
+            {
+                _serviceCollection.Add(serviceCollection);
+            }
             return new ObjectProvider(_serviceCollection);
         }
 
@@ -28,7 +31,7 @@ namespace IFramework.DependencyInjection.Microsoft
 
         public IObjectProviderBuilder RegisterType(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections)
         {
-            if (injections != null)
+            if (injections.Length > 0)
             {
                 throw new NotImplementedException();
             }
@@ -38,7 +41,7 @@ namespace IFramework.DependencyInjection.Microsoft
 
         public IObjectProviderBuilder RegisterType(Type from, Type to, string name = null, params Injection[] injections)
         {
-            if (injections != null || name != null)
+            if (injections.Length > 0 || name != null)
             {
                 throw new NotImplementedException();
             }
@@ -52,11 +55,11 @@ namespace IFramework.DependencyInjection.Microsoft
             throw new NotImplementedException();
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections) 
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections)
             where TFrom : class where TTo : class, TFrom
 
         {
-            if (injections != null)
+            if (injections.Length > 0)
             {
                 throw new NotImplementedException();
             }
@@ -64,7 +67,7 @@ namespace IFramework.DependencyInjection.Microsoft
             return this;
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections) 
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections)
             where TFrom : class where TTo : class, TFrom
 
         {
@@ -75,7 +78,7 @@ namespace IFramework.DependencyInjection.Microsoft
           where TFrom : class where TTo : class, TFrom
 
         {
-            if (injections != null)
+            if (injections.Length > 0)
             {
                 throw new NotImplementedException();
             }
