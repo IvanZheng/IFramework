@@ -3,28 +3,39 @@ using System.Collections.Generic;
 using System.Text;
 using IFramework.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace IFramework.DependencyInjection.Microsoft
 {
     public class ObjectProviderBuilder: IObjectProviderBuilder
     {
+        private readonly IServiceCollection _serviceCollection;
+        public ObjectProviderBuilder(IServiceCollection serviceCollection = null)
+        {
+            _serviceCollection = serviceCollection ?? new ServiceCollection();
+        }
 
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
-            throw new NotImplementedException();
+            _serviceCollection.Add(serviceCollection);
+            return new ObjectProvider(_serviceCollection);
         }
 
-        public IObjectProviderBuilder RegisterType(Type @from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections)
+        public IObjectProviderBuilder RegisterType(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections)
         {
             throw new NotImplementedException();
         }
 
-        public IObjectProviderBuilder RegisterType(Type @from, Type to, ServiceLifetime lifetime, params Injection[] injections)
+        public IObjectProviderBuilder RegisterType(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections)
         {
-            throw new NotImplementedException();
+            if (injections != null)
+            {
+                throw new NotImplementedException();
+            }
+            return this;
         }
 
-        public IObjectProviderBuilder RegisterType(Type @from, Type to, string name = null, params Injection[] injections)
+        public IObjectProviderBuilder RegisterType(Type from, Type to, string name = null, params Injection[] injections)
         {
             throw new NotImplementedException();
         }
