@@ -53,7 +53,7 @@ namespace IFramework.Config
         }
 
         public Configuration UseMessageStore<TMessageStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TMessageStore : IMessageStore
+            where TMessageStore : class, IMessageStore
         {
             NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
             IoCFactory.Instance.RegisterType<IMessageStore, TMessageStore>(lifetime);

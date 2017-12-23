@@ -32,50 +32,75 @@ namespace IFramework.DependencyInjection.Microsoft
             {
                 throw new NotImplementedException();
             }
+            _serviceCollection.RegisterType(from, to, lifetime);
             return this;
         }
 
         public IObjectProviderBuilder RegisterType(Type from, Type to, string name = null, params Injection[] injections)
         {
-            throw new NotImplementedException();
+            if (injections != null || name != null)
+            {
+                throw new NotImplementedException();
+            }
+            _serviceCollection.RegisterType(from, to);
+            return this;
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections) where TTo : TFrom
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections)
+            where TFrom : class where TTo : class, TFrom
         {
             throw new NotImplementedException();
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections) where TTo : TFrom
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections) 
+            where TFrom : class where TTo : class, TFrom
+
+        {
+            if (injections != null)
+            {
+                throw new NotImplementedException();
+            }
+            _serviceCollection.RegisterType<TFrom, TTo>();
+            return this;
+        }
+
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections) 
+            where TFrom : class where TTo : class, TFrom
+
         {
             throw new NotImplementedException();
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections) where TTo : TFrom
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections)
+          where TFrom : class where TTo : class, TFrom
+
+        {
+            if (injections != null)
+            {
+                throw new NotImplementedException();
+            }
+            _serviceCollection.RegisterType<TFrom, TTo>(lifetime);
+            return this;
+        }
+
+        public IObjectProviderBuilder RegisterInstance(Type t, string name, object instance)
         {
             throw new NotImplementedException();
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections) where TTo : TFrom
+        public IObjectProviderBuilder RegisterInstance(Type t, object instance)
         {
-            throw new NotImplementedException();
+            _serviceCollection.AddSingleton(t, instance);
+            return this;
         }
 
-        public IObjectProviderBuilder RegisterInstance(Type t, string name, object instance, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        public IObjectProviderBuilder RegisterInstance<TInterface>(TInterface instance) where TInterface : class
         {
-            throw new NotImplementedException();
+            _serviceCollection.AddSingleton(instance);
+            return this;
         }
 
-        public IObjectProviderBuilder RegisterInstance(Type t, object instance, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IObjectProviderBuilder RegisterInstance<TInterface>(TInterface instance, ServiceLifetime lifetime = ServiceLifetime.Singleton) where TInterface : class
-        {
-            throw new NotImplementedException();
-        }
-
-        public IObjectProviderBuilder RegisterInstance<TInterface>(string name, TInterface instance, ServiceLifetime lifetime = ServiceLifetime.Singleton) where TInterface : class
+        public IObjectProviderBuilder RegisterInstance<TInterface>(string name, TInterface instance) where TInterface : class
         {
             throw new NotImplementedException();
         }

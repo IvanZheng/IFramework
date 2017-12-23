@@ -94,7 +94,7 @@ namespace IFramework.DependencyInjection
         }
 
         public IObjectProviderBuilder RegisterType<TService, TImplementation>(ServiceLifetime lifetime)
-            where  TImplementation:TService
+            where TService : class where TImplementation : class, TService
         {
             ObjectProviderBuilder.RegisterType<TService, TImplementation>(lifetime);
             return ObjectProviderBuilder;
