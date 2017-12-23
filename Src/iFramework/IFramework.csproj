@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="IoC\IoCInstanceProvider.cs" />
-    <Compile Remove="IoC\IoCServiceBehavior.cs" />
+    <Compile Remove="DependencyInjection\IoCInstanceProvider.cs" />
+    <Compile Remove="DependencyInjection\IoCServiceBehavior.cs" />
   </ItemGroup>
 
   <ItemGroup>

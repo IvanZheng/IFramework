@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using IFramework.Domain;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Specifications;
 using IFramework.UnitOfWork;
 
@@ -12,7 +12,7 @@ namespace IFramework.Repositories
 {
     public class DomainRepository: IDomainRepository
     {
-        private readonly IContainer _container;
+        private readonly IObjectProvider _objectProvider;
         protected object _DbContext;
         private readonly Dictionary<Type, IRepository> _Repositories;
         private readonly IUnitOfWork _UnitOfWork;
@@ -23,11 +23,11 @@ namespace IFramework.Repositories
         ///     Initializes a new instance of DomainRepository.
         /// </summary>
         /// <param name="context">The repository context being used by the repository.</param>
-        public DomainRepository(object dbContext, IUnitOfWork unitOfWork, IContainer container)
+        public DomainRepository(object dbContext, IUnitOfWork unitOfWork, IObjectProvider objectProvider)
         {
             _DbContext = dbContext;
             _UnitOfWork = unitOfWork;
-            _container = container;
+            _objectProvider = objectProvider;
             _Repositories = new Dictionary<Type, IRepository>();
         }
 
@@ -40,7 +40,7 @@ namespace IFramework.Repositories
             IRepository repository;
             if (!_Repositories.TryGetValue(typeof(IRepository<TAggregateRoot>), out repository))
             {
-                repository = _container.Resolve<IRepository<TAggregateRoot>>(new Parameter("dbContext", _DbContext),
+                repository = _objectProvider.GetService<IRepository<TAggregateRoot>>(new Parameter("dbContext", _DbContext),
                                                                              new Parameter("unitOfWork", _UnitOfWork));
                 _Repositories.Add(typeof(IRepository<TAggregateRoot>), repository);
             }

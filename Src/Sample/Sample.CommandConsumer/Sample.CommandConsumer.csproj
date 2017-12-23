@@ -100,30 +100,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj">
-      <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
-      <Name>IFramework.EntityFramework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj">
-      <Project>{8edc415a-2e94-402a-81f0-baf71a3bf6d7}</Project>
-      <Name>IFramework.Log4Net</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj">
-      <Project>{185B5FD4-016C-416E-9213-522573AFEF13}</Project>
-      <Name>IFramework.MessageQueue.ConfluentKafka</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.Kafka\IFramework.MessageQueue.MSKafka.csproj">
-      <Project>{c52b89cf-d3a6-48fc-ba3b-0daff977fa6e}</Project>
-      <Name>IFramework.MessageQueue.MSKafka</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStore.EntityFramework\IFramework.MessageStore.EntityFramework.csproj">
-      <Project>{78f72ab4-4f97-4b82-99ea-eb2d46cb63ca}</Project>
-      <Name>IFramework.MessageStore.EntityFramework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Unity\IFramework.Unity.csproj">
-      <Project>{57f61e21-4d31-4ce0-9dfb-7be6a113654a}</Project>
-      <Name>IFramework.Unity</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Sample.CommandHandler\Sample.CommandHandler.csproj">
       <Project>{6760ea99-c3b6-4cb2-92eb-945ab3c3b04a}</Project>
       <Name>Sample.CommandHandler</Name>

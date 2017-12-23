@@ -6,12 +6,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
-    <PackageReference Include="xunit" Version="2.3.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\iFramework.Plugins\IFramework.Microsoft.DependencyInjection\IFramework.DependencyInjection.Microsoft.csproj" />
-    <ProjectReference Include="..\IFramework\IFramework.csproj" />
+    <ProjectReference Include="..\..\IFramework\IFramework.csproj" />
   </ItemGroup>
 
 </Project>

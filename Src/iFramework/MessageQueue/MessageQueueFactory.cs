@@ -2,7 +2,7 @@
 using IFramework.Command.Impl;
 using IFramework.Config;
 using IFramework.Event.Impl;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 
 namespace IFramework.MessageQueue
@@ -28,8 +28,8 @@ namespace IFramework.MessageQueue
                                                              string[] handlerProvierNames, 
                                                              ConsumerConfig consumerConfig = null)
         {
-            var container = IoCFactory.Instance.CurrentContainer;
-            var messagePublisher = container.Resolve<IMessagePublisher>();
+            var container = IoCFactory.Instance.ObjectProvider;
+            var messagePublisher = container.GetService<IMessagePublisher>();
             var handlerProvider = new CommandHandlerProvider(handlerProvierNames);
             var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
             var commandConsumer = new CommandConsumer(messageQueueClient, messagePublisher, handlerProvider,

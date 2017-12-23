@@ -65,10 +65,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\iFramework.Infrastructure.EntityFramework\IFramework.EntityFramework.csproj">
-      <Project>{c00b8ad6-47c2-4642-877e-2c759d05dcfe}</Project>
-      <Name>IFramework.EntityFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj">
       <Project>{7c17f97f-3515-4a1b-aead-01689d087de0}</Project>
       <Name>Sample.ApplicationEvent</Name>

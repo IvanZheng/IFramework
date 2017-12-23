@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 
 namespace IFramework.Infrastructure
 {

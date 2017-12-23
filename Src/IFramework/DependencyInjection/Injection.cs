@@ -1,4 +1,4 @@
-﻿namespace IFramework.IoC
+﻿namespace IFramework.DependencyInjection
 {
     public interface Injection { }
 

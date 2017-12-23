@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IFramework.IoC
+namespace IFramework.DependencyInjection
 {
     public class LogInterceptionAttribute: Attribute
     {

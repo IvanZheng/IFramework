@@ -10,7 +10,7 @@ using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
@@ -18,7 +18,7 @@ using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace IFramework.Command.Impl
 {
-    public class CommandConsumer: IMessageConsumer
+    public class CommandConsumer : IMessageConsumer
     {
         protected CancellationTokenSource _cancellationTokenSource;
         protected string _commandQueueName;
@@ -49,7 +49,7 @@ namespace IFramework.Command.Impl
             _messageQueueClient = messageQueueClient;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
                                                      _consumerConfig.MailboxProcessBatchCount);
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name) : null;
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
         }
 
         public string Producer => _producer ?? (_producer = $"{_commandQueueName}.{_consumerId}");
@@ -131,10 +131,11 @@ namespace IFramework.Command.Impl
                 }
                 var needRetry = command.NeedRetry;
 
-                using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+                using (var scope = IoCFactory.Instance
+                                             .ObjectProvider
+                                             .CreateScope(builder => builder.RegisterInstance(typeof(IMessageContext), commandContext)))
                 {
-                    scope.RegisterInstance(typeof(IMessageContext), commandContext);
-                    var messageStore = scope.Resolve<IMessageStore>();
+                    var messageStore = scope.GetService<IMessageStore>();
                     var eventMessageStates = new List<MessageState>();
                     var commandHandledInfo = messageStore.GetCommandHandledInfo(commandContext.MessageID);
                     if (commandHandledInfo != null)
@@ -150,7 +151,7 @@ namespace IFramework.Command.Impl
                     }
                     else
                     {
-                        var eventBus = scope.Resolve<IEventBus>();
+                        var eventBus = scope.GetService<IEventBus>();
                         var messageHandlerType = _handlerProvider.GetHandlerTypes(command.GetType()).FirstOrDefault();
                         _logger?.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
 
@@ -174,7 +175,7 @@ namespace IFramework.Command.Impl
                                 {
                                     if (messageHandler == null)
                                     {
-                                        messageHandler = scope.Resolve(messageHandlerType.Type);
+                                        messageHandler = scope.GetService(messageHandlerType.Type);
                                     }
 
                                     using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,

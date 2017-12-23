@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.MessageQueue;
 
 namespace IFramework.Message.Impl
@@ -26,7 +26,7 @@ namespace IFramework.Message.Impl
             _defaultTopic = defaultTopic;
             _needMessageStore = Configuration.Instance.NeedMessageStore;
             _messageStateQueue = new BlockingCollection<MessageState>();
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name) : null;
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
         }
 
         protected BlockingCollection<MessageState> _messageStateQueue { get; set; }

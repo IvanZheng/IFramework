@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
 
-namespace IFramework.IoC
+namespace IFramework.DependencyInjection
 {
     public interface ILogInterceptionBehavior
     {

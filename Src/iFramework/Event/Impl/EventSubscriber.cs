@@ -8,7 +8,7 @@ using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Logging;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
@@ -49,7 +49,7 @@ namespace IFramework.Event.Impl
             _commandBus = commandBus;
             _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
                                                      _consumerConfig.MailboxProcessBatchCount);
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name) : null;
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
         }
 
         public string Producer => _producer ?? (_producer = $"{_subscriptionName}.{_topic}.{_consumerId}");
@@ -89,8 +89,8 @@ namespace IFramework.Event.Impl
 
         protected void SaveEvent(IMessageContext eventContext)
         {
-            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-            using (var messageStore = scope.Resolve<IMessageStore>())
+            using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
+            using (var messageStore = scope.GetService<IMessageStore>())
             {
                 messageStore.SaveEvent(eventContext);
             }
@@ -117,19 +117,20 @@ namespace IFramework.Event.Impl
                 //messageHandlerTypes.ForEach(messageHandlerType =>
                 foreach (var messageHandlerType in messageHandlerTypes)
                 {
-                    using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
+                    using (var scope = IoCFactory.Instance
+                                                 .ObjectProvider
+                                                 .CreateScope(builder => builder.RegisterInstance(typeof(IMessageContext), eventContext)))
                     {
-                        scope.RegisterInstance(typeof(IMessageContext), eventContext);
-                        var messageStore = scope.Resolve<IMessageStore>();
+                        var messageStore = scope.GetService<IMessageStore>();
                         var subscriptionName = $"{_subscriptionName}.{messageHandlerType.Type.FullName}";
                         if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
                         {
                             var eventMessageStates = new List<MessageState>();
                             var commandMessageStates = new List<MessageState>();
-                            var eventBus = scope.Resolve<IEventBus>();
+                            var eventBus = scope.GetService<IEventBus>();
                             try
                             {
-                                var messageHandler = scope.Resolve(messageHandlerType.Type);
+                                var messageHandler = scope.GetService(messageHandlerType.Type);
                                 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
                                                                                    new TransactionOptions
                                                                                    {

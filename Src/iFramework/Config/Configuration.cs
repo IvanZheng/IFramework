@@ -8,9 +8,10 @@ using IFramework.Infrastructure;
 using IFramework.Infrastructure.Caching;
 using IFramework.Infrastructure.Caching.Impl;
 using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.Config
 {
@@ -39,36 +40,35 @@ namespace IFramework.Config
 
         private Configuration UserDataContractJson()
         {
-            IoCFactory.Instance.CurrentContainer
+            IoCFactory.Instance
                       .RegisterInstance(typeof(IJsonConvert)
                                         , new DataContractJsonConvert());
             return this;
         }
 
-        public Configuration UseMemoryCahce(Lifetime lifetime = Lifetime.Hierarchical)
+        public Configuration UseMemoryCahce(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            IoCFactory.Instance.CurrentContainer.RegisterType<ICacheManager, MemoryCacheManager>(lifetime);
+            IoCFactory.Instance.RegisterType<ICacheManager, MemoryCacheManager>(lifetime);
             return this;
         }
 
-        public Configuration UseMessageStore<TMessageStore>(Lifetime lifetime = Lifetime.Hierarchical)
+        public Configuration UseMessageStore<TMessageStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TMessageStore : IMessageStore
         {
             NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
-            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageStore, TMessageStore>(lifetime);
+            IoCFactory.Instance.RegisterType<IMessageStore, TMessageStore>(lifetime);
             return this;
         }
 
         public Configuration UseNoneLogger()
         {
-            IoCFactory.Instance.CurrentContainer.RegisterType<ILoggerLevelController, LoggerLevelController>(Lifetime.Singleton);
-            IoCFactory.Instance.CurrentContainer
-                      .RegisterInstance(typeof(ILoggerFactory)
+            IoCFactory.Instance.RegisterType<ILoggerLevelController, LoggerLevelController>(ServiceLifetime.Singleton);
+            IoCFactory.Instance.RegisterInstance(typeof(ILoggerFactory)
                                         , new MockLoggerFactory());
             return this;
         }
 
-        public Configuration RegisterDefaultEventBus(Lifetime lifetime = Lifetime.Hierarchical)
+        public Configuration RegisterDefaultEventBus(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             return RegisterDefaultEventBus(null, lifetime);
         }
@@ -81,16 +81,15 @@ namespace IFramework.Config
         public Configuration UseSyncEventSubscriberProvider(params string[] eventSubscriberProviders)
         {
             var provider = new SyncEventSubscriberProvider(eventSubscriberProviders);
-            IoCFactory.Instance.CurrentContainer
-                      .RegisterInstance(provider);
+            IoCFactory.Instance.RegisterInstance(provider);
             return this;
         }
 
-        public Configuration RegisterDefaultEventBus(IContainer contaienr, Lifetime lifetime = Lifetime.Hierarchical)
+        public Configuration RegisterDefaultEventBus(IObjectProviderBuilder builder, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            var container = contaienr ?? IoCFactory.Instance.CurrentContainer;
-            container.RegisterInstance(new SyncEventSubscriberProvider());
-            container.RegisterType<IEventBus, EventBus>(lifetime);
+            builder = builder ?? IoCFactory.Instance.ObjectProviderBuilder;
+            builder.RegisterInstance(new SyncEventSubscriberProvider());
+            builder.RegisterType<IEventBus, EventBus>(lifetime);
             return this;
         }
 

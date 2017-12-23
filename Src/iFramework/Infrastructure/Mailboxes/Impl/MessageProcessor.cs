@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
@@ -20,7 +20,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         public MessageProcessor(IProcessingMessageScheduler<IMessageContext> scheduler, int batchCount = 100)
         {
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType()) : null;
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType());
             _batchCount = batchCount;
             _processingMessageScheduler = scheduler;
             MailboxDictionary = new ConcurrentDictionary<string, ProcessingMailbox<IMessageContext>>();

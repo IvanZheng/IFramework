@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 
 namespace IFramework.Message.Impl
 {

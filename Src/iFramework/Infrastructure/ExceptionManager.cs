@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using IFramework.Exceptions;
 using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using System.Data;
 
 namespace IFramework.Infrastructure
@@ -68,9 +68,7 @@ namespace IFramework.Infrastructure
 
     public static class ExceptionManager
     {
-        private static readonly ILogger Logger = IoCFactory.IsInit()
-                                                      ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager))
-                                                      : null;
+        private static readonly ILogger Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager));
 
         private static string _unKnownMessage = ErrorCode.UnknownError.ToString();
 

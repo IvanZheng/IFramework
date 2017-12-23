@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 
 namespace IFramework.Infrastructure
 {
@@ -36,7 +36,7 @@ namespace IFramework.Infrastructure
         public TaskWorker(string id = null)
         {
             Id = id;
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType()) : null;
+            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType());
         }
 
         public TaskWorker(WorkDelegate run, string id = null)

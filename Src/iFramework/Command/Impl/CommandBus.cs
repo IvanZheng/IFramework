@@ -8,7 +8,7 @@ using IFramework.Config;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
@@ -198,8 +198,8 @@ namespace IFramework.Command.Impl
 
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {
-            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-            using (var messageStore = scope.Resolve<IMessageStore>())
+            using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
+            using (var messageStore = scope.GetService<IMessageStore>())
             {
                 return messageStore.GetAllUnSentCommands((messageId,
                                                           message,
@@ -235,8 +235,8 @@ namespace IFramework.Command.Impl
             {
                 Task.Run(() =>
                 {
-                    using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-                    using (var messageStore = scope.Resolve<IMessageStore>())
+                    using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
+                    using (var messageStore = scope.GetService<IMessageStore>())
                     {
                         messageStore.RemoveSentCommand(messageState.MessageID);
                     }

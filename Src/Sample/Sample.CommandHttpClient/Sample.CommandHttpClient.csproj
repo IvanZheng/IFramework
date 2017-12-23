@@ -67,10 +67,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.WebApi\IFramework.AspNet.csproj">
-      <Project>{bafca280-6b58-44e8-b0e7-ed6f51c0eaec}</Project>
-      <Name>IFramework.AspNet</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Sample.Command\Sample.Command.csproj">
       <Project>{1e6d9a9a-ab62-4450-b589-2f434462dfe9}</Project>
       <Name>Sample.Command</Name>

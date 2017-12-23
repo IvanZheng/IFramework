@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using IFramework.Infrastructure.Logging;
 
-namespace IFramework.IoC
+namespace IFramework.DependencyInjection
 {
     public static class AopAction
     {
