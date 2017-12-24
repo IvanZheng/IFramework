@@ -18,11 +18,12 @@ namespace IFramework.DependencyInjection.Autofac
         {
             _containerBuilder = new ContainerBuilder();
         }
+
         public ObjectProviderBuilder(ContainerBuilder builder)
         {
-
             _containerBuilder = builder ?? throw new ArgumentNullException(nameof(builder));
         }
+
         public ObjectProviderBuilder(IServiceCollection serviceCollection = null)
             : this()
         {
@@ -45,7 +46,8 @@ namespace IFramework.DependencyInjection.Autofac
         {
             _containerBuilder.RegisterInstance(instance)
                              .As(t);
-            return this; ;
+            return this;
+            ;
         }
 
         public IObjectProviderBuilder RegisterInstance(Type t, string name, object instance)
@@ -79,20 +81,28 @@ namespace IFramework.DependencyInjection.Autofac
             if (string.IsNullOrEmpty(name))
             {
                 if (to.IsGenericType)
+                {
                     registrationBuilder = _containerBuilder.RegisterGeneric(to).As(from);
+                }
                 else
+                {
                     registrationBuilder = _containerBuilder.RegisterType(to).As(from);
+                }
             }
             else
             {
                 if (to.IsGenericType)
+                {
                     registrationBuilder = _containerBuilder.RegisterGeneric(to)
-                                                 .Named(name, from)
-                                                 .WithParameters(injectionMembers);
+                                                           .Named(name, from)
+                                                           .WithParameters(injectionMembers);
+                }
                 else
+                {
                     registrationBuilder = _containerBuilder.RegisterType(to)
-                                                 .Named(name, from)
-                                                 .WithParameters(injectionMembers);
+                                                           .Named(name, from)
+                                                           .WithParameters(injectionMembers);
+                }
             }
             RegisterInterceptor(registrationBuilder, injections);
             return this;
@@ -106,16 +116,137 @@ namespace IFramework.DependencyInjection.Autofac
             if (to.IsGenericType)
             {
                 registrationBuilder = _containerBuilder.RegisterGeneric(to)
-                                             .As(from)
-                                             .WithParameters(injectionMembers)
-                                             .InstanceLifetime(lifetime);
+                                                       .As(from)
+                                                       .WithParameters(injectionMembers)
+                                                       .InstanceLifetime(lifetime);
             }
             else
             {
                 registrationBuilder = _containerBuilder.RegisterType(to)
-                                             .As(from)
-                                             .WithParameters(injectionMembers)
-                                             .InstanceLifetime(lifetime);
+                                                       .As(from)
+                                                       .WithParameters(injectionMembers)
+                                                       .InstanceLifetime(lifetime);
+            }
+
+            RegisterInterceptor(registrationBuilder, injections);
+            return this;
+        }
+
+        public IObjectProviderBuilder RegisterType(Type from,
+                                                   Type to,
+                                                   string name,
+                                                   ServiceLifetime lifetime,
+                                                   params Injection[] injections)
+        {
+            var injectionMembers = GetInjectionParameters(injections);
+            dynamic registrationBuilder;
+            if (to.IsGenericType)
+            {
+                registrationBuilder = _containerBuilder.RegisterGeneric(to)
+                                                       .Named(name, from)
+                                                       .InstanceLifetime(lifetime)
+                                                       .WithParameters(injectionMembers);
+            }
+            else
+            {
+                registrationBuilder = _containerBuilder.RegisterType(to)
+                                                       .Named(name, from)
+                                                       .InstanceLifetime(lifetime)
+                                                       .WithParameters(injectionMembers);
+            }
+
+            RegisterInterceptor(registrationBuilder, injections);
+            return this;
+        }
+
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections)
+            where TFrom : class where TTo : class, TFrom
+        {
+            var injectionMembers = GetInjectionParameters(injections);
+
+            dynamic registrationBuilder;
+            if (typeof(TTo).IsGenericType)
+            {
+                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
+                                                       .As(typeof(TFrom))
+                                                       .InstanceLifetime(lifetime)
+                                                       .WithParameters(injectionMembers);
+            }
+            else
+            {
+                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
+                                                       .As(typeof(TFrom))
+                                                       .InstanceLifetime(lifetime)
+                                                       .WithParameters(injectionMembers);
+            }
+
+            RegisterInterceptor(registrationBuilder, injections);
+            return this;
+        }
+
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections)
+            where TFrom : class where TTo : class, TFrom
+        {
+            var injectionMembers = GetInjectionParameters(injections);
+            dynamic registrationBuilder;
+            if (typeof(TTo).IsGenericType)
+            {
+                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
+                                                       .As(typeof(TFrom))
+                                                       .WithParameters(injectionMembers);
+            }
+            else
+            {
+                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
+                                                       .As(typeof(TFrom))
+                                                       .WithParameters(injectionMembers);
+            }
+
+            RegisterInterceptor(registrationBuilder, injections);
+            return this;
+        }
+
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections)
+            where TFrom : class where TTo : class, TFrom
+        {
+            var injectionMembers = GetInjectionParameters(injections);
+            dynamic registrationBuilder;
+            if (typeof(TTo).IsGenericType)
+            {
+                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
+                                                       .Named(name, typeof(TFrom))
+                                                       .WithParameters(injectionMembers);
+            }
+            else
+            {
+                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
+                                                       .Named(name, typeof(TFrom))
+                                                       .WithParameters(injectionMembers);
+            }
+
+            RegisterInterceptor(registrationBuilder, injections);
+            return this;
+        }
+
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections)
+            where TFrom : class where TTo : class, TFrom
+        {
+            var injectionMembers = GetInjectionParameters(injections);
+            var builder = new ContainerBuilder();
+            dynamic registrationBuilder;
+            if (typeof(TTo).IsGenericType)
+            {
+                registrationBuilder = builder.RegisterGeneric(typeof(TTo))
+                                             .Named(name, typeof(TFrom))
+                                             .InstanceLifetime(lifetime)
+                                             .WithParameters(injectionMembers);
+            }
+            else
+            {
+                registrationBuilder = builder.RegisterType(typeof(TTo))
+                                             .Named(name, typeof(TFrom))
+                                             .InstanceLifetime(lifetime)
+                                             .WithParameters(injectionMembers);
             }
 
             RegisterInterceptor(registrationBuilder, injections);
@@ -142,108 +273,10 @@ namespace IFramework.DependencyInjection.Autofac
                 }
                 else if (injection is InterceptionBehaviorInjection)
                 {
-                    var interceptorType = ((InterceptionBehaviorInjection)injection).BehaviorType;
+                    var interceptorType = ((InterceptionBehaviorInjection) injection).BehaviorType;
                     RegistrationExtensions.InterceptedBy(registrationBuilder, interceptorType);
                 }
             });
-        }
-
-        public IObjectProviderBuilder RegisterType(Type from, Type to, string name, ServiceLifetime lifetime,
-                                       params Injection[] injections)
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-            dynamic registrationBuilder;
-            if (to.IsGenericType)
-                registrationBuilder = _containerBuilder.RegisterGeneric(to)
-                                             .Named(name, from)
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
-            else
-                registrationBuilder = _containerBuilder.RegisterType(to)
-                                             .Named(name, from)
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections)
-            where TFrom : class where TTo : class, TFrom
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-
-            dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
-                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
-                                             .As(typeof(TFrom))
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
-            else
-                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
-                                             .As(typeof(TFrom))
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections)
-            where TFrom : class where TTo : class, TFrom
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-            dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
-                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
-                                             .As(typeof(TFrom))
-                                             .WithParameters(injectionMembers);
-            else
-                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
-                                             .As(typeof(TFrom))
-                                             .WithParameters(injectionMembers);
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections)
-            where TFrom : class where TTo : class, TFrom
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-            dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
-                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
-                                             .Named(name, typeof(TFrom))
-                                             .WithParameters(injectionMembers);
-            else
-                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
-                                             .Named(name, typeof(TFrom))
-                                             .WithParameters(injectionMembers);
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections)
-            where TFrom : class where TTo : class, TFrom
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-            var builder = new ContainerBuilder();
-            dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
-                registrationBuilder = builder.RegisterGeneric(typeof(TTo))
-                                             .Named(name, typeof(TFrom))
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
-            else
-                registrationBuilder = builder.RegisterType(typeof(TTo))
-                                             .Named(name, typeof(TFrom))
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
         }
 
         private IEnumerable<global::Autofac.Core.Parameter> GetInjectionParameters(Injection[] injections)

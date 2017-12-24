@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using IFramework.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Parameter = IFramework.DependencyInjection.Parameter;
 
 namespace IFramework.DependencyInjection.Microsoft
 {
     public class ObjectProvider : IObjectProvider
     {
-        private readonly IServiceScope _serviceScope;
-        private readonly IServiceProvider _serviceProvider;
         private readonly IObjectProvider _extendedObjectProvider;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScope _serviceScope;
 
 
         public ObjectProvider(IServiceCollection serviceCollection)
@@ -27,9 +24,7 @@ namespace IFramework.DependencyInjection.Microsoft
         }
 
         public ObjectProvider(IServiceScope serviceScope, IServiceCollection serviceCollection, IObjectProvider parent)
-            : this(serviceScope, new ObjectProvider(serviceCollection), parent)
-        {
-        }
+            : this(serviceScope, new ObjectProvider(serviceCollection), parent) { }
 
         public ObjectProvider(IServiceScope serviceScope, IObjectProvider parent)
         {
@@ -52,6 +47,7 @@ namespace IFramework.DependencyInjection.Microsoft
         }
 
         public IObjectProvider Parent { get; }
+
         public IObjectProvider CreateScope()
         {
             return new ObjectProvider(_serviceProvider.CreateScope(), this);
@@ -100,7 +96,7 @@ namespace IFramework.DependencyInjection.Microsoft
             {
                 throw new NotImplementedException();
             }
-            return (T)GetService(typeof(T));
+            return (T) GetService(typeof(T));
         }
 
         public T GetService<T>(string name, params Parameter[] overrides)
@@ -115,7 +111,7 @@ namespace IFramework.DependencyInjection.Microsoft
                 throw new NotImplementedException();
             }
             return _extendedObjectProvider?.GetServices(type)
-                                           .Union(_serviceProvider.GetServices(type));
+                                          .Union(_serviceProvider.GetServices(type));
         }
 
         public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters)
