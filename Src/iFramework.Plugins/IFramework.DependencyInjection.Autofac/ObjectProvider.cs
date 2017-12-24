@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Autofac;
 using IFramework.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ namespace IFramework.DependencyInjection.Autofac
     public class ObjectProvider : IObjectProvider
     {
         private readonly ILifetimeScope _scope;
+        private bool _disposed;
         private IEnumerable<global::Autofac.Core.Parameter> GetResolvedParameters(Parameter[] resolvedParameters)
         {
             var parameters = new List<global::Autofac.Core.Parameter>();
@@ -28,21 +30,35 @@ namespace IFramework.DependencyInjection.Autofac
 
         public void Dispose()
         {
-           _scope.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                _scope.Dispose();
+            }
         }
 
         public IObjectProvider Parent { get; }
         public IObjectProvider CreateScope()
         {
-            return new ObjectProvider(_scope.BeginLifetimeScope(), this);
+            IObjectProvider objectProvider = null;
+            objectProvider = new ObjectProvider(_scope.BeginLifetimeScope(builder =>
+            {
+                builder.Register(componentContext => objectProvider)
+                       .SingleInstance();
+            }), this);
+            return objectProvider;
         }
 
         public IObjectProvider CreateScope(IServiceCollection serviceCollection)
         {
-            return new ObjectProvider(_scope.BeginLifetimeScope(builder =>
+            IObjectProvider objectProvider = null;
+            objectProvider = new ObjectProvider(_scope.BeginLifetimeScope(builder =>
             {
                 builder.Populate(serviceCollection);
+                builder.Register(componentContext => objectProvider)
+                       .SingleInstance();
             }), this);
+            return objectProvider;
         }
 
         public IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction)
@@ -51,12 +67,15 @@ namespace IFramework.DependencyInjection.Autofac
             {
                 throw new ArgumentNullException(nameof(buildAction));
             }
-
-            return new ObjectProvider(_scope.BeginLifetimeScope(builder =>
+            IObjectProvider objectProvider = null;
+            objectProvider = new ObjectProvider(_scope.BeginLifetimeScope(builder =>
             {
+                builder.Register(componentContext => objectProvider)
+                       .SingleInstance();
                 var providerBuilder = new ObjectProviderBuilder(builder);
                 buildAction(providerBuilder);
             }), this);
+            return objectProvider;
         }
 
         public object GetService(Type t, params Parameter[] parameters)

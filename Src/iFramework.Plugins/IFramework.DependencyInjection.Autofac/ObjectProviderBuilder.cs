@@ -35,14 +35,18 @@ namespace IFramework.DependencyInjection.Autofac
             {
                 _containerBuilder.Populate(serviceCollection);
             }
-            return new ObjectProvider(_containerBuilder.Build());
+            IObjectProvider objectProvider = null;
+            _containerBuilder.Register(componentContext => objectProvider)
+                             .SingleInstance();
+            objectProvider = new ObjectProvider(_containerBuilder.Build());
+            return objectProvider;
         }
 
         public IObjectProviderBuilder RegisterInstance(Type t, object instance)
         {
             _containerBuilder.RegisterInstance(instance)
                              .As(t);
-            return this;;
+            return this; ;
         }
 
         public IObjectProviderBuilder RegisterInstance(Type t, string name, object instance)
@@ -71,7 +75,7 @@ namespace IFramework.DependencyInjection.Autofac
         public IObjectProviderBuilder RegisterType(Type from, Type to, string name = null, params Injection[] injections)
         {
             var injectionMembers = GetInjectionParameters(injections);
-         
+
             dynamic registrationBuilder;
             if (string.IsNullOrEmpty(name))
             {
@@ -98,7 +102,7 @@ namespace IFramework.DependencyInjection.Autofac
         public IObjectProviderBuilder RegisterType(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections)
         {
             var injectionMembers = GetInjectionParameters(injections);
-         
+
             dynamic registrationBuilder;
             if (to.IsGenericType)
             {
@@ -169,7 +173,7 @@ namespace IFramework.DependencyInjection.Autofac
             where TFrom : class where TTo : class, TFrom
         {
             var injectionMembers = GetInjectionParameters(injections);
-           
+
             dynamic registrationBuilder;
             if (typeof(TTo).IsGenericType)
                 registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
@@ -186,7 +190,7 @@ namespace IFramework.DependencyInjection.Autofac
             return this;
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections) 
+        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections)
             where TFrom : class where TTo : class, TFrom
         {
             var injectionMembers = GetInjectionParameters(injections);

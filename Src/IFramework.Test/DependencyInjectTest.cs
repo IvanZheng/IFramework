@@ -32,24 +32,30 @@ namespace IFramework.Test
         }
 
     }
-    public class A : IA
+    public class A : IA, IDisposable
     {
         public static int ConstructedCount { get; private set; }
 
         public readonly IB B;
         public C C { get; set; }
-        private readonly IObjectProviderBuilder _serviceProvider;
+        private readonly IObjectProvider _objectProvider;
 
-        public A(IB b, C c)
+        public A(IB b, C c, IObjectProvider objectProvider)
         {
             ConstructedCount++;
             B = b;
             C = c;
+            _objectProvider = objectProvider;
         }
 
         public string Do()
         {
             return B.Id + C.Id;
+        }
+
+        public void Dispose()
+        {
+            Console.WriteLine("Disposing");
         }
     }
 
