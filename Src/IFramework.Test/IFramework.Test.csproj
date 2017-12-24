@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.Microsoft.DependencyInjection\IFramework.DependencyInjection.Microsoft.csproj" />
     <ProjectReference Include="..\IFramework\IFramework.csproj" />
   </ItemGroup>

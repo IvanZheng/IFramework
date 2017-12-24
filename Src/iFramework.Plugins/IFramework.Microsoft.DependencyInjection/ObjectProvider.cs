@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using IFramework.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Parameter = IFramework.DependencyInjection.Parameter;
 
 namespace IFramework.DependencyInjection.Microsoft
 {
@@ -107,7 +108,7 @@ namespace IFramework.DependencyInjection.Microsoft
             throw new NotImplementedException();
         }
 
-        public IEnumerable<object> GetAllService(Type type, params Parameter[] parameters)
+        public IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters)
         {
             if (parameters.Length > 0)
             {
@@ -117,13 +118,13 @@ namespace IFramework.DependencyInjection.Microsoft
                                            .Union(_serviceProvider.GetServices(type));
         }
 
-        public IEnumerable<T> GetAllService<T>(params Parameter[] parameters)
+        public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters)
         {
             if (parameters.Length > 0)
             {
                 throw new NotImplementedException();
             }
-            return GetAllService(typeof(T)).Cast<T>();
+            return GetAllServices(typeof(T)).Cast<T>();
         }
     }
 }

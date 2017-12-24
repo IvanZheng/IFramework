@@ -14,7 +14,7 @@ namespace IFramework.DependencyInjection
         object GetService(Type t, params Parameter[] parameters);
         T GetService<T>(params Parameter[] overrides);
         T GetService<T>(string name, params Parameter[] overrides);
-        IEnumerable<object> GetAllService(Type type, params Parameter[] parameters);
-        IEnumerable<T> GetAllService<T>(params Parameter[] parameters);
+        IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters);
+        IEnumerable<T> GetAllServices<T>(params Parameter[] parameters);
     }
 }

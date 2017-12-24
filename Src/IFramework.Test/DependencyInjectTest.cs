@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using IFramework.DependencyInjection;
-using IFramework.DependencyInjection.Microsoft;
+//using IFramework.DependencyInjection.Microsoft;
+using IFramework.DependencyInjection.Autofac;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -11,6 +12,7 @@ namespace IFramework.Test
 {
     public interface IA
     {
+        C C { get; }
         string Do();
     }
 
@@ -34,20 +36,28 @@ namespace IFramework.Test
     {
         public static int ConstructedCount { get; private set; }
 
-        private readonly IB _b;
-        private readonly IServiceProvider _serviceProvider;
+        public readonly IB B;
+        public C C { get; set; }
+        private readonly IObjectProviderBuilder _serviceProvider;
 
-        public A(IB b, IServiceProvider serviceProvider)
+        public A(IB b, C c)
         {
             ConstructedCount++;
-            _b = b;
-            _serviceProvider = serviceProvider;
+            B = b;
+            C = c;
         }
 
         public string Do()
         {
-            return _b.Id;
+            return B.Id + C.Id;
         }
+    }
+
+    public class C
+    {
+        public int Id { get; set; }
+
+        public C(int id) => Id = id;
     }
     public class DependencyInjectTest
     {
@@ -57,21 +67,29 @@ namespace IFramework.Test
         {
             var builder = IoCFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder());
 
-            builder.RegisterType<IB, B>(ServiceLifetime.Singleton);
-            //.RegisterType<IA, A>(ServiceLifetime.Scoped);
+            builder.RegisterType<IB, B>(ServiceLifetime.Singleton)
+                   .RegisterType<IA, A>(ServiceLifetime.Scoped);
 
             var objectProvider = IoCFactory.Instance.Build();
             var b = objectProvider.GetRequiredService<IB>();
             Console.WriteLine($"b: {b.Id}");
 
 
-            using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope(ob => ob.RegisterType<IA, A>(ServiceLifetime.Singleton)))
+            using (var scope = IoCFactory.Instance.ObjectProvider
+                                                  .CreateScope(ob => ob.RegisterInstance(new C(1))))
             {
                 scope.GetService<IB>();
-                var scopedServiceProvider = scope.GetService<IServiceProvider>();
                 var a = scope.GetService<IA>();
-                Assert.True(a != null);
+                Assert.True(a != null && a.C.Id == 1);
             }
+            using (var scope = IoCFactory.Instance.ObjectProvider
+                                         .CreateScope(ob => ob.RegisterInstance(new C(2))))
+            {
+                scope.GetService<IB>();
+                var a = scope.GetService<IA>();
+                Assert.True(a != null && a.C.Id == 2);
+            }
+
             b = objectProvider.GetRequiredService<IB>();
             Console.WriteLine($"b: {b.Id}");
             Assert.Equal(1, B.ConstructedCount);
