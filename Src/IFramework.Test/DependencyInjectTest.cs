@@ -97,6 +97,7 @@ namespace IFramework.Test
             }
 
             b = objectProvider.GetRequiredService<IB>();
+            IoCFactory.Instance.ObjectProvider.Dispose();
             Console.WriteLine($"b: {b.Id}");
             Assert.Equal(1, B.ConstructedCount);
         }

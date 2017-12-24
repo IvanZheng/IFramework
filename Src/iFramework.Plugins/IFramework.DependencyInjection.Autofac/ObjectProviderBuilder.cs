@@ -35,10 +35,9 @@ namespace IFramework.DependencyInjection.Autofac
             {
                 _containerBuilder.Populate(serviceCollection);
             }
-            IObjectProvider objectProvider = null;
-            _containerBuilder.Register(componentContext => objectProvider)
-                             .SingleInstance();
-            objectProvider = new ObjectProvider(_containerBuilder.Build());
+            var objectProvider = new ObjectProvider();
+            _containerBuilder.RegisterInstance<IObjectProvider>(objectProvider);
+            objectProvider.SetScope(_containerBuilder.Build());
             return objectProvider;
         }
 

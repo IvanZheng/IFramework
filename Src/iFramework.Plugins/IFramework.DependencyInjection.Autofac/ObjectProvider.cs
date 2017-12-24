@@ -12,8 +12,7 @@ namespace IFramework.DependencyInjection.Autofac
 {
     public class ObjectProvider : IObjectProvider
     {
-        private readonly ILifetimeScope _scope;
-        private bool _disposed;
+        private ILifetimeScope _scope;
         private IEnumerable<global::Autofac.Core.Parameter> GetResolvedParameters(Parameter[] resolvedParameters)
         {
             var parameters = new List<global::Autofac.Core.Parameter>();
@@ -22,43 +21,50 @@ namespace IFramework.DependencyInjection.Autofac
             return parameters;
         }
 
-        public ObjectProvider(ILifetimeScope scope, ObjectProvider parent = null)
+        internal ObjectProvider(ObjectProvider parent = null)
+        {
+            Parent = parent;
+        }
+
+
+        internal void SetScope(ILifetimeScope scope)
         {
             _scope = scope;
-            Parent = parent;
+        }
+        public ObjectProvider(ILifetimeScope scope, ObjectProvider parent = null)
+            : this(parent)
+        {
+            SetScope(scope);
         }
 
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
-                _scope.Dispose();
-            }
+            _scope.Dispose();
         }
 
         public IObjectProvider Parent { get; }
         public IObjectProvider CreateScope()
         {
-            IObjectProvider objectProvider = null;
-            objectProvider = new ObjectProvider(_scope.BeginLifetimeScope(builder =>
+            var objectProvider = new ObjectProvider(this);
+            var childScope = _scope.BeginLifetimeScope(builder =>
             {
-                builder.Register(componentContext => objectProvider)
-                       .SingleInstance();
-            }), this);
+                builder.RegisterInstance<IObjectProvider>(objectProvider);
+            });
+            objectProvider.SetScope(childScope);
             return objectProvider;
         }
 
         public IObjectProvider CreateScope(IServiceCollection serviceCollection)
         {
-            IObjectProvider objectProvider = null;
-            objectProvider = new ObjectProvider(_scope.BeginLifetimeScope(builder =>
+            var objectProvider = new ObjectProvider(this);
+            var childScope = _scope.BeginLifetimeScope(builder =>
             {
+                builder.RegisterInstance<IObjectProvider>(objectProvider);
                 builder.Populate(serviceCollection);
-                builder.Register(componentContext => objectProvider)
-                       .SingleInstance();
-            }), this);
+            });
+            objectProvider.SetScope(childScope);
             return objectProvider;
+
         }
 
         public IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction)
@@ -67,14 +73,14 @@ namespace IFramework.DependencyInjection.Autofac
             {
                 throw new ArgumentNullException(nameof(buildAction));
             }
-            IObjectProvider objectProvider = null;
-            objectProvider = new ObjectProvider(_scope.BeginLifetimeScope(builder =>
+            var objectProvider = new ObjectProvider(this);
+            var childScope = _scope.BeginLifetimeScope(builder =>
             {
-                builder.Register(componentContext => objectProvider)
-                       .SingleInstance();
+                builder.RegisterInstance<IObjectProvider>(objectProvider);
                 var providerBuilder = new ObjectProviderBuilder(builder);
                 buildAction(providerBuilder);
-            }), this);
+            });
+            objectProvider.SetScope(childScope);
             return objectProvider;
         }
 
