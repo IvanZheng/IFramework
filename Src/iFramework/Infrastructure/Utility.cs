@@ -136,11 +136,27 @@ namespace IFramework.Infrastructure
             return TryDo(() => collection.Remove(key));
         }
 
+        private static bool MatchParameters(ParameterInfo[] parameterInfos, object[] args)
+        {
+            if (parameterInfos.Length != args.Length)
+            {
+                return false;
+            }
+            for (int i = 0; i < parameterInfos.Length; i++)
+            {
+                if (args[i].GetType() != parameterInfos[i].ParameterType)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public static object InvokeGenericMethod(this object obj, Type genericType, string method, object[] args)
         {
             var mi = obj.GetType()
                         .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                        .First(m => m.Name == method && m.IsGenericMethod);
+                        .First(m => m.Name == method && m.IsGenericMethod && MatchParameters(m.GetParameters(), args));
             var miConstructed = mi.MakeGenericMethod(genericType);
             var fastInvoker = FastInvoke.GetMethodInvoker(miConstructed);
             return fastInvoker(obj, args);

@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.DependencyInject
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Test", "IFramework.Test\IFramework.Test.csproj", "{665EF3BF-178F-4CAA-B454-5D4FD9EB0654}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.DependencyInjection.Autofac", "iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj", "{23AF6D83-93A1-47BD-8FA2-50E0FDC29090}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.DependencyInjection.Autofac", "iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj", "{23AF6D83-93A1-47BD-8FA2-50E0FDC29090}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DI", "DI", "{52FF150F-C8B1-48B4-A467-CE19622CDF1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,8 +102,12 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FFD7041D-BA33-46D3-B3FE-C1A4816E12FD} = {52FF150F-C8B1-48B4-A467-CE19622CDF1A}
+		{23AF6D83-93A1-47BD-8FA2-50E0FDC29090} = {52FF150F-C8B1-48B4-A467-CE19622CDF1A}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal

@@ -3,23 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Autofac;
 using IFramework.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Autofac.Extensions.DependencyInjection;
-using IFramework.Infrastructure;
+using Unity;
 
-namespace IFramework.DependencyInjection.Autofac
+namespace IFramework.DependencyInjection.Unity
 {
     public class ObjectProvider : IObjectProvider
     {
-        private ILifetimeScope _scope;
-        private IEnumerable<global::Autofac.Core.Parameter> GetResolvedParameters(Parameter[] resolvedParameters)
-        {
-            var parameters = new List<global::Autofac.Core.Parameter>();
-            parameters.AddRange(resolvedParameters.Select(p => new NamedParameter(p.Name, p.Value)));
-            return parameters;
-        }
+        private UnityContainer _scope;
+        
 
         internal ObjectProvider(ObjectProvider parent = null)
         {
@@ -86,42 +79,36 @@ namespace IFramework.DependencyInjection.Autofac
 
         public object GetService(Type t, params Parameter[] parameters)
         {
-            return _scope.ResolveOptional(t, GetResolvedParameters(parameters));
+            return _scope.Resolve(t, GetResolvedParameters(parameters));
         }
 
-
-        public T GetService<T>(params Parameter[] parameters) where T : class
-        {
-            return _scope.ResolveOptional<T>(GetResolvedParameters(parameters));
-        }
         public object GetService(Type t, string name, params Parameter[] parameters)
         {
-            return this.InvokeGenericMethod(t, "GetService", new object[] { name, parameters });
+            return _scope.ResolveNamed(name, t, GetResolvedParameters(parameters));
+        }
+
+        public T GetService<T>(params Parameter[] parameters)
+        {
+            return _scope.Resolve<T>(GetResolvedParameters(parameters));
         }
 
         public T GetService<T>(string name, params Parameter[] parameters)
-            where T : class
         {
-            return _scope.ResolveOptionalNamed<T>(name, GetResolvedParameters(parameters));
+            return _scope.ResolveNamed<T>(name, GetResolvedParameters(parameters));
         }
 
         public IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters)
         {
             var typeToResolve = typeof(IEnumerable<>).MakeGenericType(type);
-            return _scope.ResolveOptional(typeToResolve, GetResolvedParameters(parameters)) as IEnumerable<object>;
+            return _scope.Resolve(typeToResolve, GetResolvedParameters(parameters)) as IEnumerable<object>;
         }
 
-        public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters) where T : class
+        public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters)
         {
-            return _scope.ResolveOptional<IEnumerable<T>>(GetResolvedParameters(parameters));
+            return _scope.Resolve<IEnumerable<T>>(GetResolvedParameters(parameters));
         }
 
         public object GetService(Type serviceType)
-        {
-            return _scope.ResolveOptional(serviceType);
-        }
-
-        public object GetRequiredService(Type serviceType)
         {
             return _scope.Resolve(serviceType);
         }

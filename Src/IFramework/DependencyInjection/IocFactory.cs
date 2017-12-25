@@ -59,12 +59,12 @@ namespace IFramework.DependencyInjection
         #endregion
 
 
-        public static T Resolve<T>(string name, params Parameter[] parameters)
+        public static T Resolve<T>(string name, params Parameter[] parameters) where T : class
         {
             return Instance.ObjectProvider.GetService<T>(name, parameters);
         }
 
-        public static T Resolve<T>(params Parameter[] parameters)
+        public static T Resolve<T>(params Parameter[] parameters) where T : class
         {
             return Instance.ObjectProvider.GetService<T>(parameters);
         }

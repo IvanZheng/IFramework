@@ -90,7 +90,7 @@ namespace IFramework.DependencyInjection.Microsoft
             return GetService(t);
         }
 
-        public T GetService<T>(params Parameter[] overrides)
+        public T GetService<T>(params Parameter[] overrides) where T: class
         {
             if (overrides.Length > 0)
             {
@@ -99,7 +99,7 @@ namespace IFramework.DependencyInjection.Microsoft
             return (T) GetService(typeof(T));
         }
 
-        public T GetService<T>(string name, params Parameter[] overrides)
+        public T GetService<T>(string name, params Parameter[] overrides) where T : class
         {
             throw new NotImplementedException();
         }
@@ -114,13 +114,18 @@ namespace IFramework.DependencyInjection.Microsoft
                                           .Union(_serviceProvider.GetServices(type));
         }
 
-        public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters)
+        public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters) where T : class
         {
             if (parameters.Length > 0)
             {
                 throw new NotImplementedException();
             }
             return GetAllServices(typeof(T)).Cast<T>();
+        }
+
+        public object GetRequiredService(Type serviceType)
+        {
+            return _serviceProvider.GetRequiredService(serviceType);
         }
     }
 }

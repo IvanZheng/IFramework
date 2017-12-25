@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.DependencyInjection
 {
-    public interface IObjectProvider : IServiceProvider, IDisposable
+    public interface IObjectProvider : IServiceProvider, ISupportRequiredService, IDisposable
     {
         IObjectProvider Parent { get; }
         IObjectProvider CreateScope();
@@ -12,9 +12,9 @@ namespace IFramework.DependencyInjection
         IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction);
         object GetService(Type t, string name, params Parameter[] parameters);
         object GetService(Type t, params Parameter[] parameters);
-        T GetService<T>(params Parameter[] overrides);
-        T GetService<T>(string name, params Parameter[] overrides);
+        T GetService<T>(params Parameter[] overrides) where T : class;
+        T GetService<T>(string name, params Parameter[] parameters) where T : class;
         IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters);
-        IEnumerable<T> GetAllServices<T>(params Parameter[] parameters);
+        IEnumerable<T> GetAllServices<T>(params Parameter[] parameters) where T : class;
     }
 }
