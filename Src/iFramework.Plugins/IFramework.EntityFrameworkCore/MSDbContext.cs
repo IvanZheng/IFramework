@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Domain;
@@ -12,22 +11,7 @@ namespace IFramework.EntityFrameworkCore.SqlServer
     public class MsDbContext : DbContext, IDbContext
     {
         public MsDbContext(DbContextOptions options)
-            : base(options)
-        {
-            
-        }
-
-        public virtual void Rollback()
-        {
-            ChangeTracker.Entries()
-                         .Where(e => e.State == EntityState.Added || e.State == EntityState.Deleted)
-                         .ForEach(e => { e.State = EntityState.Detached; });
-            var refreshableObjects = ChangeTracker.Entries()
-                                                  .Where(e => e.State == EntityState.Modified || e.State == EntityState.Unchanged)
-                                                  .Select(c => c.Entity);
-            refreshableObjects.ForEach(Reload);
-            ChangeTracker.Entries().ForEach(e => { (e.Entity as AggregateRoot)?.Rollback(); });
-        }
+            : base(options) { }
 
         public void Reload<TEntity>(TEntity entity)
             where TEntity : class
@@ -46,6 +30,28 @@ namespace IFramework.EntityFrameworkCore.SqlServer
             (entity as AggregateRoot)?.Rollback();
         }
 
+        public void RemoveEntity<TEntity>(TEntity entity)
+            where TEntity : class
+        {
+            var entry = Entry(entity);
+            if (entry != null)
+            {
+                entry.State = EntityState.Deleted;
+            }
+        }
+
+        public virtual void Rollback()
+        {
+            ChangeTracker.Entries()
+                         .Where(e => e.State == EntityState.Added || e.State == EntityState.Deleted)
+                         .ForEach(e => { e.State = EntityState.Detached; });
+            var refreshableObjects = ChangeTracker.Entries()
+                                                  .Where(e => e.State == EntityState.Modified || e.State == EntityState.Unchanged)
+                                                  .Select(c => c.Entity);
+            refreshableObjects.ForEach(Reload);
+            ChangeTracker.Entries().ForEach(e => { (e.Entity as AggregateRoot)?.Rollback(); });
+        }
+
         public override int SaveChanges()
         {
             try
@@ -61,7 +67,7 @@ namespace IFramework.EntityFrameworkCore.SqlServer
                 throw;
             }
         }
-     
+
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             try
@@ -75,16 +81,6 @@ namespace IFramework.EntityFrameworkCore.SqlServer
             {
                 Rollback();
                 throw;
-            }
-        }
-
-        public void RemoveEntity<TEntity>(TEntity entity)
-            where TEntity : class
-        {
-            var entry = Entry(entity);
-            if (entry != null)
-            {
-                entry.State = EntityState.Deleted;
             }
         }
     }
