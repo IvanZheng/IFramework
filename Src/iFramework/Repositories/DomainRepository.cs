@@ -37,8 +37,7 @@ namespace IFramework.Repositories
         public IRepository<TAggregateRoot> GetRepository<TAggregateRoot>()
             where TAggregateRoot : class
         {
-            IRepository repository;
-            if (!_Repositories.TryGetValue(typeof(IRepository<TAggregateRoot>), out repository))
+            if (!_Repositories.TryGetValue(typeof(IRepository<TAggregateRoot>), out var repository))
             {
                 repository = _objectProvider.GetService<IRepository<TAggregateRoot>>(new Parameter("dbContext", _DbContext),
                                                                              new Parameter("unitOfWork", _UnitOfWork));

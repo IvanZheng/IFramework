@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.DependencyInject
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DI", "DI", "{52FF150F-C8B1-48B4-A467-CE19622CDF1A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DAL", "DAL", "{7768DF10-5F24-44B4-8DF9-187F160C4D3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EntityFrameworkCore.SqlServer", "iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.SqlServer.csproj", "{5A404E73-E592-43CB-9088-BA4EE50591F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +102,24 @@ Global
 		{23AF6D83-93A1-47BD-8FA2-50E0FDC29090}.Release|x64.Build.0 = Release|Any CPU
 		{23AF6D83-93A1-47BD-8FA2-50E0FDC29090}.Release|x86.ActiveCfg = Release|Any CPU
 		{23AF6D83-93A1-47BD-8FA2-50E0FDC29090}.Release|x86.Build.0 = Release|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Debug|x64.Build.0 = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Debug|x86.Build.0 = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Integration|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Integration|Any CPU.Build.0 = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Integration|x64.ActiveCfg = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Integration|x64.Build.0 = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Integration|x86.ActiveCfg = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Integration|x86.Build.0 = Debug|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Release|x64.ActiveCfg = Release|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Release|x64.Build.0 = Release|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Release|x86.ActiveCfg = Release|Any CPU
+		{5A404E73-E592-43CB-9088-BA4EE50591F3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -105,9 +127,10 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FFD7041D-BA33-46D3-B3FE-C1A4816E12FD} = {52FF150F-C8B1-48B4-A467-CE19622CDF1A}
 		{23AF6D83-93A1-47BD-8FA2-50E0FDC29090} = {52FF150F-C8B1-48B4-A467-CE19622CDF1A}
+		{5A404E73-E592-43CB-9088-BA4EE50591F3} = {7768DF10-5F24-44B4-8DF9-187F160C4D3A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
+		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 	EndGlobalSection
 EndGlobal
