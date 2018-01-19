@@ -8,9 +8,14 @@ using IFramework.Infrastructure;
 
 namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
-    public class KafkaMessageDeserializer: IDeserializer<KafkaMessage>
+    public class KafkaMessageDeserializer : IDeserializer<KafkaMessage>
     {
-        public KafkaMessage Deserialize(byte[] data)
+        public IEnumerable<KeyValuePair<string, object>> Configure(IEnumerable<KeyValuePair<string, object>> config, bool isKey)
+        {
+            return config;
+        }
+
+        public KafkaMessage Deserialize(string topic, byte[] data)
         {
             return Encoding.UTF8.GetString(data).ToJsonObject<KafkaMessage>();
         }

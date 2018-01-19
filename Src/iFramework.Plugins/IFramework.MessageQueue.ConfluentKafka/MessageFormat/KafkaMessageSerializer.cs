@@ -10,10 +10,15 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
     public class KafkaMessageSerializer: ISerializer<KafkaMessage>
     {
-        public byte[] Serialize(KafkaMessage data)
+        public byte[] Serialize(string topic, KafkaMessage data)
         {
             var jsonValue = data.ToJson();
             return Encoding.UTF8.GetBytes(jsonValue);
+        }
+
+        public IEnumerable<KeyValuePair<string, object>> Configure(IEnumerable<KeyValuePair<string, object>> config, bool isKey)
+        {
+            return config;
         }
     }
 }

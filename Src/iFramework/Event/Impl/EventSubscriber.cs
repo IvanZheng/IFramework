@@ -87,15 +87,6 @@ namespace IFramework.Event.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected void SaveEvent(IMessageContext eventContext)
-        {
-            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-            using (var messageStore = scope.Resolve<IMessageStore>())
-            {
-                messageStore.SaveEvent(eventContext);
-            }
-        }
-
         protected async Task ConsumeMessage(IMessageContext eventContext)
         {
             try
@@ -112,8 +103,7 @@ namespace IFramework.Event.Impl
                     _internalConsumer.CommitOffset(eventContext);
                     return;
                 }
-
-                SaveEvent(eventContext);
+                
                 //messageHandlerTypes.ForEach(messageHandlerType =>
                 foreach (var messageHandlerType in messageHandlerTypes)
                 {

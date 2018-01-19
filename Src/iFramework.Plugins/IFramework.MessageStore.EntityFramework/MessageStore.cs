@@ -45,7 +45,7 @@ namespace IFramework.MessageStoring
             messageContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationID = commandContext?.MessageID;
-                Events.Add(BuildEvent(eventContext));
+                //Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
             SaveChanges();
@@ -63,7 +63,7 @@ namespace IFramework.MessageStoring
             eventContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationID = commandContext?.MessageID;
-                Events.Add(BuildEvent(eventContext));
+                //Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
             SaveChanges();
@@ -71,45 +71,45 @@ namespace IFramework.MessageStoring
         }
 
 
-        internal Event InternalSaveEvent(IMessageContext eventContext)
-        {
-            // lock (EventLock)
-            {
-                var retryTimes = 5;
-                while (true)
-                {
-                    try
-                    {
-                        var @event = Events.Find(eventContext.MessageID);
-                        if (@event == null)
-                        {
-                            @event = BuildEvent(eventContext);
-                            Events.Add(@event);
-                            SaveChanges();
-                        }
-                        return @event;
-                    }
-                    catch (Exception)
-                    {
-                        if (--retryTimes > 0)
-                        {
-                            Task.Delay(50).Wait();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
+        //internal Event InternalSaveEvent(IMessageContext eventContext)
+        //{
+        //    // lock (EventLock)
+        //    {
+        //        var retryTimes = 5;
+        //        while (true)
+        //        {
+        //            try
+        //            {
+        //                var @event = Events.Find(eventContext.MessageID);
+        //                if (@event == null)
+        //                {
+        //                    @event = BuildEvent(eventContext);
+        //                    Events.Add(@event);
+        //                    SaveChanges();
+        //                }
+        //                return @event;
+        //            }
+        //            catch (Exception)
+        //            {
+        //                if (--retryTimes > 0)
+        //                {
+        //                    Task.Delay(50).Wait();
+        //                }
+        //                else
+        //                {
+        //                    throw;
+        //                }
+        //            }
+        //        }
 
-            }
-        }
+        //    }
+        //}
 
 
-        public void SaveEvent(IMessageContext eventContext)
-        {
-            InternalSaveEvent(eventContext);
-        }
+        //public void SaveEvent(IMessageContext eventContext)
+        //{
+        //    InternalSaveEvent(eventContext);
+        //}
 
         // if not subscribe the same event message by topic's mulitple subscriptions
         // we don't need EventLock to assure Events.Add(@event) having no conflict.
@@ -127,7 +127,7 @@ namespace IFramework.MessageStoring
             messageContexts.ForEach(messageContext =>
             {
                 messageContext.CorrelationID = eventContext.MessageID;
-                Events.Add(BuildEvent(messageContext));
+                //Events.Add(BuildEvent(messageContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
             });
             SaveChanges();
@@ -136,13 +136,12 @@ namespace IFramework.MessageStoring
         public void SaveFailHandledEvent(IMessageContext eventContext, string subscriptionName, Exception e,
                                          params IMessageContext[] messageContexts)
         {
-            var @event = InternalSaveEvent(eventContext);
-            HandledEvents.Add(new FailHandledEvent(@event.ID, subscriptionName, DateTime.Now, e));
+            HandledEvents.Add(new FailHandledEvent(eventContext.MessageID, subscriptionName, DateTime.Now, e));
 
             messageContexts.ForEach(messageContext =>
             {
                 messageContext.CorrelationID = eventContext.MessageID;
-                Events.Add(BuildEvent(messageContext));
+                //Events.Add(BuildEvent(messageContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
             });
             SaveChanges();
@@ -279,10 +278,10 @@ namespace IFramework.MessageStoring
             return new Command(commandContext, result);
         }
 
-        protected virtual Event BuildEvent(IMessageContext eventContext)
-        {
-            return new Event(eventContext);
-        }
+        //protected virtual Event BuildEvent(IMessageContext eventContext)
+        //{
+        //    return new Event(eventContext);
+        //}
 
         private IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
