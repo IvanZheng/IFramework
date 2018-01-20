@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace IFramework.Infrastructure.Caching.Impl
@@ -28,10 +27,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         public override CacheValue<T> Get<T>(string key)
         {
             var items = GetItems();
-            return items == null ? CacheValue<T>.NoValue : new CacheValue<T>((T)items[key], true);
+            return items == null ? CacheValue<T>.NoValue : new CacheValue<T>((T) items[key], true);
         }
 
-       
 
         /// <summary>
         ///     Adds the specified key and object to the cache.
@@ -39,7 +37,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
         /// <param name="cacheTime">Cache time</param>
-        public override void Set(string key, object data, int cacheTime)
+        public override void Set<T>(string key, T data, int cacheTime)
         {
             var items = GetItems();
             if (items == null)
@@ -47,20 +45,16 @@ namespace IFramework.Infrastructure.Caching.Impl
                 return;
             }
 
-            if (data != null)
+            if (items.Contains(key))
             {
-                if (items.Contains(key))
-                {
-                    items[key] = data;
-                }
-                else
-                {
-                    items.Add(key, data);
-                }
+                items[key] = data;
+            }
+            else
+            {
+                items.Add(key, data);
             }
         }
 
-      
 
         /// <summary>
         ///     Gets a value indicating whether the value associated with the specified key is cached
@@ -84,7 +78,7 @@ namespace IFramework.Infrastructure.Caching.Impl
             items?.Remove(key);
         }
 
-       
+
         /// <summary>
         ///     Removes items by pattern
         /// </summary>
@@ -114,7 +108,7 @@ namespace IFramework.Infrastructure.Caching.Impl
             }
         }
 
-      
+
         /// <summary>
         ///     Clear all cache data
         /// </summary>
@@ -141,7 +135,7 @@ namespace IFramework.Infrastructure.Caching.Impl
                 items.Remove(key);
             }
         }
-       
+
         /// <summary>
         ///     Creates a new instance of the NopRequestCache class
         /// </summary>

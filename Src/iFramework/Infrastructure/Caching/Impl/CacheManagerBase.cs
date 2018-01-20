@@ -34,9 +34,9 @@ namespace IFramework.Infrastructure.Caching.Impl
             return Task.FromResult(Get<T>(key));
         }
 
-        public abstract void Set(string key, object data, int cacheTime);
+        public abstract void Set<T>(string key, T data, int cacheTime);
 
-        public virtual Task SetAsync(string key, object data, int cacheTime)
+        public virtual Task SetAsync<T>(string key, T data, int cacheTime)
         {
             return Task.Run(() => Set(key, data, cacheTime));
         }

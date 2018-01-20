@@ -26,7 +26,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
         /// <param name="cacheTime">Cache time</param>
-        public override void Set(string key, object data, int cacheTime) { }
+        public override void Set<T>(string key, T data, int cacheTime) { }
 
 
 

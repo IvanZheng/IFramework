@@ -20,8 +20,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <returns>The value associated with the specified key.</returns>
         public override CacheValue<T> Get<T>(string key)
         {
-            var value = Cache[key];
-            return value == null ? CacheValue<T>.NoValue : new CacheValue<T>((T)value, true);
+            return Cache[key] as CacheValue<T> ?? CacheValue<T>.NoValue;
+            //var value = Cache[key];
+            //return value == null ? CacheValue<T>.NoValue : new CacheValue<T>((T)value, true);
         }
 
         /// <summary>
@@ -30,18 +31,13 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
         /// <param name="cacheTime">Cache time</param>
-        public override void Set(string key, object data, int cacheTime)
+        public override void Set<T>(string key, T data, int cacheTime)
         {
-            if (data == null)
-            {
-                return;
-            }
-
             var policy = new CacheItemPolicy
             {
                 AbsoluteExpiration = DateTime.Now + TimeSpan.FromMinutes(cacheTime)
             };
-            Cache.Add(new CacheItem(key, data), policy);
+            Cache.Add(new CacheItem(key, new CacheValue<T>(data, true)), policy);
         }
 
         /// <summary>

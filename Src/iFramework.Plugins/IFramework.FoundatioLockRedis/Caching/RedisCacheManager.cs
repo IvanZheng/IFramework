@@ -31,12 +31,12 @@ namespace IFramework.FoundatioRedis.Caching
                 Infrastructure.Caching.CacheValue<T>.NoValue;
         }
 
-        public virtual void Set(string key, object data, int cacheTime)
+        public virtual void Set<T>(string key, T data, int cacheTime)
         {
             SetAsync(key, data, cacheTime).Wait();
         }
 
-        public virtual Task SetAsync(string key, object data, int cacheTime)
+        public virtual Task SetAsync<T>(string key, T data, int cacheTime)
         {
             return CacheClient.SetAsync(key, data, new TimeSpan(0, 0, cacheTime, 0));
         }
