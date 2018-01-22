@@ -31,13 +31,18 @@ namespace IFramework.Event.Impl
         public void Publish<TEvent>(TEvent @event) where TEvent : IEvent
         {
             EventQueue.Add(@event);
+            HandleEvent(@event);
+        }
+
+        private void HandleEvent<TEvent>(TEvent @event) where TEvent : IEvent
+        {
             if (EventSubscriberProvider != null)
             {
                 var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
                 eventSubscriberTypes.ForEach(eventSubscriberType =>
                 {
                     var eventSubscriber = Container.Resolve(eventSubscriberType.Type);
-                    ((dynamic)eventSubscriber).Handle((dynamic)@event);
+                    ((dynamic) eventSubscriber).Handle((dynamic) @event);
                 });
             }
         }
@@ -69,8 +74,8 @@ namespace IFramework.Event.Impl
 
         public void PublishAnyway(params IEvent[] events)
         {
-            Publish(events.AsEnumerable());
             ToPublishAnywayEventQueue.AddRange(events);
+            events.ForEach(HandleEvent);
         }
 
         public IEnumerable<IEvent> GetToPublishAnywayMessages()
