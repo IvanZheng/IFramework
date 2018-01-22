@@ -53,7 +53,7 @@ namespace Sample.CommandHandler.Community
             if (account == null)
             {
                 var ex = new DomainException(ErrorCode.WrongUsernameOrPassword,
-                                                   new[] {command.UserName});
+                                                   new object[] {command.UserName});
                 _EventBus.FinishSaga(ex);
                 throw ex;
             }

@@ -84,9 +84,9 @@ namespace IFramework.EntityFramework
             else
             {
                 _messageStore.Rollback();
-                if (_exception is DomainException)
+                if (_exception is DomainException exception)
                 {
-                    var exceptionEvent = ((DomainException)_exception).DomainExceptionEvent;
+                    var exceptionEvent = exception.DomainExceptionEvent;
                     if (exceptionEvent != null)
                     {
                         var topic = exceptionEvent.GetFormatTopic();

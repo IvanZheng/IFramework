@@ -188,7 +188,8 @@ namespace IFramework.Command.Impl
                                         }
                                         else
                                         {
-                                            await Task.Run(() => { ((dynamic)messageHandler).Handle((dynamic)command); }).ConfigureAwait(false);
+                                            var handler = messageHandler;
+                                            await Task.Run(() => { ((dynamic)handler).Handle((dynamic)command); }).ConfigureAwait(false);
                                         }
                                         if (needReply)
                                         {
@@ -255,9 +256,9 @@ namespace IFramework.Command.Impl
                                                                                                        topic, @event.Key, sagaInfo: sagaInfo, producer: Producer);
                                                     eventMessageStates.Add(new MessageState(eventContext));
                                                 });
-                                        if (e is DomainException)
+                                        if (e is DomainException exception)
                                         {
-                                            var domainExceptionEvent = ((DomainException)e).DomainExceptionEvent;
+                                            var domainExceptionEvent = exception.DomainExceptionEvent;
                                             if (domainExceptionEvent != null)
                                             {
                                                 var topic = domainExceptionEvent.GetFormatTopic();
