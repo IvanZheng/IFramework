@@ -70,7 +70,7 @@ namespace IFramework.Command.Impl
 
         public object GetLinearKey(ILinearCommand command)
         {
-            return this.InvokeGenericMethod(command.GetType(), "GetLinearKeyImpl", new object[] {command});
+            return this.InvokeGenericMethod("GetLinearKeyImpl", new object[] {command}, command.GetType());
         }
 
         public void RegisterLinearCommand<TLinearCommand>(Func<TLinearCommand, object> func)
@@ -81,9 +81,8 @@ namespace IFramework.Command.Impl
 
         public object GetLinearKeyImpl<TLinearCommand>(TLinearCommand command) where TLinearCommand : ILinearCommand
         {
-            object linearKey = null;
-            var func = _linearFuncs[typeof(TLinearCommand)] as Func<TLinearCommand, object>;
-            if (func != null)
+            object linearKey;
+            if (_linearFuncs[typeof(TLinearCommand)] is Func<TLinearCommand, object> func)
             {
                 linearKey = func(command);
             }

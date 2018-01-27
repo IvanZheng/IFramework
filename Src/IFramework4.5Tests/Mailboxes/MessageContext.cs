@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using IFramework.Message;
 using IFramework.Message.Impl;
 
-namespace IFramework4._5Tests
+namespace IFramework.Tests
 {
     public class MessageContext : IMessageContext
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -37,6 +38,9 @@ namespace IFramework.Infrastructure
     {
         private const string k_base36_digits = "0123456789abcdefghijklmnopqrstuvwxyz";
         private static readonly uint[] _lookup32 = CreateLookup32();
+
+        private static readonly ConcurrentDictionary<string, MethodInfo> MethodInfoDictionary = new ConcurrentDictionary<string, MethodInfo>();
+
         public static IPAddress[] GetLocalIPAddresses()
         {
             Dns.GetHostName();
@@ -56,7 +60,7 @@ namespace IFramework.Infrastructure
             for (var i = 0; i < 256; i++)
             {
                 var s = i.ToString("X2");
-                result[i] = s[0] + ((uint)s[1] << 16);
+                result[i] = s[0] + ((uint) s[1] << 16);
             }
             return result;
         }
@@ -93,8 +97,8 @@ namespace IFramework.Infrastructure
             for (var i = 0; i < bytes.Length; i++)
             {
                 var val = lookup32[bytes[i]];
-                result[2 * i] = (char)val;
-                result[2 * i + 1] = (char)(val >> 16);
+                result[2 * i] = (char) val;
+                result[2 * i + 1] = (char) (val >> 16);
             }
             return new string(result);
         }
@@ -138,29 +142,38 @@ namespace IFramework.Infrastructure
             return TryDo(() => collection.Remove(key));
         }
 
-        public static object InvokeGenericMethod(this object obj, Type genericType, string method, object[] args)
+        public static object InvokeGenericMethod(this object obj, string method, object[] args, params Type[] genericTypes)
         {
-            var mi = obj.GetType()
-                        .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                        .First(m => m.Name == method && m.IsGenericMethod);
-            var miConstructed = mi.MakeGenericMethod(genericType);
+            var mi = obj.GetMethodInfo(method, args, genericTypes);
+            var miConstructed = mi.MakeGenericMethod(genericTypes);
             var fastInvoker = FastInvoke.GetMethodInvoker(miConstructed);
             return fastInvoker(obj, args);
         }
 
-        public static object InvokeMethod(this object obj, string method, object[] args)
+        public static MethodInfo GetMethodInfo(this object obj, string method, object[] args, Type[] genericTypes)
         {
-            MethodInfo mi = null;
-            foreach (var m in obj.GetType()
-                                 .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            var type = obj.GetType();
+            var keyAttributes = new List<string>(args.Select(a => a?.GetType().MetadataToken.ToString() ?? "null")) {type.MetadataToken.ToString(), method};
+            keyAttributes.AddRange(genericTypes.Select(t => t.MetadataToken.ToString()));
+            var methodInfoKey = string.Join("", keyAttributes);
+            return MethodInfoDictionary.GetOrAdd(methodInfoKey, key =>
             {
-                if (m.Name == method && m.GetParameters().Length == args.Length)
+                MethodInfo mi = null;
+                foreach (var m in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                                      .Where(m => m.Name == method &&
+                                                  m.IsGenericMethod &&
+                                                  m.GetParameters().Length == args.Length))
                 {
                     var equalParameters = true;
                     for (var i = 0; i < m.GetParameters().Length; i++)
                     {
-                        var type = m.GetParameters()[i];
-                        if (!type.ParameterType.IsInstanceOfType(args[i]))
+                        var parameter = m.GetParameters()[i];
+                        var parameterType = parameter.ParameterType.IsGenericParameter
+                                                ? genericTypes[parameter.ParameterType
+                                                                        .GenericParameterPosition]
+                                                : parameter.ParameterType;
+                        var arg = args[i];
+                        if ((arg != null || parameterType.IsValueType) && !parameterType.IsInstanceOfType(arg))
                         {
                             equalParameters = false;
                             break;
@@ -172,7 +185,49 @@ namespace IFramework.Infrastructure
                         break;
                     }
                 }
-            }
+                return mi;
+            });
+        }
+
+        public static MethodInfo GetMethodInfo(this object obj, string method, object[] args)
+        {
+            var type = obj.GetType();
+            //var methodInfoKey = string.Join("", new List<string>(args.Select(a => a?.GetType().FullName ?? null)) {type.FullName, method});
+            var keyAttributes = new List<string>(args.Select(a => a?.GetType().MetadataToken.ToString() ?? "null")) { type.MetadataToken.ToString(), method };
+            var methodInfoKey = string.Join("", keyAttributes);
+            return MethodInfoDictionary.GetOrAdd(methodInfoKey, key =>
+            {
+                MethodInfo mi = null;
+                foreach (var m in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                                      .Where(m => m.Name == method &&
+                                                  !m.IsGenericMethod &&
+                                                  m.GetParameters().Length == args.Length))
+                {
+                    var equalParameters = true;
+                    for (var i = 0; i < m.GetParameters().Length; i++)
+                    {
+                        var parameterType = m.GetParameters()[i].ParameterType;
+                        var arg = args[i];
+                        if ((arg != null || parameterType.IsValueType) && !parameterType.IsInstanceOfType(arg))
+                        {
+                            equalParameters = false;
+                            break;
+                        }
+                    }
+                    if (equalParameters)
+                    {
+                        mi = m;
+                        break;
+                    }
+                }
+                return mi;
+            });
+        }
+
+        public static object InvokeMethod(this object obj, string method, object[] args)
+        {
+            var mi = obj.GetMethodInfo(method, args);
+
             if (mi == null)
             {
                 throw new NotSupportedException();
@@ -202,7 +257,7 @@ namespace IFramework.Infrastructure
             }
             else if (obj is FieldInfo)
             {
-                var attrs = ((FieldInfo)obj).GetCustomAttributes(typeof(TAttribute), inherit);
+                var attrs = ((FieldInfo) obj).GetCustomAttributes(typeof(TAttribute), inherit);
                 if (attrs != null && attrs.Length > 0)
                 {
                     return attrs.FirstOrDefault(attr => attr is TAttribute) as TAttribute;
@@ -210,7 +265,7 @@ namespace IFramework.Infrastructure
             }
             else if (obj is PropertyInfo)
             {
-                var attrs = ((PropertyInfo)obj).GetCustomAttributes(inherit);
+                var attrs = ((PropertyInfo) obj).GetCustomAttributes(inherit);
                 if (attrs != null && attrs.Length > 0)
                 {
                     return attrs.FirstOrDefault(attr => attr is TAttribute) as TAttribute;
@@ -326,7 +381,6 @@ namespace IFramework.Infrastructure
             object objValue = null;
             try
             {
-
                 var property = obj.GetType()
                                   .GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (property != null)
@@ -337,7 +391,7 @@ namespace IFramework.Infrastructure
 
                 if (objValue != null)
                 {
-                    retValue = (T)objValue;
+                    retValue = (T) objValue;
                 }
             }
             catch (Exception)
@@ -368,7 +422,7 @@ namespace IFramework.Infrastructure
                                            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (property != null)
             {
-                FastInvoke.GetMethodInvoker(property.GetSetMethod(true))(obj, new[] { value });
+                FastInvoke.GetMethodInvoker(property.GetSetMethod(true))(obj, new[] {value});
             }
         }
 
@@ -381,7 +435,7 @@ namespace IFramework.Infrastructure
         {
             try
             {
-                return (T)Enum.Parse(typeof(T), val);
+                return (T) Enum.Parse(typeof(T), val);
             }
             catch (Exception)
             {
@@ -508,7 +562,7 @@ namespace IFramework.Infrastructure
             for (var x = 0; x < pToDecrypt.Length / 2; x++)
             {
                 var i = Convert.ToInt32(pToDecrypt.Substring(x * 2, 2), 16);
-                inputByteArray[x] = (byte)i;
+                inputByteArray[x] = (byte) i;
             }
             des.Key = Encoding.ASCII.GetBytes(key);
             des.IV = Encoding.ASCII.GetBytes(key);

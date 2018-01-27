@@ -7,7 +7,7 @@ using IFramework.IoC;
 using IFramework.Message;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace IFramework4._5Tests
+namespace IFramework.Tests
 {
     [TestClass]
     public class MailboxTest
