@@ -14,7 +14,7 @@ namespace IFramework.EntityFramework.Repositories
             where TEntity : class
         {
             repository.Add(entity);
-            (repository as Repository<TEntity>)._Container.SaveChanges();
+            (repository as Repository<TEntity>).Container.SaveChanges();
         }
 
         public static void AddWithSaveChanges<TEntity>(this IDomainRepository repository, TEntity entity)
