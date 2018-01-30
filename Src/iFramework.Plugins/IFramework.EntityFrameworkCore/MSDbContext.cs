@@ -14,6 +14,7 @@ namespace IFramework.EntityFrameworkCore
         public MsDbContext(DbContextOptions options)
             : base(options)
         {
+            options.WithExtension(new EntityMaterializerOptionsExtension(this));
         }
 
         public void Reload<TEntity>(TEntity entity)

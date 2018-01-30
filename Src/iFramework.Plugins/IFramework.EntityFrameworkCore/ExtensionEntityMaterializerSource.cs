@@ -8,16 +8,14 @@ namespace IFramework.EntityFrameworkCore
 {
     public class ExtensionEntityMaterializerSource : EntityMaterializerSource
     {
-        private MsDbContext _dbContext;
+        private readonly MsDbContext _dbContext;
 
-        public ExtensionEntityMaterializerSource()
-        {
-        }
-
-        internal void SetDbContext(MsDbContext dbContext)
+        public ExtensionEntityMaterializerSource(MsDbContext dbContext)
         {
             _dbContext = dbContext;
         }
+
+   
 
         public override Expression CreateMaterializeExpression(IEntityType entityType,
                                                                Expression valueBufferExpression,
@@ -25,8 +23,7 @@ namespace IFramework.EntityFrameworkCore
         {
             var expression = base.CreateMaterializeExpression(entityType, valueBufferExpression, indexMap);
 
-            if (_dbContext != null && 
-                typeof(Entity).IsAssignableFrom(entityType.ClrType) && expression is BlockExpression blockExpression)
+            if (typeof(Entity).IsAssignableFrom(entityType.ClrType) && expression is BlockExpression blockExpression)
             {
                 var property = Expression.Property(blockExpression.Variables[0], typeof(IEntity).GetProperty("DomainContext")); //赋值表达式
                 var assign = Expression.Assign(property, Expression.Constant(_dbContext)); //把基类的实例化表达式变成列表方便插入
