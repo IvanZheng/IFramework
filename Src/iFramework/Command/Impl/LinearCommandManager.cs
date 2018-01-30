@@ -19,7 +19,7 @@ namespace IFramework.Command.Impl
 
         public object GetLinearKey(ILinearCommand command)
         {
-            return this.InvokeGenericMethod(command.GetType(), "GetLinearKeyImpl", new object[] {command});
+            return this.InvokeGenericMethod("GetLinearKeyImpl", new object[] {command}, command.GetType());
         }
 
         public void RegisterLinearCommand<TLinearCommand>(Func<TLinearCommand, object> func)

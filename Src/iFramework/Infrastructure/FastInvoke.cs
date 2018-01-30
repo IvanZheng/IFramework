@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -14,10 +13,14 @@ namespace IFramework.Infrastructure
 
         public static FastInvokeHandler GetMethodInvoker(MethodInfo methodInfo)
         {
+            if (methodInfo == null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
             return FastInvokeHandlers.GetOrAdd(methodInfo, key =>
             {
                 var dynamicMethod = new DynamicMethod(string.Empty, typeof(object),
-                                                      new[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module, true);
+                                                      new[] {typeof(object), typeof(object[])}, methodInfo.DeclaringType.Module, true);
                 var il = dynamicMethod.GetILGenerator();
                 var ps = methodInfo.GetParameters();
                 var paramTypes = new Type[ps.Length];
@@ -87,7 +90,7 @@ namespace IFramework.Infrastructure
                 }
 
                 il.Emit(OpCodes.Ret);
-                return (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
+                return (FastInvokeHandler) dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
             });
         }
 
@@ -137,7 +140,7 @@ namespace IFramework.Infrastructure
 
             if (value > -129 && value < 128)
             {
-                il.Emit(OpCodes.Ldc_I4_S, (sbyte)value);
+                il.Emit(OpCodes.Ldc_I4_S, (sbyte) value);
             }
             else
             {

@@ -96,7 +96,7 @@ namespace IFramework.DependencyInjection.Autofac
         }
         public object GetService(Type t, string name, params Parameter[] parameters)
         {
-            return this.InvokeGenericMethod(t, "GetService", new object[] { name, parameters });
+            return this.InvokeGenericMethod("GetService", new object[] { name, parameters }, t);
         }
 
         public T GetService<T>(string name, params Parameter[] parameters)

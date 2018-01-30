@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -33,6 +34,7 @@ namespace IFramework.Infrastructure
 
     public static class Utility
     {
+        private static readonly ConcurrentDictionary<string, MethodInfo> MethodInfoDictionary = new ConcurrentDictionary<string, MethodInfo>();
         private const string k_base36_digits = "0123456789abcdefghijklmnopqrstuvwxyz";
         private static readonly uint[] _lookup32 = CreateLookup32();
         public static IPAddress[] GetLocalIPAddresses()
@@ -152,29 +154,38 @@ namespace IFramework.Infrastructure
             return true;
         }
 
-        public static object InvokeGenericMethod(this object obj, Type genericType, string method, object[] args)
+        public static object InvokeGenericMethod(this object obj, string method, object[] args, params Type[] genericTypes)
         {
-            var mi = obj.GetType()
-                        .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                        .First(m => m.Name == method && m.IsGenericMethod && MatchParameters(m.GetParameters(), args));
-            var miConstructed = mi.MakeGenericMethod(genericType);
+            var mi = obj.GetMethodInfo(method, args, genericTypes);
+            var miConstructed = mi.MakeGenericMethod(genericTypes);
             var fastInvoker = FastInvoke.GetMethodInvoker(miConstructed);
             return fastInvoker(obj, args);
         }
 
-        public static object InvokeMethod(this object obj, string method, object[] args)
+        public static MethodInfo GetMethodInfo(this object obj, string method, object[] args, Type[] genericTypes)
         {
-            MethodInfo mi = null;
-            foreach (var m in obj.GetType()
-                                 .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            var type = obj.GetType();
+            var keyAttributes = new List<string>(args.Select(a => a?.GetType().MetadataToken.ToString() ?? "null")) { type.MetadataToken.ToString(), method };
+            keyAttributes.AddRange(genericTypes.Select(t => t.MetadataToken.ToString()));
+            var methodInfoKey = string.Join("", keyAttributes);
+            return MethodInfoDictionary.GetOrAdd(methodInfoKey, key =>
             {
-                if (m.Name == method && m.GetParameters().Length == args.Length)
+                MethodInfo mi = null;
+                foreach (var m in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                                      .Where(m => m.Name == method &&
+                                                  m.IsGenericMethod &&
+                                                  m.GetParameters().Length == args.Length))
                 {
                     var equalParameters = true;
                     for (var i = 0; i < m.GetParameters().Length; i++)
                     {
-                        var type = m.GetParameters()[i];
-                        if (!type.ParameterType.IsInstanceOfType(args[i]))
+                        var parameter = m.GetParameters()[i];
+                        var parameterType = parameter.ParameterType.IsGenericParameter
+                                                ? genericTypes[parameter.ParameterType
+                                                                        .GenericParameterPosition]
+                                                : parameter.ParameterType;
+                        var arg = args[i];
+                        if ((arg != null || parameterType.IsValueType) && !parameterType.IsInstanceOfType(arg))
                         {
                             equalParameters = false;
                             break;
@@ -186,7 +197,49 @@ namespace IFramework.Infrastructure
                         break;
                     }
                 }
-            }
+                return mi;
+            });
+        }
+
+        public static MethodInfo GetMethodInfo(this object obj, string method, object[] args)
+        {
+            var type = obj.GetType();
+            //var methodInfoKey = string.Join("", new List<string>(args.Select(a => a?.GetType().FullName ?? null)) {type.FullName, method});
+            var keyAttributes = new List<string>(args.Select(a => a?.GetType().MetadataToken.ToString() ?? "null")) { type.MetadataToken.ToString(), method };
+            var methodInfoKey = string.Join("", keyAttributes);
+            return MethodInfoDictionary.GetOrAdd(methodInfoKey, key =>
+            {
+                MethodInfo mi = null;
+                foreach (var m in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                                      .Where(m => m.Name == method &&
+                                                  !m.IsGenericMethod &&
+                                                  m.GetParameters().Length == args.Length))
+                {
+                    var equalParameters = true;
+                    for (var i = 0; i < m.GetParameters().Length; i++)
+                    {
+                        var parameterType = m.GetParameters()[i].ParameterType;
+                        var arg = args[i];
+                        if ((arg != null || parameterType.IsValueType) && !parameterType.IsInstanceOfType(arg))
+                        {
+                            equalParameters = false;
+                            break;
+                        }
+                    }
+                    if (equalParameters)
+                    {
+                        mi = m;
+                        break;
+                    }
+                }
+                return mi;
+            });
+        }
+
+        public static object InvokeMethod(this object obj, string method, object[] args)
+        {
+            var mi = obj.GetMethodInfo(method, args);
+
             if (mi == null)
             {
                 throw new NotSupportedException();
@@ -194,14 +247,6 @@ namespace IFramework.Infrastructure
             var fastInvoker = FastInvoke.GetMethodInvoker(mi);
             return fastInvoker(obj, args);
         }
-
-
-        //public static TRole ActAs<TRole>(this IAggregateRoot entity)
-        //    where TRole : Framework.DCI.IRole
-        //{
-        //    TRole role = IoCFactory.Resolve<TRole>(new ParameterOverride("actor", entity));
-        //    return role;
-        //}
 
         public static TAttribute GetCustomAttribute<TAttribute>(this object obj, bool inherit = true)
             where TAttribute : Attribute
