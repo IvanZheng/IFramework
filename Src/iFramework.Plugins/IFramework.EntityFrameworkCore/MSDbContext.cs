@@ -5,13 +5,16 @@ using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace IFramework.EntityFrameworkCore.SqlServer
+namespace IFramework.EntityFrameworkCore
 {
     public class MsDbContext : DbContext, IDbContext
     {
         public MsDbContext(DbContextOptions options)
-            : base(options) { }
+            : base(options)
+        {
+        }
 
         public void Reload<TEntity>(TEntity entity)
             where TEntity : class

@@ -8,7 +8,7 @@ namespace IFramework.Event.Impl
 {
     public class EventBus : IEventBus
     {
-        protected readonly IObjectProvider ObjectProvider;
+        protected readonly IObjectProvider Container;
         protected readonly IEventSubscriberProvider EventSubscriberProvider;
 
         protected List<ICommand> CommandQueue;
@@ -19,7 +19,7 @@ namespace IFramework.Event.Impl
         //protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
         public EventBus(IObjectProvider objectProvider, SyncEventSubscriberProvider eventSubscriberProvider)
         {
-            ObjectProvider = objectProvider;
+            Container = objectProvider;
             EventSubscriberProvider = eventSubscriberProvider;
             EventQueue = new List<IEvent>();
             CommandQueue = new List<ICommand>();
@@ -28,21 +28,26 @@ namespace IFramework.Event.Impl
         }
 
 
-        public void Publish(IEvent @event)
+        public void Publish<TTMessage>(TTMessage @event) where TTMessage : IEvent
         {
             EventQueue.Add(@event);
+            HandleEvent(@event);
+        }
+
+        private void HandleEvent<TEvent>(TEvent @event) where TEvent : IEvent
+        {
             if (EventSubscriberProvider != null)
             {
                 var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
                 eventSubscriberTypes.ForEach(eventSubscriberType =>
                 {
-                    var eventSubscriber = ObjectProvider.GetService(eventSubscriberType.Type);
+                    var eventSubscriber = Container.GetService(eventSubscriberType.Type);
                     ((dynamic)eventSubscriber).Handle((dynamic)@event);
                 });
             }
         }
 
-        public void Publish(IEnumerable<IEvent> events)
+        public void Publish<TEvent>(IEnumerable<TEvent> events) where TEvent : IEvent
         {
             events.ForEach(Publish);
         }
@@ -69,8 +74,8 @@ namespace IFramework.Event.Impl
 
         public void PublishAnyway(params IEvent[] events)
         {
-            Publish(events.AsEnumerable());
             ToPublishAnywayEventQueue.AddRange(events);
+            events.ForEach(HandleEvent);
         }
 
         public IEnumerable<IEvent> GetToPublishAnywayMessages()

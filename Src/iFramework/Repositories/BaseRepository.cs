@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using IFramework.Specifications;
+using IFramework.UnitOfWork;
 
 namespace IFramework.Repositories
 {
@@ -11,9 +12,17 @@ namespace IFramework.Repositories
     ///     Represents the base class for repositories.
     /// </summary>
     /// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
-    public abstract class BaseRepository<TAggregateRoot>: IRepository<TAggregateRoot>
+    public abstract class BaseRepository<TAggregateRoot> : IRepository<TAggregateRoot>
         where TAggregateRoot : class
     {
+        #region Construct
+
+        protected BaseRepository(object dbContext, IUnitOfWork unitOfWork)
+        {
+        }
+
+        #endregion
+
         #region Protected Methods
 
         /// <summary>
@@ -39,7 +48,7 @@ namespace IFramework.Repositories
         ///     and the specified sort order.
         /// </summary>
         /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="Framework.Enumerations.SortOrder" /> enum which specifies the sort order.</param>
+        /// <param name="sortOrder">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
         /// <returns>
         ///     All the aggregate roots got from the repository, with the aggregate roots being sorted by
         ///     using the provided sort predicate and the sort order.
@@ -55,7 +64,7 @@ namespace IFramework.Repositories
         /// </summary>
         /// <param name="specification">The specification with which the aggregate roots should match.</param>
         /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="Framework.Enumerations.SortOrder" /> enum which specifies the sort order.</param>
+        /// <param name="sortOrder">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
         /// <returns>
         ///     All the aggregate roots that match the given specification and were sorted by using the given sort predicate
         ///     and the sort order.
@@ -94,15 +103,21 @@ namespace IFramework.Repositories
         /// <param name="entity">The entity to be updated.</param>
         protected abstract void DoUpdate(TAggregateRoot entity);
 
-        protected abstract IQueryable<TAggregateRoot> DoPageFind(int pageIndex, int pageSize,
-                                                                 ISpecification<TAggregateRoot> specification, ref long totalCount,
+        protected abstract IQueryable<TAggregateRoot> DoPageFind(int pageIndex,
+                                                                 int pageSize,
+                                                                 ISpecification<TAggregateRoot> specification,
+                                                                 ref long totalCount,
                                                                  params OrderExpression[] orderExpressions);
 
-        protected abstract Task<Tuple<IQueryable<TAggregateRoot>, long>> DoPageFindAsync(int pageIndex, int pageSize,
-                                                                                         ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions);
+        protected abstract Task<Tuple<IQueryable<TAggregateRoot>, long>> DoPageFindAsync(int pageIndex,
+                                                                                         int pageSize,
+                                                                                         ISpecification<TAggregateRoot> specification,
+                                                                                         params OrderExpression[] orderExpressions);
 
-        protected abstract IQueryable<TAggregateRoot> DoPageFind(int pageIndex, int pageSize,
-                                                                 ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions);
+        protected abstract IQueryable<TAggregateRoot> DoPageFind(int pageIndex,
+                                                                 int pageSize,
+                                                                 ISpecification<TAggregateRoot> specification,
+                                                                 params OrderExpression[] orderExpressions);
 
         #endregion
 
@@ -152,7 +167,9 @@ namespace IFramework.Repositories
         public void Remove(IEnumerable<TAggregateRoot> entities)
         {
             foreach (var entity in entities)
+            {
                 DoRemove(entity);
+            }
         }
 
         /// <summary>
@@ -170,7 +187,7 @@ namespace IFramework.Repositories
         ///     and the specified sort order.
         /// </summary>
         /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="Framework.Enumerations.SortOrder" /> enum which specifies the sort order.</param>
+        /// <param name="sortOrder">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
         /// <returns>
         ///     All the aggregate roots got from the repository, with the aggregate roots being sorted by
         ///     using the provided sort predicate and the sort order.
@@ -198,7 +215,7 @@ namespace IFramework.Repositories
         /// </summary>
         /// <param name="specification">The specification with which the aggregate roots should match.</param>
         /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="Framework.Enumerations.SortOrder" /> enum which specifies the sort order.</param>
+        /// <param name="sortOrder">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
         /// <returns>
         ///     All the aggregate roots that match the given specification and were sorted by using the given sort predicate
         ///     and the sort order.
@@ -281,42 +298,54 @@ namespace IFramework.Repositories
             return DoExistsAsync(Specification<TAggregateRoot>.Eval(specification));
         }
 
-        public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
-                                                   Expression<Func<TAggregateRoot, bool>> expression, params OrderExpression[] orderExpressions)
+        public IQueryable<TAggregateRoot> PageFind(int pageIndex,
+                                                   int pageSize,
+                                                   Expression<Func<TAggregateRoot, bool>> expression,
+                                                   params OrderExpression[] orderExpressions)
         {
             return DoPageFind(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(expression), orderExpressions);
         }
 
-        public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
-                                                   Expression<Func<TAggregateRoot, bool>> expression, ref long totalCount,
+        public IQueryable<TAggregateRoot> PageFind(int pageIndex,
+                                                   int pageSize,
+                                                   Expression<Func<TAggregateRoot, bool>> expression,
+                                                   ref long totalCount,
                                                    params OrderExpression[] orderExpressions)
         {
             return DoPageFind(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(expression), ref totalCount,
                               orderExpressions);
         }
 
-        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize,
-                                                                           Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
+        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex,
+                                                                           int pageSize,
+                                                                           Expression<Func<TAggregateRoot, bool>> specification,
+                                                                           params OrderExpression[] orderExpressions)
         {
             return DoPageFindAsync(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(specification),
                                    orderExpressions);
         }
 
-        public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
-                                                   ISpecification<TAggregateRoot> specification, ref long totalCount,
+        public IQueryable<TAggregateRoot> PageFind(int pageIndex,
+                                                   int pageSize,
+                                                   ISpecification<TAggregateRoot> specification,
+                                                   ref long totalCount,
                                                    params OrderExpression[] orderExpressions)
         {
             return DoPageFind(pageIndex, pageSize, specification, ref totalCount, orderExpressions);
         }
 
-        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize,
-                                                                           ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
+        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex,
+                                                                           int pageSize,
+                                                                           ISpecification<TAggregateRoot> specification,
+                                                                           params OrderExpression[] orderExpressions)
         {
             return DoPageFindAsync(pageIndex, pageSize, specification, orderExpressions);
         }
 
-        public IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
-                                                   ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
+        public IQueryable<TAggregateRoot> PageFind(int pageIndex,
+                                                   int pageSize,
+                                                   ISpecification<TAggregateRoot> specification,
+                                                   params OrderExpression[] orderExpressions)
         {
             return DoPageFind(pageIndex, pageSize, specification, orderExpressions);
         }
@@ -353,6 +382,7 @@ namespace IFramework.Repositories
 
         protected abstract void DoReload(TAggregateRoot entity);
         protected abstract Task DoReloadAsync(TAggregateRoot entity);
+
         public void Reload(TAggregateRoot entity)
         {
             DoReload(entity);

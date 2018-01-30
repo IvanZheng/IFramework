@@ -6,7 +6,7 @@ namespace IFramework.Bus
 {
     public interface IBus<in TMessage> : IDisposable
     {
-        void Publish(TMessage @event);
-        void Publish(IEnumerable<TMessage> events);
+        void Publish<TTMessage>(TTMessage @event) where TTMessage : TMessage;
+        void Publish<TTMessage>(IEnumerable<TTMessage> events) where TTMessage : TMessage;
     }
 }

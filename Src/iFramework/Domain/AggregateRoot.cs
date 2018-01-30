@@ -5,7 +5,7 @@ using IFramework.Exceptions;
 
 namespace IFramework.Domain
 {
-    public abstract class AggregateRoot: Entity, IAggregateRoot
+    public abstract class AggregateRoot : Entity, IAggregateRoot
     {
         private string _aggreagetRootType;
         private readonly Queue<IAggregateRootEvent> _eventQueue = new Queue<IAggregateRootEvent>();

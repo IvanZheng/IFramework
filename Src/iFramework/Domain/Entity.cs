@@ -18,11 +18,11 @@ namespace IFramework.Domain
 
     public class Entity: IEntity
     {
-        private IDbContext _domainContext;
+        protected IDbContext DomainContext { get; set; }
 
         internal void SetDomainContext(IDbContext domainContext)
         {
-            _domainContext = domainContext;
+            DomainContext = domainContext;
         }
 
         public void ClearCollection<TEntity>(ICollection<TEntity> collection)
@@ -30,7 +30,7 @@ namespace IFramework.Domain
         {
             var entities = collection.ToList();
             collection.Clear();
-            entities.ForEach(e => _domainContext?.RemoveEntity(e));
+            entities.ForEach(e => DomainContext?.RemoveEntity(e));
         }
 
         public void RemoveCollectionEntities<TEntity>(ICollection<TEntity> collection, params TEntity[] entities)
@@ -39,34 +39,34 @@ namespace IFramework.Domain
             entities?.ForEach(e =>
             {
                 collection.Remove(e);
-                _domainContext?.RemoveEntity(e);
+                DomainContext?.RemoveEntity(e);
             });
         }
 
         public void Reload()
         {
-            if (_domainContext == null)
+            if (DomainContext == null)
             {
-                throw new NullReferenceException(nameof(_domainContext));
+                throw new NullReferenceException(nameof(DomainContext));
             }
-            _domainContext.Reload(this);
+            DomainContext.Reload(this);
             (this as AggregateRoot)?.Rollback();
         }
 
         public async Task ReloadAsync()
         {
-            if (_domainContext == null)
+            if (DomainContext == null)
             {
-                throw new NullReferenceException(nameof(_domainContext));
+                throw new NullReferenceException(nameof(DomainContext));
             }
-            await _domainContext.ReloadAsync(this)
+            await DomainContext.ReloadAsync(this)
                                .ConfigureAwait(false);
             (this as AggregateRoot)?.Rollback();
         }
 
         public TContext GetDbContext<TContext>() where TContext : class
         {
-            return _domainContext as TContext;
+            return DomainContext as TContext;
         }
     }
 }
