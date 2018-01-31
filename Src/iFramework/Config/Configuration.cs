@@ -1,23 +1,24 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
+using System.Collections.Generic;
+using IFramework.DependencyInjection;
 using IFramework.Event;
 using IFramework.Event.Impl;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Caching;
 using IFramework.Infrastructure.Caching.Impl;
 using IFramework.Infrastructure.Logging;
-using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 
 namespace IFramework.Config
 {
-    public class Configuration
+    public class Configuration : IConfiguration
     {
         public static readonly Configuration Instance = new Configuration();
+        public IConfiguration ConfigurationCore;
 
         private Configuration() { }
 
@@ -25,6 +26,35 @@ namespace IFramework.Config
 
 
         private bool CommitPerMessage { get; set; }
+
+
+        public IConfigurationSection GetSection(string key)
+        {
+            return Instance.ConfigurationCore?.GetSection(key);
+        }
+
+        public IEnumerable<IConfigurationSection> GetChildren()
+        {
+            return Instance.ConfigurationCore?.GetChildren();
+        }
+
+        public IChangeToken GetReloadToken()
+        {
+            return Instance.ConfigurationCore?.GetReloadToken();
+        }
+
+        public string this[string key]
+        {
+            get => Instance.ConfigurationCore?[key];
+            set => Instance.ConfigurationCore[key] = value;
+        }
+
+
+        public Configuration UseConfiguration(IConfiguration configuration)
+        {
+            ConfigurationCore = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            return this;
+        }
 
         public Configuration RegisterCommonComponents()
         {
@@ -64,7 +94,7 @@ namespace IFramework.Config
         {
             IoCFactory.Instance.RegisterType<ILoggerLevelController, LoggerLevelController>(ServiceLifetime.Singleton);
             IoCFactory.Instance.RegisterInstance(typeof(ILoggerFactory)
-                                        , new MockLoggerFactory());
+                                                 , new MockLoggerFactory());
             return this;
         }
 
@@ -74,7 +104,7 @@ namespace IFramework.Config
         }
 
         /// <summary>
-        /// should use after RegisterCommonComponents
+        ///     should use after RegisterCommonComponents
         /// </summary>
         /// <param name="eventSubscriberProviders"></param>
         /// <returns></returns>
@@ -126,37 +156,15 @@ namespace IFramework.Config
             return val;
         }
 
-        public static string GetAppConfig(string keyname, string configPath = "Config")
+        public static string GetConnectionString(string name)
         {
-            //TODO:
-            var config = string.Empty;
-            //var config = ConfigurationManager.AppSettings[keyname];
-            //try
-            //{
-            //    if (string.IsNullOrWhiteSpace(config))
-            //    {
-            //        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configPath);
-            //        if (File.Exists(filePath))
-            //        {
-            //            using (TextReader reader = new StreamReader(filePath))
-            //            {
-            //                var xml = XElement.Load(filePath);
-            //                var element = xml?.Elements()
-            //                                 .SingleOrDefault(e => e.Attribute("key") != null &&
-            //                                                       e.Attribute("key").Value.Equals(keyname));
-            //                if (element != null)
-            //                {
-            //                    config = element.Attribute("value").Value;
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-            //catch (Exception)
-            //{
-            //    config = string.Empty;
-            //}
-            return config;
+            return Instance.ConfigurationCore
+                           ?.GetConnectionString(name);
+        }
+
+        public static string GetAppConfig(string key)
+        {
+            return Instance.ConfigurationCore?[key];
         }
     }
 }

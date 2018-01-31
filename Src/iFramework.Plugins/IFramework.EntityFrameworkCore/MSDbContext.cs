@@ -12,9 +12,14 @@ namespace IFramework.EntityFrameworkCore
     public class MsDbContext : DbContext, IDbContext
     {
         public MsDbContext(DbContextOptions options)
-            : base(options)
+            :this(options, new EntityMaterializerOptionsExtension())
         {
-            options.WithExtension(new EntityMaterializerOptionsExtension(this));
+            
+        }
+        protected MsDbContext(DbContextOptions options, EntityMaterializerOptionsExtension entityMaterializerOptionsExtension)
+            : base(options.WithExtension(entityMaterializerOptionsExtension))
+        {
+            entityMaterializerOptionsExtension.SetDbContext(this);
         }
 
         public void Reload<TEntity>(TEntity entity)

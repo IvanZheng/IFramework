@@ -9,27 +9,26 @@ namespace IFramework.EntityFrameworkCore
 {
     public class EntityMaterializerOptionsExtension: IDbContextOptionsExtension
     {
-        private readonly MsDbContext _dbContext;
-
-        public EntityMaterializerOptionsExtension(MsDbContext dbContext)
+        private readonly ExtensionEntityMaterializerSource _extensionEntityMaterializerSource = new ExtensionEntityMaterializerSource();
+        internal void SetDbContext(MsDbContext dbContext)
         {
-            _dbContext = dbContext;
+            _extensionEntityMaterializerSource.SetDbContext(dbContext);
+
         }
 
         public bool ApplyServices(IServiceCollection services)
         {
-            services.AddScoped<IEntityMaterializerSource>(provider => new ExtensionEntityMaterializerSource(_dbContext));
-            return true;
+            services.AddScoped<IEntityMaterializerSource>(provider => _extensionEntityMaterializerSource);
+            return false;
         }
 
         public long GetServiceProviderHashCode()
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
         public void Validate(IDbContextOptions options)
         {
-            throw new NotImplementedException();
         }
 
         public string LogFragment { get; }
