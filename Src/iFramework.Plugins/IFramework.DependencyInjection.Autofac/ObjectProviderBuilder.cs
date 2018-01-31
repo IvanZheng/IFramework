@@ -14,17 +14,12 @@ namespace IFramework.DependencyInjection.Autofac
     {
         private readonly ContainerBuilder _containerBuilder;
 
-        public ObjectProviderBuilder()
+        public ObjectProviderBuilder(ContainerBuilder builder = null)
         {
-            _containerBuilder = new ContainerBuilder();
+            _containerBuilder = builder ?? new ContainerBuilder();
         }
 
-        public ObjectProviderBuilder(ContainerBuilder builder)
-        {
-            _containerBuilder = builder ?? throw new ArgumentNullException(nameof(builder));
-        }
-
-        public ObjectProviderBuilder(IServiceCollection serviceCollection = null)
+        public ObjectProviderBuilder(IServiceCollection serviceCollection)
             : this()
         {
             _containerBuilder.Populate(serviceCollection);

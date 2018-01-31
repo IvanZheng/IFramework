@@ -59,6 +59,21 @@ namespace IFramework.DependencyInjection
         #endregion
 
 
+        public static IObjectProvider CreateScope()
+        {
+            return Instance.ObjectProvider.CreateScope();
+        }
+
+        public IObjectProvider CreateScope(IServiceCollection serviceCollection)
+        {
+            return Instance.ObjectProvider.CreateScope(serviceCollection);
+        }
+
+        public IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction)
+        {
+            return Instance.ObjectProvider.CreateScope(buildAction);
+        }
+
         public static T Resolve<T>(string name, params Parameter[] parameters) where T : class
         {
             return Instance.ObjectProvider.GetService<T>(name, parameters);
@@ -98,6 +113,13 @@ namespace IFramework.DependencyInjection
         {
             ObjectProviderBuilder.RegisterType<TService, TImplementation>(lifetime);
             return ObjectProviderBuilder;
+        }
+
+        public IoCFactory RegisterComponents(Action<IObjectProviderBuilder, ServiceLifetime> registerComponents,
+                                             ServiceLifetime lifetime)
+        {
+            registerComponents(ObjectProviderBuilder, lifetime);
+            return Instance;
         }
     }
 }

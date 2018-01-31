@@ -23,5 +23,10 @@ namespace IFramework.Test.EntityFramework
             Name = name;
             Gender = gender;
         }
+
+        public void ModifyName(string name)
+        {
+            Name = name;
+        }
     }
 }

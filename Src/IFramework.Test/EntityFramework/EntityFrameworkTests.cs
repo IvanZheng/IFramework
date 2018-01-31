@@ -8,16 +8,8 @@ using Xunit;
 
 namespace IFramework.Test.EntityFramework
 {
-    public class EntityFrameworkTests
+    public class EntityFrameworkTests: TestBase
     {
-        public EntityFrameworkTests()
-        {
-            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                                                    .AddJsonFile("appsettings.json");
-            Configuration.Instance.UseConfiguration(builder.Build());
-        }
-
-
         [Fact]
         public async Task AddUserTest()
         {
