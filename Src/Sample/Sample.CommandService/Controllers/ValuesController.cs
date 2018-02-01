@@ -10,6 +10,8 @@ namespace Sample.CommandService.Controllers
     {
  
         // GET api/<controller>
+        public ValuesController(IExceptionManager exceptionManager) : base(exceptionManager) { }
+
         public async Task<ApiResult<string[]>> Get()
         {
             return await ProcessAsync(() => Task.FromResult(new[] {"value1", "value2"}));

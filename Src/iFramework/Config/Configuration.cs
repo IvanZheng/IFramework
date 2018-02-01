@@ -36,6 +36,15 @@ namespace IFramework.Config
             this.UseMockMessageQueueClient();
             this.UseMockMessagePublisher();
             RegisterDefaultEventBus();
+            RegisterExceptionManager<ExceptionManager>();
+            return this;
+        }
+
+        public Configuration RegisterExceptionManager<TExceptionManager>() where TExceptionManager : IExceptionManager
+        {
+            IoCFactory.Instance
+                      .CurrentContainer
+                      .RegisterType<IExceptionManager, TExceptionManager>(Lifetime.Singleton);
             return this;
         }
 

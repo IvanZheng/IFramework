@@ -68,6 +68,7 @@
     <Compile Include="Infrastructure\Caching\CacheValue.cs" />
     <Compile Include="Infrastructure\Caching\Impl\CacheManagerBase.cs" />
     <Compile Include="Infrastructure\DataContractJsonConvert.cs" />
+    <Compile Include="Infrastructure\IExceptionManager.cs" />
     <Compile Include="Infrastructure\IJsonConvert.cs" />
     <Compile Include="Infrastructure\ILock.cs" />
     <Compile Include="Infrastructure\ILockProvider.cs" />

@@ -1,15 +1,17 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
+using IFramework.AspNet;
 using IFramework.Command;
 using IFramework.Infrastructure;
 using Sample.DTO;
 
 namespace Sample.CommandService.Controllers
 {
-    public class SagaApiController : ApiController
+    public class SagaApiController : ApiControllerBase
     {
-        public SagaApiController(ICommandBus commandBus)
+        public SagaApiController(ICommandBus commandBus, IExceptionManager exceptionManager)
+            : base(exceptionManager)
         {
             _CommandBus = commandBus;
         }

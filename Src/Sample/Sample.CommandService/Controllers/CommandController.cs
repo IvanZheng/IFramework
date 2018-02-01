@@ -12,7 +12,8 @@ namespace Sample.CommandService.Controllers
 {
     public class CommandController : ApiControllerBase
     {
-        public CommandController(ICommandBus commandBus)
+        public CommandController(ICommandBus commandBus, IExceptionManager exceptionManager)
+            : base(exceptionManager)
         {
             _CommandBus = commandBus;
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
+using IFramework.AspNet;
 using IFramework.Command;
 using IFramework.Infrastructure;
 using IFramework.IoC;
@@ -25,18 +26,19 @@ namespace Sample.CommandService.Controllers
     }
 
     [AllowAnonymous]
-    public class BatchCommandController : ApiController
+    public class BatchCommandController : ApiControllerBase
     {
-        private static List<ICommand> BatchCommands = new List<ICommand>();
-        private IMessagePublisher _MessagePublisher = IoCFactory.Resolve<IMessagePublisher>();
-        private SampleModelContext _QueryContext = IoCFactory.Resolve<SampleModelContext>();
+        private static List<ICommand> _batchCommands = new List<ICommand>();
+        private IMessagePublisher _messagePublisher = IoCFactory.Resolve<IMessagePublisher>();
+        private SampleModelContext _queryContext = IoCFactory.Resolve<SampleModelContext>();
 
-        public BatchCommandController(ICommandBus commandBus)
+        public BatchCommandController(ICommandBus commandBus, IExceptionManager exceptionManager)
+            :base(exceptionManager)
         {
-            _CommandBus = commandBus;
+            CommandBus = commandBus;
         }
 
-        private ICommandBus _CommandBus { get; }
+        private ICommandBus CommandBus { get; }
 
 
         //[HttpGet]
@@ -65,7 +67,7 @@ namespace Sample.CommandService.Controllers
             {
                 return await ExceptionManager.ProcessAsync(async () =>
                 {
-                    var messageResponse = await _CommandBus.SendAsync(command, true);
+                    var messageResponse = await CommandBus.SendAsync(command, true);
                     return await messageResponse.ReadAsAsync<ApiResult>();
                 });
             }

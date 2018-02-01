@@ -11,6 +11,11 @@ namespace Sample.CommandService.Controllers
 {
     public class MqController: ApiControllerBase
     {
+        public MqController(IExceptionManager exceptionManager) : base(exceptionManager)
+        {
+            
+        }
+
         [HttpGet, Route("api/mq/CloseMessageQueue")]
         public ApiResult CloseMessageQueue()
         {

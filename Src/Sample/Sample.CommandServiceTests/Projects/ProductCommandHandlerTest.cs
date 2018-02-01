@@ -16,6 +16,7 @@ namespace Sample.CommandServiceTests.Products
     [TestClass]
     public class ProductCommandHandlerTest : CommandHandlerProxy<ProdutCommandHandler>
     {
+        public IExceptionManager ExceptionManager { get; }
         private readonly int batchCount = 50000;
         private readonly int productCount = 2;
         public List<CreateProduct> _createProducts;
@@ -23,8 +24,9 @@ namespace Sample.CommandServiceTests.Products
 
         public ProductCommandHandlerTest() { }
 
-        public ProductCommandHandlerTest(int batchCount, int productCount)
+        public ProductCommandHandlerTest(int batchCount, int productCount, IExceptionManager exceptionManager)
         {
+            ExceptionManager = exceptionManager;
             this.batchCount = batchCount;
             this.productCount = productCount;
         }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Data;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using IFramework.Config;
 using IFramework.Exceptions;
 using IFramework.Infrastructure.Logging;
 using IFramework.IoC;
@@ -10,7 +8,7 @@ using IFramework.IoC;
 namespace IFramework.Infrastructure
 {
     /// <summary>
-    /// API 响应结果
+    ///     API 响应结果
     /// </summary>
     public class ApiResult
     {
@@ -28,22 +26,24 @@ namespace IFramework.Infrastructure
         }
 
         /// <summary>
-        /// API 执行是否成功
+        ///     API 执行是否成功
         /// </summary>
         public bool Success { get; set; }
+
         /// <summary>
-        /// ErrorCode 为 0 表示执行无异常
+        ///     ErrorCode 为 0 表示执行无异常
         /// </summary>
         public int ErrorCode { get; set; }
+
         /// <summary>
-        /// 当API执行有异常时, 对应的错误信息
+        ///     当API执行有异常时, 对应的错误信息
         /// </summary>
         public string Message { get; set; }
     }
 
     /// <inheritdoc />
     /// <summary>
-    /// Api返回结果
+    ///     Api返回结果
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
     public class ApiResult<TResult> : ApiResult
@@ -63,38 +63,29 @@ namespace IFramework.Infrastructure
             : base(errorCode, message) { }
 
         /// <summary>
-        /// API 执行返回的结果
+        ///     API 执行返回的结果
         /// </summary>
         public TResult Result { get; set; }
     }
 
-    public static class ExceptionManager
+    public class ExceptionManager : IExceptionManager
     {
-        private static readonly ILogger Logger = IoCFactory.IsInit()
-                                                      ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager))
-                                                      : null;
+        protected readonly ILogger Logger;
 
-        private static string _unKnownMessage = ErrorCode.UnknownError.ToString();
-
-        public static void SetUnKnownMessage(string unknownMessage)
+        public ExceptionManager()
         {
-            _unKnownMessage = unknownMessage;
+            Logger = IoCFactory.IsInit()
+                         ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name)
+                         : null;
         }
 
-        private static string GetExceptionMessage(Exception ex)
-        {
-#if DEBUG
-            return $"Message:{ex.GetBaseException().Message}\r\nStackTrace:{ex.GetBaseException().StackTrace}";
-#else
-            return ex.GetBaseException().Message;
-#endif
-        }
+        protected virtual string UnKnownMessage { get; set; } = ErrorCode.UnknownError.ToString();
 
-        public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
-                                                               bool continueOnCapturedContext = false,
-                                                               bool needRetry = false,
-                                                               int retryCount = 50,
-                                                               Func<Exception, string> getExceptionMessage = null)
+        public virtual async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
+                                                                bool continueOnCapturedContext = false,
+                                                                bool needRetry = false,
+                                                                int retryCount = 50,
+                                                                Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -129,7 +120,7 @@ namespace IFramework.Infrastructure
             } while (needRetry && retryCount-- > 0);
             return apiResult;
 
-#region Old Method for .net 4
+            #region Old Method for .net 4
 
             /*
              * old method for .net 4
@@ -172,14 +163,14 @@ namespace IFramework.Infrastructure
             }).Unwrap();
             */
 
-#endregion
+            #endregion
         }
 
-        public static async Task<ApiResult> ProcessAsync(Func<Task> func,
-                                                         bool continueOnCapturedContext = false,
-                                                         bool needRetry = false,
-                                                         int retryCount = 50,
-                                                         Func<Exception, string> getExceptionMessage = null)
+        public virtual async Task<ApiResult> ProcessAsync(Func<Task> func,
+                                                          bool continueOnCapturedContext = false,
+                                                          bool needRetry = false,
+                                                          int retryCount = 50,
+                                                          Func<Exception, string> getExceptionMessage = null)
         {
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
             ApiResult apiResult = null;
@@ -213,7 +204,7 @@ namespace IFramework.Infrastructure
             } while (needRetry && retryCount-- > 0);
             return apiResult;
 
-#region Old Method for .net 4
+            #region Old Method for .net 4
 
             //return func().ContinueWith<Task<ApiResult>>(t =>
             //{
@@ -253,13 +244,13 @@ namespace IFramework.Infrastructure
             //    return Task.FromResult(apiResult);
             //}).Unwrap();
 
-#endregion
+            #endregion
         }
 
-        public static ApiResult Process(Action action,
-                                        bool needRetry = false,
-                                        int retryCount = 50,
-                                        Func<Exception, string> getExceptionMessage = null)
+        public virtual ApiResult Process(Action action,
+                                         bool needRetry = false,
+                                         int retryCount = 50,
+                                         Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -294,10 +285,10 @@ namespace IFramework.Infrastructure
             return apiResult;
         }
 
-        public static ApiResult<T> Process<T>(Func<T> func,
-                                              bool needRetry = false,
-                                              int retryCount = 50,
-                                              Func<Exception, string> getExceptionMessage = null)
+        public virtual ApiResult<T> Process<T>(Func<T> func,
+                                               bool needRetry = false,
+                                               int retryCount = 50,
+                                               Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -307,8 +298,9 @@ namespace IFramework.Infrastructure
                 {
                     var result = func();
                     needRetry = false;
-                    apiResult = result != null ? new ApiResult<T>(result) 
-                                               : new ApiResult<T>();
+                    apiResult = result != null
+                                    ? new ApiResult<T>(result)
+                                    : new ApiResult<T>();
                 }
                 catch (Exception ex)
                 {
@@ -331,6 +323,15 @@ namespace IFramework.Infrastructure
                 }
             } while (needRetry && retryCount-- > 0);
             return apiResult;
+        }
+
+        protected virtual string GetExceptionMessage(Exception ex)
+        {
+#if DEBUG
+            return $"Message:{ex.GetBaseException().Message}\r\nStackTrace:{ex.GetBaseException().StackTrace}";
+#else
+            return ex.GetBaseException().Message;
+#endif
         }
     }
 }

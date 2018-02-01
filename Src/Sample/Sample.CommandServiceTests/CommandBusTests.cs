@@ -51,7 +51,7 @@ namespace Sample.CommandService.Tests
 
         public void InitProducts()
         {
-            var handlerTest = new ProductCommandHandlerTest(batchCount, productCount);
+            var handlerTest = new ProductCommandHandlerTest(batchCount, productCount, new ExceptionManager());
             handlerTest.Initialize();
             _createProducts = handlerTest._createProducts;
         }
