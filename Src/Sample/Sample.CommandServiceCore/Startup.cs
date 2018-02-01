@@ -2,6 +2,7 @@
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
+using IFramework.JsonNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -36,7 +37,8 @@ namespace Sample.CommandServiceCore
             services.AddMvc();
             Configuration.Instance
                          .UseAutofacContainer(services)
-                         .RegisterCommonComponents();
+                         .RegisterCommonComponents()
+                         .UseJsonNet();
                          
             return IoCFactory.Instance
                              .RegisterComponents(RegisterComponents, ServiceLifetime.Singleton)

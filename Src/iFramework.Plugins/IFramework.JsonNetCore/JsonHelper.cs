@@ -1,65 +1,20 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using IFramework.Infrastructure.Logging;
+using IFramework.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using IFramework.IoC;
 
-namespace IFramework.JsonNet
+namespace IFramework.JsonNetCore
 {
-    public class CustomContractResolver : DefaultContractResolver
-    {
-        private readonly bool _serializeNonPulibc;
-        private readonly bool _lowerCase;
-
-        public CustomContractResolver(bool serializeNonPulibc, bool lowerCase)
-        {
-            _serializeNonPulibc = serializeNonPulibc;
-            _lowerCase = lowerCase;
-        }
-
-        protected override string ResolvePropertyName(string propertyName)
-        {
-            return _lowerCase ? propertyName.ToLower() : propertyName;
-        }
-
-        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-        {
-            if (_serializeNonPulibc)
-            {
-                //TODO: Maybe cache
-                var prop = base.CreateProperty(member, memberSerialization);
-
-                if (!prop.Writable)
-                {
-                    var property = member as PropertyInfo;
-                    if (property != null)
-                    {
-                        var hasPrivateSetter = property.GetSetMethod(true) != null;
-                        prop.Writable = hasPrivateSetter;
-                    }
-                }
-                return prop;
-            }
-            else
-            {
-                return base.CreateProperty(member, memberSerialization);
-            }
-        }
-    }
-
     public static class JsonHelper
     {
         private static readonly ConcurrentDictionary<string, JsonSerializerSettings> SettingDictionary = new ConcurrentDictionary<string, JsonSerializerSettings>();
 
-        private static readonly ILogger _JsonLogger = IoCFactory.IsInit()
-                                                          ? IoCFactory.Resolve<ILoggerFactory>().Create(typeof(JsonHelper).Name)
-                                                          : null;
+        private static readonly ILogger JsonLogger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(typeof(JsonHelper).Name);
 
         internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPulibc,
                                                                                        bool loopSerialize,
@@ -73,7 +28,7 @@ namespace IFramework.JsonNet
             {
                 ContractResolver = new CustomContractResolver(serializeNonPulibc, lowerCase)
             };
-          
+
             if (loopSerialize)
             {
                 customSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
@@ -83,9 +38,9 @@ namespace IFramework.JsonNet
             {
                 customSettings.Converters.Add(new StringEnumConverter());
             }
-          
-            ((DefaultContractResolver)customSettings.ContractResolver).IgnoreSerializableAttribute = ignoreSerializableAttribute;
-            
+
+            ((DefaultContractResolver) customSettings.ContractResolver).IgnoreSerializableAttribute = ignoreSerializableAttribute;
+
             if (useCamelCase)
             {
                 var resolver = customSettings.ContractResolver as DefaultContractResolver;
@@ -167,7 +122,7 @@ namespace IFramework.JsonNet
             }
             catch (Exception ex)
             {
-                _JsonLogger?.Error($"ToJsonObject Failed {json}", ex);
+                JsonLogger.LogError(ex, $"ToJsonObject Failed {json}");
                 return null;
             }
         }
@@ -192,12 +147,15 @@ namespace IFramework.JsonNet
                 {
                     return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
                 }
-                return JsonConvert.DeserializeObject(json, jsonType,
-                                                     GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
+                return JsonConvert.DeserializeObject(json,
+                                                     jsonType,
+                                                     GetCustomJsonSerializerSettings(serializeNonPublic,
+                                                                                     loopSerialize,
+                                                                                     useCamelCase));
             }
             catch (Exception ex)
             {
-                _JsonLogger?.Error($"ToJsonObject Failed {json}", ex);
+                JsonLogger.LogError(ex, $"ToJsonObject Failed {json}");
                 return null;
             }
         }
@@ -215,18 +173,24 @@ namespace IFramework.JsonNet
             {
                 if (typeof(T) == typeof(List<dynamic>))
                 {
-                    return (T) (object) json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
+                    return (T) json.ToDynamicObjects(serializeNonPublic,
+                                                     loopSerialize,
+                                                     useCamelCase);
                 }
                 if (typeof(T) == typeof(object))
                 {
-                    return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
+                    return json.ToDynamicObject(serializeNonPublic,
+                                                loopSerialize,
+                                                useCamelCase);
                 }
                 return JsonConvert.DeserializeObject<T>(json,
-                                                        GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
+                                                        GetCustomJsonSerializerSettings(serializeNonPublic,
+                                                                                        loopSerialize,
+                                                                                        useCamelCase));
             }
             catch (Exception ex)
             {
-                _JsonLogger?.Error($"ToJsonObject Failed {json}", ex);
+                JsonLogger.LogError(ex, $"ToJsonObject Failed {json}");
                 return default(T);
             }
         }
@@ -239,14 +203,12 @@ namespace IFramework.JsonNet
             return json.ToJsonObject<JObject>(serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public static List<dynamic> ToDynamicObjects(this string json,
-                                                     bool serializeNonPublic = true,
-                                                     bool loopSerialize = false,
-                                                     bool useCamelCase = false)
+        public static IEnumerable<dynamic> ToDynamicObjects(this string json,
+                                                            bool serializeNonPublic = true,
+                                                            bool loopSerialize = false,
+                                                            bool useCamelCase = false)
         {
-            return json.ToJsonObject<JArray>(serializeNonPublic, loopSerialize)
-                       .Cast<dynamic>()
-                       .ToList();
+            return json.ToJsonObject<JArray>(serializeNonPublic, loopSerialize);
         }
     }
 }

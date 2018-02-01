@@ -25,7 +25,7 @@ namespace Sample.CommandServiceCore.Controllers
         public IActionResult Index()
         {
             var profile = Configuration.GetAppConfig("AppSettings:Debug");
-            _logger.LogWarning(profile);
+            _logger.LogWarning(profile.ToJson());
             return View();
         }
 

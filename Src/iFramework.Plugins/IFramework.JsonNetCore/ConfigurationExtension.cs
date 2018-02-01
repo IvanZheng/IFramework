@@ -1,8 +1,8 @@
-﻿using IFramework.Infrastructure;
-using IFramework.IoC;
-using IFramework.JsonNet;
+﻿using IFramework.Config;
+using IFramework.DependencyInjection;
+using IFramework.Infrastructure;
 
-namespace IFramework.Config
+namespace IFramework.JsonNetCore
 {
     public static class FrameworkConfigurationExtension
     {
@@ -12,9 +12,9 @@ namespace IFramework.Config
         /// <returns></returns>
         public static Configuration UseJsonNet(this Configuration configuration)
         {
-            IoCFactory.Instance.CurrentContainer
-                .RegisterInstance(typeof(IJsonConvert)
-                    , new JsonConvertImpl());
+            IoCFactory.Instance
+                      .ObjectProviderBuilder
+                      .RegisterInstance(typeof(IJsonConvert), new JsonConvertImpl());
             return configuration;
         }
     }
