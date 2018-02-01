@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace IFramework.DependencyInjection
+{
+    public class LogInterceptionAttribute: Attribute
+    {
+        public string LoggerName { get; set; }
+        public bool SerializeArguments { get; set; }
+        public bool SerializeReturnValue { get; set; }
+        public string App { get; set; }
+        public string Module { get; set; }
+
+    }
+}
