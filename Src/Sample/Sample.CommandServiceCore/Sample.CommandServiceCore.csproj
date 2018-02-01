@@ -28,7 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNetCore.csproj" />
-    <ProjectReference Include="..\..\IFramework\IFramework.csproj" />
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
   </ItemGroup>
 
 </Project>

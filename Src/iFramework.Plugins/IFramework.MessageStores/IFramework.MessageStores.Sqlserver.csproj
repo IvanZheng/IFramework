@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\IFramework\IFramework.csproj" />
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
     <ProjectReference Include="..\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
   </ItemGroup>
 

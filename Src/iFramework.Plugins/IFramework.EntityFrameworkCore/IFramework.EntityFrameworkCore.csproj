@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\IFramework\IFramework.csproj" />
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
   </ItemGroup>
 
 </Project>

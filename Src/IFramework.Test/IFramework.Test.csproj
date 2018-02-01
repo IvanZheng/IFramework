@@ -20,7 +20,7 @@
     <ProjectReference Include="..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.Microsoft.DependencyInjection\IFramework.DependencyInjection.Microsoft.csproj" />
-    <ProjectReference Include="..\IFramework\IFramework.csproj" />
+    <ProjectReference Include="..\iFramework\IFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>

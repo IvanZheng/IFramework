@@ -7,9 +7,9 @@ namespace IFramework.MessageStores.Sqlserver
 {
     public abstract class Message
     {
-        public Message() { }
+        protected Message() { }
 
-        public Message(IMessageContext messageContext)
+        protected Message(IMessageContext messageContext)
         {
             Id = messageContext.MessageId;
             Topic = messageContext.Topic;
