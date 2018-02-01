@@ -129,6 +129,18 @@ namespace IFramework.Test
             objectProvider.Dispose();
         }
 
+        [Fact]
+        public void OverrideInjectTest()
+        {
+            var builder = GetNewBuilder();
+
+            builder.RegisterType<IB, B2>(ServiceLifetime.Singleton);
+            builder.RegisterType<IB, B>(ServiceLifetime.Singleton);
+            var objectProvider = builder.Build();
+            var b = objectProvider.GetService<IB>();
+            Assert.True(b is B);
+        }
+
 
         [Fact]
         public void ScopeTest()

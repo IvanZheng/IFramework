@@ -8,7 +8,7 @@ using System.Data;
 namespace IFramework.Infrastructure
 {
     /// <summary>
-    /// API 响应结果
+    ///     API 响应结果
     /// </summary>
     public class ApiResult
     {
@@ -26,22 +26,24 @@ namespace IFramework.Infrastructure
         }
 
         /// <summary>
-        /// API 执行是否成功
+        ///     API 执行是否成功
         /// </summary>
         public bool Success { get; set; }
+
         /// <summary>
-        /// ErrorCode 为 0 表示执行无异常
+        ///     ErrorCode 为 0 表示执行无异常
         /// </summary>
         public int ErrorCode { get; set; }
+
         /// <summary>
-        /// 当API执行有异常时, 对应的错误信息
+        ///     当API执行有异常时, 对应的错误信息
         /// </summary>
         public string Message { get; set; }
     }
 
     /// <inheritdoc />
     /// <summary>
-    /// Api返回结果
+    ///     Api返回结果
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
     public class ApiResult<TResult> : ApiResult
@@ -61,36 +63,27 @@ namespace IFramework.Infrastructure
             : base(errorCode, message) { }
 
         /// <summary>
-        /// API 执行返回的结果
+        ///     API 执行返回的结果
         /// </summary>
         public TResult Result { get; set; }
     }
 
-    public static class ExceptionManager
+    public class ExceptionManager : IExceptionManager
     {
-        private static readonly ILogger Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(ExceptionManager));
+        protected readonly ILogger Logger;
 
-        private static string _unKnownMessage = ErrorCode.UnknownError.ToString();
-
-        public static void SetUnKnownMessage(string unknownMessage)
+        public ExceptionManager()
         {
-            _unKnownMessage = unknownMessage;
+            Logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
         }
 
-        private static string GetExceptionMessage(Exception ex)
-        {
-#if DEBUG
-            return $"Message:{ex.GetBaseException().Message}\r\nStackTrace:{ex.GetBaseException().StackTrace}";
-#else
-            return ex.GetBaseException().Message;
-#endif
-        }
+        protected virtual string UnKnownMessage { get; set; } = ErrorCode.UnknownError.ToString();
 
-        public static async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
-                                                               bool continueOnCapturedContext = false,
-                                                               bool needRetry = false,
-                                                               int retryCount = 50,
-                                                               Func<Exception, string> getExceptionMessage = null)
+        public virtual async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
+                                                                bool continueOnCapturedContext = false,
+                                                                bool needRetry = false,
+                                                                int retryCount = 50,
+                                                                Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -124,58 +117,13 @@ namespace IFramework.Infrastructure
                 }
             } while (needRetry && retryCount-- > 0);
             return apiResult;
-
-#region Old Method for .net 4
-
-            /*
-             * old method for .net 4
-            return func().ContinueWith<Task<ApiResult<T>>>(t =>
-            {
-                ApiResult<T> apiResult = null;
-                try
-                {
-                    if (t.IsFaulted)
-                    {
-                        throw t.Exception.GetBaseException();
-                    }
-                    needRetry = false;
-                    apiResult = new ApiResult<T>(t.Result);
-                }
-                catch (Exception ex)
-                {
-                    if (!(ex is OptimisticConcurrencyException) || !needRetry)
-                    {
-                        var baseException = ex.GetBaseException();
-                        if (baseException is SysException)
-                        {
-                            var sysException = baseException as SysException;
-                            apiResult = new ApiResult<T>(sysException.ErrorCode, sysException.Message);
-                        }
-                        else
-                        {
-                            apiResult = new ApiResult<T>(ErrorCode.UnknownError, baseException.Message);
-                            _logger.Error(ex);
-                        }
-                        needRetry = false;
-                    }
-                }
-                if (needRetry)
-                {
-                    return ProcessAsync(func, needRetry);
-                }
-
-                return Task.FromResult(apiResult);
-            }).Unwrap();
-            */
-
-#endregion
         }
 
-        public static async Task<ApiResult> ProcessAsync(Func<Task> func,
-                                                         bool continueOnCapturedContext = false,
-                                                         bool needRetry = false,
-                                                         int retryCount = 50,
-                                                         Func<Exception, string> getExceptionMessage = null)
+        public virtual async Task<ApiResult> ProcessAsync(Func<Task> func,
+                                                          bool continueOnCapturedContext = false,
+                                                          bool needRetry = false,
+                                                          int retryCount = 50,
+                                                          Func<Exception, string> getExceptionMessage = null)
         {
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
             ApiResult apiResult = null;
@@ -208,54 +156,12 @@ namespace IFramework.Infrastructure
                 }
             } while (needRetry && retryCount-- > 0);
             return apiResult;
-
-#region Old Method for .net 4
-
-            //return func().ContinueWith<Task<ApiResult>>(t =>
-            //{
-            //    ApiResult apiResult = null;
-            //    try
-            //    {
-            //        if (t.IsFaulted)
-            //        {
-            //            throw t.Exception.GetBaseException();
-            //        }
-            //        needRetry = false;
-            //        apiResult = new ApiResult();
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        if (!(ex is OptimisticConcurrencyException) || !needRetry)
-            //        {
-            //            var baseException = ex.GetBaseException();
-            //            if (baseException is SysException)
-            //            {
-            //                var sysException = baseException as SysException;
-            //                apiResult = new ApiResult(sysException.ErrorCode, sysException.Message);
-            //            }
-            //            else
-            //            {
-            //                apiResult = new ApiResult(ErrorCode.UnknownError, baseException.Message);
-            //                _logger.Error(ex);
-            //            }
-            //            needRetry = false;
-            //        }
-            //    }
-            //    if (needRetry)
-            //    {
-            //        return ProcessAsync(func, needRetry);
-            //    }
-
-            //    return Task.FromResult(apiResult);
-            //}).Unwrap();
-
-#endregion
         }
 
-        public static ApiResult Process(Action action,
-                                        bool needRetry = false,
-                                        int retryCount = 50,
-                                        Func<Exception, string> getExceptionMessage = null)
+        public virtual ApiResult Process(Action action,
+                                         bool needRetry = false,
+                                         int retryCount = 50,
+                                         Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -290,10 +196,10 @@ namespace IFramework.Infrastructure
             return apiResult;
         }
 
-        public static ApiResult<T> Process<T>(Func<T> func,
-                                              bool needRetry = false,
-                                              int retryCount = 50,
-                                              Func<Exception, string> getExceptionMessage = null)
+        public virtual ApiResult<T> Process<T>(Func<T> func,
+                                               bool needRetry = false,
+                                               int retryCount = 50,
+                                               Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;
@@ -303,8 +209,9 @@ namespace IFramework.Infrastructure
                 {
                     var result = func();
                     needRetry = false;
-                    apiResult = result != null ? new ApiResult<T>(result) 
-                                               : new ApiResult<T>();
+                    apiResult = result != null
+                                    ? new ApiResult<T>(result)
+                                    : new ApiResult<T>();
                 }
                 catch (Exception ex)
                 {
@@ -327,6 +234,15 @@ namespace IFramework.Infrastructure
                 }
             } while (needRetry && retryCount-- > 0);
             return apiResult;
+        }
+
+        protected virtual string GetExceptionMessage(Exception ex)
+        {
+#if DEBUG
+            return $"Message:{ex.GetBaseException().Message}\r\nStackTrace:{ex.GetBaseException().StackTrace}";
+#else
+            return ex.GetBaseException().Message;
+#endif
         }
     }
 }
