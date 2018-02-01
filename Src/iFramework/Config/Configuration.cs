@@ -6,7 +6,6 @@ using IFramework.Event.Impl;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Caching;
 using IFramework.Infrastructure.Caching.Impl;
-using IFramework.Infrastructure.Logging;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using Microsoft.Extensions.Configuration;
@@ -58,7 +57,6 @@ namespace IFramework.Config
 
         public Configuration RegisterCommonComponents()
         {
-            UseNoneLogger();
             UseMemoryCahce();
             UserDataContractJson();
             UseMessageStore<MockMessageStore>();
@@ -98,13 +96,13 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration UseNoneLogger()
-        {
-            IoCFactory.Instance.RegisterType<ILoggerLevelController, LoggerLevelController>(ServiceLifetime.Singleton);
-            IoCFactory.Instance.RegisterInstance(typeof(ILoggerFactory)
-                                                 , new MockLoggerFactory());
-            return this;
-        }
+        //public Configuration UseNoneLogger()
+        //{
+        //    IoCFactory.Instance.RegisterType<ILoggerLevelController, LoggerLevelController>(ServiceLifetime.Singleton);
+        //    IoCFactory.Instance.RegisterInstance(typeof(ILoggerFactory)
+        //                                         , new MockLoggerFactory());
+        //    return this;
+        //}
 
         public Configuration RegisterDefaultEventBus(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {

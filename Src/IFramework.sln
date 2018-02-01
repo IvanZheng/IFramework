@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{A9B2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.CommandServiceCore", "Sample\Sample.CommandServiceCore\Sample.CommandServiceCore.csproj", "{4C49DFF1-1B3B-41DB-A6D0-C2C8BA0468DE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logging", "Logging", "{D85A2D0B-5D20-4C0F-B06F-D688EFAD1624}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

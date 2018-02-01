@@ -7,8 +7,7 @@ namespace IFramework.Message
     {
         void Start();
         void Stop();
-        Task<MessageResponse[]> SendAsync(CancellationToken sendCancellationToken, params IMessage[] events);
-        Task<MessageResponse[]> SendAsync(params IMessage[] events);
-        Task<MessageResponse[]> SendAsync(params MessageState[] messageStates);
+        Task<MessageResponse[]> SendAsync(CancellationToken cancellationToken, params IMessage[] events);
+        Task<MessageResponse[]> SendAsync(CancellationToken cancellationToken, params MessageState[] messageStates);
     }
 }

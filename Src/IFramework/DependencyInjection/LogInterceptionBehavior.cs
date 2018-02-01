@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using IFramework.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.DependencyInjection
 {
@@ -31,7 +31,7 @@ namespace IFramework.DependencyInjection
                 var argument = serializeAttribute.SerializeArguments ? arguments[i] : arguments[i]?.ToString();
                 parameters.Add(methodParameters[i].Name, argument);
             }
-            logger?.Info(new AopEnteringLog
+            logger.LogInformation(new AopEnteringLog
             {
                 Method = method.Name,
                 Target = $"{target.GetType().FullName}({target.GetHashCode()})",

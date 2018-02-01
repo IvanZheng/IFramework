@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using IFramework.Infrastructure.Logging;
 using IFramework.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure
 {
     public static class JsonHelper
     {
         private static IJsonConvert JsonConvert => IoCFactory.Resolve<IJsonConvert>();
-        private static ILogger JsonLogger => IoCFactory.Resolve<ILoggerFactory>().Create(typeof(JsonHelper).Name);
+        private static ILogger JsonLogger => IoCFactory.Resolve<ILoggerFactory>().CreateLogger(typeof(JsonHelper).Name);
 
         public static string ToJson(this object obj,
                                     bool serializeNonPublic = true,
@@ -51,7 +51,7 @@ namespace IFramework.Infrastructure
             }
             catch (Exception ex)
             {
-                JsonLogger?.Error($"ToJsonObject Failed {json}", ex);
+                JsonLogger.LogError(ex, $"ToJsonObject Failed {json}");
                 return null;
             }
         }
@@ -79,7 +79,7 @@ namespace IFramework.Infrastructure
             }
             catch (Exception ex)
             {
-                JsonLogger?.Error($"ToJsonObject Failed {json}", ex);
+                JsonLogger.LogError(ex, $"ToJsonObject Failed {json}");
                 return default(T);
             }
         }

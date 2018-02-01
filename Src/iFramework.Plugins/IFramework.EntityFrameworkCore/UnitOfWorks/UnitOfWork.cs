@@ -6,8 +6,8 @@ using System.Transactions;
 using IFramework.Domain;
 using IFramework.Event;
 using IFramework.Infrastructure;
-using IFramework.Infrastructure.Logging;
 using IFramework.UnitOfWork;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.EntityFrameworkCore.UnitOfWorks
 {
@@ -23,7 +23,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
         {
             DbContexts = new List<MsDbContext>();
             EventBus = eventBus;
-            Logger = loggerFactory.Create(GetType().Name);
+            Logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
         public void Dispose()

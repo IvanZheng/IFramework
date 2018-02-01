@@ -6,39 +6,39 @@ using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
-using IFramework.Infrastructure.Logging;
 using IFramework.DependencyInjection;
 using IFramework.MessageQueue;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Message.Impl
 {
     public abstract class MessageSender: IMessageSender
     {
-        protected string _defaultTopic;
-        protected ILogger _logger;
-        protected IMessageQueueClient _messageQueueClient;
-        protected bool _needMessageStore;
-        protected Task _sendMessageTask;
+        protected string DefaultTopic;
+        protected ILogger Logger;
+        protected IMessageQueueClient MessageQueueClient;
+        protected bool NeedMessageStore;
+        protected Task SendMessageTask;
 
-        public MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null)
+        protected MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null)
         {
-            _messageQueueClient = messageQueueClient;
-            _defaultTopic = defaultTopic;
-            _needMessageStore = Configuration.Instance.NeedMessageStore;
-            _messageStateQueue = new BlockingCollection<MessageState>();
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
+            MessageQueueClient = messageQueueClient;
+            DefaultTopic = defaultTopic;
+            NeedMessageStore = Configuration.Instance.NeedMessageStore;
+            MessageStateQueue = new BlockingCollection<MessageState>();
+            Logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
-        protected BlockingCollection<MessageState> _messageStateQueue { get; set; }
+        protected BlockingCollection<MessageState> MessageStateQueue { get; set; }
 
         public virtual void Start()
         {
-            if (_needMessageStore)
+            if (NeedMessageStore)
             {
-                GetAllUnSentMessages().ForEach(eventContext => _messageStateQueue.Add(new MessageState(eventContext)));
+                GetAllUnSentMessages().ForEach(eventContext => MessageStateQueue.Add(new MessageState(eventContext)));
             }
             var cancellationTokenSource = new CancellationTokenSource();
-            _sendMessageTask = Task.Factory.StartNew(cs => SendMessages(cs as CancellationTokenSource),
+            SendMessageTask = Task.Factory.StartNew(cs => SendMessages(cs as CancellationTokenSource),
                                                      cancellationTokenSource,
                                                      cancellationTokenSource.Token,
                                                      TaskCreationOptions.LongRunning,
@@ -47,45 +47,40 @@ namespace IFramework.Message.Impl
 
         public virtual void Stop()
         {
-            if (_sendMessageTask != null)
+            if (SendMessageTask != null)
             {
-                var cancellationSource = _sendMessageTask.AsyncState as CancellationTokenSource;
-                cancellationSource.Cancel(true);
-                Task.WaitAll(_sendMessageTask);
+                var cancellationSource = SendMessageTask.AsyncState as CancellationTokenSource;
+                cancellationSource?.Cancel(true);
+                Task.WaitAll(SendMessageTask);
             }
         }
+        
 
-        public Task<MessageResponse[]> SendAsync(params IMessage[] messages)
-        {
-            return SendAsync(CancellationToken.None, messages);
-        }
-
-        public Task<MessageResponse[]> SendAsync(CancellationToken sendCancellationToken, params IMessage[] messages)
+        public Task<MessageResponse[]> SendAsync(CancellationToken cancellationToken, params IMessage[] messages)
         {
             var sendTaskCompletionSource = new TaskCompletionSource<MessageResponse>();
-            if (sendCancellationToken != CancellationToken.None)
+            if (cancellationToken != CancellationToken.None)
             {
-                sendCancellationToken.Register(OnSendCancel, sendTaskCompletionSource);
+                cancellationToken.Register(OnSendCancel, sendTaskCompletionSource);
             }
             var messageStates = messages.Select(message =>
                                         {
                                             var topic = message.GetFormatTopic();
-                                            return new MessageState(_messageQueueClient.WrapMessage(message, topic: topic, key: message.Key),
+                                            return new MessageState(MessageQueueClient.WrapMessage(message, topic: topic, key: message.Key),
                                                                     sendTaskCompletionSource,
                                                                     false);
                                         })
                                         .ToArray();
-            return SendAsync(messageStates);
+            return SendAsync(cancellationToken, messageStates);
         }
 
 
-        public Task<MessageResponse[]> SendAsync(params MessageState[] messageStates)
+        public Task<MessageResponse[]> SendAsync(CancellationToken cancellationToken, params MessageState[] messageStates)
         {
-            messageStates.ForEach(messageState => { _messageStateQueue.Add(messageState); });
-            messageStates.ForEach(ms =>
+            messageStates.ForEach(messageState =>
             {
-                _logger.Debug($"send message enqueue msgId: {ms.MessageID} topic:{ms.MessageContext.Topic}");
-
+                MessageStateQueue.Add(messageState, cancellationToken);
+                Logger.LogDebug($"send message enqueue msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
             });
             return Task.WhenAll(messageStates.Where(s => s.SendTaskCompletionSource != null)
                                              .Select(s => s.SendTaskCompletionSource.Task)
@@ -109,7 +104,7 @@ namespace IFramework.Message.Impl
             {
                 try
                 {
-                    var messageState = _messageStateQueue.Take(cancellationTokenSource.Token);
+                    var messageState = MessageStateQueue.Take(cancellationTokenSource.Token);
                     SendMessageStateAsync(messageState, cancellationTokenSource.Token);
                 }
                 catch (OperationCanceledException)
@@ -122,7 +117,7 @@ namespace IFramework.Message.Impl
                 }
                 catch (Exception ex)
                 {
-                    _logger?.Error(ex);
+                    Logger.LogError(ex, $"SendMessages Processing faield!");
                 }
             }
         }

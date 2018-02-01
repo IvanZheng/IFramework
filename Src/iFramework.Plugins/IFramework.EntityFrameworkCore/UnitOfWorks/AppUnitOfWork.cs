@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using IFramework.Event;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
-using IFramework.Infrastructure.Logging;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using IFramework.UnitOfWork;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.EntityFrameworkCore.UnitOfWorks
 {
@@ -73,12 +74,12 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
 
                     if (allMessageStates.Count > 0)
                     {
-                        MessagePublisher.SendAsync(EventMessageStates.ToArray());
+                        MessagePublisher.SendAsync(CancellationToken.None, EventMessageStates.ToArray());
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"_messagePublisher SendAsync error", ex);
+                    Logger.LogError(ex, $"_messagePublisher SendAsync error");
                 }
             }
             else
@@ -106,12 +107,13 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                                        Exception,
                                                        AnywayPublishEventMessageStates.Select(s => s.MessageContext)
                                                                                       .ToArray());
-                        MessagePublisher.SendAsync(AnywayPublishEventMessageStates.ToArray());
+                        MessagePublisher.SendAsync(CancellationToken.None,
+                                                   AnywayPublishEventMessageStates.ToArray());
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"_messagePublisher SendAsync error", ex);
+                    Logger.LogError(ex, $"_messagePublisher SendAsync error");
                 }
             }
             EventBus.ClearMessages();

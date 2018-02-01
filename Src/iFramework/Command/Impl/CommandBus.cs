@@ -5,22 +5,25 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Command.Impl
 {
-    public class CommandBus: MessageSender, ICommandBus
+    public class CommandBus : MessageSender, ICommandBus
     {
         /// <summary>
         ///     cache command states for command reply. When reply comes, make replyTaskCompletionSouce completed
         /// </summary>
         private readonly ConcurrentDictionary<string, MessageState> _commandStateQueues;
+
+        private readonly ConsumerConfig _consumerConfig;
 
         private readonly string _consumerId;
 
@@ -31,7 +34,6 @@ namespace IFramework.Command.Impl
         private readonly string _replySubscriptionName;
         private readonly string _replyTopicName;
         private ICommitOffsetable _internalConsumer;
-        private readonly ConsumerConfig _consumerConfig;
 
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,
@@ -62,16 +64,16 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_replyTopicName))
                 {
-                    _internalConsumer = _messageQueueClient.StartSubscriptionClient(_replyTopicName,
-                                                                                    _replySubscriptionName,
-                                                                                    _consumerId,
-                                                                                    OnMessagesReceived,
-                                                                                    _consumerConfig);
+                    _internalConsumer = MessageQueueClient.StartSubscriptionClient(_replyTopicName,
+                                                                                   _replySubscriptionName,
+                                                                                   _consumerId,
+                                                                                   OnMessagesReceived,
+                                                                                   _consumerConfig);
                 }
             }
             catch (Exception e)
             {
-                _logger?.Error(e.GetBaseException().Message, e);
+                Logger.LogError(e, $"command bus started faield");
             }
 
             #endregion
@@ -120,13 +122,15 @@ namespace IFramework.Command.Impl
             SagaInfo sagaInfo = null;
             if (!string.IsNullOrEmpty(sagaId))
             {
-                sagaInfo = new SagaInfo { SagaId = sagaId, ReplyEndPoint = _replyTopicName };
+                sagaInfo = new SagaInfo {SagaId = sagaId, ReplyEndPoint = _replyTopicName};
             }
             var commandContext = WrapCommand(command, false, sagaInfo);
-            var commandState = BuildCommandState(commandContext, sendCancellationToken, sendTimeout,
+            var commandState = BuildCommandState(commandContext,
+                                                 sendCancellationToken,
+                                                 sendTimeout,
                                                  replyCancellationToken, true);
             _commandStateQueues.GetOrAdd(sagaId, commandState);
-            return (await SendAsync(commandState).ConfigureAwait(false))
+            return (await SendAsync(sendCancellationToken, commandState).ConfigureAwait(false))
                 .FirstOrDefault();
         }
 
@@ -140,12 +144,12 @@ namespace IFramework.Command.Impl
             var commandState = BuildCommandState(commandContext, sendCancellationToken, timeout, replyCancellationToken,
                                                  needReply);
 
-            _logger.Debug($"enter in command bus send {commandState.MessageID} topic:{commandState.MessageContext.Topic}");
+            Logger.LogDebug($"enter in command bus send {commandState.MessageID} topic:{commandState.MessageContext.Topic}");
             if (needReply)
             {
                 _commandStateQueues.GetOrAdd(commandState.MessageID, commandState);
             }
-            return (await SendAsync(commandState).ConfigureAwait(false))
+            return (await SendAsync(sendCancellationToken, commandState).ConfigureAwait(false))
                 .FirstOrDefault();
         }
 
@@ -156,8 +160,9 @@ namespace IFramework.Command.Impl
         {
             if (string.IsNullOrEmpty(command.ID))
             {
-                _logger?.Error(new NoMessageId());
-                throw new NoMessageId();
+                var noMessageIdException = new NoMessageId();
+                Logger.LogError(noMessageIdException, $"{command.ToJson()}");
+                throw noMessageIdException;
             }
             string commandKey = null;
             if (command is ILinearCommand)
@@ -180,10 +185,10 @@ namespace IFramework.Command.Impl
 
             #endregion
 
-            commandContext = _messageQueueClient.WrapMessage(command,
-                                                             key: commandKey,
-                                                             replyEndPoint: needReply ? _replyTopicName : null,
-                                                             sagaInfo: sagaInfo, producer: producer ?? _consumerId);
+            commandContext = MessageQueueClient.WrapMessage(command,
+                                                            key: commandKey,
+                                                            replyEndPoint: needReply ? _replyTopicName : null,
+                                                            sagaInfo: sagaInfo, producer: producer ?? _consumerId);
             if (string.IsNullOrEmpty(commandContext.Topic))
             {
                 throw new NoCommandTopic();
@@ -193,7 +198,7 @@ namespace IFramework.Command.Impl
 
         public void SendMessageStates(IEnumerable<MessageState> commandStates)
         {
-            SendAsync(commandStates.ToArray());
+            SendAsync(CancellationToken.None, commandStates.ToArray());
         }
 
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
@@ -208,19 +213,19 @@ namespace IFramework.Command.Impl
                                                           replyEndPoint,
                                                           sagaInfo,
                                                           producer) =>
-                                                             _messageQueueClient.WrapMessage(message, key: message.Key, topic: topic,
-                                                                                             messageId: messageId, correlationId: correlationId,
-                                                                                             replyEndPoint: replyEndPoint,
-                                                                                             sagaInfo: sagaInfo, producer: producer));
+                                                             MessageQueueClient.WrapMessage(message, key: message.Key, topic: topic,
+                                                                                            messageId: messageId, correlationId: correlationId,
+                                                                                            replyEndPoint: replyEndPoint,
+                                                                                            sagaInfo: sagaInfo, producer: producer));
             }
         }
 
         protected override async Task SendMessageStateAsync(MessageState messageState, CancellationToken cancellationToken)
         {
-            _logger.Debug($"send message start msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
+            Logger.LogDebug($"send message start msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
             var messageContext = messageState.MessageContext;
-            await _messageQueueClient.SendAsync(messageContext, messageContext.Topic ?? _defaultTopic, cancellationToken);
-            _logger.Debug($"send message complete msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
+            await MessageQueueClient.SendAsync(messageContext, messageContext.Topic ?? DefaultTopic, cancellationToken);
+            Logger.LogDebug($"send message complete msgId: {messageState.MessageID} topic:{messageState.MessageContext.Topic}");
             CompleteSendingMessage(messageState);
         }
 
@@ -231,7 +236,7 @@ namespace IFramework.Command.Impl
                                                   messageState.ReplyTaskCompletionSource?.Task,
                                                   messageState.NeedReply));
 
-            if (_needMessageStore && messageState != null)
+            if (NeedMessageStore && messageState != null)
             {
                 Task.Run(() =>
                 {
@@ -253,16 +258,16 @@ namespace IFramework.Command.Impl
         {
             await Task.Run(() =>
                       {
-                          _logger?.InfoFormat("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
+                          Logger.LogInformation("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
                           var sagaInfo = reply.SagaInfo;
-                          var correlationID = sagaInfo?.SagaId ?? reply.CorrelationID;
-                          var messageState = _commandStateQueues.TryGetValue(correlationID);
+                          var correlationId = sagaInfo?.SagaId ?? reply.CorrelationID;
+                          var messageState = _commandStateQueues.TryGetValue(correlationId);
                           if (messageState != null)
                           {
-                              _commandStateQueues.TryRemove(correlationID);
-                              if (reply.Message is Exception)
+                              _commandStateQueues.TryRemove(correlationId);
+                              if (reply.Message is Exception exception)
                               {
-                                  messageState.ReplyTaskCompletionSource.TrySetException(reply.Message as Exception);
+                                  messageState.ReplyTaskCompletionSource.TrySetException(exception);
                               }
                               else
                               {
@@ -292,13 +297,14 @@ namespace IFramework.Command.Impl
                 sendCancellationToken.Register(OnSendCancel, sendTaskCompletionSource);
             }
 
-            TaskCompletionSource<object> replyTaskCompletionSource = null;
             MessageState commandState = null;
             if (needReply)
             {
-                replyTaskCompletionSource = new TaskCompletionSource<object>();
-                commandState = new MessageState(commandContext, sendTaskCompletionSource, replyTaskCompletionSource,
-                                                needReply);
+                var replyTaskCompletionSource = new TaskCompletionSource<object>();
+                commandState = new MessageState(commandContext,
+                                                sendTaskCompletionSource,
+                                                replyTaskCompletionSource,
+                                                true);
                 if (replyCancellationToken != CancellationToken.None)
                 {
                     replyCancellationToken.Register(OnReplyCancel, commandState);
@@ -306,15 +312,14 @@ namespace IFramework.Command.Impl
             }
             else
             {
-                commandState = new MessageState(commandContext, sendTaskCompletionSource, needReply);
+                commandState = new MessageState(commandContext, sendTaskCompletionSource, false);
             }
             return commandState;
         }
 
         protected void OnSendTimeout(object state)
         {
-            var sendTaskCompletionSource = state as TaskCompletionSource<MessageResponse>;
-            if (sendTaskCompletionSource != null)
+            if (state is TaskCompletionSource<MessageResponse> sendTaskCompletionSource)
             {
                 sendTaskCompletionSource.TrySetException(new TimeoutException());
             }
@@ -323,8 +328,7 @@ namespace IFramework.Command.Impl
 
         protected void OnReplyCancel(object state)
         {
-            var messageState = state as MessageState;
-            if (messageState != null)
+            if (state is MessageState messageState)
             {
                 messageState.ReplyTaskCompletionSource.TrySetCanceled();
                 _commandStateQueues.TryRemove(messageState.MessageID);

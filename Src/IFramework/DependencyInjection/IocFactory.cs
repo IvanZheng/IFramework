@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using IFramework.Event.Impl;
-using IFramework.Infrastructure.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.DependencyInjection

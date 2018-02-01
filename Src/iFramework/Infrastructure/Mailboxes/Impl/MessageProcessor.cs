@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using IFramework.Infrastructure.Logging;
 using IFramework.DependencyInjection;
 using IFramework.Message;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
@@ -20,7 +20,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         public MessageProcessor(IProcessingMessageScheduler<IMessageContext> scheduler, int batchCount = 100)
         {
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType());
+            _logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(GetType());
             _batchCount = batchCount;
             _processingMessageScheduler = scheduler;
             MailboxDictionary = new ConcurrentDictionary<string, ProcessingMailbox<IMessageContext>>();
@@ -80,7 +80,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 }
                 catch (Exception ex)
                 {
-                    _logger?.Error(ex.GetBaseException().Message, ex);
+                    _logger.LogError(ex, $"Message processor ProcessMailboxProcessorCommands failed");
                 }
             }
         }

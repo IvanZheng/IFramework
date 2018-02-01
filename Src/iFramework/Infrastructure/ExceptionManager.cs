@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IFramework.Exceptions;
-using IFramework.Infrastructure.Logging;
 using IFramework.DependencyInjection;
 using System.Data;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure
 {
@@ -74,7 +74,7 @@ namespace IFramework.Infrastructure
 
         public ExceptionManager()
         {
-            Logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
+            Logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
         protected virtual string UnKnownMessage { get; set; } = ErrorCode.UnknownError.ToString();
@@ -105,12 +105,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
-                            Logger?.Warn(ex);
+                            Logger.LogWarning(ex, $"ProcessAsync failed due to domain exception");
                         }
                         else
                         {
                             apiResult = new ApiResult<T>(ErrorCode.UnknownError, getExceptionMessage(ex));
-                            Logger?.Error(ex);
+                            Logger.LogError(ex, $"ProcessAsync failed due to exception");
                         }
                         needRetry = false;
                     }
@@ -144,12 +144,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
-                            Logger?.Warn(ex);
+                            Logger.LogWarning(ex, $"ProcessAsync failed due to domain exception");
                         }
                         else
                         {
                             apiResult = new ApiResult(ErrorCode.UnknownError, getExceptionMessage(ex));
-                            Logger?.Error(ex);
+                            Logger.LogError(ex, $"ProcessAsync failed due to exception");
                         }
                         needRetry = false;
                     }
@@ -182,12 +182,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult(sysException.ErrorCode, getExceptionMessage(sysException));
-                            Logger?.Warn(ex);
+                            Logger.LogWarning(ex, $"ProcessAsync failed due to domain exception");
                         }
                         else
                         {
                             apiResult = new ApiResult(ErrorCode.UnknownError, getExceptionMessage(ex));
-                            Logger?.Error(ex);
+                            Logger.LogError(ex, $"ProcessAsync failed due to exception");
                         }
                         needRetry = false;
                     }
@@ -222,12 +222,12 @@ namespace IFramework.Infrastructure
                         {
                             var sysException = baseException as DomainException;
                             apiResult = new ApiResult<T>(sysException.ErrorCode, getExceptionMessage(sysException));
-                            Logger?.Warn(ex);
+                            Logger.LogWarning(ex, $"ProcessAsync failed due to domain exception");
                         }
                         else
                         {
                             apiResult = new ApiResult<T>(ErrorCode.UnknownError, getExceptionMessage(ex));
-                            Logger?.Error(ex);
+                            Logger.LogError(ex, $"ProcessAsync failed due to exception");
                         }
                         needRetry = false;
                     }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Sample.CommandServiceCore.Models;
 
 namespace Sample.CommandServiceCore.Controllers
@@ -13,16 +14,18 @@ namespace Sample.CommandServiceCore.Controllers
     public class HomeController : Controller
     {
         private readonly IExceptionManager _exceptionManager;
-
-        public HomeController(IExceptionManager exceptionManager)
+        private readonly ILogger _logger;
+        public HomeController(IExceptionManager exceptionManager,
+                              ILoggerFactory loggerFactory)
         {
             _exceptionManager = exceptionManager;
+            _logger = loggerFactory.CreateLogger(nameof(HomeController));
         }
 
         public IActionResult Index()
         {
-            var profile = Configuration.GetAppConfig("profile");
-            Console.WriteLine(profile);
+            var profile = Configuration.GetAppConfig("AppSettings:Debug");
+            _logger.LogWarning(profile);
             return View();
         }
 
