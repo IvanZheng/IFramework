@@ -3,46 +3,43 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
+using IFramework.DependencyInjection;
+using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
 using IFramework.Infrastructure;
+using Microsoft.Extensions.Logging;
 
-namespace IFramework.MessageQueue.ConfluentKafka
+namespace IFramework.MessageQueueCore.ConfluentKafka
 {
     public class KafkaProducer<TKey, TValue>
     {
-        private readonly ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaProducer<TKey, TValue>).Name);
+        private readonly ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>).Name);
         private readonly Producer<TKey, TValue> _producer;
         private readonly string _topic;
-        private readonly string _brokerList;
-        private readonly ISerializer<TKey> _keySerializer;
         private readonly ISerializer<TValue> _valueSerializer;
 
         public KafkaProducer(string topic, string brokerList, ISerializer<TKey> keySerializer, ISerializer<TValue> valueSerializer)
         {
-            _keySerializer = keySerializer ?? throw new ArgumentNullException(nameof(keySerializer));
+            var keySerializer1 = keySerializer ?? throw new ArgumentNullException(nameof(keySerializer));
             _valueSerializer = valueSerializer ?? throw new ArgumentNullException(nameof(valueSerializer));
-            _brokerList = brokerList;
             _topic = topic;
             var producerConfiguration = new Dictionary<string, object>
             {
-                { "bootstrap.servers", _brokerList },
+                { "bootstrap.servers", brokerList },
                 {"request.required.acks", 1},
                 {"socket.nagle.disable", true},
                 {"socket.blocking.max.ms", 10},
                 {"queue.buffering.max.ms", 10}
             };
 
-            _producer = new Producer<TKey, TValue>(producerConfiguration, _keySerializer, valueSerializer);
+            _producer = new Producer<TKey, TValue>(producerConfiguration, keySerializer1, valueSerializer);
             _producer.OnError += _producer_OnError;
         }
 
         private void _producer_OnError(object sender, Error e)
         {
-            _logger.Error($"producer topic({_topic}) error: {e.ToJson()}");
+            _logger.LogError($"producer topic({_topic}) error: {e.ToJson()}");
         }
 
         public void Stop()
@@ -53,7 +50,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
             catch (Exception ex)
             {
-                _logger.Error($"{_topic} producer dispose failed", ex);
+                _logger.LogError($"{_topic} producer dispose failed", ex);
             }
         }
 
@@ -80,7 +77,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                 .ConfigureAwait(false);
                     if (result.Error != ErrorCode.NoError)
                     {
-                        _logger.Error($"send message failed topic: {_topic} Partition: {result.Partition} key:{key} error:{result.Error}");
+                        _logger.LogError($"send message failed topic: {_topic} Partition: {result.Partition} key:{key} error:{result.Error}");
                         await Task.Delay(waitTime, cancellationToken);
                     }
                     else
@@ -90,7 +87,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 }
                 catch (Exception e)
                 {
-                    _logger.Error($"send message failed topic: {_topic} key:{key}", e);
+                    _logger.LogError(e, $"send message failed topic: {_topic} key:{key}");
                     await Task.Delay(waitTime, cancellationToken);
                 }
 

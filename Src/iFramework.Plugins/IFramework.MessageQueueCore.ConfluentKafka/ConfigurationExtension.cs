@@ -1,15 +1,18 @@
 ﻿using IFramework.Config;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
+using IFramework.MessageQueue;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace IFramework.MessageQueue.ConfluentKafka.Config
+namespace IFramework.MessageQueueCore.ConfluentKafka
 {
-    public static class FrameworkConfigurationExtension
+    public static class ConfigurationExtension
     {
         public static Configuration UseConfluentKafka(this Configuration configuration,
                                                       string brokerList)
         {
-            IoCFactory.Instance.CurrentContainer
-                      .RegisterType<IMessageQueueClient, ConfluentKafkaClient>(Lifetime.Singleton,
+            IoCFactory.Instance
+                      .ObjectProviderBuilder
+                      .RegisterType<IMessageQueueClient, ConfluentKafkaClient>(ServiceLifetime.Singleton,
                                                                                new ConstructInjection(new ParameterInjection("brokerList", brokerList)));
             return configuration;
         }

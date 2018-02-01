@@ -8,24 +8,25 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
 using IFramework.Message;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
+using IFramework.MessageQueue;
+using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
+using Microsoft.Extensions.Logging;
 
-namespace IFramework.MessageQueue.ConfluentKafka
+namespace IFramework.MessageQueueCore.ConfluentKafka
 {
     public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, Message<TKey, TValue> message);
 
     public class KafkaConsumer<TKey, TValue> : ICommitOffsetable
     {
-        protected CancellationTokenSource _cancellationTokenSource;
+        protected CancellationTokenSource CancellationTokenSource;
         private Consumer<TKey, TValue> _consumer;
-        protected Task _consumerTask;
-        protected ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(KafkaConsumer<TKey, TValue>).Name);
-        protected OnKafkaMessageReceived<TKey, TValue> _onMessageReceived;
-        protected ConsumerConfig _consumerConfig;
+        protected Task ConsumerTask;
+        protected ILogger Logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(typeof(KafkaConsumer<TKey, TValue>).Name);
+        protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
+        protected ConsumerConfig ConsumerConfig;
         private readonly IDeserializer<TKey> _keyDeserializer;
         private readonly IDeserializer<TValue> _valueDeserializer;
         public KafkaConsumer(string brokerList,
@@ -49,7 +50,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(groupId));
             }
-            _consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
+            ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             BrokerList = brokerList;
             Topic = topic;
             GroupId = groupId;
@@ -64,16 +65,16 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {"fetch.error.backoff.ms", 10 },
                 {"socket.nagle.disable", true},
                 //{"statistics.interval.ms", 60000},
-                {"retry.backoff.ms", _consumerConfig.BackOffIncrement},
+                {"retry.backoff.ms", ConsumerConfig.BackOffIncrement},
                 {"bootstrap.servers", BrokerList},
                 {
                     "default.topic.config", new Dictionary<string, object>
                     {
-                        {"auto.offset.reset", _consumerConfig.AutoOffsetReset}
+                        {"auto.offset.reset", ConsumerConfig.AutoOffsetReset}
                     }
                 }
             };
-            _onMessageReceived = onMessageReceived;
+            OnMessageReceived = onMessageReceived;
             if (start)
             {
                 Start();
@@ -91,15 +92,15 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public void Start()
         {
-            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource = new CancellationTokenSource();
             _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);//new StringDeserializer(Encoding.UTF8), new KafkaMessageDeserializer());
             _consumer.Subscribe(Topic);
-            _consumer.OnError += (sender, error) => _logger.Error($"consumer({Id}) error: {error.ToJson()}");
+            _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
             _consumer.OnMessage += _consumer_OnMessage;
 
-            _consumerTask = Task.Factory.StartNew(cs => ReceiveMessages(cs as CancellationTokenSource),
-                                                  _cancellationTokenSource,
-                                                  _cancellationTokenSource.Token,
+            ConsumerTask = Task.Factory.StartNew(cs => ReceiveMessages(cs as CancellationTokenSource),
+                                                  CancellationTokenSource,
+                                                  CancellationTokenSource.Token,
                                                   TaskCreationOptions.LongRunning,
                                                   TaskScheduler.Default);
         }
@@ -111,7 +112,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             try
             {
                 AddMessage(message);
-                _onMessageReceived(this, message);
+                OnMessageReceived(this, message);
             }
             catch (OperationCanceledException)
             {
@@ -125,7 +126,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {
                     FinishConsumingMessage(message.Partition, message.Offset);
                 }
-                _logger.Error(ex.GetBaseException().Message, ex);
+                Logger.LogError(ex, $"_consumer_OnMessage failed!");
             }
         }
 
@@ -137,12 +138,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public void Stop()
         {
-            _cancellationTokenSource?.Cancel(true);
-            _consumerTask?.Wait();
-            _consumerTask?.Dispose();
+            CancellationTokenSource?.Cancel(true);
+            ConsumerTask?.Wait();
+            ConsumerTask?.Dispose();
             _consumer?.Dispose();
-            _consumerTask = null;
-            _cancellationTokenSource = null;
+            ConsumerTask = null;
+            CancellationTokenSource = null;
             SlidingDoors.Clear();
         }
 
@@ -155,7 +156,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         private void ReceiveMessages(CancellationTokenSource cancellationTokenSource)
         {
             #region peek messages that not been consumed since last time
-            Console.WriteLine($"ReceiveMessages start");
+            Logger.LogDebug($"ReceiveMessages start");
             while (!cancellationTokenSource.IsCancellationRequested)
             {
                 try
@@ -178,7 +179,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                     if (!cancellationTokenSource.IsCancellationRequested)
                     {
                         Task.Delay(1000).Wait();
-                        _logger.Error(ex.GetBaseException().Message, ex);
+                        Logger.LogError(ex, "ReceiveMessages failed!");
                     }
                 }
             }
@@ -189,10 +190,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         protected void BlockIfFullLoad()
         {
-            while (SlidingDoors.Sum(d => d.Value.MessageCount) > _consumerConfig.FullLoadThreshold)
+            while (SlidingDoors.Sum(d => d.Value.MessageCount) > ConsumerConfig.FullLoadThreshold)
             {
-                Task.Delay(_consumerConfig.WaitInterval).Wait();
-                _logger.Warn($"working is full load sleep 1000 ms");
+                Task.Delay(ConsumerConfig.WaitInterval).Wait();
+                Logger.LogWarning($"working is full load sleep 1000 ms");
             }
         }
 
@@ -229,11 +230,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                  .ConfigureAwait(false);
             if (committedOffset.Error.Code != ErrorCode.NoError)
             {
-                _logger.Error($"{Id} committed offset failed {committedOffset.Error}");
+                Logger.LogError($"{Id} committed offset failed {committedOffset.Error}");
             }
             else
             {
-                _logger.DebugFormat($"{Id} committed offset {committedOffset.Offsets.FirstOrDefault()}");
+                Logger.LogDebug($"{Id} committed offset {committedOffset.Offsets.FirstOrDefault()}");
             }
         }
 

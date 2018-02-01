@@ -6,35 +6,35 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka.Serialization;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
 using IFramework.Message;
 using IFramework.Message.Impl;
-using IFramework.MessageQueue.ConfluentKafka.Config;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
+using IFramework.MessageQueue;
+using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
+using Microsoft.Extensions.Logging;
 
-namespace IFramework.MessageQueue.ConfluentKafka
+namespace IFramework.MessageQueueCore.ConfluentKafka
 {
     public class ConfluentKafkaClient : IMessageQueueClient
     {
-        protected string _brokerList;
-        protected bool _disposed;
-        protected ILogger _logger;
-        protected ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>> _queueClients;
-        protected List<KafkaConsumer<string, KafkaMessage>> _queueConsumers;
-        protected List<KafkaConsumer<string, KafkaMessage>> _subscriptionClients;
-        protected ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>> _topicClients;
+        protected string BrokerList;
+        protected bool Disposed;
+        protected ILogger Logger;
+        protected ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>> QueueClients;
+        protected List<KafkaConsumer<string, KafkaMessage>> QueueConsumers;
+        protected List<KafkaConsumer<string, KafkaMessage>> SubscriptionClients;
+        protected ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>> TopicClients;
 
 
         public ConfluentKafkaClient(string brokerList)
         {
-            _brokerList = brokerList;
-            _queueClients = new ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>>();
-            _topicClients = new ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>>();
-            _subscriptionClients = new List<KafkaConsumer<string, KafkaMessage>>();
-            _queueConsumers = new List<KafkaConsumer<string, KafkaMessage>>();
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
+            BrokerList = brokerList;
+            QueueClients = new ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>>();
+            TopicClients = new ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>>();
+            SubscriptionClients = new List<KafkaConsumer<string, KafkaMessage>>();
+            QueueConsumers = new List<KafkaConsumer<string, KafkaMessage>>();
+            Logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
 
@@ -71,7 +71,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
             var queueConsumer = CreateQueueConsumer(commandQueueName, onMessagesReceived, consumerId,
                                                     consumerConfig);
-            _queueConsumers.Add(queueConsumer);
+            QueueConsumers.Add(queueConsumer);
             return queueConsumer;
         }
 
@@ -85,7 +85,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
             var subscriptionClient = CreateSubscriptionClient(topic, subscriptionName, onMessagesReceived, consumerId,
                                                               consumerConfig);
-            _subscriptionClients.Add(subscriptionClient);
+            SubscriptionClients.Add(subscriptionClient);
             return subscriptionClient;
         }
 
@@ -100,10 +100,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             var messageContext = new MessageContext(message, messageId);
             messageContext.Producer = producer;
-            messageContext.IP = Utility.GetLocalIPV4()?.ToString();
+            messageContext.Ip = Utility.GetLocalIPV4()?.ToString();
             if (!string.IsNullOrEmpty(correlationId))
             {
-                messageContext.CorrelationID = correlationId;
+                messageContext.CorrelationId = correlationId;
             }
             if (!string.IsNullOrEmpty(topic))
             {
@@ -126,11 +126,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (!Disposed)
             {
-                _topicClients.Values.ForEach(client => client.Stop());
-                _queueClients.Values.ForEach(client => client.Stop());
-                _disposed = true;
+                TopicClients.Values.ForEach(client => client.Stop());
+                QueueClients.Values.ForEach(client => client.Stop());
+                Disposed = true;
             }
         }
 
@@ -149,22 +149,22 @@ namespace IFramework.MessageQueue.ConfluentKafka
         private KafkaProducer<string, KafkaMessage> GetTopicClient(string topic)
         {
             KafkaProducer<string, KafkaMessage> topicClient = null;
-            _topicClients.TryGetValue(topic, out topicClient);
+            TopicClients.TryGetValue(topic, out topicClient);
             if (topicClient == null)
             {
                 topicClient = CreateTopicClient(topic);
-                _topicClients.GetOrAdd(topic, topicClient);
+                TopicClients.GetOrAdd(topic, topicClient);
             }
             return topicClient;
         }
 
         private KafkaProducer<string, KafkaMessage> GetQueueClient(string queue)
         {
-            var queueClient = _queueClients.TryGetValue(queue);
+            var queueClient = QueueClients.TryGetValue(queue);
             if (queueClient == null)
             {
                 queueClient = CreateQueueClient(queue);
-                _queueClients.GetOrAdd(queue, queueClient);
+                QueueClients.GetOrAdd(queue, queueClient);
             }
             return queueClient;
         }
@@ -238,7 +238,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                                         ConsumerConfig consumerConfig = null)
         {
             CreateTopicIfNotExists(queue);
-            var queueConsumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, queue, $"{queue}.consumer", consumerId,
+            var queueConsumer = new KafkaConsumer<string, KafkaMessage>(BrokerList, queue, $"{queue}.consumer", consumerId,
                                                                         BuildOnKafkaMessageReceived(onMessagesReceived),
                                                                         new StringDeserializer(Encoding.UTF8),
                                                                         new KafkaMessageDeserializer(),
@@ -249,14 +249,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
         private KafkaProducer<string, KafkaMessage> CreateQueueClient(string queue)
         {
             CreateTopicIfNotExists(queue);
-            var queueClient = new KafkaProducer<string, KafkaMessage>(queue, _brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
+            var queueClient = new KafkaProducer<string, KafkaMessage>(queue, BrokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
             return queueClient;
         }
 
         private KafkaProducer<string, KafkaMessage> CreateTopicClient(string topic)
         {
             CreateTopicIfNotExists(topic);
-            return new KafkaProducer<string, KafkaMessage>(topic, _brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
+            return new KafkaProducer<string, KafkaMessage>(topic, BrokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
         }
 
         private KafkaConsumer<string, KafkaMessage> CreateSubscriptionClient(string topic,
@@ -266,7 +266,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                                              ConsumerConfig consumerConfig = null)
         {
             CreateTopicIfNotExists(topic);
-            return new KafkaConsumer<string, KafkaMessage>(_brokerList, topic, subscriptionName, consumerId,
+            return new KafkaConsumer<string, KafkaMessage>(BrokerList, topic, subscriptionName, consumerId,
                                                            BuildOnKafkaMessageReceived(onMessagesReceived),
                                                            new StringDeserializer(Encoding.UTF8),
                                                            new KafkaMessageDeserializer(),

@@ -5,11 +5,11 @@ using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 
-namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
+namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
 {
     public class MessageContext : IMessageContext
     {
-        private object _Message;
+        private object _message;
 
         private SagaInfo _sagaInfo;
 
@@ -27,15 +27,15 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             Message = message;
             if (!string.IsNullOrEmpty(id))
             {
-                MessageID = id;
+                MessageId = id;
             }
             else if (message is IMessage)
             {
-                MessageID = ((IMessage) message).ID;
+                MessageId = ((IMessage) message).ID;
             }
             else
             {
-                MessageID = ObjectId.GenerateNewId().ToString();
+                MessageId = ObjectId.GenerateNewId().ToString();
             }
             if (message != null && message is IMessage)
             {
@@ -89,13 +89,13 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             set => Headers["Key"] = value;
         }
 
-        public string CorrelationID
+        public string CorrelationId
         {
             get => (string) Headers.TryGetValue("CorrelationID");
             set => Headers["CorrelationID"] = value;
         }
 
-        public string MessageID
+        public string MessageId
         {
             get => (string) Headers.TryGetValue("MessageID");
             set => Headers["MessageID"] = value;
@@ -113,21 +113,21 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
         {
             get
             {
-                if (_Message != null)
+                if (_message != null)
                 {
-                    return _Message;
+                    return _message;
                 }
                 object messageType = null;
                 if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
                 {
                     var jsonValue = KafkaMessage.Payload;
-                    _Message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
+                    _message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
                 }
-                return _Message;
+                return _message;
             }
             protected set
             {
-                _Message = value;
+                _message = value;
                 KafkaMessage.Payload = value.ToJson();
                 if (value != null)
                 {
@@ -148,7 +148,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             set => Headers["Topic"] = value;
         }
 
-        public string IP
+        public string Ip
         {
             get => (string) Headers.TryGetValue("IP");
             set => Headers["IP"] = value;
