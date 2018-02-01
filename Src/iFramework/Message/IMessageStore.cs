@@ -14,8 +14,6 @@ namespace IFramework.Message
                          IEnumerable<IMessageContext> commandContexts,
                          IEnumerable<IMessageContext> messageContexts);
 
-        void SaveEvent(IMessageContext eventContext);
-
         void SaveFailHandledEvent(IMessageContext eventContext,
                                   string subscriptionName,
                                   Exception e,

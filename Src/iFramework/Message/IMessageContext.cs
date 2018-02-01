@@ -8,8 +8,8 @@ namespace IFramework.Message
     {
         IDictionary<string, object> Headers { get; }
         string Key { get; }
-        string MessageID { get; }
-        string CorrelationID { get; set; }
+        string MessageId { get; }
+        string CorrelationId { get; set; }
         string ReplyToEndPoint { get; }
         object Reply { get; set; }
         object Message { get; }
@@ -17,7 +17,7 @@ namespace IFramework.Message
         string Topic { get; }
         long Offset { get; }
         SagaInfo SagaInfo { get; }
-        string IP { get; set; }
+        string Ip { get; set; }
         string Producer { get; set; }
     }
 }

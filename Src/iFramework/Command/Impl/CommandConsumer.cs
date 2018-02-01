@@ -135,14 +135,14 @@ namespace IFramework.Command.Impl
                 {
                     var messageStore = scope.GetService<IMessageStore>();
                     var eventMessageStates = new List<MessageState>();
-                    var commandHandledInfo = messageStore.GetCommandHandledInfo(commandContext.MessageID);
+                    var commandHandledInfo = messageStore.GetCommandHandledInfo(commandContext.MessageId);
                     IMessageContext messageReply = null;
                     if (commandHandledInfo != null)
                     {
                         if (needReply)
                         {
                             messageReply = MessageQueueClient.WrapMessage(commandHandledInfo.Result,
-                                                                          commandContext.MessageID,
+                                                                          commandContext.MessageId,
                                                                           commandContext.ReplyToEndPoint, producer: Producer,
                                                                           messageId: ObjectId.GenerateNewId().ToString());
                             eventMessageStates.Add(new MessageState(messageReply));
@@ -152,7 +152,7 @@ namespace IFramework.Command.Impl
                     {
                         var eventBus = scope.GetService<IEventBus>();
                         var messageHandlerType = HandlerProvider.GetHandlerTypes(command.GetType()).FirstOrDefault();
-                        Logger.LogInformation("Handle command, commandID:{0}", commandContext.MessageID);
+                        Logger.LogInformation("Handle command, commandID:{0}", commandContext.MessageId);
 
                         if (messageHandlerType == null)
                         {
@@ -160,7 +160,7 @@ namespace IFramework.Command.Impl
                             if (needReply)
                             {
                                 messageReply = MessageQueueClient.WrapMessage(new NoHandlerExists(),
-                                                                              commandContext.MessageID,
+                                                                              commandContext.MessageId,
                                                                               commandContext.ReplyToEndPoint, producer: Producer);
                                 eventMessageStates.Add(new MessageState(messageReply));
                             }
@@ -194,7 +194,7 @@ namespace IFramework.Command.Impl
                                         if (needReply)
                                         {
                                             messageReply = MessageQueueClient.WrapMessage(commandContext.Reply,
-                                                                                          commandContext.MessageID,
+                                                                                          commandContext.MessageId,
                                                                                           commandContext.ReplyToEndPoint,
                                                                                           producer: Producer);
                                             eventMessageStates.Add(new MessageState(messageReply));
@@ -205,7 +205,7 @@ namespace IFramework.Command.Impl
                                                 {
                                                     var topic = @event.GetFormatTopic();
                                                     var eventContext = MessageQueueClient.WrapMessage(@event,
-                                                                                                      commandContext.MessageID,
+                                                                                                      commandContext.MessageId,
                                                                                                       topic,
                                                                                                       @event.Key,
                                                                                                       sagaInfo: sagaInfo,
@@ -218,7 +218,7 @@ namespace IFramework.Command.Impl
                                                 {
                                                     var topic = @event.GetFormatTopic();
                                                     var eventContext = MessageQueueClient.WrapMessage(@event,
-                                                                                                      commandContext.MessageID,
+                                                                                                      commandContext.MessageId,
                                                                                                       topic,
                                                                                                       @event.Key,
                                                                                                       sagaInfo: sagaInfo,
@@ -248,7 +248,7 @@ namespace IFramework.Command.Impl
                                         if (needReply)
                                         {
                                             messageReply = MessageQueueClient.WrapMessage(e.GetBaseException(),
-                                                                                          commandContext.MessageID,
+                                                                                          commandContext.MessageId,
                                                                                           commandContext.ReplyToEndPoint,
                                                                                           producer: Producer,
                                                                                           messageId: ObjectId.GenerateNewId().ToString());
@@ -259,7 +259,7 @@ namespace IFramework.Command.Impl
                                                 {
                                                     var topic = @event.GetFormatTopic();
                                                     var eventContext = MessageQueueClient.WrapMessage(@event,
-                                                                                                      commandContext.MessageID,
+                                                                                                      commandContext.MessageId,
                                                                                                       topic,
                                                                                                       @event.Key,
                                                                                                       sagaInfo: sagaInfo,
@@ -274,7 +274,7 @@ namespace IFramework.Command.Impl
                                                 var topic = domainExceptionEvent.GetFormatTopic();
 
                                                 var exceptionMessage = MessageQueueClient.WrapMessage(domainExceptionEvent,
-                                                                                                      commandContext.MessageID,
+                                                                                                      commandContext.MessageId,
                                                                                                       topic,
                                                                                                       producer: Producer);
                                                 eventMessageStates.Add(new MessageState(exceptionMessage));

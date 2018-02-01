@@ -88,15 +88,6 @@ namespace IFramework.Event.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected void SaveEvent(IMessageContext eventContext)
-        {
-            using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
-            using (var messageStore = scope.GetService<IMessageStore>())
-            {
-                messageStore.SaveEvent(eventContext);
-            }
-        }
-
         protected async Task ConsumeMessage(IMessageContext eventContext)
         {
             try
@@ -113,8 +104,7 @@ namespace IFramework.Event.Impl
                     InternalConsumer.CommitOffset(eventContext);
                     return;
                 }
-
-                SaveEvent(eventContext);
+                
                 //messageHandlerTypes.ForEach(messageHandlerType =>
                 foreach (var messageHandlerType in messageHandlerTypes)
                 {
@@ -124,7 +114,7 @@ namespace IFramework.Event.Impl
                     {
                         var messageStore = scope.GetService<IMessageStore>();
                         var subscriptionName = $"{SubscriptionName}.{messageHandlerType.Type.FullName}";
-                        if (!messageStore.HasEventHandled(eventContext.MessageID, subscriptionName))
+                        if (!messageStore.HasEventHandled(eventContext.MessageId, subscriptionName))
                         {
                             var eventMessageStates = new List<MessageState>();
                             var commandMessageStates = new List<MessageState>();
@@ -204,7 +194,7 @@ namespace IFramework.Event.Impl
                                     {
                                         var topic = domainExceptionEvent.GetFormatTopic();
                                         var exceptionMessage = MessageQueueClient.WrapMessage(domainExceptionEvent,
-                                                                                               eventContext.MessageID,
+                                                                                               eventContext.MessageId,
                                                                                                topic,
                                                                                                producer: Producer);
                                         eventMessageStates.Add(new MessageState(exceptionMessage));

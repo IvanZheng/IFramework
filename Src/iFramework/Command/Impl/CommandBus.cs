@@ -258,9 +258,9 @@ namespace IFramework.Command.Impl
         {
             await Task.Run(() =>
                       {
-                          Logger.LogInformation("Handle reply:{0} content:{1}", reply.MessageID, reply.ToJson());
+                          Logger.LogInformation("Handle reply:{0} content:{1}", reply.MessageId, reply.ToJson());
                           var sagaInfo = reply.SagaInfo;
-                          var correlationId = sagaInfo?.SagaId ?? reply.CorrelationID;
+                          var correlationId = sagaInfo?.SagaId ?? reply.CorrelationId;
                           var messageState = _commandStateQueues.TryGetValue(correlationId);
                           if (messageState != null)
                           {

@@ -11,7 +11,7 @@ namespace IFramework.Message.Impl
         {
             SentTime = DateTime.Now;
             Message = message;
-            MessageID = message.ID;
+            MessageId = message.ID;
         }
 
         public string FromEndPoint { get; set; }
@@ -27,7 +27,7 @@ namespace IFramework.Message.Impl
 
         public SagaInfo SagaInfo => null;
 
-        public string MessageID { get; set; }
+        public string MessageId { get; set; }
 
         public string ReplyToEndPoint => null;
 
@@ -38,12 +38,12 @@ namespace IFramework.Message.Impl
         public DateTime SentTime { get; set; }
 
 
-        public string CorrelationID { get; set; }
+        public string CorrelationId { get; set; }
 
 
         public string Topic { get; set; }
 
-        public string IP { get; set; }
+        public string Ip { get; set; }
 
         public string Producer { get; set; }
     }
