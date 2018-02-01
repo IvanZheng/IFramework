@@ -20,17 +20,17 @@ namespace IFramework.Command.Impl
 {
     public class CommandConsumer : IMessageConsumer
     {
-        protected CancellationTokenSource _cancellationTokenSource;
-        protected string _commandQueueName;
-        protected string _consumerId;
-        protected IHandlerProvider _handlerProvider;
-        protected ICommitOffsetable _internalConsumer;
-        protected ILogger _logger;
+        protected CancellationTokenSource CancellationTokenSource;
+        protected string CommandQueueName;
+        protected string ConsumerId;
+        protected IHandlerProvider HandlerProvider;
+        protected ICommitOffsetable InternalConsumer;
+        protected ILogger Logger;
         //protected Task _consumeMessageTask;
-        protected MessageProcessor _messageProcessor;
-        protected IMessagePublisher _messagePublisher;
-        protected IMessageQueueClient _messageQueueClient;
-        protected ConsumerConfig _consumerConfig;
+        protected MessageProcessor MessageProcessor;
+        protected IMessagePublisher MessagePublisher;
+        protected IMessageQueueClient MessageQueueClient;
+        protected ConsumerConfig ConsumerConfig;
         private string _producer;
 
         public CommandConsumer(IMessageQueueClient messageQueueClient,
@@ -40,42 +40,42 @@ namespace IFramework.Command.Impl
                                string consumerId,
                                ConsumerConfig consumerConfig = null)
         {
-            _consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
-            _commandQueueName = commandQueueName;
-            _handlerProvider = handlerProvider;
-            _messagePublisher = messagePublisher;
-            _consumerId = consumerId;
-            _cancellationTokenSource = new CancellationTokenSource();
-            _messageQueueClient = messageQueueClient;
-            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
-                                                     _consumerConfig.MailboxProcessBatchCount);
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
+            ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
+            CommandQueueName = commandQueueName;
+            HandlerProvider = handlerProvider;
+            MessagePublisher = messagePublisher;
+            ConsumerId = consumerId;
+            CancellationTokenSource = new CancellationTokenSource();
+            MessageQueueClient = messageQueueClient;
+            MessageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
+                                                     ConsumerConfig.MailboxProcessBatchCount);
+            Logger = IoCFactory.Resolve<ILoggerFactory>().Create(GetType().Name);
         }
 
-        public string Producer => _producer ?? (_producer = $"{_commandQueueName}.{_consumerId}");
+        public string Producer => _producer ?? (_producer = $"{CommandQueueName}.{ConsumerId}");
 
         public void Start()
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(_commandQueueName))
+                if (!string.IsNullOrWhiteSpace(CommandQueueName))
                 {
-                    _internalConsumer = _messageQueueClient.StartQueueClient(_commandQueueName, _consumerId,
+                    InternalConsumer = MessageQueueClient.StartQueueClient(CommandQueueName, ConsumerId,
                                                                              OnMessageReceived,
-                                                                             _consumerConfig);
+                                                                             ConsumerConfig);
                 }
-                _messageProcessor.Start();
+                MessageProcessor.Start();
             }
             catch (Exception e)
             {
-                _logger?.Error(e.GetBaseException().Message, e);
+                Logger?.Error(e.GetBaseException().Message, e);
             }
         }
 
         public void Stop()
         {
-            _internalConsumer.Stop();
-            _messageProcessor.Stop();
+            InternalConsumer.Stop();
+            MessageProcessor.Stop();
         }
 
         public string GetStatus()
@@ -89,7 +89,7 @@ namespace IFramework.Command.Impl
         {
             messageContexts.ForEach(messageContext =>
             {
-                _messageProcessor.Process(messageContext, ConsumeMessage);
+                MessageProcessor.Process(messageContext, ConsumeMessage);
                 MessageCount++;
             });
         }
@@ -105,7 +105,7 @@ namespace IFramework.Command.Impl
                             var topic = sagaInfo.ReplyEndPoint;
                             if (!string.IsNullOrEmpty(topic))
                             {
-                                var sagaReply = _messageQueueClient.WrapMessage(sagaResult,
+                                var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
                                                                                 topic: topic,
                                                                                 messageId: ObjectId.GenerateNewId().ToString(),
                                                                                 sagaInfo: sagaInfo, producer: Producer);
@@ -123,10 +123,9 @@ namespace IFramework.Command.Impl
                 var command = commandContext.Message as ICommand;
                 var needReply = !string.IsNullOrEmpty(commandContext.ReplyToEndPoint);
                 var sagaInfo = commandContext.SagaInfo;
-                IMessageContext messageReply = null;
                 if (command == null)
                 {
-                    _internalConsumer.CommitOffset(commandContext);
+                    InternalConsumer.CommitOffset(commandContext);
                     return;
                 }
                 var needRetry = command.NeedRetry;
@@ -138,11 +137,12 @@ namespace IFramework.Command.Impl
                     var messageStore = scope.GetService<IMessageStore>();
                     var eventMessageStates = new List<MessageState>();
                     var commandHandledInfo = messageStore.GetCommandHandledInfo(commandContext.MessageID);
+                    IMessageContext messageReply = null;
                     if (commandHandledInfo != null)
                     {
                         if (needReply)
                         {
-                            messageReply = _messageQueueClient.WrapMessage(commandHandledInfo.Result,
+                            messageReply = MessageQueueClient.WrapMessage(commandHandledInfo.Result,
                                                                            commandContext.MessageID,
                                                                            commandContext.ReplyToEndPoint, producer: Producer,
                                                                            messageId: ObjectId.GenerateNewId().ToString());
@@ -152,15 +152,15 @@ namespace IFramework.Command.Impl
                     else
                     {
                         var eventBus = scope.GetService<IEventBus>();
-                        var messageHandlerType = _handlerProvider.GetHandlerTypes(command.GetType()).FirstOrDefault();
-                        _logger?.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
+                        var messageHandlerType = HandlerProvider.GetHandlerTypes(command.GetType()).FirstOrDefault();
+                        Logger?.InfoFormat("Handle command, commandID:{0}", commandContext.MessageID);
 
                         if (messageHandlerType == null)
                         {
-                            _logger?.Debug($"command has no handlerTypes, message:{command.ToJson()}");
+                            Logger?.Debug($"command has no handlerTypes, message:{command.ToJson()}");
                             if (needReply)
                             {
-                                messageReply = _messageQueueClient.WrapMessage(new NoHandlerExists(),
+                                messageReply = MessageQueueClient.WrapMessage(new NoHandlerExists(),
                                                                                commandContext.MessageID,
                                                                                commandContext.ReplyToEndPoint, producer: Producer);
                                 eventMessageStates.Add(new MessageState(messageReply));
@@ -189,11 +189,12 @@ namespace IFramework.Command.Impl
                                         }
                                         else
                                         {
-                                            await Task.Run(() => { ((dynamic)messageHandler).Handle((dynamic)command); }).ConfigureAwait(false);
+                                            var handler = messageHandler;
+                                            await Task.Run(() => { ((dynamic)handler).Handle((dynamic)command); }).ConfigureAwait(false);
                                         }
                                         if (needReply)
                                         {
-                                            messageReply = _messageQueueClient.WrapMessage(commandContext.Reply,
+                                            messageReply = MessageQueueClient.WrapMessage(commandContext.Reply,
                                                                                            commandContext.MessageID, commandContext.ReplyToEndPoint,
                                                                                            producer: Producer);
                                             eventMessageStates.Add(new MessageState(messageReply));
@@ -203,7 +204,7 @@ namespace IFramework.Command.Impl
                                                 .ForEach(@event =>
                                                 {
                                                     var topic = @event.GetFormatTopic();
-                                                    var eventContext = _messageQueueClient.WrapMessage(@event,
+                                                    var eventContext = MessageQueueClient.WrapMessage(@event,
                                                                                                        commandContext.MessageID, topic, @event.Key,
                                                                                                        sagaInfo: sagaInfo, producer: Producer);
                                                     eventMessageStates.Add(new MessageState(eventContext));
@@ -213,7 +214,7 @@ namespace IFramework.Command.Impl
                                                 .ForEach(@event =>
                                                 {
                                                     var topic = @event.GetFormatTopic();
-                                                    var eventContext = _messageQueueClient.WrapMessage(@event,
+                                                    var eventContext = MessageQueueClient.WrapMessage(@event,
                                                                                                        commandContext.MessageID, topic,
                                                                                                        @event.Key, sagaInfo: sagaInfo, producer: Producer);
                                                     eventMessageStates.Add(new MessageState(eventContext));
@@ -240,7 +241,7 @@ namespace IFramework.Command.Impl
                                     {
                                         if (needReply)
                                         {
-                                            messageReply = _messageQueueClient.WrapMessage(e.GetBaseException(),
+                                            messageReply = MessageQueueClient.WrapMessage(e.GetBaseException(),
                                                                                            commandContext.MessageID,
                                                                                            commandContext.ReplyToEndPoint,
                                                                                            producer: Producer,
@@ -251,7 +252,7 @@ namespace IFramework.Command.Impl
                                                 .ForEach(@event =>
                                                 {
                                                     var topic = @event.GetFormatTopic();
-                                                    var eventContext = _messageQueueClient.WrapMessage(@event,
+                                                    var eventContext = MessageQueueClient.WrapMessage(@event,
                                                                                                        commandContext.MessageID,
                                                                                                        topic, @event.Key, sagaInfo: sagaInfo, producer: Producer);
                                                     eventMessageStates.Add(new MessageState(eventContext));
@@ -263,17 +264,17 @@ namespace IFramework.Command.Impl
                                             {
                                                 var topic = domainExceptionEvent.GetFormatTopic();
 
-                                                var exceptionMessage = _messageQueueClient.WrapMessage(domainExceptionEvent,
+                                                var exceptionMessage = MessageQueueClient.WrapMessage(domainExceptionEvent,
                                                                                                        commandContext.MessageID,
                                                                                                        topic,
                                                                                                        producer: Producer);
                                                 eventMessageStates.Add(new MessageState(exceptionMessage));
                                             }
-                                            _logger?.Warn(command.ToJson(), e);
+                                            Logger?.Warn(command.ToJson(), e);
                                         }
                                         else
                                         {
-                                            _logger?.Error(command.ToJson(), e);
+                                            Logger?.Error(command.ToJson(), e);
                                             //if we meet with unknown exception, we interrupt saga
                                             if (sagaInfo != null)
                                             {
@@ -291,16 +292,16 @@ namespace IFramework.Command.Impl
                     }
                     if (eventMessageStates.Count > 0)
                     {
-                        var sendTask = _messagePublisher.SendAsync(eventMessageStates.ToArray());
+                        var sendTask = MessagePublisher.SendAsync(eventMessageStates.ToArray());
                         // we don't need to wait the send task complete here.
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger?.Fatal($"consume command failed", ex);
+                Logger?.Fatal($"consume command failed", ex);
             }
-            _internalConsumer.CommitOffset(commandContext);
+            InternalConsumer.CommitOffset(commandContext);
         }
     }
 }
