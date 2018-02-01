@@ -18,7 +18,7 @@ namespace IFramework.Infrastructure.Caching.Impl
             return CacheValue<T>.NoValue;
         }
 
- 
+
 
         /// <summary>
         ///     Adds the specified key and object to the cache.
@@ -26,7 +26,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="key">key</param>
         /// <param name="data">Data</param>
         /// <param name="cacheTime">Cache time</param>
-        public override void Set(string key, object data, int cacheTime) { }
+        public override void Set<T>(string key, T data, int cacheTime) { }
 
 
 
@@ -46,7 +46,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="key">/key</param>
         public override void Remove(string key) { }
 
-   
+
 
         /// <summary>
         ///     Removes items by pattern
@@ -54,13 +54,13 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="pattern">pattern</param>
         public override void RemoveByPattern(string pattern) { }
 
-    
+
 
         /// <summary>
         ///     Clear all cache data
         /// </summary>
         public override void Clear() { }
 
-        
+
     }
 }
