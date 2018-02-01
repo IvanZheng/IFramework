@@ -28,3 +28,4 @@ obj
 /Src/packages.bat
 /Src/Sample/Sample.WcfService/log
 /Src/package.bat
+/Src/Sample/Sample.CommandServiceCore/log
