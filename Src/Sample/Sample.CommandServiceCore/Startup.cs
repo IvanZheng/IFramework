@@ -1,9 +1,12 @@
 ﻿using System;
 using IFramework.Config;
+using IFramework.DependencyInjection;
+using IFramework.DependencyInjection.Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sample.CommandServiceCore.Models;
 
 namespace Sample.CommandServiceCore
 {
@@ -13,13 +16,11 @@ namespace Sample.CommandServiceCore
         {
             //var builder = new ConfigurationBuilder()
             //    .AddJsonFile("appsettings.json")
-            //    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+            //    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
             //    .AddEnvironmentVariables();
-
-            Configuration = configuration;
+            Configuration.Instance.UseConfiguration(configuration);
         }
 
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         //public void ConfigureServices(IServiceCollection services)
@@ -32,9 +33,19 @@ namespace Sample.CommandServiceCore
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            return Configuration.UseServiceContainer(services)
-                                .RegisterCommonComponents()
-                                .BuildServiceProvider();
+            Configuration.Instance
+                         .UseAutofacContainer(services)
+                         .RegisterCommonComponents();
+                         
+            return IoCFactory.Instance
+                             .RegisterComponents(RegisterComponents, ServiceLifetime.Singleton)
+                             .Build();
+        }
+
+        private void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
+        {
+            // TODO: register other components or services
+            // providerBuilder.RegisterType<TInterface, TImplement>(lifetime);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

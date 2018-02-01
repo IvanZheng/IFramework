@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Config;
+using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Sample.CommandServiceCore.Models;
 
@@ -11,6 +12,12 @@ namespace Sample.CommandServiceCore.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IExceptionManager _exceptionManager;
+
+        public HomeController(IExceptionManager exceptionManager)
+        {
+            _exceptionManager = exceptionManager;
+        }
 
         public IActionResult Index()
         {
