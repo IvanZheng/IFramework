@@ -22,6 +22,11 @@ namespace Sample.CommandServiceCore.Controllers
             _logger = loggerFactory.CreateLogger(nameof(HomeController));
         }
 
+        public Task<ApiResult<string>> DoApi()
+        {
+            return _exceptionManager.ProcessAsync(() => Task.Run(() => new {Name = "ivan"}.ToJson()));
+        }
+
         public IActionResult Index()
         {
             var profile = Configuration.GetAppConfig("AppSettings:Debug");
