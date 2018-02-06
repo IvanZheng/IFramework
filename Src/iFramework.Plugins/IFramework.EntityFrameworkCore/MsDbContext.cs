@@ -64,7 +64,7 @@ namespace IFramework.EntityFrameworkCore
             {
                 ChangeTracker.Entries()
                              .Where(e => e.State == EntityState.Added)
-                             .ForEach(e => { this.InitializeQueryableCollections(e.Entity); });
+                             .ForEach(e => { this.InitializeMaterializer(e.Entity); });
                 return base.SaveChanges();
             }
             catch (DbUpdateConcurrencyException)
@@ -80,7 +80,7 @@ namespace IFramework.EntityFrameworkCore
             {
                 ChangeTracker.Entries()
                              .Where(e => e.State == EntityState.Added)
-                             .ForEach(e => { this.InitializeQueryableCollections(e.Entity); });
+                             .ForEach(e => { this.InitializeMaterializer(e.Entity); });
                 return await base.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException)

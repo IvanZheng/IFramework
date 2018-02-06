@@ -251,7 +251,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         private void CommitOffset(string broker, int partition, long offset)
         {
             // kafka not use broker in cluster mode
-            CommitOffsetAsync(partition, offset);
+            Task.Run(() => CommitOffsetAsync(partition, offset));
         }
     }
 }

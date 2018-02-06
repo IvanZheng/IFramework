@@ -10,6 +10,8 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace IFramework.Config
@@ -57,6 +59,7 @@ namespace IFramework.Config
 
         public Configuration RegisterCommonComponents()
         {
+            UseNullLogger();
             UseMemoryCahce();
             UserDataContractJson();
             UseMessageStore<MockMessageStore>();
@@ -64,6 +67,13 @@ namespace IFramework.Config
             this.UseMockMessagePublisher();
             RegisterDefaultEventBus();
             RegisterExceptionManager<ExceptionManager>();
+            return this;
+        }
+
+        public Configuration UseNullLogger()
+        {
+            IoCFactory.Instance
+                      .RegisterType<ILoggerFactory, NullLoggerFactory>(ServiceLifetime.Singleton);
             return this;
         }
 

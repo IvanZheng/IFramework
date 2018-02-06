@@ -10,9 +10,17 @@ namespace IFramework.Domain
 {
     public static class PocoContextInitializer
     {
-        public static void InitializeQueryableCollections(this IDbContext context, object entity)
+        public static void InitializeMaterializer(this IDbContext context, object entity)
         {
             (entity as Entity)?.SetDomainContext(context);
+        }
+
+        public static void InitializeMaterializer(this Entity entity, object context)
+        {
+            if (context is IDbContext dbContext)
+            {
+                entity.SetDomainContext(dbContext);
+            }
         }
     }
 

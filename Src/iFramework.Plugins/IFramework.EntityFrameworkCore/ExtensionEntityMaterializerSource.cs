@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using IFramework.Domain;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace IFramework.EntityFrameworkCore
 {
@@ -16,13 +19,25 @@ namespace IFramework.EntityFrameworkCore
             _dbContext = dbContext;
         }
 
-
-        public override Expression CreateMaterializeExpression(IEntityType entityType,
-                                                               Expression valueBufferExpression,
-                                                               int[] indexMap = null)
+        /// <summary>
+        ///  if this works, we don't need CreateMaterializeExpression
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public override Func<ValueBuffer, DbContext, object> GetMaterializer(IEntityType entityType)
         {
-            var expression = base.CreateMaterializeExpression(entityType, valueBufferExpression, indexMap);
+            var func = base.GetMaterializer(entityType);
+            return (valueBuffer, dbContext) =>
+            {
+                var entity = func(valueBuffer, dbContext);
+                (entity as Entity)?.InitializeMaterializer(dbContext);
+                return entity;
+            };
+        }
 
+        public override Expression CreateMaterializeExpression(IEntityType entityType, Expression valueBufferExpression, Expression contextExpression, int[] indexMap = null)
+        {
+            var expression = base.CreateMaterializeExpression(entityType, valueBufferExpression, contextExpression, indexMap);
             if (typeof(Entity).IsAssignableFrom(entityType.ClrType) && expression is BlockExpression blockExpression)
             {
                 var property = Expression.Property(blockExpression.Variables[0],
