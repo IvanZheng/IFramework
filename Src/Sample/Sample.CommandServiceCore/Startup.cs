@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sample.CommandServiceCore.Models;
 
 namespace Sample.CommandServiceCore
 {
@@ -20,7 +19,11 @@ namespace Sample.CommandServiceCore
             //    .AddJsonFile("appsettings.json")
             //    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
             //    .AddEnvironmentVariables();
-            Configuration.Instance.UseConfiguration(configuration);
+            Configuration.Instance
+                         .UseAutofacContainer()
+                         .UseConfiguration(configuration)
+                         .RegisterCommonComponents()
+                         .UseJsonNet();
         }
 
 
@@ -35,14 +38,9 @@ namespace Sample.CommandServiceCore
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            Configuration.Instance
-                         .UseAutofacContainer(services)
-                         .RegisterCommonComponents()
-                         .UseJsonNet();
-                         
             return IoCFactory.Instance
                              .RegisterComponents(RegisterComponents, ServiceLifetime.Singleton)
-                             .Build();
+                             .Build(services);
         }
 
         private void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
@@ -64,7 +62,7 @@ namespace Sample.CommandServiceCore
             {
                 app.UseExceptionHandler("/Home/Error");
             }
-            
+
             app.UseStaticFiles();
 
             app.UseMvc(routes =>

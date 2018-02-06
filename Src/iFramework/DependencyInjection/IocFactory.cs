@@ -50,9 +50,9 @@ namespace IFramework.DependencyInjection
             return ObjectProviderBuilder = objectProviderBuilder;
         }
 
-        public IObjectProvider Build()
+        public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
-            return _objectProvider = ObjectProviderBuilder.Build();
+            return _objectProvider = ObjectProviderBuilder.Build(serviceCollection);
         }
 
         #endregion
