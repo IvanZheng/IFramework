@@ -1,11 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Sample.CommandServiceCore.AuthorizationHandlers
+namespace Sample.CommandServiceCore.Authorizations
 {
     public class AppAuthorizationHandler : AuthorizationHandler<AppAuthorizationRequirement>
     {
@@ -24,7 +25,8 @@ namespace Sample.CommandServiceCore.AuthorizationHandlers
             //{
             //    context.Fail();
             //}
-            filterContext.Result = new ObjectResult(new ApiResult(500, "Authorization Handler Handle failed!"));
+            filterContext.Result = new ObjectResult(new ApiResult((int)HttpStatusCode.Forbidden, "Authorization Handler Handle failed!"));
+            filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
             context.Succeed(requirement);
             return Task.CompletedTask;
         }

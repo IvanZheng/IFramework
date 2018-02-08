@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sample.CommandServiceCore.AuthorizationHandlers;
+using Sample.CommandServiceCore.Authorizations;
 using Sample.CommandServiceCore.ExceptionHandlers;
 
 namespace Sample.CommandServiceCore
@@ -79,7 +79,6 @@ namespace Sample.CommandServiceCore
             }
 
             app.UseStaticFiles();
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

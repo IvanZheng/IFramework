@@ -8,10 +8,12 @@ using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Sample.CommandServiceCore.Authorizations;
 using Sample.CommandServiceCore.Models;
 
 namespace Sample.CommandServiceCore.Controllers
 {
+
     public class HomeController : Controller
     {
         private readonly IExceptionManager _exceptionManager;
@@ -23,7 +25,9 @@ namespace Sample.CommandServiceCore.Controllers
             _logger = loggerFactory.CreateLogger(nameof(HomeController));
         }
 
-        [Authorize("AppAuthorization")]
+        //[Authorize("AppAuthorization")]
+        //[TypeFilter(typeof(AuthorizationFilterAttrubute))]
+        [AuthorizationFilterAttrubute]
         public Task<ApiResult<string>> DoApi()
         {
             return _exceptionManager.ProcessAsync(() => Task.Run(() => new {Name = "ivan"}.ToJson()));

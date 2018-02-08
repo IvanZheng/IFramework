@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Sample.CommandServiceCore.AuthorizationHandlers
+namespace Sample.CommandServiceCore.Authorizations
 {
     public class AppAuthorizationRequirement: IAuthorizationRequirement
     {
