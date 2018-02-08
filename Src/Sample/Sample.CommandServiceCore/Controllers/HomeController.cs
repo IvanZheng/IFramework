@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Sample.CommandServiceCore.Models;
@@ -22,6 +23,7 @@ namespace Sample.CommandServiceCore.Controllers
             _logger = loggerFactory.CreateLogger(nameof(HomeController));
         }
 
+        [Authorize("AppAuthorization")]
         public Task<ApiResult<string>> DoApi()
         {
             return _exceptionManager.ProcessAsync(() => Task.Run(() => new {Name = "ivan"}.ToJson()));

@@ -3,11 +3,17 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.JsonNetCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sample.CommandServiceCore.AuthorizationHandlers;
+using Sample.CommandServiceCore.ExceptionHandlers;
 
 namespace Sample.CommandServiceCore
 {
@@ -38,6 +44,11 @@ namespace Sample.CommandServiceCore
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AppAuthorization",
+                                  policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
+            });
             return IoCFactory.Instance
                              .RegisterComponents(RegisterComponents, ServiceLifetime.Singleton)
                              .Build(services);
@@ -46,6 +57,7 @@ namespace Sample.CommandServiceCore
         private void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
         {
             // TODO: register other components or services
+            providerBuilder.RegisterType<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
             // providerBuilder.RegisterType<TInterface, TImplement>(lifetime);
         }
 
@@ -56,11 +68,14 @@ namespace Sample.CommandServiceCore
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler(new ExceptionHandlerOptions
+                {
+                    ExceptionHandlingPath = new PathString("/Home/Error"),
+                    ExceptionHandler = AppExceptionHandler.Handle
+                });
             }
 
             app.UseStaticFiles();
