@@ -168,13 +168,13 @@ namespace IFramework.MessageStores.Sqlserver
 
         public void RemoveSentCommand(string commandId)
         {
-            var deleteSql = string.Format("delete from msgs_UnSentCommands where ID = '{0}'", commandId);
+            var deleteSql = string.Format("delete from msgs_UnSentCommands where Id = '{0}'", commandId);
             Database.ExecuteSqlCommand(deleteSql);
         }
 
         public void RemovePublishedEvent(string eventId)
         {
-            var deleteSql = string.Format("delete from msgs_UnPublishedEvents where ID = '{0}'", eventId);
+            var deleteSql = string.Format("delete from msgs_UnPublishedEvents where Id = '{0}'", eventId);
             Database.ExecuteSqlCommand(deleteSql);
         }
 

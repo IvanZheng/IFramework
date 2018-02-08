@@ -1,5 +1,6 @@
-﻿using IFramework.EntityFramework.Repositories;
-using IFramework.IoC;
+﻿using System.ComponentModel;
+using IFramework.DependencyInjection;
+using IFramework.Repositories;
 using IFramework.UnitOfWork;
 using Sample.Domain;
 
@@ -7,7 +8,7 @@ namespace Sample.Persistence.Repositories
 {
     public class CommunityRepository : DomainRepository, ICommunityRepository
     {
-        public CommunityRepository(SampleModelContext context, IUnitOfWork unitOfWork, IContainer container)
-            : base(context, unitOfWork, container) { }
+        public CommunityRepository(SampleModelContext context, IUnitOfWork unitOfWork, IObjectProvider objectProvider)
+            : base(context, unitOfWork, objectProvider) { }
     }
 }

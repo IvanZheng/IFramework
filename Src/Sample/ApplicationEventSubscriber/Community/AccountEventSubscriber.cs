@@ -21,7 +21,7 @@ namespace Sample.ApplicationEventSubscriber.Community
             var createProduct = new CreateProduct
             {
                 ProductId = Guid.NewGuid(),
-                Name = string.Format("{0}-{1}", DateTime.Now, @event.ID),
+                Name = string.Format("{0}-{1}", DateTime.Now, @event.Id),
                 Count = 20000
             };
             _eventBus.SendCommand(createProduct);

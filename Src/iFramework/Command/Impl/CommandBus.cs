@@ -158,7 +158,7 @@ namespace IFramework.Command.Impl
                                            SagaInfo sagaInfo = null,
                                            string producer = null)
         {
-            if (string.IsNullOrEmpty(command.ID))
+            if (string.IsNullOrEmpty(command.Id))
             {
                 var noMessageIdException = new NoMessageId();
                 Logger.LogError(noMessageIdException, $"{command.ToJson()}");
@@ -180,7 +180,7 @@ namespace IFramework.Command.Impl
             // move this logic into  concrete messagequeueClient. kafka sdk already implement it. 
             // service bus client still need it.
             //int keyUniqueCode = !string.IsNullOrWhiteSpace(commandKey) ?
-            //    commandKey.GetUniqueCode() : command.ID.GetUniqueCode();
+            //    commandKey.GetUniqueCode() : command.Id.GetUniqueCode();
             //var queue = _commandQueueNames[Math.Abs(keyUniqueCode % _commandQueueNames.Length)];
 
             #endregion

@@ -10,12 +10,12 @@ namespace Sample.Command
         public CommandBase()
         {
             NeedRetry = false;
-            ID = ObjectId.GenerateNewId().ToString();
+            Id = ObjectId.GenerateNewId().ToString();
         }
 
         public bool NeedRetry { get; set; }
 
-        public string ID { get; set; }
+        public string Id { get; set; }
 
         public string Key { get; set; }
     }

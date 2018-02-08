@@ -31,7 +31,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
             }
             else if (message is IMessage)
             {
-                MessageId = ((IMessage) message).ID;
+                MessageId = ((IMessage) message).Id;
             }
             else
             {

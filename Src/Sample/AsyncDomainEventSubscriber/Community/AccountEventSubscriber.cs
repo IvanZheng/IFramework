@@ -22,7 +22,7 @@ namespace Sample.AsyncDomainEventSubscriber.Community
 
             var applicationEvent = new ApplicationEvent.AccountRegistered
             {
-                AccountID = new Guid(@event.AggregateRootID.ToString()),
+                AccountID = new Guid(@event.AggregateRootId.ToString()),
                 UserName = @event.UserName
             };
             _EventBus.Publish(applicationEvent);

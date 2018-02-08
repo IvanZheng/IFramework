@@ -11,7 +11,7 @@ namespace IFramework.Message.Impl
         {
             SentTime = DateTime.Now;
             Message = message;
-            MessageId = message.ID;
+            MessageId = message.Id;
         }
 
         public string FromEndPoint { get; set; }

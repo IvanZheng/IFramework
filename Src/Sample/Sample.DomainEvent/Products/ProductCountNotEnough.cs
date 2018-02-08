@@ -24,7 +24,7 @@ namespace Sample.DomainEvents.Products
 
         public override string ToString()
         {
-            return $"product({AggregateRootID}) ProductCountNotEnough count:{Count} reduceCount:{ReduceCount}";
+            return $"product({AggregateRootId}) ProductCountNotEnough count:{Count} reduceCount:{ReduceCount}";
         }
     }
 }

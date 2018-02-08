@@ -9,10 +9,10 @@ namespace Sample.ApplicationEvent
     {
         public ApplicationEvent()
         {
-            ID = ObjectId.GenerateNewId().ToString();
+            Id = ObjectId.GenerateNewId().ToString();
         }
 
-        public string ID { get; set; }
+        public string Id { get; set; }
 
         public string Key { get; set; }
     }
