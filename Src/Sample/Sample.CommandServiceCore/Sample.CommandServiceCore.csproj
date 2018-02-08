@@ -45,6 +45,10 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNetCore.csproj" />
     <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+    <ProjectReference Include="..\ApplicationEventSubscriber\Sample.ApplicationEventSubscriber.csproj" />
+    <ProjectReference Include="..\AsyncDomainEventSubscriber\Sample.AsyncDomainEventSubscriber.csproj" />
+    <ProjectReference Include="..\Sample.CommandHandler\Sample.CommandHandler.csproj" />
+    <ProjectReference Include="..\Sample.Persistence\Sample.Persistence.csproj" />
   </ItemGroup>
 
 </Project>
