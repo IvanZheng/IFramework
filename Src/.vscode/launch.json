@@ -10,9 +10,9 @@
         "request": "launch",
         "preLaunchTask": "build",
         // If you have changed target frameworks, make sure to update the program path.
-        "program": "${workspaceFolder}/Src/Sample/Sample.CommandServiceCore/bin/Debug/netcoreapp2.0/Sample.CommandServiceCore.dll",
+        "program": "${workspaceFolder}/Sample/Sample.CommandServiceCore/bin/Debug/netcoreapp2.0/Sample.CommandServiceCore.dll",
         "args": [],
-        "cwd": "${workspaceFolder}/Src/Sample/Sample.CommandServiceCore",
+        "cwd": "${workspaceFolder}/Sample/Sample.CommandServiceCore",
         // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
         "console": "internalConsole",
         "stopAtEntry": false,
@@ -24,9 +24,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Src/IFramework.Test/bin/Debug/netcoreapp2.0/IFramework.Test.dll",
+            "program": "${workspaceFolder}/IFramework.Test/bin/Debug/netcoreapp2.0/IFramework.Test.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Src/IFramework.Test",
+            "cwd": "${workspaceFolder}/IFramework.Test",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
             "console": "internalConsole",
             "stopAtEntry": false,

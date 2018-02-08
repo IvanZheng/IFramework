@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/Src/IFramework.Test/IFramework.Test.csproj"
+                "${workspaceFolder}/IFramework.Test/IFramework.Test.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
