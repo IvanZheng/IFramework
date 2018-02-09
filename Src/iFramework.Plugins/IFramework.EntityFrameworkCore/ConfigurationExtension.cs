@@ -34,8 +34,8 @@ namespace IFramework.EntityFrameworkCore
                                                        ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             builder = builder ?? IoCFactory.Instance.ObjectProviderBuilder;
-            builder.RegisterType<IUnitOfWork, UnitOfWorks.UnitOfWork>(lifetime);
-            builder.RegisterType<IAppUnitOfWork, AppUnitOfWork>(lifetime);
+            builder.Register<IUnitOfWork, UnitOfWorks.UnitOfWork>(lifetime);
+            builder.Register<IAppUnitOfWork, AppUnitOfWork>(lifetime);
             return configuration;
         }
 
@@ -44,8 +44,8 @@ namespace IFramework.EntityFrameworkCore
                                                          ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             builder = builder ?? IoCFactory.Instance.ObjectProviderBuilder;
-            builder.RegisterType(typeof(IRepository<>), typeof(Repository<>));
-            builder.RegisterType<IDomainRepository, DomainRepository>(lifetime);
+            builder.Register(typeof(IRepository<>), typeof(Repository<>));
+            builder.Register<IDomainRepository, DomainRepository>(lifetime);
             return configuration;
         }
     }

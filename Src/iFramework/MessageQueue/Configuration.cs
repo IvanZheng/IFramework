@@ -1,8 +1,6 @@
 ﻿using System;
 using IFramework.Command;
 using IFramework.Command.Impl;
-using IFramework.Event;
-using IFramework.Event.Impl;
 using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -64,11 +62,15 @@ namespace IFramework.Config
         public static Configuration UseMessagePublisher(this Configuration configuration, string defaultTopic)
         {
             var builder = IoCFactory.Instance.ObjectProviderBuilder;
-            var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            configuration.SetDefaultTopic(defaultTopic);
-            defaultTopic = configuration.FormatAppName(defaultTopic);
-            var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);
-            builder.RegisterInstance<IMessagePublisher>(messagePublisher);
+
+            builder.Register<IMessagePublisher>(provider =>
+            {
+                var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
+                configuration.SetDefaultTopic(defaultTopic);
+                defaultTopic = configuration.FormatAppName(defaultTopic);
+                var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);
+                return messagePublisher;
+            }, ServiceLifetime.Singleton);
             return configuration;
         }
 
@@ -78,18 +80,26 @@ namespace IFramework.Config
             return configuration;
         }
 
-        public static Configuration UseCommandBus(this Configuration configuration, string consumerId,
-                                                  string replyTopic = "replyTopic", string replySubscription = "replySubscription",
+        public static Configuration UseCommandBus(this Configuration configuration,
+                                                  string consumerId,
+                                                  string replyTopic = "replyTopic",
+                                                  string replySubscription = "replySubscription",
                                                   ILinearCommandManager linerCommandManager = null,
                                                   ConsumerConfig consumerConfig = null)
         {
             var builder = IoCFactory.Instance.ObjectProviderBuilder;
-            if (linerCommandManager == null)
-                linerCommandManager = new LinearCommandManager();
-            var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic,
-                                            replySubscription, consumerConfig);
-            builder.RegisterInstance<ICommandBus>(commandBus);
+
+            builder.Register<ICommandBus>(provider =>
+            {
+                if (linerCommandManager == null)
+                {
+                    linerCommandManager = new LinearCommandManager();
+                }
+                var messageQueueClient = provider.GetService<IMessageQueueClient>();
+                var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic,
+                                                replySubscription, consumerConfig);
+                return commandBus;
+            }, ServiceLifetime.Singleton);
             return configuration;
         }
 
@@ -120,12 +130,11 @@ namespace IFramework.Config
         public static Configuration MessageQueueUseMachineNameFormat(this Configuration configuration,
                                                                      bool onlyInDebug = true)
         {
-            //TODO: 
-            //var compliationSection = Configuration.GetCompliationSection();
-            //if (!onlyInDebug || compliationSection != null && compliationSection.Debug)
-            //{
-            //    configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
-            //}
+            var debug = Configuration.Get<bool>("AppSettings:Debug");
+            if (!onlyInDebug || debug)
+            {
+                configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
+            }
             return configuration;
         }
 

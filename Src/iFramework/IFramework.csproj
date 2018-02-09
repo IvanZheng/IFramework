@@ -11,6 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Config\EndpointElement.cs" />
+    <Compile Remove="Config\HandlerElementCollection.cs" />
+    <Compile Remove="Config\MessageEndpointElementCollection.cs" />
     <Compile Remove="DependencyInjection\ILogInterceptionBehavior.cs" />
     <Compile Remove="DependencyInjection\IoCInstanceProvider.cs" />
     <Compile Remove="DependencyInjection\IoCServiceBehavior.cs" />
@@ -22,6 +25,7 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.4.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.4.1" />
     <PackageReference Include="System.Data.Common" Version="4.3.0" />

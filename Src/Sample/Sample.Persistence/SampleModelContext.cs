@@ -7,8 +7,7 @@ namespace Sample.Persistence
 {
     public class SampleModelContext : MessageStore
     {
-        public SampleModelContext() : base(new DbContextOptionsBuilder<SampleModelContext>().UseSqlServer(Configuration.GetConnectionString("DemoDb"))
-                                                                                            .Options)
+        public SampleModelContext(DbContextOptions options) : base(options)
         {
             Database.EnsureCreated();
         }
@@ -23,6 +22,8 @@ namespace Sample.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Account>()
                         .ToTable("Accounts")
                         .HasMany(a => a.ProductIds)
@@ -32,7 +33,6 @@ namespace Sample.Persistence
             modelBuilder.Entity<ProductId>()
                         .HasKey(p => new {p.Value, p.AccountId});
 
-            base.OnModelCreating(modelBuilder);
         }
     }
 }

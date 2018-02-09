@@ -13,7 +13,8 @@ namespace IFramework.DependencyInjection.Autofac
 {
     public class ObjectProvider : IObjectProvider
     {
-        private ILifetimeScope _scope;
+        private IComponentContext _componentContext;
+        private ILifetimeScope Scope => _componentContext as ILifetimeScope;
         private IEnumerable<global::Autofac.Core.Parameter> GetResolvedParameters(Parameter[] resolvedParameters)
         {
             var parameters = new List<global::Autofac.Core.Parameter>();
@@ -27,42 +28,42 @@ namespace IFramework.DependencyInjection.Autofac
         }
 
 
-        internal void SetScope(ILifetimeScope scope)
+        internal void SetComponentContext(IComponentContext componentContext)
         {
-            _scope = scope;
+            _componentContext = componentContext;
         }
-        public ObjectProvider(ILifetimeScope scope, ObjectProvider parent = null)
+        public ObjectProvider(IComponentContext componentContext, ObjectProvider parent = null)
             : this(parent)
         {
-            SetScope(scope);
+            SetComponentContext(componentContext);
         }
 
         public void Dispose()
         {
-            _scope.Dispose();
+            Scope?.Dispose();
         }
 
         public IObjectProvider Parent { get; }
         public IObjectProvider CreateScope()
         {
             var objectProvider = new ObjectProvider(this);
-            var childScope = _scope.BeginLifetimeScope(builder =>
+            var childScope = Scope.BeginLifetimeScope(builder =>
             {
                 builder.RegisterInstance<IObjectProvider>(objectProvider);
             });
-            objectProvider.SetScope(childScope);
+            objectProvider.SetComponentContext(childScope);
             return objectProvider;
         }
 
         public IObjectProvider CreateScope(IServiceCollection serviceCollection)
         {
             var objectProvider = new ObjectProvider(this);
-            var childScope = _scope.BeginLifetimeScope(builder =>
+            var childScope = Scope.BeginLifetimeScope(builder =>
             {
                 builder.RegisterInstance<IObjectProvider>(objectProvider);
                 builder.Populate(serviceCollection);
             });
-            objectProvider.SetScope(childScope);
+            objectProvider.SetComponentContext(childScope);
             return objectProvider;
 
         }
@@ -74,56 +75,56 @@ namespace IFramework.DependencyInjection.Autofac
                 throw new ArgumentNullException(nameof(buildAction));
             }
             var objectProvider = new ObjectProvider(this);
-            var childScope = _scope.BeginLifetimeScope(builder =>
+            var childScope = Scope.BeginLifetimeScope(builder =>
             {
                 builder.RegisterInstance<IObjectProvider>(objectProvider);
                 var providerBuilder = new ObjectProviderBuilder(builder);
                 buildAction(providerBuilder);
             });
-            objectProvider.SetScope(childScope);
+            objectProvider.SetComponentContext(childScope);
             return objectProvider;
         }
 
         public object GetService(Type t, params Parameter[] parameters)
         {
-            return _scope.ResolveOptional(t, GetResolvedParameters(parameters));
+            return _componentContext.ResolveOptional(t, GetResolvedParameters(parameters));
         }
 
 
         public T GetService<T>(params Parameter[] parameters) where T : class
         {
-            return _scope.ResolveOptional<T>(GetResolvedParameters(parameters));
+            return _componentContext.ResolveOptional<T>(GetResolvedParameters(parameters));
         }
         public object GetService(Type t, string name, params Parameter[] parameters)
         {
-            return this.InvokeGenericMethod("GetService", new object[] { name, parameters }, t);
+            return _componentContext.ResolveNamed(name, t, GetResolvedParameters(parameters));
         }
 
         public T GetService<T>(string name, params Parameter[] parameters)
             where T : class
         {
-            return _scope.ResolveOptionalNamed<T>(name, GetResolvedParameters(parameters));
+            return _componentContext.ResolveOptionalNamed<T>(name, GetResolvedParameters(parameters));
         }
 
         public IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters)
         {
             var typeToResolve = typeof(IEnumerable<>).MakeGenericType(type);
-            return _scope.ResolveOptional(typeToResolve, GetResolvedParameters(parameters)) as IEnumerable<object>;
+            return _componentContext.ResolveOptional(typeToResolve, GetResolvedParameters(parameters)) as IEnumerable<object>;
         }
 
         public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters) where T : class
         {
-            return _scope.ResolveOptional<IEnumerable<T>>(GetResolvedParameters(parameters));
+            return _componentContext.ResolveOptional<IEnumerable<T>>(GetResolvedParameters(parameters));
         }
 
         public object GetService(Type serviceType)
         {
-            return _scope.ResolveOptional(serviceType);
+            return _componentContext.ResolveOptional(serviceType);
         }
 
         public object GetRequiredService(Type serviceType)
         {
-            return _scope.Resolve(serviceType);
+            return _componentContext.Resolve(serviceType);
         }
     }
 }

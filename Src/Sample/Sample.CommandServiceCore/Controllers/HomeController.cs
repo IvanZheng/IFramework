@@ -33,9 +33,14 @@ namespace Sample.CommandServiceCore.Controllers
             return _exceptionManager.ProcessAsync(() => Task.Run(() => new {Name = "ivan"}.ToJson()));
         }
 
+        public IActionResult Test()
+        {
+            return View();
+        }
+
         public IActionResult Index()
         {
-            var profile = Configuration.GetAppConfig("AppSettings:Debug");
+            var profile = Configuration.Get("AppSettings:Debug");
             _logger.LogWarning(profile.ToJson());
             return View();
         }

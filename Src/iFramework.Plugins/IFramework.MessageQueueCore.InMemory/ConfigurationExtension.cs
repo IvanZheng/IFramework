@@ -13,7 +13,7 @@ namespace IFramework.MessageQueueCore.InMemory
         {
             IoCFactory.Instance
                       .ObjectProviderBuilder
-                      .RegisterType<IMessageQueueClient, InMemoryClient>(ServiceLifetime.Singleton);
+                      .Register<IMessageQueueClient, InMemoryClient>(ServiceLifetime.Singleton);
             return configuration;
         }
     }

@@ -24,12 +24,24 @@ namespace IFramework.DependencyInjection.Microsoft
             return new ObjectProvider(_serviceCollection);
         }
 
-        public IObjectProviderBuilder RegisterType(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections)
+        public IObjectProviderBuilder Populate(IServiceCollection serviceCollection)
+        {
+            _serviceCollection.Add(serviceCollection);
+            return this;
+        }
+
+        public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime)
+        {
+            _serviceCollection.RegisterType(typeof(TFrom), provider => implementationFactory(new ObjectProvider(provider)), lifetime);
+            return this;
+        }
+
+        public IObjectProviderBuilder Register(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections)
         {
             throw new NotImplementedException();
         }
 
-        public IObjectProviderBuilder RegisterType(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections)
+        public IObjectProviderBuilder Register(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections)
         {
             if (injections.Length > 0)
             {
@@ -39,7 +51,7 @@ namespace IFramework.DependencyInjection.Microsoft
             return this;
         }
 
-        public IObjectProviderBuilder RegisterType(Type from, Type to, string name = null, params Injection[] injections)
+        public IObjectProviderBuilder Register(Type from, Type to, string name = null, params Injection[] injections)
         {
             if (injections.Length > 0 || name != null)
             {
@@ -49,13 +61,13 @@ namespace IFramework.DependencyInjection.Microsoft
             return this;
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections)
+        public IObjectProviderBuilder Register<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections)
             where TFrom : class where TTo : class, TFrom
         {
             throw new NotImplementedException();
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections)
+        public IObjectProviderBuilder Register<TFrom, TTo>(params Injection[] injections)
             where TFrom : class where TTo : class, TFrom
 
         {
@@ -67,14 +79,14 @@ namespace IFramework.DependencyInjection.Microsoft
             return this;
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections)
+        public IObjectProviderBuilder Register<TFrom, TTo>(string name, params Injection[] injections)
             where TFrom : class where TTo : class, TFrom
 
         {
             throw new NotImplementedException();
         }
 
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections)
+        public IObjectProviderBuilder Register<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections)
           where TFrom : class where TTo : class, TFrom
 
         {

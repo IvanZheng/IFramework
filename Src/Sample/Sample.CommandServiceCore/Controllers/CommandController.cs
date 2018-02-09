@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Sample.CommandServiceCore.Controllers
 {
+    [Route("api/[controller]")]
     public class CommandController : ApiControllerBase
     {
         private readonly ICommandBus _commandBus;
@@ -18,6 +19,13 @@ namespace Sample.CommandServiceCore.Controllers
             _commandBus = commandBus;
         }
 
+        [HttpGet]
+        public Task<string> Get()
+        {
+            return Task.FromResult("Get Success!");
+        }
+
+        [HttpPost("{commandName}")]
         public Task<ApiResult<object>> Post([FromBody] ICommand command)
         {
             return ProcessAsync(() => _commandBus.ExecuteAsync(command));

@@ -25,7 +25,6 @@ namespace IFramework.Config
 
         public bool NeedMessageStore { get; protected set; }
 
-
         private bool CommitPerMessage { get; set; }
 
 
@@ -135,7 +134,7 @@ namespace IFramework.Config
         {
             builder = builder ?? IoCFactory.Instance.ObjectProviderBuilder;
             builder.RegisterInstance(new SyncEventSubscriberProvider());
-            builder.RegisterType<IEventBus, EventBus>(lifetime);
+            builder.Register<IEventBus, EventBus>(lifetime);
             return this;
         }
 
@@ -150,26 +149,9 @@ namespace IFramework.Config
             return this;
         }
 
-        public static T GetAppConfig<T>(string key)
+        public static T Get<T>(string key)
         {
-            var val = default(T);
-            try
-            {
-                var value = GetAppConfig(key);
-                if (typeof(T).IsEquivalentTo(typeof(Guid)))
-                {
-                    val = (T) Convert.ChangeType(new Guid(value), typeof(T));
-                }
-                else
-                {
-                    val = (T) Convert.ChangeType(value, typeof(T));
-                }
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-            return val;
+            return Instance.ConfigurationCore != null ? Instance.ConfigurationCore.GetValue<T>(key) : default(T);
         }
 
         public static string GetConnectionString(string name)
@@ -178,7 +160,7 @@ namespace IFramework.Config
                            ?.GetConnectionString(name);
         }
 
-        public static string GetAppConfig(string key)
+        public static string Get(string key)
         {
             return Instance.ConfigurationCore?[key];
         }

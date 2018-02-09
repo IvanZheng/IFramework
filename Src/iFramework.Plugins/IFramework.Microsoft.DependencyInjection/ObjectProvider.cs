@@ -12,6 +12,11 @@ namespace IFramework.DependencyInjection.Microsoft
         private readonly IServiceScope _serviceScope;
 
 
+        public ObjectProvider(IServiceProvider provider)
+        {
+            _serviceProvider = provider;
+        }
+
         public ObjectProvider(IServiceCollection serviceCollection)
         {
             _serviceProvider = serviceCollection.BuildServiceProvider();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IFramework.Command;
+using IFramework.DependencyInjection;
 using IFramework.Event;
 using IFramework.Exceptions;
 using IFramework.Message;
@@ -27,12 +28,11 @@ namespace Sample.CommandHandler.Community
         public CommunityCommandHandler(IUnitOfWork unitOfWork,
                                        ICommunityRepository domainRepository,
                                        IEventBus eventBus,
-                                       IMessageContext commandContext
-        )
+                                       IObjectProvider objectProvider)
         {
             _unitOfWork = unitOfWork;
             _domainRepository = domainRepository;
-            _commandContext = commandContext;
+            _commandContext = objectProvider.GetService<IMessageContext>();
             _eventBus = eventBus;
             // _container = container;
         }

@@ -6,9 +6,14 @@ namespace IFramework.Test.EntityFramework
 {
     public class DemoDbContext : MsDbContext
     {
-        public DemoDbContext()
-            : base(new DbContextOptionsBuilder<DemoDbContext>().UseSqlServer(Configuration.GetConnectionString("DemoDb"))
+        internal DemoDbContext()
+            : this(new DbContextOptionsBuilder<DemoDbContext>().UseSqlServer(Configuration.GetConnectionString("DemoDb"))
                                                                .Options)
+        {
+        }
+
+        public DemoDbContext(DbContextOptions options)
+            : base(options)
         {
             Database.EnsureCreated();
         }

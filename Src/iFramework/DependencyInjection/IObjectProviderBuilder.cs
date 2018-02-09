@@ -6,19 +6,23 @@ namespace IFramework.DependencyInjection
     public interface IObjectProviderBuilder
     {
         IObjectProvider Build(IServiceCollection serviceCollection = null);
-        IObjectProviderBuilder RegisterType(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections);
+        IObjectProviderBuilder Populate(IServiceCollection serviceCollection);
 
-        IObjectProviderBuilder RegisterType(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections);
-        IObjectProviderBuilder RegisterType(Type from, Type to, string name = null, params Injection[] injections);
+        IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime);
 
-        IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections)
+        IObjectProviderBuilder Register(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections);
+
+        IObjectProviderBuilder Register(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections);
+        IObjectProviderBuilder Register(Type from, Type to, string name = null, params Injection[] injections);
+
+        IObjectProviderBuilder Register<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections)
             where TFrom : class where TTo : class, TFrom;
-        IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections) where TFrom : class where TTo : class, TFrom;
+        IObjectProviderBuilder Register<TFrom, TTo>(params Injection[] injections) where TFrom : class where TTo : class, TFrom;
 
 
-        IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections) where TFrom : class where TTo : class, TFrom;
+        IObjectProviderBuilder Register<TFrom, TTo>(string name, params Injection[] injections) where TFrom : class where TTo : class, TFrom;
 
-        IObjectProviderBuilder RegisterType<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections)
+        IObjectProviderBuilder Register<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections)
             where TFrom : class where TTo : class, TFrom;
 
 

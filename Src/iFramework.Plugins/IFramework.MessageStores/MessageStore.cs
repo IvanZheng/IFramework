@@ -196,6 +196,9 @@ namespace IFramework.MessageStores.Sqlserver
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Message>()
+                        .OwnsOne(m => m.SagaInfo);
+
             modelBuilder.Entity<Command>()
                         .Property(c => c.MessageBody)
                         .HasColumnType("ntext");
@@ -213,6 +216,7 @@ namespace IFramework.MessageStores.Sqlserver
             modelBuilder.Entity<HandledEvent>()
                         .Property(handledEvent => handledEvent.SubscriptionName)
                         .HasMaxLength(322);
+
 
             //modelBuilder.Entity<Message>()
             //    .Map<Command>(map =>
@@ -270,10 +274,15 @@ namespace IFramework.MessageStores.Sqlserver
             //    new IndexAnnotation(new IndexAttribute("TopicIndex")));
 
             modelBuilder.Entity<UnSentCommand>()
+                        .OwnsOne(m => m.SagaInfo);
+            modelBuilder.Entity<UnSentCommand>()
                         .ToTable("msgs_UnSentCommands");
 
             modelBuilder.Entity<UnPublishedEvent>()
+                        .OwnsOne(m => m.SagaInfo);
+            modelBuilder.Entity<UnPublishedEvent>()
                         .ToTable("msgs_UnPublishedEvents");
+            
         }
 
         protected virtual Command BuildCommand(IMessageContext commandContext, object result)

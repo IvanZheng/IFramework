@@ -95,8 +95,8 @@ namespace IFramework.Test
         public void GetAllServicesTest()
         {
             var builder = GetNewBuilder();
-            builder.RegisterType<IB, B>(ServiceLifetime.Singleton)
-                   .RegisterType<IB, B2>();
+            builder.Register<IB, B>(ServiceLifetime.Singleton)
+                   .Register<IB, B2>();
             var objectProvider = builder.Build();
             var bSet = objectProvider.GetAllServices<IB>();
             Assert.NotNull(bSet);
@@ -109,8 +109,8 @@ namespace IFramework.Test
         {
             var builder = GetNewBuilder();
 
-            builder.RegisterType<IB, B>(ServiceLifetime.Singleton)
-                   .RegisterType<IB, B2>("B2");
+            builder.Register<IB, B>(ServiceLifetime.Singleton)
+                   .Register<IB, B2>("B2");
             var objectProvider = builder.Build();
 
             var b = objectProvider.GetService<IB>("B");
@@ -134,8 +134,8 @@ namespace IFramework.Test
         {
             var builder = GetNewBuilder();
 
-            builder.RegisterType<IB, B2>(ServiceLifetime.Singleton);
-            builder.RegisterType<IB, B>(ServiceLifetime.Singleton);
+            builder.Register<IB, B2>(ServiceLifetime.Singleton);
+            builder.Register<IB, B>(ServiceLifetime.Singleton);
             var objectProvider = builder.Build();
             var b = objectProvider.GetService<IB>();
             Assert.True(b is B);
@@ -147,8 +147,8 @@ namespace IFramework.Test
         {
             var builder = GetNewBuilder();
 
-            builder.RegisterType<IB, B>(ServiceLifetime.Singleton)
-                   .RegisterType<IA, A>(ServiceLifetime.Scoped);
+            builder.Register<IB, B>(ServiceLifetime.Singleton)
+                   .Register<IA, A>(ServiceLifetime.Scoped);
 
 
             var objectProvider = builder.Build();
