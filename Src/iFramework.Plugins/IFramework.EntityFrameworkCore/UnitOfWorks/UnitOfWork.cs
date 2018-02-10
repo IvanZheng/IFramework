@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -7,7 +8,9 @@ using IFramework.Domain;
 using IFramework.Event;
 using IFramework.Infrastructure;
 using IFramework.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace IFramework.EntityFrameworkCore.UnitOfWorks
 {
@@ -70,8 +73,15 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             }
             catch (Exception ex)
             {
-                Exception = ex;
-                throw;
+                if (ex is DbUpdateConcurrencyException)
+                {
+                    Exception = new DBConcurrencyException(ex.Message, ex);
+                }
+                else
+                {
+                    Exception = ex;
+                }
+                throw Exception;
             }
             finally
             {
@@ -113,8 +123,15 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             }
             catch (Exception ex)
             {
-                Exception = ex;
-                throw;
+                if (ex is DbUpdateConcurrencyException)
+                {
+                    Exception = new DBConcurrencyException(ex.Message, ex);
+                }
+                else
+                {
+                    Exception = ex;
+                }
+                throw Exception;
             }
             finally
             {

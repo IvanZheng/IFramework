@@ -17,7 +17,7 @@ namespace Sample.ApplicationEventSubscriber.Community
 
         public void Handle(AccountLogined @event)
         {
-            Console.Write("account({0}) logined at {1}", @event.AccountID, @event.LoginTime);
+            Console.Write("account({0}) logined at {1}", @event.AccountId, @event.LoginTime);
             var createProduct = new CreateProduct
             {
                 ProductId = Guid.NewGuid(),

@@ -100,7 +100,7 @@ namespace IFramework.Event.Impl
 
                 if (messageHandlerTypes.Count == 0)
                 {
-                    Logger.LogDebug($"event has no handlerTypes, message:{message.ToJson()}");
+                    Logger.LogDebug($"event has no handlerTypes, messageType:{message.GetType()} message:{message.ToJson()}");
                     InternalConsumer.CommitOffset(eventContext);
                     return;
                 }

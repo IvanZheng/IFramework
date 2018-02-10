@@ -97,8 +97,8 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
 
         public string MessageId
         {
-            get => (string) Headers.TryGetValue("MessageID");
-            set => Headers["MessageID"] = value;
+            get => (string) Headers.TryGetValue("MessageId");
+            set => Headers["MessageId"] = value;
         }
 
         public string ReplyToEndPoint

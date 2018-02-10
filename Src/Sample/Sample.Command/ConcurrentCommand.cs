@@ -4,7 +4,7 @@ using IFramework.Message;
 
 namespace Sample.Command
 {
-    [Topic("commandqueueC")]
+    [Topic("commandqueue")]
     public class ConcurrentCommand : ICommand
     {
         public ConcurrentCommand()

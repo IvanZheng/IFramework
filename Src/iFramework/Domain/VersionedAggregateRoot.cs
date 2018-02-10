@@ -16,7 +16,7 @@ namespace IFramework.Domain
         }
 
         [ConcurrencyCheck]
-        public int Version { get; private set; }
+        public int Version { get; protected set; }
 
         public override void Rollback()
         {

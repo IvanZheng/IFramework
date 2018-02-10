@@ -7,6 +7,6 @@ namespace IFramework.Message
 {
     public interface IMessageHandledNotification
     {
-       string MessageID { get; set; }
+       string MessageId { get; set; }
     }
 }

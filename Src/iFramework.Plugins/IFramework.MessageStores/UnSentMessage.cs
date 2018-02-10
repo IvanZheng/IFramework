@@ -11,11 +11,11 @@ namespace IFramework.MessageStores.Sqlserver
 
         protected UnSentMessage(IMessageContext messageContext)
         {
-            ID = messageContext.MessageId;
-            CorrelationID = messageContext.CorrelationId;
+            Id = messageContext.MessageId;
+            CorrelationId = messageContext.CorrelationId;
             MessageBody = messageContext.Message.ToJson();
             ReplyToEndPoint = messageContext.ReplyToEndPoint;
-            SagaInfo = messageContext.SagaInfo ?? new SagaInfo();
+            SagaInfo = messageContext.SagaInfo?.Clone() ?? SagaInfo.Null;
             CreateTime = messageContext.SentTime;
             if (messageContext.Message != null)
             {
@@ -25,16 +25,16 @@ namespace IFramework.MessageStores.Sqlserver
             Topic = messageContext.Topic;
         }
 
-        public string ID { get; set; }
+        public string Id { get; set; }
         public string ReplyToEndPoint { get; set; }
         public SagaInfo SagaInfo { get; set; }
-        public string CorrelationID { get; set; }
+        public string CorrelationId { get; set; }
         public string MessageBody { get; set; }
         public DateTime CreateTime { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public string Topic { get; set; }
-        public string IP { get; set; }
+        public string Ip { get; set; }
         public string Producer { get; set; }
     }
 }

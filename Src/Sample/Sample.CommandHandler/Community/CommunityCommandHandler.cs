@@ -56,11 +56,11 @@ namespace Sample.CommandHandler.Community
                 throw ex;
             }
 
-            _eventBus.Publish(new AccountLogined {AccountID = account.ID, LoginTime = DateTime.Now});
+            _eventBus.Publish(new AccountLogined {AccountId = account.Id, LoginTime = DateTime.Now});
 
             //await _UnitOfWork.CommitAsync()
             //                 .ConfigureAwait(false);
-            _commandContext.Reply = account.ID;
+            _commandContext.Reply = account.Id;
         }
 
         public virtual void Handle(Modify command)
@@ -86,7 +86,7 @@ namespace Sample.CommandHandler.Community
             var account = new Account(command.UserName, command.Password, command.Email);
             _domainRepository.Add(account);
             _unitOfWork.Commit();
-            _commandContext.Reply = account.ID;
+            _commandContext.Reply = account.Id;
         }
     }
 }

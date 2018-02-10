@@ -16,7 +16,7 @@ namespace IFramework.MessageStores.Sqlserver
             CorrelationId = messageContext.CorrelationId;
             MessageBody = messageContext.Message.ToJson();
             CreateTime = messageContext.SentTime;
-            SagaInfo = messageContext.SagaInfo ?? new SagaInfo();
+            SagaInfo = messageContext.SagaInfo?.Clone() ?? SagaInfo.Null;
             IP = messageContext.Ip;
             Producer = messageContext.Producer;
             if (messageContext.Message != null)

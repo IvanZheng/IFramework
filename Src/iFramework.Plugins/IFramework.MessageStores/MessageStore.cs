@@ -75,7 +75,7 @@ namespace IFramework.MessageStores.Sqlserver
         //        {
         //            try
         //            {
-        //                var @event = Events.Find(eventContext.MessageID);
+        //                var @event = Events.Find(eventContext.MessageId);
         //                if (@event == null)
         //                {
         //                    @event = BuildEvent(eventContext);
@@ -307,7 +307,7 @@ namespace IFramework.MessageStores.Sqlserver
                     {
                         if (message.MessageBody.ToJsonObject(Type.GetType(message.Type)) is IMessage rawMessage)
                         {
-                            messageContexts.Add(wrapMessage(message.ID, rawMessage, message.Topic, message.CorrelationID,
+                            messageContexts.Add(wrapMessage(message.Id, rawMessage, message.Topic, message.CorrelationId,
                                                             message.ReplyToEndPoint, message.SagaInfo, message.Producer));
                         }
                         else

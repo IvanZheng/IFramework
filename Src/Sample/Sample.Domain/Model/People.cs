@@ -17,7 +17,7 @@ namespace Sample.Domain.Model
             OnEvent(new PeopleRegisted(Guid.NewGuid(), username, password, registerTime));
         }
 
-        public Guid ID { get; protected set; }
+        public Guid Id { get; protected set; }
         public string UserName { get; protected set; }
         public string Password { get; protected set; }
         public DateTime RegisterTime { get; protected set; }
@@ -29,7 +29,7 @@ namespace Sample.Domain.Model
 
         void IMessageHandler<PeopleRegisted>.Handle(PeopleRegisted @event)
         {
-            ID = (Guid) @event.AggregateRootId;
+            Id = (Guid) @event.AggregateRootId;
             UserName = @event.UserName;
             Password = @event.Password;
             RegisterTime = @event.RegisterTime;
