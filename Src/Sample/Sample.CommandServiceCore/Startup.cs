@@ -9,6 +9,7 @@ using IFramework.Infrastructure;
 using IFramework.JsonNetCore;
 using IFramework.Message;
 using IFramework.MessageQueue;
+using IFramework.MessageQueueCore.ConfluentKafka;
 using IFramework.MessageQueueCore.InMemory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
