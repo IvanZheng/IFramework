@@ -196,13 +196,13 @@ namespace IFramework.MessageStores.Sqlserver
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Message>()
+            modelBuilder.Entity<Command>()
                         .OwnsOne(m => m.SagaInfo);
 
             modelBuilder.Entity<Command>()
                         .Property(c => c.MessageBody)
                         .HasColumnType("ntext");
-            
+
             modelBuilder.Entity<UnSentCommand>()
                         .Property(c => c.MessageBody)
                         .HasColumnType("ntext");
@@ -282,7 +282,6 @@ namespace IFramework.MessageStores.Sqlserver
                         .OwnsOne(m => m.SagaInfo);
             modelBuilder.Entity<UnPublishedEvent>()
                         .ToTable("msgs_UnPublishedEvents");
-            
         }
 
         protected virtual Command BuildCommand(IMessageContext commandContext, object result)
