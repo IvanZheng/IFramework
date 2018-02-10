@@ -88,8 +88,8 @@ namespace Sample.CommandServiceCore
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
-            services.AddDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)));
-            //services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
+            //services.AddDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)));
+            services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
             return IoCFactory.Instance
                              .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                              .Build(services);
