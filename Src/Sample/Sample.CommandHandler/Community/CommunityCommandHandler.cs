@@ -28,11 +28,11 @@ namespace Sample.CommandHandler.Community
         public CommunityCommandHandler(IUnitOfWork unitOfWork,
                                        ICommunityRepository domainRepository,
                                        IEventBus eventBus,
-                                       IObjectProvider objectProvider)
+                                       IMessageContext commanadContext)
         {
             _unitOfWork = unitOfWork;
             _domainRepository = domainRepository;
-            _commandContext = objectProvider.GetService<IMessageContext>();
+            _commandContext = commanadContext;
             _eventBus = eventBus;
             // _container = container;
         }

@@ -11,7 +11,7 @@ namespace IFramework.MessageQueueCore.InMemory
 {
     public class QueueClient : ICommitOffsetable
     {
-        protected static ILogger Logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(nameof(SubscriptionClient));
+        protected static ILogger Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(nameof(SubscriptionClient));
         private readonly BlockingCollection<IMessageContext> _messageQueue;
         private readonly OnMessagesReceived _onMessagesReceived;
         private CancellationTokenSource _cancellationTokenSource;

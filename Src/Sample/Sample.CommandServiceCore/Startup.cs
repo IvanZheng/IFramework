@@ -19,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sample.Command;
-using Sample.CommandHandler.Community;
 using Sample.CommandServiceCore.Authorizations;
 using Sample.CommandServiceCore.CommandInputExtension;
 using Sample.CommandServiceCore.ExceptionHandlers;
@@ -51,7 +50,10 @@ namespace Sample.CommandServiceCore
                 //"192.168.99.60:9092"
             };
             Configuration.Instance
-                         .UseAutofacContainer()
+                         .UseAutofacContainer("Sample.CommandHandler",
+                                              "Sample.DomainEventSubscriber",
+                                              "Sample.AsyncDomainEventSubscriber",
+                                              "Sample.ApplicationEventSubscriber")
                          .UseConfiguration(configuration)
                          .RegisterCommonComponents()
                          .UseJsonNet()
@@ -79,10 +81,7 @@ namespace Sample.CommandServiceCore
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
-            {
-                options.InputFormatters.Insert(0, new CommandInputFormatter());
-            });
+            services.AddMvc(options => { options.InputFormatters.Insert(0, new CommandInputFormatter()); });
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("AppAuthorization",
@@ -90,7 +89,7 @@ namespace Sample.CommandServiceCore
             });
             services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
             return IoCFactory.Instance
-                             .RegisterComponents(RegisterComponents, ServiceLifetime.Singleton)
+                             .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                              .Build(services);
         }
 
@@ -99,7 +98,6 @@ namespace Sample.CommandServiceCore
             // TODO: register other components or services
             providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
             providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
-            providerBuilder.Register<CommunityCommandHandler, CommunityCommandHandler>(lifetime);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

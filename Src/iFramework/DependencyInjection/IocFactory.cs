@@ -73,24 +73,24 @@ namespace IFramework.DependencyInjection
             return Instance.ObjectProvider.CreateScope(buildAction);
         }
 
-        public static T Resolve<T>(string name, params Parameter[] parameters) where T : class
+        public static T GetService<T>(string name, params Parameter[] parameters) where T : class
         {
             return Instance.ObjectProvider.GetService<T>(name, parameters);
         }
 
-        public static T Resolve<T>(params Parameter[] parameters) where T : class
+        public static T GetService<T>(params Parameter[] parameters) where T : class
         {
             return Instance.ObjectProvider.GetService<T>(parameters);
         }
 
-        public static object Resolve(Type type, params Parameter[] parameters)
+        public static object GetService(Type type, params Parameter[] parameters)
         {
             return Instance.ObjectProvider.GetService(type, parameters);
         }
 
 
 
-        public static object Resolve(Type type, string name, params Parameter[] parameters)
+        public static object GetService(Type type, string name, params Parameter[] parameters)
         {
             return Instance.ObjectProvider.GetService(type, name, parameters);
         }
@@ -107,7 +107,14 @@ namespace IFramework.DependencyInjection
             return ObjectProviderBuilder;
         }
 
-        public IObjectProviderBuilder RegisterType<TService, TImplementation>(ServiceLifetime lifetime)
+        public IObjectProviderBuilder RegisterType<TService>(Func<IObjectProvider, TService> implementationFactory, ServiceLifetime lifetime = ServiceLifetime.Transient)
+            where TService : class
+        {
+            ObjectProviderBuilder.Register(implementationFactory, lifetime);
+            return ObjectProviderBuilder;
+        }
+
+        public IObjectProviderBuilder RegisterType<TService, TImplementation>(ServiceLifetime lifetime = ServiceLifetime.Transient)
             where TService : class where TImplementation : class, TService
         {
             ObjectProviderBuilder.Register<TService, TImplementation>(lifetime);
@@ -115,7 +122,7 @@ namespace IFramework.DependencyInjection
         }
 
         public IoCFactory RegisterComponents(Action<IObjectProviderBuilder, ServiceLifetime> registerComponents,
-                                             ServiceLifetime lifetime)
+                                             ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             registerComponents(ObjectProviderBuilder, lifetime);
             return Instance;

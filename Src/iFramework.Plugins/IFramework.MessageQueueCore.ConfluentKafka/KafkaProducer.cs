@@ -14,7 +14,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
 {
     public class KafkaProducer<TKey, TValue>
     {
-        private readonly ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>).Name);
+        private readonly ILogger _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>).Name);
         private readonly Producer<TKey, TValue> _producer;
         private readonly string _topic;
         private readonly ISerializer<TValue> _valueSerializer;

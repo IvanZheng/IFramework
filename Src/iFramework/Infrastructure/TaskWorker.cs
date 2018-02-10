@@ -34,7 +34,7 @@ namespace IFramework.Infrastructure
         public TaskWorker(string id = null)
         {
             Id = id;
-            _logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(GetType());
+            _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
         }
 
         public TaskWorker(WorkDelegate run, string id = null)

@@ -14,7 +14,7 @@ namespace IFramework.JsonNetCore
     {
         private static readonly ConcurrentDictionary<string, JsonSerializerSettings> SettingDictionary = new ConcurrentDictionary<string, JsonSerializerSettings>();
 
-        private static readonly ILogger JsonLogger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(typeof(JsonHelper).Name);
+        private static readonly ILogger JsonLogger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(JsonHelper).Name);
 
         internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPulibc,
                                                                                        bool loopSerialize,

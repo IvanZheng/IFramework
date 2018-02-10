@@ -16,7 +16,7 @@ namespace Sample.CommandServiceCore.ExceptionHandlers
 {
     public static class AppExceptionHandler
     {
-        private static readonly ILogger Logger = IoCFactory.Resolve<ILoggerFactory>()
+        private static readonly ILogger Logger = IoCFactory.GetService<ILoggerFactory>()
                                                   .CreateLogger(nameof(AppExceptionHandler));
 
         public static async Task Handle(HttpContext context)

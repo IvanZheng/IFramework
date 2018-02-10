@@ -12,10 +12,10 @@ namespace Sample.CommandHandler
 {
     public class CommandHandlerBase
     {
-        protected IMessagePublisher EventPublisher => IoCFactory.Resolve<IMessagePublisher>();
+        protected IMessagePublisher EventPublisher => IoCFactory.GetService<IMessagePublisher>();
 
-        protected IDomainRepository DomainRepository => IoCFactory.Resolve<IDomainRepository>();
+        protected IDomainRepository DomainRepository => IoCFactory.GetService<IDomainRepository>();
 
-        public IMessageContext CommandContext => IoCFactory.Resolve<IMessageContext>();
+        public IMessageContext CommandContext => IoCFactory.GetService<IMessageContext>();
     }
 }

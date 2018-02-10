@@ -53,6 +53,7 @@
     <ProjectReference Include="..\ApplicationEventSubscriber\Sample.ApplicationEventSubscriber.csproj" />
     <ProjectReference Include="..\AsyncDomainEventSubscriber\Sample.AsyncDomainEventSubscriber.csproj" />
     <ProjectReference Include="..\Sample.CommandHandler\Sample.CommandHandler.csproj" />
+    <ProjectReference Include="..\Sample.DomainEventHandler\Sample.DomainEventSubscriber.csproj" />
     <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj" />
     <ProjectReference Include="..\Sample.Persistence\Sample.Persistence.csproj" />
   </ItemGroup>

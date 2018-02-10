@@ -18,7 +18,7 @@ namespace IFramework.MessageStores.Sqlserver
         protected MessageStore(DbContextOptions options)
             : base(options)
         {
-            Logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(GetType());
+            Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
         }
 
         public DbSet<Command> Commands { get; set; }

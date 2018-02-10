@@ -7,8 +7,8 @@ namespace IFramework.Infrastructure
 {
     public static class JsonHelper
     {
-        private static IJsonConvert JsonConvert => IoCFactory.Resolve<IJsonConvert>();
-        private static ILogger JsonLogger => IoCFactory.Resolve<ILoggerFactory>().CreateLogger(typeof(JsonHelper).Name);
+        private static IJsonConvert JsonConvert => IoCFactory.GetService<IJsonConvert>();
+        private static ILogger JsonLogger => IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(JsonHelper).Name);
 
         public static string ToJson(this object obj,
                                     bool serializeNonPublic = true,

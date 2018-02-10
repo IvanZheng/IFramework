@@ -34,7 +34,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
             TopicClients = new ConcurrentDictionary<string, KafkaProducer<string, KafkaMessage>>();
             SubscriptionClients = new List<KafkaConsumer<string, KafkaMessage>>();
             QueueConsumers = new List<KafkaConsumer<string, KafkaMessage>>();
-            Logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(GetType().Name);
+            Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
 

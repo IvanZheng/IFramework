@@ -65,7 +65,7 @@ namespace IFramework.Config
 
             builder.Register<IMessagePublisher>(provider =>
             {
-                var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
+                var messageQueueClient = IoCFactory.GetService<IMessageQueueClient>();
                 configuration.SetDefaultTopic(defaultTopic);
                 defaultTopic = configuration.FormatAppName(defaultTopic);
                 var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);

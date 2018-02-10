@@ -24,7 +24,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         protected CancellationTokenSource CancellationTokenSource;
         private Consumer<TKey, TValue> _consumer;
         protected Task ConsumerTask;
-        protected ILogger Logger = IoCFactory.Resolve<ILoggerFactory>().CreateLogger(typeof(KafkaConsumer<TKey, TValue>).Name);
+        protected ILogger Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaConsumer<TKey, TValue>).Name);
         protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
         protected ConsumerConfig ConsumerConfig;
         private readonly IDeserializer<TKey> _keyDeserializer;

@@ -76,7 +76,7 @@ namespace IFramework.Message.Impl
             var handlerType = GetHandlerType(messageType);
             if (handlerType != null)
             {
-                handler = IoCFactory.Resolve(handlerType.Type);
+                handler = IoCFactory.GetService(handlerType.Type);
             }
             return handler;
         }

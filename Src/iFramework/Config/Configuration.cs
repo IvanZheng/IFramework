@@ -101,7 +101,7 @@ namespace IFramework.Config
             where TMessageStore : class, IMessageStore
         {
             NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
-            IoCFactory.Instance.RegisterType<IMessageStore, TMessageStore>(lifetime);
+            IoCFactory.Instance.RegisterType<IMessageStore>(provider => provider.GetService<TMessageStore>(), lifetime);
             return this;
         }
 
