@@ -88,10 +88,11 @@ namespace Sample.CommandServiceCore
             services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
             return IoCFactory.Instance
                              .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
-                             .Build(services);
+                             .Populate(services)
+                             .Build();
         }
 
-        private void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
+        private static void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
         {
             // TODO: register other components or services
             providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);

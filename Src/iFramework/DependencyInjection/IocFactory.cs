@@ -127,5 +127,11 @@ namespace IFramework.DependencyInjection
             registerComponents(ObjectProviderBuilder, lifetime);
             return Instance;
         }
+
+        public IoCFactory Populate(IServiceCollection services)
+        {
+            ObjectProviderBuilder.Populate(services);
+            return this;
+        }
     }
 }

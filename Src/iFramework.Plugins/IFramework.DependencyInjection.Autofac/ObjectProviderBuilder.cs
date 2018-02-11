@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using Autofac;
 using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
@@ -38,7 +37,7 @@ namespace IFramework.DependencyInjection.Autofac
                              .InstanceLifetime(lifetime);
             return this;
         }
-
+        
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
             if (serviceCollection != null)
@@ -142,10 +141,10 @@ namespace IFramework.DependencyInjection.Autofac
         }
 
         public IObjectProviderBuilder Register(Type from,
-                                                   Type to,
-                                                   string name,
-                                                   ServiceLifetime lifetime,
-                                                   params Injection[] injections)
+                                               Type to,
+                                               string name,
+                                               ServiceLifetime lifetime,
+                                               params Injection[] injections)
         {
             var injectionMembers = GetInjectionParameters(injections);
             dynamic registrationBuilder;
@@ -172,19 +171,20 @@ namespace IFramework.DependencyInjection.Autofac
             where TFrom : class where TTo : class, TFrom
         {
             var injectionMembers = GetInjectionParameters(injections);
-
+            var toType = typeof(TTo);
+            var fromType = typeof(TFrom);
             dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
+            if (toType.IsGenericType)
             {
-                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
-                                                       .As(typeof(TFrom))
+                registrationBuilder = _containerBuilder.RegisterGeneric(toType)
+                                                       .As(fromType)
                                                        .InstanceLifetime(lifetime)
                                                        .WithParameters(injectionMembers);
             }
             else
             {
-                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
-                                                       .As(typeof(TFrom))
+                registrationBuilder = _containerBuilder.RegisterType(toType)
+                                                       .As(fromType)
                                                        .InstanceLifetime(lifetime)
                                                        .WithParameters(injectionMembers);
             }
@@ -198,16 +198,18 @@ namespace IFramework.DependencyInjection.Autofac
         {
             var injectionMembers = GetInjectionParameters(injections);
             dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
+            var toType = typeof(TTo);
+            var fromType = typeof(TFrom);
+            if (toType.IsGenericType)
             {
-                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
-                                                       .As(typeof(TFrom))
+                registrationBuilder = _containerBuilder.RegisterGeneric(toType)
+                                                       .As(fromType)
                                                        .WithParameters(injectionMembers);
             }
             else
             {
-                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
-                                                       .As(typeof(TFrom))
+                registrationBuilder = _containerBuilder.RegisterType(toType)
+                                                       .As(fromType)
                                                        .WithParameters(injectionMembers);
             }
 
@@ -220,16 +222,18 @@ namespace IFramework.DependencyInjection.Autofac
         {
             var injectionMembers = GetInjectionParameters(injections);
             dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
+            var toType = typeof(TTo);
+            var fromType = typeof(TFrom);
+            if (toType.IsGenericType)
             {
-                registrationBuilder = _containerBuilder.RegisterGeneric(typeof(TTo))
-                                                       .Named(name, typeof(TFrom))
+                registrationBuilder = _containerBuilder.RegisterGeneric(toType)
+                                                       .Named(name, fromType)
                                                        .WithParameters(injectionMembers);
             }
             else
             {
-                registrationBuilder = _containerBuilder.RegisterType(typeof(TTo))
-                                                       .Named(name, typeof(TFrom))
+                registrationBuilder = _containerBuilder.RegisterType(toType)
+                                                       .Named(name, fromType)
                                                        .WithParameters(injectionMembers);
             }
 
@@ -241,21 +245,22 @@ namespace IFramework.DependencyInjection.Autofac
             where TFrom : class where TTo : class, TFrom
         {
             var injectionMembers = GetInjectionParameters(injections);
-            var builder = new ContainerBuilder();
             dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
+            var toType = typeof(TTo);
+            var fromType = typeof(TFrom);
+            if (toType.IsGenericType)
             {
-                registrationBuilder = builder.RegisterGeneric(typeof(TTo))
-                                             .Named(name, typeof(TFrom))
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
+                registrationBuilder = _containerBuilder.RegisterGeneric(toType)
+                                                       .Named(name, fromType)
+                                                       .InstanceLifetime(lifetime)
+                                                       .WithParameters(injectionMembers);
             }
             else
             {
-                registrationBuilder = builder.RegisterType(typeof(TTo))
-                                             .Named(name, typeof(TFrom))
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
+                registrationBuilder = _containerBuilder.RegisterType(toType)
+                                                       .Named(name, fromType)
+                                                       .InstanceLifetime(lifetime)
+                                                       .WithParameters(injectionMembers);
             }
 
             RegisterInterceptor(registrationBuilder, injections);
