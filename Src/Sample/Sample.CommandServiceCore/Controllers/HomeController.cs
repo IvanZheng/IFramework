@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Sample.CommandServiceCore.Authorizations;
@@ -40,7 +41,8 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Index()
         {
-            var profile = Configuration.Get("AppSettings:Debug");
+            var profile = Configuration.GetAppSetting("Debug");
+            var member = Configuration.GetAppSetting("Member:A");
             _logger.LogWarning(profile.ToJson());
             return View();
         }

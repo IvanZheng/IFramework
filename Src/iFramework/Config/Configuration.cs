@@ -187,5 +187,15 @@ namespace IFramework.Config
         {
             return Instance.ConfigurationCore?[key];
         }
+
+        public static string GetAppSetting(string key)
+        {
+            return Get($"AppSettings:{key}");
+        }
+
+        public static T GetAppSetting<T>(string key)
+        {
+            return Get<T>($"AppSettings:{key}");
+        }
     }
 }

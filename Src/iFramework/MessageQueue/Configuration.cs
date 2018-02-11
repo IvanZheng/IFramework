@@ -130,7 +130,7 @@ namespace IFramework.Config
         public static Configuration MessageQueueUseMachineNameFormat(this Configuration configuration,
                                                                      bool onlyInDebug = true)
         {
-            var debug = Configuration.Get<bool>("AppSettings:Debug");
+            var debug = Configuration.GetAppSetting<bool>("Debug");
             if (!onlyInDebug || debug)
             {
                 configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");

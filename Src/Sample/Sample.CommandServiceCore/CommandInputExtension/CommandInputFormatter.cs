@@ -15,11 +15,12 @@ namespace Sample.CommandServiceCore.CommandInputExtension
         private const string ApplicationCommandMediaType = "application/command";
         private const string ApplicationJsonMediaType = "application/json";
         private const string ApplicationFormUrlEncodedFormMediaType = "application/x-www-form-urlencoded";
+        private const string CommandTypeTemplate = nameof(CommandTypeTemplate);
         private readonly string _commandTypeTemplate;
 
         public CommandInputFormatter()
         {
-            _commandTypeTemplate = Configuration.Get("AppSettings:CommandTypeTemplate");
+            _commandTypeTemplate = Configuration.GetAppSetting(CommandTypeTemplate);
             SupportedMediaTypes.Add(new MediaTypeHeaderValue(ApplicationCommandMediaType));
             SupportedMediaTypes.Add(new MediaTypeHeaderValue(ApplicationJsonMediaType));
             SupportedMediaTypes.Add(new MediaTypeHeaderValue(ApplicationFormUrlEncodedFormMediaType));
