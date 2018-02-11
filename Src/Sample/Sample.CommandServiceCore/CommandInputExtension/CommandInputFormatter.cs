@@ -60,11 +60,13 @@ namespace Sample.CommandServiceCore.CommandInputExtension
                     commandType = GetCommandType(request.GetUri().Segments.Last());
                 }
                 var mediaType = request.ContentType.Split(';').FirstOrDefault();
-                object command;
+                object command = null;
                 if (mediaType == ApplicationFormUrlEncodedFormMediaType)
                 {
-                    var jObject = FormUrlEncodedJson.Parse(request.Form.ToDictionary(f => f.Key, f => f.Value.ToString()));
-                    command = jObject.ToObject(commandType);
+                    if (FormUrlEncodedJson.TryParse(request.Form.ToDictionary(f => f.Key, f => f.Value.ToString()), out var jObject))
+                    {
+                        command = jObject.ToObject(commandType);
+                    }
                 }
                 else
                 {
