@@ -12,6 +12,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Sample.CommandServiceCore.Controllers
 {
+    [Route("api/[controller]")]
     public class ApiControllerBase : Controller
     {
         public ApiControllerBase(IExceptionManager exceptionManager)

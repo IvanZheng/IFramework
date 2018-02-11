@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Sample.CommandServiceCore.Controllers
 {
-    [Route("api/[controller]")]
     public class SagaApiController : ApiControllerBase
     {
         private readonly ICommandBus _commandBus;

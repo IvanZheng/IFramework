@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Sample.CommandServiceCore.Controllers
 {
-    [Route("api/[controller]")]
     public class CommandController : ApiControllerBase
     {
         private readonly ICommandBus _commandBus;
