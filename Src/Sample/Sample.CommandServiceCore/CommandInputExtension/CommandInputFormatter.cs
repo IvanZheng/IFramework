@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using IFramework.Config;
@@ -62,7 +63,8 @@ namespace Sample.CommandServiceCore.CommandInputExtension
                 object command;
                 if (mediaType == ApplicationFormUrlEncodedFormMediaType)
                 {
-                    command = await request.Form.ConvertToObjectAsync(commandType);
+                    var jObject = FormUrlEncodedJson.Parse(request.Form.ToDictionary(f => f.Key, f => f.Value.ToString()));
+                    command = jObject.ToObject(commandType);
                 }
                 else
                 {
