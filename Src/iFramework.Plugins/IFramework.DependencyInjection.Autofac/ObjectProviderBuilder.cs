@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using Autofac;
 using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;

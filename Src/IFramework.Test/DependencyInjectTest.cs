@@ -112,6 +112,22 @@ namespace IFramework.Test
         }
 
         [Fact]
+        public void SameServiceTest()
+        {
+            var builder = GetNewBuilder();
+            builder.Register<IB, B>(ServiceLifetime.Scoped)
+                   .Register<B, B>(ServiceLifetime.Scoped);
+            IoCFactory.Instance.Build();
+            using (var scope = IoCFactory.Instance.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(1))))
+            {
+                var b1 = scope.GetService<IB>();
+                var b2 = scope.GetService<B>();
+
+                Assert.Equal(b1.GetHashCode(), b2.GetHashCode());
+            }
+        }
+
+        [Fact]
         public void GetRequiredServiceTest()
         {
             var builder = GetNewBuilder();

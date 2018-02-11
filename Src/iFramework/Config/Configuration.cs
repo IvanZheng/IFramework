@@ -56,7 +56,7 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration RegisterCommonComponents()
+        public Configuration UseCommonComponents(string app = null)
         {
             UseNullLogger();
             UseMemoryCahce();
@@ -66,6 +66,8 @@ namespace IFramework.Config
             this.UseMockMessagePublisher();
             RegisterDefaultEventBus();
             RegisterExceptionManager<ExceptionManager>();
+            this.UseMessageQueue(app);
+            this.MessageQueueUseMachineNameFormat();
             return this;
         }
 
@@ -97,11 +99,32 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration UseMessageStore<TMessageStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        /// <summary>
+        /// if sameIntanceAsBusinessDbContext is true, TMessageStore must be registerd before object provider to be built!
+        /// </summary>
+        /// <typeparam name="TMessageStore"></typeparam>
+        /// <param name="sameIntanceAsBusinessDbContext"></param>
+        /// <param name="lifetime"></param>
+        /// <returns></returns>
+        public Configuration UseMessageStore<TMessageStore>(bool sameIntanceAsBusinessDbContext = true, ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TMessageStore : class, IMessageStore
         {
             NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
-            IoCFactory.Instance.RegisterType<IMessageStore>(provider => provider.GetService<TMessageStore>(), lifetime);
+            if (NeedMessageStore)
+            {
+                if (sameIntanceAsBusinessDbContext)
+                {
+                    IoCFactory.Instance.RegisterType<IMessageStore>(provider => provider.GetService<TMessageStore>(), lifetime);
+                }
+                else
+                {
+                    IoCFactory.Instance.RegisterType<IMessageStore, TMessageStore>(lifetime);
+                }
+            }
+            else
+            {
+                IoCFactory.Instance.RegisterType<IMessageStore, MockMessageStore>(lifetime);
+            }
             return this;
         }
 

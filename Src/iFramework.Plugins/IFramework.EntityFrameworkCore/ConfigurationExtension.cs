@@ -14,7 +14,7 @@ namespace IFramework.EntityFrameworkCore
 {
     public static class ConfigurationExtension
     {
-        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration,
+        public static Configuration UseEntityFrameworkComponents(this Configuration configuration,
                                                                       IObjectProviderBuilder builder,
                                                                       ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
@@ -23,10 +23,10 @@ namespace IFramework.EntityFrameworkCore
                                 .RegisterRepositories(builder, lifetime);
         }
 
-        public static Configuration RegisterEntityFrameworkComponents(this Configuration configuration,
+        public static Configuration UseEntityFrameworkComponents(this Configuration configuration,
                                                                       ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            return configuration.RegisterEntityFrameworkComponents(null, lifetime);
+            return configuration.UseEntityFrameworkComponents(null, lifetime);
         }
 
         public static Configuration RegisterUnitOfWork(this Configuration configuration,

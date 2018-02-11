@@ -56,19 +56,15 @@ namespace Sample.CommandServiceCore
                                               "Sample.AsyncDomainEventSubscriber",
                                               "Sample.ApplicationEventSubscriber")
                          .UseConfiguration(configuration)
-                         .RegisterCommonComponents()
+                         .UseCommonComponents()
                          .UseJsonNet()
-                         .RegisterDefaultEventBus()
-                         .RegisterEntityFrameworkComponents()
-                         .MessageQueueUseMachineNameFormat()
-                         .UseMessageQueue()
+                         .UseEntityFrameworkComponents()
                          .UseMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic");
-            ;
         }
 
 

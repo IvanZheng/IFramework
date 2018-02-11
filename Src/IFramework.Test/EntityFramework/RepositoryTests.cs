@@ -22,8 +22,8 @@ namespace IFramework.Test.EntityFramework
             _output = output;
             Configuration.Instance
                          .UseAutofacContainer()
-                         .RegisterCommonComponents()
-                         .RegisterEntityFrameworkComponents();
+                         .UseCommonComponents()
+                         .UseEntityFrameworkComponents();
 
             IoCFactory.Instance
                       .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
