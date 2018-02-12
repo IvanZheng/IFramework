@@ -36,10 +36,10 @@
         var doCommand = function(commandName, command) {
             $.ajax({
                 cache: false,
-                contentType: "application/json",
+                //contentType: "application/json",
                 type: "POST",
                 url: '@Url.Content("~/api/Command/")' + commandName + '?t=' + new Date().getTime().toString(),
-                data: JSON.stringify(command),
+                data: command,//JSON.stringify(command),
                 success: function(data) {
                     if (data.errorCode === 0) {
                         showResult(JSON.stringify(data));
@@ -129,7 +129,8 @@
             $("#registerCommand").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
-                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
+                var registerCommand = {
+                    UserName: username, Password: password, Email: "ivan@r-soft.cn", Tags: [{ Id: "id1", Name: "Name1" }, { Id: "id2", Name: "Name2"}] };
                 doCommand("Register", registerCommand);
             });
 
@@ -146,9 +147,9 @@
             });
 
             $("#btnRefreshCommandDistributorStatus").click(function() {
-                    refreshCommandDistributorStatus();
-                })
-                .click();
+                refreshCommandDistributorStatus();
+            });
+               
 
             $("#closeMqBtn").click(function() {
                 $.get("@Url.Content("~/api/mq/CloseMessageQueue")", null, function(data) {
