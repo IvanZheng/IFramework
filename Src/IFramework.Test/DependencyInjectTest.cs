@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using Autofac;
 using Autofac.Core.Registration;
 using IFramework.Config;
 using IFramework.DependencyInjection;
@@ -94,10 +95,11 @@ namespace IFramework.Test
         IObjectProviderBuilder GetNewBuilder()
         {
             B.ConstructedCount = 0;
-            Configuration.Instance
-                         .UseAutofacContainer();
+            //Configuration.Instance
+            //             .UseAutofacContainer();
                          //.UseMicrosoftDependencyInjection();
-            return IoCFactory.Instance.ObjectProviderBuilder;
+            return new DependencyInjection.Autofac.ObjectProviderBuilder();
+            //return new DependencyInjection.Microsoft.ObjectProviderBuilder();
         }
 
         [Fact]
@@ -117,13 +119,13 @@ namespace IFramework.Test
         public void SameServiceTest()
         {
             var builder = GetNewBuilder();
-            builder.Register<IB, B>(ServiceLifetime.Scoped)
+            builder.Register<IB>(p => new B(), ServiceLifetime.Scoped)
                    .Register<B, B>(ServiceLifetime.Scoped);
-            IoCFactory.Instance.Build();
-            using (var scope = IoCFactory.Instance.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(1))))
+            var provider = builder.Build();
+            using (var scope = provider.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(1))))
             {
                 var b1 = scope.GetService<IB>();
-                var b2 = scope.GetService<B>();
+                var b2 = scope.GetService<IB>();
 
                 Assert.Equal(b1.GetHashCode(), b2.GetHashCode());
             }
@@ -172,30 +174,25 @@ namespace IFramework.Test
         {
             var builder = GetNewBuilder();
 
-            //builder.Register<IB, B>(ServiceLifetime.Singleton);
-            //builder.Register<A, A>();
-            IoCFactory.Instance.RegisterType<IB, B>(ServiceLifetime.Singleton);
-            //IoCFactory.Instance.RegisterType<A, A>();
-            IoCFactory.Instance.Build();
+            builder.Register<IB, B>(ServiceLifetime.Singleton);
+            builder.Register<A, A>();
+            var objectProvider = builder.Build();
+            Assert.NotNull(objectProvider.GetService<IB>());
 
-            //var objectProvider = builder.Build();
-            Assert.NotNull(IoCFactory.GetService<IB>());
-            
-
-            using (var scope = IoCFactory.Instance.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(1))))
+            using (var scope = objectProvider.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(1))))
             {
                 scope.GetService<IB>();
                 Assert.True(scope.GetService(typeof(A)) is A a && a.C.Id == 1);
             }
-            using (var scope = IoCFactory.Instance.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(2))))
+            using (var scope = objectProvider.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(2))))
             {
                 scope.GetService<IB>();
                 var a = scope.GetService<A>();
                 Assert.True(a != null && a.C.Id == 2);
             }
 
-            var b = IoCFactory.GetService<IB>();
-            IoCFactory.Instance.ObjectProvider.Dispose();
+            var b = objectProvider.GetService<IB>();
+            objectProvider.Dispose();
             Console.WriteLine($"b: {b.Id}");
             Assert.Equal(1, B.ConstructedCount);
         }

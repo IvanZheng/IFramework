@@ -16,14 +16,14 @@ namespace IFramework.Test.EntityFramework
 {
     public class RepositoryTests : TestBase
     {
-        private ITestOutputHelper _output;
+        private readonly ITestOutputHelper _output;
         public RepositoryTests(ITestOutputHelper output)
         {
             _output = output;
             Configuration.Instance
                          .UseAutofacContainer()
                          .UseCommonComponents()
-                         .UseEntityFrameworkComponents();
+                         .UseEntityFrameworkComponents<DemoDbContext>();
 
             IoCFactory.Instance
                       .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
