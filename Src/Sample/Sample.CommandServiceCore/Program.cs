@@ -13,6 +13,7 @@ namespace Sample.CommandServiceCore
         public static IWebHost BuildWebHost(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)
+                          .UseKestrel()
                           .UseStartup<Startup>()
                           .Build();
         }
