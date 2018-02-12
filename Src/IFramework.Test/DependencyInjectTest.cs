@@ -5,6 +5,7 @@ using Autofac.Core.Registration;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
+using IFramework.DependencyInjection.Microsoft;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -95,6 +96,7 @@ namespace IFramework.Test
             B.ConstructedCount = 0;
             Configuration.Instance
                          .UseAutofacContainer();
+                         //.UseMicrosoftDependencyInjection();
             return IoCFactory.Instance.ObjectProviderBuilder;
         }
 
