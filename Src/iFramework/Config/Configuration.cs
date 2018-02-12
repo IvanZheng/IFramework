@@ -106,20 +106,14 @@ namespace IFramework.Config
         /// <param name="sameIntanceAsBusinessDbContext"></param>
         /// <param name="lifetime"></param>
         /// <returns></returns>
-        public Configuration UseMessageStore<TMessageStore>(bool sameIntanceAsBusinessDbContext = true, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public Configuration UseMessageStore<TMessageStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TMessageStore : class, IMessageStore
         {
             NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
             if (NeedMessageStore)
             {
-                if (sameIntanceAsBusinessDbContext)
-                {
-                    IoCFactory.Instance.RegisterType<IMessageStore>(provider => provider.GetService<TMessageStore>(), lifetime);
-                }
-                else
-                {
-                    IoCFactory.Instance.RegisterType<IMessageStore, TMessageStore>(lifetime);
-                }
+                IoCFactory.Instance.RegisterType<TMessageStore, TMessageStore>(lifetime);
+                IoCFactory.Instance.RegisterType<IMessageStore>(provider => provider.GetService<TMessageStore>(), lifetime);
             }
             else
             {
