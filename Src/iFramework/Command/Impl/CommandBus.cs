@@ -119,11 +119,8 @@ namespace IFramework.Command.Impl
                                                      string sagaId = null)
         {
             sagaId = sagaId ?? ObjectId.GenerateNewId().ToString();
-            SagaInfo sagaInfo = null;
-            if (!string.IsNullOrEmpty(sagaId))
-            {
-                sagaInfo = new SagaInfo {SagaId = sagaId, ReplyEndPoint = _replyTopicName};
-            }
+            var sagaInfo = new SagaInfo {SagaId = sagaId, ReplyEndPoint = _replyTopicName};
+
             var commandContext = WrapCommand(command, false, sagaInfo);
             var commandState = BuildCommandState(commandContext,
                                                  sendCancellationToken,
