@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
@@ -55,7 +56,7 @@ namespace Sample.CommandServiceCore.CommandInputExtension
             {
                 var type = context.ModelType;
                 var commandType = type;
-                if (type.IsAbstract || type.IsInterface)
+                if ((type.IsAbstract || type.IsInterface) && typeof(ICommand).IsAssignableFrom(type))
                 {
                     commandType = GetCommandType(request.GetUri().Segments.Last());
                 }
