@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace Sample.CommandServiceCore
 {
@@ -13,6 +14,7 @@ namespace Sample.CommandServiceCore
         public static IWebHost BuildWebHost(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)
+                          .UseUrls(new ConfigurationBuilder().AddCommandLine(args).Build()["urls"])
                           .UseStartup<Startup>()
                           .Build();
         }
