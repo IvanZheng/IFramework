@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Sample.CommandServiceCore.Filters;
 
 namespace Sample.CommandServiceCore.Controllers
 {
@@ -28,6 +27,14 @@ namespace Sample.CommandServiceCore.Controllers
         public Task<ApiResult<object>> Post([FromBody] ICommand command)
         {
             return ProcessAsync(() => _commandBus.ExecuteAsync(command));
+        }
+
+        [ApiResultWrap]
+        [HttpGet]
+        [Route("do")]
+        public async Task<string[]> Do()
+        {
+            return await Task.FromResult(new[] {"1", "2"});
         }
     }
 }
