@@ -80,9 +80,9 @@ namespace IFramework.Infrastructure
         protected virtual string UnKnownMessage { get; set; } = ErrorCode.UnknownError.ToString();
 
         public virtual async Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
-                                                                bool continueOnCapturedContext = false,
                                                                 bool needRetry = false,
                                                                 int retryCount = 50,
+                                                                bool continueOnCapturedContext = false,
                                                                 Func<Exception, string> getExceptionMessage = null)
         {
             ApiResult<T> apiResult = null;
@@ -120,9 +120,9 @@ namespace IFramework.Infrastructure
         }
 
         public virtual async Task<ApiResult> ProcessAsync(Func<Task> func,
-                                                          bool continueOnCapturedContext = false,
                                                           bool needRetry = false,
                                                           int retryCount = 50,
+                                                          bool continueOnCapturedContext = false,
                                                           Func<Exception, string> getExceptionMessage = null)
         {
             getExceptionMessage = getExceptionMessage ?? GetExceptionMessage;

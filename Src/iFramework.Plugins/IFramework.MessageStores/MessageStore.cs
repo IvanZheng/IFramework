@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using IFramework.DependencyInjection;
 using IFramework.EntityFrameworkCore;
+using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -168,14 +169,26 @@ namespace IFramework.MessageStores.Sqlserver
 
         public void RemoveSentCommand(string commandId)
         {
-            var deleteSql = string.Format("delete from msgs_UnSentCommands where Id = '{0}'", commandId);
-            Database.ExecuteSqlCommand(deleteSql);
+            //var deleteSql = string.Format("delete from msgs_UnSentCommands where Id = '{0}'", commandId);
+            //Database.ExecuteSqlCommand(deleteSql);
+            var sentCommand = Commands.Find(commandId);
+            if (sentCommand != null)
+            {
+                Commands.Remove(sentCommand);
+                SaveChanges();
+            }
         }
 
         public void RemovePublishedEvent(string eventId)
         {
-            var deleteSql = string.Format("delete from msgs_UnPublishedEvents where Id = '{0}'", eventId);
-            Database.ExecuteSqlCommand(deleteSql);
+            //var deleteSql = string.Format("delete from msgs_UnPublishedEvents where Id = '{0}'", eventId);
+            //Database.ExecuteSqlCommand(deleteSql);
+            var publishedEvent = UnPublishedEvents.Find(eventId);
+            if (publishedEvent != null)
+            {
+                UnPublishedEvents.Remove(publishedEvent);
+                SaveChanges();
+            }
         }
 
 

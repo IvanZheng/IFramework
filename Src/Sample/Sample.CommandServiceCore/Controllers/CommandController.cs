@@ -7,6 +7,7 @@ using Sample.CommandServiceCore.Filters;
 
 namespace Sample.CommandServiceCore.Controllers
 {
+    [ApiResultWrap]
     public class CommandController : ApiControllerBase
     {
         private readonly ICommandBus _commandBus;
@@ -24,17 +25,6 @@ namespace Sample.CommandServiceCore.Controllers
         }
 
         [HttpPost("{commandName}")]
-        public Task<ApiResult<object>> Post([FromBody] ICommand command)
-        {
-            return ProcessAsync(() => _commandBus.ExecuteAsync(command));
-        }
-
-        [ApiResultWrap]
-        [HttpGet]
-        [Route("do")]
-        public async Task<string[]> Do()
-        {
-            return await Task.FromResult(new[] {"1", "2"});
-        }
+        public Task<object> Post([FromBody] ICommand command) => _commandBus.ExecuteAsync(command);
     }
 }

@@ -34,6 +34,10 @@ namespace IFramework.JsonNetCore
                 customSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
                 customSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
             }
+            else
+            {
+                customSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            }
             if (useStringEnumConvert)
             {
                 customSettings.Converters.Add(new StringEnumConverter());
@@ -43,8 +47,7 @@ namespace IFramework.JsonNetCore
 
             if (useCamelCase)
             {
-                var resolver = customSettings.ContractResolver as DefaultContractResolver;
-                if (resolver != null)
+                if (customSettings.ContractResolver is DefaultContractResolver resolver)
                 {
                     resolver.NamingStrategy = new CamelCaseNamingStrategy
                     {
@@ -96,7 +99,7 @@ namespace IFramework.JsonNetCore
         }
 
         public static string ToJson(this object obj,
-                                    bool serializeNonPublic = true,
+                                    bool serializeNonPublic = false,
                                     bool loopSerialize = false,
                                     bool useCamelCase = false,
                                     bool ignoreNullValue = false,
@@ -107,7 +110,7 @@ namespace IFramework.JsonNetCore
         }
 
         public static object ToJsonObject(this string json,
-                                          bool serializeNonPublic = true,
+                                          bool serializeNonPublic = false,
                                           bool loopSerialize = false,
                                           bool useCamelCase = false)
         {
@@ -129,7 +132,7 @@ namespace IFramework.JsonNetCore
 
         public static object ToJsonObject(this string json,
                                           Type jsonType,
-                                          bool serializeNonPublic = true,
+                                          bool serializeNonPublic = false,
                                           bool loopSerialize = false,
                                           bool useCamelCase = false)
         {
@@ -161,7 +164,7 @@ namespace IFramework.JsonNetCore
         }
 
         public static T ToJsonObject<T>(this string json,
-                                        bool serializeNonPublic = true,
+                                        bool serializeNonPublic = false,
                                         bool loopSerialize = false,
                                         bool useCamelCase = false)
         {
@@ -196,7 +199,7 @@ namespace IFramework.JsonNetCore
         }
 
         public static dynamic ToDynamicObject(this string json,
-                                              bool serializeNonPublic = true,
+                                              bool serializeNonPublic = false,
                                               bool loopSerialize = false,
                                               bool useCamelCase = false)
         {
@@ -204,7 +207,7 @@ namespace IFramework.JsonNetCore
         }
 
         public static IEnumerable<dynamic> ToDynamicObjects(this string json,
-                                                            bool serializeNonPublic = true,
+                                                            bool serializeNonPublic = false,
                                                             bool loopSerialize = false,
                                                             bool useCamelCase = false)
         {

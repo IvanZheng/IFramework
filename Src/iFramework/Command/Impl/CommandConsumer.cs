@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -117,6 +118,7 @@ namespace IFramework.Command.Impl
 
         protected virtual async Task ConsumeMessage(IMessageContext commandContext)
         {
+            Stopwatch watch = Stopwatch.StartNew();
             try
             {
                 var command = commandContext.Message as ICommand;
@@ -247,7 +249,7 @@ namespace IFramework.Command.Impl
                                     {
                                         if (needReply)
                                         {
-                                            messageReply = MessageQueueClient.WrapMessage(e.GetBaseException(),
+                                            messageReply = MessageQueueClient.WrapMessage(e,
                                                                                           commandContext.MessageId,
                                                                                           commandContext.ReplyToEndPoint,
                                                                                           producer: Producer,
@@ -266,9 +268,9 @@ namespace IFramework.Command.Impl
                                                                                                       producer: Producer);
                                                     eventMessageStates.Add(new MessageState(eventContext));
                                                 });
-                                        if (e is DomainException)
+                                        if (e is DomainException exception)
                                         {
-                                            var domainExceptionEvent = ((DomainException) e).DomainExceptionEvent;
+                                            var domainExceptionEvent = exception.DomainExceptionEvent;
                                             if (domainExceptionEvent != null)
                                             {
                                                 var topic = domainExceptionEvent.GetFormatTopic();
@@ -311,6 +313,11 @@ namespace IFramework.Command.Impl
             catch (Exception ex)
             {
                 Logger.LogCritical(ex, $"{ConsumerId} CommandConsumer consume command failed");
+            }
+            finally
+            {
+                watch.Stop();
+                Logger.LogDebug($"{commandContext.ToJson()} consumed cost:{watch.ElapsedMilliseconds}ms");
             }
             InternalConsumer.CommitOffset(commandContext);
         }

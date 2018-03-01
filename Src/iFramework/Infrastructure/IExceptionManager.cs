@@ -8,15 +8,15 @@ namespace IFramework.Infrastructure
     public interface IExceptionManager
     {
         Task<ApiResult<T>> ProcessAsync<T>(Func<Task<T>> func,
-                                           bool continueOnCapturedContext = false,
                                            bool needRetry = false,
                                            int retryCount = 50,
+                                           bool continueOnCapturedContext = false,
                                            Func<Exception, string> getExceptionMessage = null);
 
         Task<ApiResult> ProcessAsync(Func<Task> func,
-                                     bool continueOnCapturedContext = false,
                                      bool needRetry = false,
                                      int retryCount = 50,
+                                     bool continueOnCapturedContext = false,
                                      Func<Exception, string> getExceptionMessage = null);
 
         ApiResult Process(Action action,

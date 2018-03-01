@@ -16,6 +16,10 @@ namespace IFramework.Test.EntityFramework
             using (var dbContext = new DemoDbContext())
             {
                 var user = new User("ivan", "male");
+                user.AddCard("ICBC");
+                user.AddCard("CCB");
+                user.AddCard("ABC");
+
                 dbContext.Users.Add(user);
                 await dbContext.SaveChangesAsync();
             }
@@ -27,6 +31,7 @@ namespace IFramework.Test.EntityFramework
             using (var dbContext = new DemoDbContext())
             {
                 var users = await dbContext.Users
+                                           .Include(u => u.Cards)
                                            .FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
                                            .ToArrayAsync();
                 users.ForEach(u =>

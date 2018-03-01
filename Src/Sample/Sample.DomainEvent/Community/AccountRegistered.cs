@@ -10,8 +10,8 @@ namespace Sample.DomainEvents.Community
 
     public class PeopleRegisted : ItemRegisted
     {
-        public PeopleRegisted(Guid accountID, string username, string password, DateTime registerTime)
-            : base(accountID)
+        public PeopleRegisted(Guid accountId, string username, string password, DateTime registerTime)
+            : base(accountId)
         {
             UserName = username;
             Password = password;
@@ -25,12 +25,12 @@ namespace Sample.DomainEvents.Community
 
     public class AccountRegistered : PeopleRegisted
     {
-        public AccountRegistered(Guid accountID,
+        public AccountRegistered(Guid accountId,
                                  string username,
                                  string password,
                                  string email,
                                  DateTime registerTime)
-            : base(accountID, username, password, registerTime)
+            : base(accountId, username, password, registerTime)
         {
             Email = email;
         }

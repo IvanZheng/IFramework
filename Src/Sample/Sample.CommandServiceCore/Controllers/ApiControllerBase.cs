@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Net.Http.Headers;
 
 namespace Sample.CommandServiceCore.Controllers
 {
@@ -67,18 +63,18 @@ namespace Sample.CommandServiceCore.Controllers
                      getModelErrorMessage(ModelState)
                     );
         }
-        
+
         protected virtual async Task<ApiResult> ProcessAsync(Func<Task> func,
-                                                             bool continueOnCapturedContext = false,
                                                              bool needRetry = true,
                                                              Func<Exception, string> getExceptionMessage = null,
+                                                             bool continueOnCapturedContext = false,
                                                              Func<ModelStateDictionary, string> getModelErrorMessage = null)
         {
             if (ModelState.IsValid)
             {
                 return await ExceptionManager.ProcessAsync(func,
-                                                           continueOnCapturedContext,
                                                            needRetry,
+                                                           continueOnCapturedContext: continueOnCapturedContext,
                                                            getExceptionMessage: getExceptionMessage)
                                              .ConfigureAwait(continueOnCapturedContext);
             }
@@ -99,7 +95,9 @@ namespace Sample.CommandServiceCore.Controllers
         {
             if (ModelState.IsValid)
             {
-                return await ExceptionManager.ProcessAsync(func, continueOnCapturedContext, needRetry,
+                return await ExceptionManager.ProcessAsync(func,
+                                                           needRetry,
+                                                           continueOnCapturedContext: continueOnCapturedContext,
                                                            getExceptionMessage: getExceptionMessage)
                                              .ConfigureAwait(continueOnCapturedContext);
             }
@@ -111,6 +109,7 @@ namespace Sample.CommandServiceCore.Controllers
                      getModelErrorMessage(ModelState)
                     );
         }
+
         #endregion
     }
 }

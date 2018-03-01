@@ -11,7 +11,7 @@ namespace IFramework.Infrastructure
         private static ILogger JsonLogger => IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(JsonHelper).Name);
 
         public static string ToJson(this object obj,
-                                    bool serializeNonPublic = true,
+                                    bool serializeNonPublic = false,
                                     bool loopSerialize = false,
                                     bool useCamelCase = false,
                                     bool ignoreNullValue = false)
@@ -20,7 +20,7 @@ namespace IFramework.Infrastructure
         }
 
         public static object ToJsonObject(this string json,
-                                          bool serializeNonPublic = true,
+                                          bool serializeNonPublic = false,
                                           bool loopSerialize = false,
                                           bool useCamelCase = false)
         {
@@ -29,7 +29,7 @@ namespace IFramework.Infrastructure
 
         public static object ToJsonObject(this string json,
                                           Type jsonType,
-                                          bool serializeNonPublic = true,
+                                          bool serializeNonPublic = false,
                                           bool loopSerialize = false,
                                           bool useCamelCase = false)
         {
@@ -57,7 +57,7 @@ namespace IFramework.Infrastructure
         }
 
         public static T ToJsonObject<T>(this string json,
-                                        bool serializeNonPublic = true,
+                                        bool serializeNonPublic = false,
                                         bool loopSerialize = false,
                                         bool useCamelCase = false)
         {
@@ -85,7 +85,7 @@ namespace IFramework.Infrastructure
         }
 
         public static dynamic ToDynamicObject(this string json,
-                                              bool serializeNonPublic = true,
+                                              bool serializeNonPublic = false,
                                               bool loopSerialize = false,
                                               bool useCamelCase = false)
         {
@@ -93,7 +93,7 @@ namespace IFramework.Infrastructure
         }
 
         public static List<dynamic> ToDynamicObjects(this string json,
-                                                     bool serializeNonPublic = true,
+                                                     bool serializeNonPublic = false,
                                                      bool loopSerialize = false,
                                                      bool useCamelCase = false)
         {

@@ -8,46 +8,46 @@ namespace IFramework.JsonNetCore
 {
     public class JsonConvertImpl: IJsonConvert
     {
-        public string SerializeObject(object value, bool serializeNonPublic = true, 
+        public string SerializeObject(object value, bool serializeNonPublic = false, 
                                       bool loopSerialize = false, bool useCamelCase = false,
                                       bool ignoreNullValue = false, bool useStringEnumConvert = true)
         {
             return value.ToJson(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue, useStringEnumConvert);
         }
 
-        public object DeserializeObject(string value, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
+        public object DeserializeObject(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
             return value.ToJsonObject(serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public dynamic DeserializeDynamicObject(string json, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
+        public dynamic DeserializeDynamicObject(string json, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
             return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public dynamic DeserializeDynamicObjects(string json, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
+        public dynamic DeserializeDynamicObjects(string json, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
             return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public T DeserializeAnonymousType<T>(string value, T anonymousTypeObject, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
+        public T DeserializeAnonymousType<T>(string value, T anonymousTypeObject, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
             return JsonConvert.DeserializeAnonymousType(value, anonymousTypeObject, 
                                                         JsonHelper.GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
 
         }
 
-        public T DeserializeObject<T>(string value, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
+        public T DeserializeObject<T>(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
             return value.ToJsonObject<T>(serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public object DeserializeObject(string value, Type type, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
+        public object DeserializeObject(string value, Type type, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
             return value.ToJsonObject(type, serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public void PopulateObject(string value, object target, bool serializeNonPublic = true, bool loopSerialize = false, bool useCamelCase = false)
+        public void PopulateObject(string value, object target, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
             JsonConvert.PopulateObject(value, target, JsonHelper.GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
         }

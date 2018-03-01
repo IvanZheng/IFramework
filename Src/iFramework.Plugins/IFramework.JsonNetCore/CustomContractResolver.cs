@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -7,12 +8,14 @@ namespace IFramework.JsonNetCore
     public class CustomContractResolver : DefaultContractResolver
     {
         private readonly bool _lowerCase;
+        private readonly string[] _ignoreProperties;
         private readonly bool _serializeNonPulibc;
 
-        public CustomContractResolver(bool serializeNonPulibc, bool lowerCase)
+        public CustomContractResolver(bool serializeNonPulibc, bool lowerCase, params string[] ignoreProperties)
         {
             _serializeNonPulibc = serializeNonPulibc;
             _lowerCase = lowerCase;
+            _ignoreProperties = ignoreProperties;
         }
 
         protected override string ResolvePropertyName(string propertyName)
@@ -22,11 +25,12 @@ namespace IFramework.JsonNetCore
 
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
+            JsonProperty prop = base.CreateProperty(member, memberSerialization);
+
             if (_serializeNonPulibc)
             {
                 //TODO: Maybe cache
-                var prop = base.CreateProperty(member, memberSerialization);
-
+               
                 if (!prop.Writable)
                 {
                     var property = member as PropertyInfo;
@@ -36,9 +40,13 @@ namespace IFramework.JsonNetCore
                         prop.Writable = hasPrivateSetter;
                     }
                 }
-                return prop;
             }
-            return base.CreateProperty(member, memberSerialization);
+
+            if (typeof(Exception).IsAssignableFrom(prop.DeclaringType) && prop.PropertyName == "TargetSite")
+            {
+                prop.Ignored = true;
+            }
+            return prop;
         }
     }
 }
