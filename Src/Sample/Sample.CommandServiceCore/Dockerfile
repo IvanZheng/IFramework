@@ -1,11 +1,14 @@
-FROM microsoft/dotnet:2.0-sdk AS build-env 
-COPY ./ /src
-WORKDIR /src/Sample/Sample.CommandServiceCore
-
-RUN dotnet publish -c Release -o out
-
-FROM microsoft/aspnetcore
+FROM microsoft/aspnetcore:2.0 AS base
 WORKDIR /app
-COPY --from=build-env /src/Sample/Sample.CommandServiceCore/out ./
 EXPOSE 80
+
+FROM microsoft/aspnetcore-build:2.0 AS build
+COPY ./ /src
+
+WORKDIR /src/Sample/Sample.CommandServiceCore
+RUN dotnet publish -c Release -o /app
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app .
 ENTRYPOINT ["dotnet", "Sample.CommandServiceCore.dll"]

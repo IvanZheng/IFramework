@@ -1,8 +1,6 @@
 version: '3'
 
 services:
-  sample.commandservicecore:
+  iframework.sample:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    ports:
-      - "80"
+      - ASPNETCORE_ENVIRONMENT=Product

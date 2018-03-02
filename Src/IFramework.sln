@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2026
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.DependencyInjection.Microsoft", "iFramework.Plugins\IFramework.Microsoft.DependencyInjection\IFramework.DependencyInjection.Microsoft.csproj", "{FFD7041D-BA33-46D3-B3FE-C1A4816E12FD}"
 EndProject
@@ -461,7 +461,7 @@ Global
 		{08E74EC3-F2DC-4F3E-99B9-B7337D65D92A} = {A9B2E731-E8B4-43A1-97B6-88517E1AA362}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal

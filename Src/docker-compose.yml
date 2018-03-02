@@ -1,8 +1,12 @@
 version: '3'
 
+
 services:
-  sample.commandservicecore:
-    image: sample.commandservicecore
+  project_name: iframework
+  iframework.sample:
+    image: iframework.sample
     build:
-      context: ./Sample/Sample.CommandServiceCore
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Sample/Sample.CommandServiceCore/Dockerfile
+    ports:
+      - "5008:80"

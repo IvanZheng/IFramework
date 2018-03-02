@@ -17,8 +17,7 @@ namespace Sample.CommandServiceCore.Controllers
         {
             _commandBus = commandBus;
         }
-
-        [HttpGet]
+        
         public Task<string> Get()
         {
             return Task.FromResult("Get Success!");
