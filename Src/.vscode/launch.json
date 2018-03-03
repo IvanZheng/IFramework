@@ -24,7 +24,7 @@
         "pipeTransport": {
             "pipeCwd": "${workspaceRoot}",
             "pipeProgram": "bash",
-            "pipeArgs": [ "-c", "docker -H tcp://192.168.99.100:2375 exec -i aspnetcore ${debuggerCommand}"],
+            "pipeArgs": [ "-c", "docker -H tcp://192.168.99.101:2375 exec -i aspnetcore ${debuggerCommand}"],
             "debuggerPath": "/root/vsdbg/vsdbg"
         }
     },
