@@ -5,6 +5,30 @@
    "version": "0.2.0",
    "configurations": [
     {
+        "name": ".NET Core Launch docker",
+        "type": "coreclr",
+        "request": "launch",
+       // "processId": "${command:pickRemoteProcess}",
+        //"preLaunchTask": "build",
+        "env": {
+            "ASPNETCORE_ENVIRONMENT":"Development"
+        },
+        "program": "/app/workspace/publishes/Sample.Core/Sample.CommandServiceCore.dll",
+        "args": [],
+        "cwd": "/app/workspace/publishes/Sample.Core",
+        "stopAtEntry": false,
+        "console": "internalConsole",
+        //"sourceFileMap": {
+       //     "/mnt/e/Workspaces/LLY.Membership/SourceCode/LLY.Membership-DotNetCore": "e:/Workspaces/LLY.Membership/SourceCode/LLY.Membership-DotNetCore"
+       // },
+        "pipeTransport": {
+            "pipeCwd": "${workspaceRoot}",
+            "pipeProgram": "bash",
+            "pipeArgs": [ "-c", "docker -H tcp://192.168.99.100:2375 exec -i aspnetcore ${debuggerCommand}"],
+            "debuggerPath": "/root/vsdbg/vsdbg"
+        }
+    },
+    {
         "name": ".NET Core Launch (web application)",
         "type": "coreclr",
         "request": "launch",
