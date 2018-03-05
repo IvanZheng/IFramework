@@ -14,7 +14,6 @@ using Sample.CommandServiceCore.Models;
 
 namespace Sample.CommandServiceCore.Controllers
 {
-
     public class HomeController : Controller
     {
         private readonly IExceptionManager _exceptionManager;

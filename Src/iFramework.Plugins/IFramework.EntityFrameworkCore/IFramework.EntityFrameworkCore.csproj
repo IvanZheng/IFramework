@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0-preview2-30070" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0-preview1-final" />
   </ItemGroup>
 
   <ItemGroup>
