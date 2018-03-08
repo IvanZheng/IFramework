@@ -19,25 +19,20 @@ namespace IFramework.EntityFrameworkCore
             _dbContext = dbContext;
         }
 
-        /// <summary>
-        ///  if this works, we don't need CreateMaterializeExpression
-        /// </summary>
-        /// <param name="entityType"></param>
-        /// <returns></returns>
-        public override Func<ValueBuffer, DbContext, object> GetMaterializer(IEntityType entityType)
+        public override Func<MaterializationContext, object> GetMaterializer(IEntityType entityType)
         {
             var func = base.GetMaterializer(entityType);
-            return (valueBuffer, dbContext) =>
+            return (dbContext) =>
             {
-                var entity = func(valueBuffer, dbContext);
+                var entity = func(dbContext);
                 (entity as Entity)?.InitializeMaterializer(dbContext);
                 return entity;
             };
         }
 
-        public override Expression CreateMaterializeExpression(IEntityType entityType, Expression valueBufferExpression, Expression contextExpression, int[] indexMap = null)
+        public override Expression CreateMaterializeExpression(IEntityType entityType, Expression materializationExpression, int[] indexMap = null)
         {
-            var expression = base.CreateMaterializeExpression(entityType, valueBufferExpression, contextExpression, indexMap);
+            var expression = base.CreateMaterializeExpression(entityType, materializationExpression, indexMap);
             if (typeof(Entity).IsAssignableFrom(entityType.ClrType) && expression is BlockExpression blockExpression)
             {
                 var property = Expression.Property(blockExpression.Variables[0],
