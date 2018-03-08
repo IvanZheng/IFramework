@@ -25,7 +25,7 @@ namespace Sample.CommandServiceCore.Controllers
             _logger = loggerFactory.CreateLogger(nameof(HomeController));
         }
 
-        //[Authorize("AppAuthorization")]
+        [Authorize("AppAuthorization")]
         //[TypeFilter(typeof(AuthorizationFilterAttrubute))]
         [AuthorizationFilterAttrubute]
         public Task<ApiResult<string>> DoApi()
