@@ -34,11 +34,11 @@ namespace Sample.CommandServiceCore
     {
         private static IMessagePublisher _messagePublisher;
         private static ICommandBus _commandBus;
-        private static IMessageConsumer _commandConsumer1;
-        private static IMessageConsumer _commandConsumer2;
-        private static IMessageConsumer _commandConsumer3;
-        private static IMessageConsumer _domainEventConsumer;
-        private static IMessageConsumer _applicationEventConsumer;
+        private static IMessageProcessor _commandConsumer1;
+        private static IMessageProcessor _commandConsumer2;
+        private static IMessageProcessor _commandConsumer3;
+        private static IMessageProcessor _domainEventProcessor;
+        private static IMessageProcessor _applicationEventProcessor;
 
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
@@ -154,17 +154,17 @@ namespace Sample.CommandServiceCore
 
             #region event subscriber init
 
-            _domainEventConsumer = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
+            _domainEventProcessor = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
                                                                              Environment.MachineName, new[] {"DomainEventSubscriber"});
-            _domainEventConsumer.Start();
+            _domainEventProcessor.Start();
 
             #endregion
 
             #region application event subscriber init
 
-            _applicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber",
+            _applicationEventProcessor = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber",
                                                                                   Environment.MachineName, new[] {"ApplicationEventSubscriber"});
-            _applicationEventConsumer.Start();
+            _applicationEventProcessor.Start();
 
             #endregion
 

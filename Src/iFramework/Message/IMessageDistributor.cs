@@ -1,4 +1,4 @@
 ﻿namespace IFramework.Message
 {
-    public interface IMessageDistributor : IMessageConsumer { }
+    public interface IMessageDistributor : IMessageProcessor { }
 }

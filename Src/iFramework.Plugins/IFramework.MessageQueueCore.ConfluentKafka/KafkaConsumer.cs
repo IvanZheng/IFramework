@@ -12,6 +12,7 @@ using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.MessageQueue;
+using IFramework.MessageQueue.Client.Abstracts;
 using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Logging;
 
@@ -19,7 +20,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
 {
     public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, Message<TKey, TValue> message);
 
-    public class KafkaConsumer<TKey, TValue> : ICommitOffsetable
+    public class KafkaConsumer<TKey, TValue> : IMessageConsumer
     {
         protected CancellationTokenSource CancellationTokenSource;
         private Consumer<TKey, TValue> _consumer;

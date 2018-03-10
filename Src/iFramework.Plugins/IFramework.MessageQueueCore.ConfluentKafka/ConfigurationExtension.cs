@@ -1,6 +1,7 @@
 ﻿using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.MessageQueue;
+using IFramework.MessageQueue.Client.Abstracts;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.MessageQueueCore.ConfluentKafka
@@ -12,8 +13,9 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         {
             IoCFactory.Instance
                       .ObjectProviderBuilder
-                      .Register<IMessageQueueClient, ConfluentKafkaClient>(ServiceLifetime.Singleton,
-                                                                               new ConstructInjection(new ParameterInjection("brokerList", brokerList)));
+                      .Register<IMessageQueueClientProvider, KafkaMessageQueueClientProvider>(ServiceLifetime.Singleton,
+                                                                                              new ConstructInjection(new ParameterInjection("brokerList", brokerList)))
+                      .Register<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
             return configuration;
         }
     }

@@ -8,10 +8,24 @@ using Confluent.Kafka.Serialization;
 using IFramework.DependencyInjection;
 using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
 using IFramework.Infrastructure;
+using IFramework.Message;
+using IFramework.MessageQueue.Client.Abstracts;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueueCore.ConfluentKafka
 {
+
+    public class KafkaProducer : KafkaProducer<string, KafkaMessage>, IMessageProducer
+    {
+        public KafkaProducer(string topic, string brokerList, ISerializer<string> keySerializer, ISerializer<KafkaMessage> valueSerializer)
+            : base(topic, brokerList, keySerializer, valueSerializer) { }
+        public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
+        {
+            var message = ((MessageContext)messageContext).KafkaMessage;
+            return SendAsync(messageContext.Key, message, cancellationToken);
+        }
+    }
+
     public class KafkaProducer<TKey, TValue>
     {
         private readonly ILogger _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>).Name);
@@ -53,13 +67,6 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                 _logger.LogError($"{_topic} producer dispose failed", ex);
             }
         }
-
-        //public Message<string, KafkaMessage> Send(string key, KafkaMessage message)
-        //{
-        //    var result = _producer.ProduceAsync(_topic, key, message).Result;
-        //    //_logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
-        //    return result;
-        //}
 
         public async Task<Message<TKey, TValue>> SendAsync(TKey key, TValue message, CancellationToken cancellationToken)
         {

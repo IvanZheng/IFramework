@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.Event.Impl
 {
-    public class EventSubscriber: IMessageConsumer
+    public class EventSubscriber: IMessageProcessor
     {
         private readonly string _topic;
         protected ICommandBus CommandBus;

@@ -2,7 +2,7 @@
 
 namespace IFramework.Message.Impl
 {
-    public class MockMessageConsumer : IMessageConsumer
+    public class MockMessageProcessor : IMessageProcessor
     {
         public void Start() { }
 

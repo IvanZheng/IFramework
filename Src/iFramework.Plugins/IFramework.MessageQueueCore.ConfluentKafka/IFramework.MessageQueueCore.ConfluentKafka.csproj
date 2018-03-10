@@ -5,12 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ConfluentKafkaClient.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Confluent.Kafka" Version="0.11.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+    <ProjectReference Include="..\IFramework.MessageQueue.Client.Abstracts\IFramework.MessageQueue.Client.Abstracts.csproj" />
   </ItemGroup>
 
 </Project>
