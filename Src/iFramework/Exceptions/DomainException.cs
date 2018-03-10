@@ -44,21 +44,12 @@ namespace IFramework.Exceptions
     public class DomainException: Exception
     {
         public IDomainExceptionEvent DomainExceptionEvent { get; protected set; }
-
-        public DomainException()
-        {
-        }
+        public int ErrorCode { get; protected set; }
 
         public DomainException(IDomainExceptionEvent domainExceptionEvent)
             : this(Exceptions.ErrorCode.UnknownError, domainExceptionEvent.ToString())
         {
             DomainExceptionEvent = domainExceptionEvent;
-        }
-
-        protected DomainException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            ErrorCode = (int)info.GetValue("ErrorCode", typeof(int));
         }
 
         public DomainException(object errorCode, string message = null)
@@ -73,13 +64,17 @@ namespace IFramework.Exceptions
             ErrorCode = (int)errorCode;
         }
 
-        public int ErrorCode { get; set; }
 
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("ErrorCode", ErrorCode);
-            info.AddValue("DomainExceptionEvent", DomainExceptionEvent);
-            base.GetObjectData(info, context);
-        }
+        //protected DomainException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //    ErrorCode = (int)info.GetValue("ErrorCode", typeof(int));
+        //}
+        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        //{
+        //    info.AddValue("ErrorCode", ErrorCode);
+        //    info.AddValue("DomainExceptionEvent", DomainExceptionEvent);
+        //    base.GetObjectData(info, context);
+        //}
     }
 }

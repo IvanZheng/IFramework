@@ -75,7 +75,10 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
                         {
                             _sagaInfo = sagaInfoJson.ToJson().ToJsonObject<SagaInfo>();
                         }
-                        catch (Exception) { }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
                     }
                 }
                 return _sagaInfo;
@@ -117,8 +120,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
                 {
                     return _message;
                 }
-                object messageType = null;
-                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
+                if (Headers.TryGetValue("MessageType", out var messageType) && messageType != null)
                 {
                     var jsonValue = KafkaMessage.Payload;
                     _message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));

@@ -60,6 +60,7 @@ namespace IFramework.JsonNetCore
             {
                 customSettings.NullValueHandling = NullValueHandling.Ignore;
             }
+            customSettings.Converters.Add(new DomainExceptionConverter());
             return customSettings;
         }
 
@@ -72,6 +73,7 @@ namespace IFramework.JsonNetCore
                                                                              bool useCached = true,
                                                                              bool lowerCase = false)
         {
+
             JsonSerializerSettings settings = null;
             if (useCached)
             {
