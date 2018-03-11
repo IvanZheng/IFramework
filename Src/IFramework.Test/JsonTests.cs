@@ -13,13 +13,13 @@ using Xunit.Abstractions;
 
 namespace IFramework.Test
 {
-    public class AEvent
+
+    public class AException:Exception
     {
-        public AEvent(string message)
+        public AException(string message)
+            :base(message)
         {
-            Message = message;
         }
-        public string Message { get; }
     }
     public class JsonTests: TestBase
     {
@@ -38,9 +38,14 @@ namespace IFramework.Test
         [Fact]
         public void SerializeReadonlyObject()
         {
-            var e = new AEvent("test");
+            //var ex = new Exception("test");
+            //var json = ex.ToJson();
+            //var ex2 = json.ToJsonObject<Exception>();
+            //Assert.Equal(ex.Message, ex2.Message);
+
+            var e = new AException("test");
             var json = e.ToJson();
-            var e2 = json.ToJsonObject<AEvent>();
+            var e2 = json.ToJsonObject<AException>();
             Assert.Equal(e.Message, e2.Message);
 
 
@@ -48,6 +53,7 @@ namespace IFramework.Test
             var json2 = de.ToJson();
             var de2 = json2.ToJsonObject<DomainException>();
             Assert.Equal(de.Message, de2.Message);
+            Assert.Equal(de.ErrorCode, de2.ErrorCode);
         }
     }
 }

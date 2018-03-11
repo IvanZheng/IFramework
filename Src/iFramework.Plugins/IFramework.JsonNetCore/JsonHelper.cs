@@ -60,7 +60,6 @@ namespace IFramework.JsonNetCore
             {
                 customSettings.NullValueHandling = NullValueHandling.Ignore;
             }
-            customSettings.Converters.Add(new DomainExceptionConverter());
             return customSettings;
         }
 

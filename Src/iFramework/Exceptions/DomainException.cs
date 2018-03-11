@@ -40,14 +40,19 @@ namespace IFramework.Exceptions
             });
         }
     }
-
+    [Serializable]
     public class DomainException: Exception
     {
         public IDomainExceptionEvent DomainExceptionEvent { get; protected set; }
-        public int ErrorCode { get; protected set; }
+        public object ErrorCode { get; protected set; }
+
+        public DomainException()
+        {
+            
+        }
 
         public DomainException(IDomainExceptionEvent domainExceptionEvent)
-            : this(Exceptions.ErrorCode.UnknownError, domainExceptionEvent.ToString())
+            : this(domainExceptionEvent.ErrorCode, domainExceptionEvent.ToString())
         {
             DomainExceptionEvent = domainExceptionEvent;
         }
@@ -55,26 +60,25 @@ namespace IFramework.Exceptions
         public DomainException(object errorCode, string message = null)
             : base(message ?? ErrorCodeDictionary.GetErrorMessage(errorCode))
         {
-            ErrorCode = (int)errorCode;
+            ErrorCode = errorCode;
         }
 
         public DomainException(object errorCode, object[] args)
             : base(ErrorCodeDictionary.GetErrorMessage(errorCode, args))
         {
-            ErrorCode = (int)errorCode;
+            ErrorCode = errorCode;
         }
 
 
-        //protected DomainException(SerializationInfo info, StreamingContext context)
-        //    : base(info, context)
-        //{
-        //    ErrorCode = (int)info.GetValue("ErrorCode", typeof(int));
-        //}
-        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    info.AddValue("ErrorCode", ErrorCode);
-        //    info.AddValue("DomainExceptionEvent", DomainExceptionEvent);
-        //    base.GetObjectData(info, context);
-        //}
+        protected DomainException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            ErrorCode = (int)info.GetValue("ErrorCode", typeof(object));
+        }
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("ErrorCode", ErrorCode);
+            base.GetObjectData(info, context);
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace IFramework.Infrastructure
             ErrorCode = 0;
         }
 
-        public ApiResult(int errorCode, string message = null)
+        public ApiResult(object errorCode, string message = null)
         {
             ErrorCode = errorCode;
             Message = message;
@@ -33,7 +33,7 @@ namespace IFramework.Infrastructure
         /// <summary>
         ///     ErrorCode 为 0 表示执行无异常
         /// </summary>
-        public int ErrorCode { get; set; }
+        public object ErrorCode { get; set; }
 
         /// <summary>
         ///     当API执行有异常时, 对应的错误信息
@@ -59,7 +59,7 @@ namespace IFramework.Infrastructure
             Result = result;
         }
 
-        public ApiResult(int errorCode, string message = null)
+        public ApiResult(object errorCode, string message = null)
             : base(errorCode, message) { }
 
         /// <summary>

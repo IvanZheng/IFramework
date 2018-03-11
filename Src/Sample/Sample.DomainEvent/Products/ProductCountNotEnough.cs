@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Sample.DTO;
 
 namespace Sample.DomainEvents.Products
 {
@@ -16,7 +17,7 @@ namespace Sample.DomainEvents.Products
 
         }
         public ProductCountNotEnough(Guid aggregateRootId, int reduceCount, int count)
-            : base(aggregateRootId)
+            : base(aggregateRootId, Sample.DTO.ErrorCode.CountNotEnougth)
         {
             ReduceCount = reduceCount;
             Count = count;
