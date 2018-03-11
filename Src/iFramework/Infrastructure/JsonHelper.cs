@@ -14,7 +14,7 @@ namespace IFramework.Infrastructure
                                     bool serializeNonPublic = false,
                                     bool loopSerialize = false,
                                     bool useCamelCase = false,
-                                    bool ignoreNullValue = false)
+                                    bool ignoreNullValue = true)
         {
             return JsonConvert.SerializeObject(obj, serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue);
         }

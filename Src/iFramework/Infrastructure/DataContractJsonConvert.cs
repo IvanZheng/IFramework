@@ -9,7 +9,7 @@ namespace IFramework.Infrastructure
 {
     class DataContractJsonConvert: IJsonConvert
     {
-        public string SerializeObject(object value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool ignoreNullValue = false, bool useStringEnumConvert = true)
+        public string SerializeObject(object value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool ignoreNullValue = true, bool useStringEnumConvert = true)
         {
 
             var json = new DataContractJsonSerializer(value.GetType());

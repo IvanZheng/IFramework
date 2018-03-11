@@ -10,7 +10,7 @@ namespace IFramework.JsonNetCore
     {
         public string SerializeObject(object value, bool serializeNonPublic = false, 
                                       bool loopSerialize = false, bool useCamelCase = false,
-                                      bool ignoreNullValue = false, bool useStringEnumConvert = true)
+                                      bool ignoreNullValue = true, bool useStringEnumConvert = true)
         {
             return value.ToJson(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue, useStringEnumConvert);
         }

@@ -68,15 +68,16 @@ namespace IFramework.JsonNetCore
                                                                              bool useCamelCase,
                                                                              bool useStringEnumConvert = true,
                                                                              bool ignoreSerializableAttribute = true,
-                                                                             bool ignoreNullValue = false,
-                                                                             bool useCached = true,
-                                                                             bool lowerCase = false)
+                                                                             bool ignoreNullValue = true,
+                                                                             bool lowerCase = false,
+                                                                             bool useCached = true)
         {
 
             JsonSerializerSettings settings = null;
             if (useCached)
             {
-                var key = $"{serializeNonPulibc}{loopSerialize}{useCamelCase}{useStringEnumConvert}";
+                var key = $"{Convert.ToInt16(serializeNonPulibc)}{Convert.ToInt16(loopSerialize)}{Convert.ToInt16(useCamelCase)}{Convert.ToInt16(useStringEnumConvert)}";
+                key += $"{Convert.ToInt16(ignoreSerializableAttribute)}{Convert.ToInt16(ignoreNullValue)}{Convert.ToInt16(lowerCase)}";
                 settings = SettingDictionary.GetOrAdd(key,
                                                       k => InternalGetCustomJsonSerializerSettings(serializeNonPulibc,
                                                                                                    loopSerialize,
@@ -103,7 +104,7 @@ namespace IFramework.JsonNetCore
                                     bool serializeNonPublic = false,
                                     bool loopSerialize = false,
                                     bool useCamelCase = false,
-                                    bool ignoreNullValue = false,
+                                    bool ignoreNullValue = true,
                                     bool useStringEnumConvert = true)
         {
             return JsonConvert.SerializeObject(obj,

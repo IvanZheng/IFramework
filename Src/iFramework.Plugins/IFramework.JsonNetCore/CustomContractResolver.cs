@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using IFramework.Event;
-using IFramework.Exceptions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace IFramework.JsonNetCore
 {
     public class CustomContractResolver : DefaultContractResolver
     {
-        private readonly bool _lowerCase;
         private readonly string[] _ignoreProperties;
+        private readonly bool _lowerCase;
         private readonly bool _serializeNonPulibc;
 
         public CustomContractResolver(bool serializeNonPulibc, bool lowerCase, params string[] ignoreProperties)
@@ -27,14 +25,25 @@ namespace IFramework.JsonNetCore
             return _lowerCase ? propertyName.ToLower() : propertyName;
         }
 
+        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+        {
+            var properties = base.CreateProperties(type, memberSerialization);
+            if (_ignoreProperties.Length > 0)
+            {
+                properties = properties.Where(p => !_ignoreProperties.Contains(p.PropertyName))
+                                       .ToList();
+            }
+            return properties;
+        }
+
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
-            JsonProperty prop = base.CreateProperty(member, memberSerialization);
+            var prop = base.CreateProperty(member, memberSerialization);
 
             if (_serializeNonPulibc)
             {
                 //TODO: Maybe cache
-               
+
                 if (!prop.Writable)
                 {
                     var property = member as PropertyInfo;
