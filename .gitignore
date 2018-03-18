@@ -29,4 +29,5 @@ obj
 /Src/Sample/Sample.WcfService/log
 /Src/package.bat
 /Src/Sample/Sample.CommandServiceCore/log
-Src/commandservicecore.zip
+/Src/commandservicecore.zip
+/Src/publishes

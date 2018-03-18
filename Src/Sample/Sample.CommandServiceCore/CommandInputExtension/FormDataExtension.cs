@@ -23,29 +23,6 @@ namespace Sample.CommandServiceCore.CommandInputExtension
             return new Dictionary<string, StringValues>(formDataCollection.Select(d => KeyValuePair.Create(d.Key, new StringValues(d.Value))));
         }
 
-        public static async Task<object> ConvertToObjectAsync(this IFormCollection formCollection, Type type)
-        {
-            try
-            {
-                var binder = new FormCollectionModelBinder();
-                var modelBindingContext = new DefaultModelBindingContext
-                {
-                    ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(type),
-                    ValueProvider = new FormValueProvider(BindingSource.Query,
-                                                          formCollection,
-                                                          CultureInfo.CurrentCulture)
-                };
-                await binder.BindModelAsync(modelBindingContext);
-                return modelBindingContext.Model;
-            }
-            catch (Exception ex)
-            {
-                Debug.Write(ex.Message);
-                return null;
-            }
-        }
-
-
         public static NameValueCollection ToNameValueCollection<T>(this T dynamicObject,
                                                                    string key = null,
                                                                    NameValueCollection nameValueCollection = null,
