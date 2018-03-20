@@ -76,12 +76,13 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                 if (ex is DbUpdateConcurrencyException)
                 {
                     Exception = new DBConcurrencyException(ex.Message, ex);
+                    throw Exception;
                 }
                 else
                 {
                     Exception = ex;
+                    throw;
                 }
-                throw Exception;
             }
             finally
             {

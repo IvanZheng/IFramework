@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue;
 
 namespace IFramework.MessageQueueCore.InMemory
 {
@@ -31,6 +32,7 @@ namespace IFramework.MessageQueueCore.InMemory
             {
                 Topic = iMessage.GetTopic();
             }
+            MessageOffset = new MessageOffset();
         }
         public IDictionary<string, object> Headers { get; set; }
         public string Key { get; set; }
@@ -45,5 +47,6 @@ namespace IFramework.MessageQueueCore.InMemory
         public SagaInfo SagaInfo { get; set; }
         public string Ip { get; set; }
         public string Producer { get; set; }
+        public MessageOffset MessageOffset { get; }
     }
 }

@@ -171,10 +171,10 @@ namespace IFramework.MessageStores.Sqlserver
         {
             //var deleteSql = string.Format("delete from msgs_UnSentCommands where Id = '{0}'", commandId);
             //Database.ExecuteSqlCommand(deleteSql);
-            var sentCommand = Commands.Find(commandId);
-            if (sentCommand != null)
+            var unSentCommand = UnSentCommands.Find(commandId);
+            if (unSentCommand != null)
             {
-                Commands.Remove(sentCommand);
+                UnSentCommands.Remove(unSentCommand);
                 SaveChanges();
             }
         }

@@ -83,7 +83,7 @@ namespace IFramework.Exceptions
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue(nameof(ErrorCode), ErrorCode);
-            info.AddValue(nameof(ErrorCodeType), ErrorCode?.GetType().FullName);
+            info.AddValue(nameof(ErrorCodeType), ErrorCode?.GetType().AssemblyQualifiedName);
             base.GetObjectData(info, context);
         }
     }

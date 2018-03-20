@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue;
 
 namespace IFramework.Message
 {
@@ -19,5 +20,6 @@ namespace IFramework.Message
         SagaInfo SagaInfo { get; }
         string Ip { get; set; }
         string Producer { get; set; }
+        MessageOffset MessageOffset { get; }
     }
 }

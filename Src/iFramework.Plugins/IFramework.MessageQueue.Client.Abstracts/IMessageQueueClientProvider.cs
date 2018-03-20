@@ -1,7 +1,4 @@
 ﻿using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.Client.Abstracts
@@ -16,8 +13,20 @@ namespace IFramework.MessageQueue.Client.Abstracts
                                     string messageId = null,
                                     SagaInfo sagaInfo = null,
                                     string producer = null);
-        IMessageConsumer CreateQueueConsumer(string commandQueueName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig);
-        IMessageConsumer CreateTopicSubscription(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig);
+
+        IMessageConsumer CreateQueueConsumer(string commandQueueName,
+                                             OnMessagesReceived onMessagesReceived,
+                                             string consumerId,
+                                             ConsumerConfig consumerConfig,
+                                             bool start = true);
+
+        IMessageConsumer CreateTopicSubscription(string topic,
+                                                 string subscriptionName,
+                                                 OnMessagesReceived onMessagesReceived,
+                                                 string consumerId,
+                                                 ConsumerConfig consumerConfig,
+                                                 bool start = true);
+
         IMessageProducer CreateTopicProducer(string topic);
         IMessageProducer CreateQueueProducer(string queue);
     }

@@ -33,7 +33,7 @@ namespace Sample.CommandServiceCore.Filters
                 else
                 {
 #if DEBUG
-                    exceptionResult = new ApiResult(ErrorCode.UnknownError, ex.GetBaseException().Message);
+                    exceptionResult = new ApiResult(ErrorCode.UnknownError, $"Message:{ex.GetBaseException().Message}\r\nStackTrace:{ex.GetBaseException().StackTrace}");
 #else
                     exceptionResult = new ApiResult(ErrorCode.UnknownError, ServerInternalError);
 #endif

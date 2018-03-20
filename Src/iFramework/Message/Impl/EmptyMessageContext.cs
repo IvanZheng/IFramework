@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using IFramework.MessageQueue;
 
 namespace IFramework.Message.Impl
 {
     public class EmptyMessageContext : IMessageContext
     {
-        public EmptyMessageContext() { }
+        public EmptyMessageContext()
+        {
+            MessageOffset = new MessageOffset();
+        }
 
         public EmptyMessageContext(IMessage message)
         {
             SentTime = DateTime.Now;
             Message = message;
             MessageId = message.Id;
+            MessageOffset = new MessageOffset();
         }
 
         public string FromEndPoint { get; set; }
@@ -46,5 +51,6 @@ namespace IFramework.Message.Impl
         public string Ip { get; set; }
 
         public string Producer { get; set; }
+        public MessageOffset MessageOffset { get; }
     }
 }

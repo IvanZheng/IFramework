@@ -1,35 +1,26 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
-using IFramework.Config;
-using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
-using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueueCore.ConfluentKafka
 {
     public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, Message<TKey, TValue> message);
 
-    public class KafkaConsumer<TKey, TValue> : IMessageConsumer
+    public class KafkaConsumer<TKey, TValue> : MessageConsumer
     {
-        protected CancellationTokenSource CancellationTokenSource;
-        private Consumer<TKey, TValue> _consumer;
-        protected Task ConsumerTask;
-        protected ILogger Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaConsumer<TKey, TValue>).Name);
-        protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
-        protected ConsumerConfig ConsumerConfig;
         private readonly IDeserializer<TKey> _keyDeserializer;
         private readonly IDeserializer<TValue> _valueDeserializer;
+        private Consumer<TKey, TValue> _consumer;
+        protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
+
         public KafkaConsumer(string brokerList,
                              string topic,
                              string groupId,
@@ -37,8 +28,8 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                              OnKafkaMessageReceived<TKey, TValue> onMessageReceived,
                              IDeserializer<TKey> keyDeserializer,
                              IDeserializer<TValue> valueDeserializer,
-                             ConsumerConfig consumerConfig = null,
-                             bool start = true)
+                             ConsumerConfig consumerConfig = null)
+            : base(brokerList, topic, groupId, consumerId, consumerConfig)
         {
             _keyDeserializer = keyDeserializer ?? throw new ArgumentNullException(nameof(keyDeserializer));
             _valueDeserializer = valueDeserializer ?? throw new ArgumentNullException(nameof(valueDeserializer));
@@ -51,19 +42,15 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(groupId));
             }
-            ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
-            BrokerList = brokerList;
-            Topic = topic;
-            GroupId = groupId;
-            ConsumerId = consumerId ?? string.Empty;
-            SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
+            OnMessageReceived = onMessageReceived;
+
             ConsumerConfiguration = new Dictionary<string, object>
             {
                 {"group.id", GroupId},
                 {"client.id", consumerId},
                 {"enable.auto.commit", false},
                 {"socket.blocking.max.ms", 10},
-                {"fetch.error.backoff.ms", 10 },
+                {"fetch.error.backoff.ms", 10},
                 {"socket.nagle.disable", true},
                 //{"statistics.interval.ms", 60000},
                 {"retry.backoff.ms", ConsumerConfig.BackOffIncrement},
@@ -75,159 +62,49 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                     }
                 }
             };
-            OnMessageReceived = onMessageReceived;
-            if (start)
-            {
-                Start();
-            }
         }
 
-        public string BrokerList { get; protected set; }
-        public string Topic { get; protected set; }
-        public string GroupId { get; protected set; }
-        public string ConsumerId { get; protected set; }
         public Dictionary<string, object> ConsumerConfiguration { get; protected set; }
-        public ConcurrentDictionary<int, SlidingDoor> SlidingDoors { get; protected set; }
 
-        public string Id => $"{GroupId}.{Topic}.{ConsumerId}";
-
-        public void Start()
+        protected override void PollMessages()
         {
-            CancellationTokenSource = new CancellationTokenSource();
-            _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);//new StringDeserializer(Encoding.UTF8), new KafkaMessageDeserializer());
+            _consumer.Poll(100);
+        }
+
+        public override void Start()
+        {
+            _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);
             _consumer.Subscribe(Topic);
             _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
             _consumer.OnMessage += _consumer_OnMessage;
-
-            ConsumerTask = Task.Factory.StartNew(cs => ReceiveMessages(cs as CancellationTokenSource),
-                                                  CancellationTokenSource,
-                                                  CancellationTokenSource.Token,
-                                                  TaskCreationOptions.LongRunning,
-                                                  TaskScheduler.Default);
+            base.Start();
         }
-
 
 
         private void _consumer_OnMessage(object sender, Message<TKey, TValue> message)
         {
             try
             {
-                AddMessage(message);
+                AddMessageOffset(null, message.Partition, message.Offset);
                 OnMessageReceived(this, message);
             }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (ThreadAbortException)
-            {
-            }
+            catch (OperationCanceledException) { }
+            catch (ThreadAbortException) { }
             catch (Exception ex)
             {
                 if (message.Value != null)
                 {
-                    FinishConsumingMessage(message.Partition, message.Offset);
+                    FinishConsumingMessage(new MessageOffset(null, message.Partition, message.Offset));
                 }
-                Logger.LogError(ex, $"_consumer_OnMessage failed!");
+                Logger.LogError(ex, $"{Id} _consumer_OnMessage failed!");
             }
         }
 
-        public void CommitOffset(IMessageContext messageContext)
-        {
-            var message = messageContext as MessageContext;
-            FinishConsumingMessage(message.Partition, message.Offset);
-        }
-
-        public void Stop()
-        {
-            CancellationTokenSource?.Cancel(true);
-            ConsumerTask?.Wait();
-            ConsumerTask?.Dispose();
-            _consumer?.Dispose();
-            ConsumerTask = null;
-            CancellationTokenSource = null;
-            SlidingDoors.Clear();
-        }
-
-        protected void ReStart()
-        {
-            Stop();
-            Start();
-        }
-
-        private void ReceiveMessages(CancellationTokenSource cancellationTokenSource)
-        {
-            #region peek messages that not been consumed since last time
-            Logger.LogDebug($"ReceiveMessages start");
-            while (!cancellationTokenSource.IsCancellationRequested)
-            {
-                try
-                {
-                    //var linkedTimeoutCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token,
-                    //                                                                       new CancellationTokenSource(3000).Token);
-                    _consumer.Poll(100);
-                    BlockIfFullLoad();
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (ThreadAbortException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (!cancellationTokenSource.IsCancellationRequested)
-                    {
-                        Task.Delay(1000).Wait();
-                        Logger.LogError(ex, "ReceiveMessages failed!");
-                    }
-                }
-            }
-
-            #endregion
-        }
-
-
-        protected void BlockIfFullLoad()
-        {
-            while (SlidingDoors.Sum(d => d.Value.MessageCount) > ConsumerConfig.FullLoadThreshold)
-            {
-                Task.Delay(ConsumerConfig.WaitInterval).Wait();
-                Logger.LogWarning($"working is full load sleep 1000 ms");
-            }
-        }
-
-        protected void AddMessage(Message<TKey, TValue> message)
-        {
-            var slidingDoor = SlidingDoors.GetOrAdd(message.Partition, partition => new SlidingDoor(CommitOffset,
-                                                                                                    string.Empty,
-                                                                                                    partition,
-                                                                                                    Configuration.Instance.GetCommitPerMessage()));
-            slidingDoor.AddOffset(message.Offset);
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="partition"></param>
-        /// <param name="offset"></param>
-        public void FinishConsumingMessage(int partition, long offset)
-        {
-            var slidingDoor = SlidingDoors.TryGetValue(partition);
-            if (slidingDoor == null)
-            {
-                throw new Exception("partition slidingDoor not exists");
-            }
-            slidingDoor.RemoveOffset(offset);
-        }
-
-
-
-        public async Task CommitOffsetAsync(int partition, long offset)
+        public override async Task CommitOffsetAsync(string broker, int partition, long offset)
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(Topic, partition), offset + 1);
-            var committedOffset = await _consumer.CommitAsync(new[] { topicPartitionOffset })
+            var committedOffset = await _consumer.CommitAsync(new[] {topicPartitionOffset})
                                                  .ConfigureAwait(false);
             if (committedOffset.Error.Code != ErrorCode.NoError)
             {
@@ -239,20 +116,10 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
             }
         }
 
-        //public void CommitOffset(int partition, long offset)
-        //{
-        //    CommitOffsetAsync(partition, offset).Wait();
-        //}
-        public void CommitOffset(int partition, long offset)
+        public override void Stop()
         {
-            // kafka not use broker in cluster mode
-            CommitOffset(null, partition, offset);
-        }
-
-        private void CommitOffset(string broker, int partition, long offset)
-        {
-            // kafka not use broker in cluster mode
-            Task.Run(() => CommitOffsetAsync(partition, offset));
+            base.Stop();
+            _consumer?.Dispose();
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Text;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue;
 
 namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
 {
@@ -16,8 +17,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
         public MessageContext(KafkaMessage kafkaMessage, int partition, long offset)
         {
             KafkaMessage = kafkaMessage;
-            Offset = offset;
-            Partition = partition;
+            MessageOffset = new MessageOffset(null, partition, offset);
         }
 
         public MessageContext(object message, string id = null)
@@ -41,6 +41,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
             {
                 Topic = (message as IMessage).GetTopic();
             }
+            MessageOffset = new MessageOffset();
         }
 
 
@@ -161,5 +162,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
             get => (string) Headers.TryGetValue("Producer");
             set => Headers["Producer"] = value;
         }
+
+        public MessageOffset MessageOffset { get; }
     }
 }

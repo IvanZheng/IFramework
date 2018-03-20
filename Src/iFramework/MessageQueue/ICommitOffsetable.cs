@@ -1,4 +1,5 @@
-﻿using IFramework.Message;
+﻿using System.Threading.Tasks;
+using IFramework.Message;
 
 namespace IFramework.MessageQueue
 {
