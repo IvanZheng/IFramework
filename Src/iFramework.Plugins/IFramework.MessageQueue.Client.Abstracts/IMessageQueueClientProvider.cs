@@ -1,9 +1,10 @@
-﻿using IFramework.Message;
+﻿using System;
+using IFramework.Message;
 using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.Client.Abstracts
 {
-    public interface IMessageQueueClientProvider
+    public interface IMessageQueueClientProvider: IDisposable
     {
         IMessageContext WrapMessage(object message,
                                     string correlationId = null,

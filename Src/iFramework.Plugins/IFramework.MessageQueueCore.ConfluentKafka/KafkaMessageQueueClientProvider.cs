@@ -105,5 +105,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                 onMessagesReceived(messageContext);
             };
         }
+
+        public void Dispose() { }
     }
 }
