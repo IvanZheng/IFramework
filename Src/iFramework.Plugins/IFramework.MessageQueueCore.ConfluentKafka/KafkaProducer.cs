@@ -43,8 +43,8 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                 { "bootstrap.servers", brokerList },
                 {"request.required.acks", 1},
                 {"socket.nagle.disable", true},
-                {"socket.blocking.max.ms", 10},
-                {"queue.buffering.max.ms", 10}
+                {"socket.blocking.max.ms", 1},
+                {"queue.buffering.max.ms", 1}
             };
 
             _producer = new Producer<TKey, TValue>(producerConfiguration, keySerializer1, valueSerializer);
