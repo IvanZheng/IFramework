@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueueCore.InMemory
 {
-    public class SubscriptionClient : ICommitOffsetable
+    public class SubscriptionClient : IMessageConsumer
     {
         private readonly BlockingCollection<IMessageContext> _messageQueue = new BlockingCollection<IMessageContext>();
         private string _topic;

@@ -20,7 +20,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
         protected ILogger Logger;
         protected ConcurrentDictionary<string, IMessageProducer> QueueClients;
         protected List<IMessageConsumer> QueueConsumers;
-        protected List<IMessageConsumer> SubscriptionClients;
+        protected List<IMessageConsumer> Subscribers;
         protected ConcurrentDictionary<string, IMessageProducer> TopicClients;
 
 
@@ -29,7 +29,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             _clientProvider = clientProvider;
             QueueClients = new ConcurrentDictionary<string, IMessageProducer>();
             TopicClients = new ConcurrentDictionary<string, IMessageProducer>();
-            SubscriptionClients = new List<IMessageConsumer>();
+            Subscribers = new List<IMessageConsumer>();
             QueueConsumers = new List<IMessageConsumer>();
             Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
         }
@@ -49,7 +49,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             return queueClient.SendAsync(messageContext, cancellationToken);
         }
 
-        public ICommitOffsetable StartQueueClient(string commandQueueName,
+        public IMessageConsumer StartQueueClient(string commandQueueName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
                                                   ConsumerConfig consumerConfig = null)
@@ -64,7 +64,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             return queueConsumer;
         }
 
-        public ICommitOffsetable StartSubscriptionClient(string topic,
+        public IMessageConsumer StartSubscriptionClient(string topic,
                                                          string subscriptionName,
                                                          string consumerId,
                                                          OnMessagesReceived onMessagesReceived,
@@ -77,7 +77,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
                                                                              onMessagesReceived,
                                                                              consumerId,
                                                                              consumerConfig);
-            SubscriptionClients.Add(topicSubscription);
+            Subscribers.Add(topicSubscription);
             return topicSubscription;
         }
 
@@ -106,6 +106,8 @@ namespace IFramework.MessageQueue.Client.Abstracts
             {
                 TopicClients.Values.ForEach(client => client.Stop());
                 QueueClients.Values.ForEach(client => client.Stop());
+                QueueConsumers.ForEach(consumer => consumer.Stop());
+                Subscribers.ForEach(subscriber => subscriber.Stop());
                 Disposed = true;
             }
         }

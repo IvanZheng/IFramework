@@ -27,7 +27,7 @@ namespace IFramework.Command.Impl
         protected ConsumerConfig ConsumerConfig;
         protected string ConsumerId;
         protected IHandlerProvider HandlerProvider;
-        protected ICommitOffsetable InternalConsumer;
+        protected IMessageConsumer InternalConsumer;
         protected ILogger Logger;
         protected MessageProcessor MessageProcessor;
         protected IMessagePublisher MessagePublisher;

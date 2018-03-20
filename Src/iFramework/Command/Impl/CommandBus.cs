@@ -33,7 +33,7 @@ namespace IFramework.Command.Impl
         private readonly MessageProcessor _messageProcessor;
         private readonly string _replySubscriptionName;
         private readonly string _replyTopicName;
-        private ICommitOffsetable _internalConsumer;
+        private IMessageConsumer _internalConsumer;
 
         public CommandBus(IMessageQueueClient messageQueueClient,
                           ILinearCommandManager linearCommandManager,

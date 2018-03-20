@@ -67,7 +67,7 @@ namespace IFramework.MessageQueueCore.InMemory
             return messageContext;
         }
 
-        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
+        public IMessageConsumer StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
             var clients = SubscriptionClients.GetOrAdd(topic, key => new List<SubscriptionClient>());
@@ -76,7 +76,7 @@ namespace IFramework.MessageQueueCore.InMemory
             return client;
         }
 
-        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
+        public IMessageConsumer StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var queue = CommandQueues.GetOrAdd(commandQueueName, key => new BlockingCollection<IMessageContext>());

@@ -23,13 +23,13 @@ namespace IFramework.MessageQueue
             return Task.FromResult<object>(null);
         }
 
-        public ICommitOffsetable StartQueueClient(string commandQueueName, string consumerId,
+        public IMessageConsumer StartQueueClient(string commandQueueName, string consumerId,
                                                   OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
         {
             return null;
         }
 
-        public ICommitOffsetable StartSubscriptionClient(string topic, string subscriptionName, string consumerId,
+        public IMessageConsumer StartSubscriptionClient(string topic, string subscriptionName, string consumerId,
                                                          OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
         {
             return null;

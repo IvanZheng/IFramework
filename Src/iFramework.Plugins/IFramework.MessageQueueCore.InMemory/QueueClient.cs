@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueueCore.InMemory
 {
-    public class QueueClient : ICommitOffsetable
+    public class QueueClient : IMessageConsumer
     {
         protected static ILogger Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(nameof(SubscriptionClient));
         private readonly BlockingCollection<IMessageContext> _messageQueue;

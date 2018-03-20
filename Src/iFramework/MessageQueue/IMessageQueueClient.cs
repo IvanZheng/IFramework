@@ -22,13 +22,13 @@ namespace IFramework.MessageQueue
                                     SagaInfo sagaInfo = null,
                                     string producer = null);
 
-        ICommitOffsetable StartSubscriptionClient(string topic,
+        IMessageConsumer StartSubscriptionClient(string topic,
                                                   string subscriptionName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
                                                   ConsumerConfig consumerConfig = null);
 
-        ICommitOffsetable StartQueueClient(string commandQueueName,
+        IMessageConsumer StartQueueClient(string commandQueueName,
                                            string consumerId,
                                            OnMessagesReceived onMessagesReceived,
                                            ConsumerConfig consumerConfig = null);
