@@ -18,15 +18,13 @@ namespace IFramework.MessageQueue.Client.Abstracts
         protected Task ConsumerTask;
         protected ILogger Logger;
 
-        protected MessageConsumer(string brokerList,
-                                  string topic,
+        protected MessageConsumer(string topic,
                                   string groupId,
                                   string consumerId,
                                   ConsumerConfig consumerConfig = null)
         {
             Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
             ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
-            BrokerList = brokerList;
             Topic = topic;
             GroupId = groupId;
             ConsumerId = consumerId ?? string.Empty;
@@ -34,7 +32,6 @@ namespace IFramework.MessageQueue.Client.Abstracts
         }
 
         public ConcurrentDictionary<int, SlidingDoor> SlidingDoors { get; protected set; }
-        public string BrokerList { get; protected set; }
         public string Topic { get; protected set; }
         public string GroupId { get; protected set; }
         public string ConsumerId { get; protected set; }

@@ -20,7 +20,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         private readonly IDeserializer<TValue> _valueDeserializer;
         private Consumer<TKey, TValue> _consumer;
         protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
-
+        protected readonly string BrokerList;
         public KafkaConsumer(string brokerList,
                              string topic,
                              string groupId,
@@ -29,11 +29,11 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                              IDeserializer<TKey> keyDeserializer,
                              IDeserializer<TValue> valueDeserializer,
                              ConsumerConfig consumerConfig = null)
-            : base(brokerList, topic, groupId, consumerId, consumerConfig)
+            : base(topic, groupId, consumerId, consumerConfig)
         {
             _keyDeserializer = keyDeserializer ?? throw new ArgumentNullException(nameof(keyDeserializer));
             _valueDeserializer = valueDeserializer ?? throw new ArgumentNullException(nameof(valueDeserializer));
-
+            BrokerList = brokerList;
             if (string.IsNullOrWhiteSpace(brokerList))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(brokerList));

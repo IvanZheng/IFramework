@@ -5,7 +5,6 @@ using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using Newtonsoft.Json.Linq;
-using EQueueProtocols = EQueue.Protocols;
 
 namespace IFramework.MessageQueue.EQueue.MessageFormat
 {
@@ -15,12 +14,13 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
 
         private SagaInfo _sagaInfo;
 
-        public MessageContext(EQueueMessage equeueMessage, int partition, long offset)
+        public MessageContext(EQueueMessage equeueMessage, string broker, int partition, long offset)
         {
             EqueueMessage = equeueMessage;
             Offset = offset;
             Partition = partition;
             ToBeSentMessageContexts = new List<IMessageContext>();
+            MessageOffset = new MessageOffset(broker, partition, offset);
         }
 
         public MessageContext(object message, string id = null)
@@ -30,20 +30,20 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             Message = message;
             if (!string.IsNullOrEmpty(id))
             {
-                MessageID = id;
+                MessageId = id;
             }
             else if (message is IMessage)
             {
-                MessageID = (message as IMessage).ID;
+                MessageId = ((IMessage) message).Id;
             }
             else
             {
-                MessageID = ObjectId.GenerateNewId().ToString();
+                MessageId = ObjectId.GenerateNewId().ToString();
             }
             ToBeSentMessageContexts = new List<IMessageContext>();
-            if (message != null && message is IMessage)
+            if (message is IMessage)
             {
-                Topic = (message as IMessage).GetTopic();
+                Topic = ((IMessage) message).GetTopic();
             }
         }
 
@@ -73,13 +73,13 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             set => Headers["Key"] = value;
         }
 
-        public string CorrelationID
+        public string CorrelationId
         {
             get => (string) Headers.TryGetValue("CorrelationID");
             set => Headers["CorrelationID"] = value;
         }
 
-        public string MessageID
+        public string MessageId
         {
             get => (string) Headers.TryGetValue("MessageID");
             set => Headers["MessageID"] = value;
@@ -101,8 +101,8 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
                 {
                     return _Message;
                 }
-                object messageType = null;
-                if (Headers.TryGetValue("MessageType", out messageType) && messageType != null)
+
+                if (Headers.TryGetValue("MessageType", out var messageType) && messageType != null)
                 {
                     var jsonValue = Encoding.UTF8.GetString(EqueueMessage.Payload);
                     _Message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
@@ -153,7 +153,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             set => Headers["SagaInfo"] = _sagaInfo = value;
         }
 
-        public string IP
+        public string Ip
         {
             get => (string) Headers.TryGetValue("IP");
             set => Headers["IP"] = value;
@@ -164,5 +164,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             get => (string) Headers.TryGetValue("Producer");
             set => Headers["Producer"] = value;
         }
+
+        public MessageOffset MessageOffset { get; }
     }
 }

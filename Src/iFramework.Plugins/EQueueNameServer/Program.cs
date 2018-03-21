@@ -1,19 +1,39 @@
 ﻿using System;
-using IFramework.Config;
+using System.Configuration;
+using System.Net;
+using ECommon.Configurations;
+using ECommon.Socketing;
+using EQueue.Configurations;
+using EQueue.NameServer;
+using ECommonConfiguration = ECommon.Configurations.Configuration;
 
-namespace EQueueNameServer
+namespace QuickStart.NameServer
 {
-    internal class Program
+    class Program
     {
-        private static void Main(string[] args)
+        static void Main(string[] args)
         {
-            Configuration.Instance
-                         .UseAutofacContainer()
-                         .UseEQueue()
-                         .StartEqueueNameServer();
-
-            Console.WriteLine("Equeue name server started.");
+            InitializeEQueue();
+            var bindingAddress = ConfigurationManager.AppSettings["bindingAddress"];
+            var bindingIpAddress = string.IsNullOrEmpty(bindingAddress) ? SocketUtils.GetLocalIPV4() : IPAddress.Parse(bindingAddress);
+            new NameServerController(new NameServerSetting
+            {
+                BindingAddress = new IPEndPoint(bindingIpAddress, 9493)
+            }).Start();
             Console.ReadLine();
+        }
+
+        static void InitializeEQueue()
+        {
+            var configuration = ECommonConfiguration
+                                .Create()
+                                .UseAutofac()
+                                .RegisterCommonComponents()
+                                .UseLog4Net()
+                                .UseJsonNet()
+                                .RegisterUnhandledExceptionHandler()
+                                .RegisterEQueueComponents()
+                                .BuildContainer();
         }
     }
 }

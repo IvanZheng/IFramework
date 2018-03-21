@@ -1,17 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EQueue.Clients.Producers;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.Config;
+using IFramework.DependencyInjection;
+using IFramework.Infrastructure;
+using IFramework.Message;
+using IFramework.MessageQueue.Client.Abstracts;
+using IFramework.MessageQueue.EQueue.MessageFormat;
+using Microsoft.Extensions.Logging;
+using EQueueProtocols = EQueue.Protocols;
 
 namespace IFramework.MessageQueue.EQueue
 {
-    public class EQueueProducer
+    public class EQueueProducer: IMessageProducer
     {
-        private readonly ILogger _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(EQueueProducer).Name);
+        private readonly ILogger _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(EQueueProducer).Name);
 
         public EQueueProducer(string clusterName, List<IPEndPoint> nameServerList)
         {
@@ -39,12 +46,17 @@ namespace IFramework.MessageQueue.EQueue
             Producer?.Shutdown();
         }
 
-        public async Task SendAsync(global::EQueue.Protocols.Message equeueMessage, string key, CancellationToken cancellationToken)
+        protected EQueueProtocols.Message GetEQueueMessage(IMessageContext messageContext, string topic)
         {
-            if (key == null)
-            {
-                key = string.Empty;
-            }
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
+            var jsonValue = ((MessageContext) messageContext).EqueueMessage.ToJson();
+            return new EQueueProtocols.Message(topic, 1, Encoding.UTF8.GetBytes(jsonValue));
+        }
+
+        public async Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
+        {
+            var equeueMessage = GetEQueueMessage(messageContext, messageContext.Topic);
+            var key = messageContext.Key ?? string.Empty;
 
             var retryTimes = 0;
             while (true)
@@ -60,13 +72,13 @@ namespace IFramework.MessageQueue.EQueue
                                                 .ConfigureAwait(false);
                     if (result.SendStatus != SendStatus.Success)
                     {
-                        _logger.Error($"send message failed topic: {equeueMessage.Topic} key:{key} error:{result.ErrorMessage}");
+                        _logger.LogError($"send message failed topic: {equeueMessage.Topic} key:{key} error:{result.ErrorMessage}");
                         await Task.Delay(waitTime, cancellationToken);
                     }
                 }
                 catch (Exception e)
                 {
-                    _logger.Error($"send message failed topic: {equeueMessage.Topic} key:{key}", e);
+                    _logger.LogError($"send message failed topic: {equeueMessage.Topic} key:{key}", e);
                     await Task.Delay(waitTime, cancellationToken);
                 }
             }
