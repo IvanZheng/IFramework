@@ -30,10 +30,10 @@ namespace IFramework.MessageQueue.Client.Abstracts
             Topic = topic;
             GroupId = groupId;
             ConsumerId = consumerId ?? string.Empty;
-            SlidingDoors = new ConcurrentDictionary<string, SlidingDoor>();
+            SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
         }
 
-        public ConcurrentDictionary<string, SlidingDoor> SlidingDoors { get; protected set; }
+        public ConcurrentDictionary<int, SlidingDoor> SlidingDoors { get; protected set; }
         public string BrokerList { get; protected set; }
         public string Topic { get; protected set; }
         public string GroupId { get; protected set; }
@@ -110,18 +110,14 @@ namespace IFramework.MessageQueue.Client.Abstracts
             }
         }
 
-        private string GetMessageOffsetKey(string broker, int partition)
-        {
-            return $"{broker}.{partition}";
-        }
+        
 
-        protected void AddMessageOffset(string broker, int partition, long offset)
+        protected void AddMessageOffset(int partition, long offset)
         {
-            var slidingDoor = SlidingDoors.GetOrAdd(GetMessageOffsetKey(broker, partition),
-                                                    p => new SlidingDoor(CommitOffset,
-                                                                         broker,
-                                                                         partition,
-                                                                         Configuration.Instance.GetCommitPerMessage()));
+            var slidingDoor = SlidingDoors.GetOrAdd(partition,
+                                                    key => new SlidingDoor(CommitOffset,
+                                                                           key,
+                                                                           Configuration.Instance.GetCommitPerMessage()));
             slidingDoor.AddOffset(offset);
         }
 
@@ -130,12 +126,12 @@ namespace IFramework.MessageQueue.Client.Abstracts
         /// <param name="messageOffset"></param>
         protected virtual void FinishConsumingMessage(MessageOffset messageOffset)
         {
-            var slidingDoor = SlidingDoors.TryGetValue(GetMessageOffsetKey(messageOffset.Broker, messageOffset.Partition));
+            var slidingDoor = SlidingDoors.TryGetValue(messageOffset.Partition);
             if (slidingDoor == null)
             {
                 throw new Exception("partition slidingDoor not exists");
             }
-            slidingDoor.RemoveOffset(messageOffset.Offset);
+            slidingDoor.RemoveOffset(messageOffset);
         }
 
         private void CommitOffset(MessageOffset messageOffset)

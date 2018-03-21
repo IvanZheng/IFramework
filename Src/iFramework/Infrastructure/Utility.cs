@@ -16,6 +16,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
+using IFramework.MessageQueue;
 
 namespace IFramework.Infrastructure
 {
@@ -37,6 +38,34 @@ namespace IFramework.Infrastructure
         private static readonly ConcurrentDictionary<string, MethodInfo> MethodInfoDictionary = new ConcurrentDictionary<string, MethodInfo>();
         private const string k_base36_digits = "0123456789abcdefghijklmnopqrstuvwxyz";
         private static readonly uint[] _lookup32 = CreateLookup32();
+
+
+        public static bool TryRemoveBeforeKey<TKey, TElement>(this SortedList<TKey, TElement> list, TKey key, out TElement obj)
+        {
+            var index = list.IndexOfKey(key);
+            if (index >= 0)
+            {
+                obj = list.ElementAtOrDefault(index).Value;
+                if (index == list.Count - 1)
+                {
+                    list.Clear();
+                }
+                else
+                {
+                    for (int i = 0; i <= index; i++)
+                    {
+                        list.RemoveAt(i);
+                    }
+                }
+            }
+            else
+            {
+                obj = default(TElement);
+            }
+            return index >= 0;
+        }
+
+
         public static IPAddress[] GetLocalIPAddresses()
         {
             Dns.GetHostName();

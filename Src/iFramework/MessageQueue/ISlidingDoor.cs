@@ -4,6 +4,6 @@
     {
         int MessageCount { get; }
         void AddOffset(long offset);
-        void RemoveOffset(long offset);
+        void RemoveOffset(MessageOffset messageOffset);
     }
 }

@@ -1,30 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using IFramework.Infrastructure;
 
 namespace IFramework.MessageQueue
 {
     public class SlidingDoor : ISlidingDoor
     {
         private readonly object _removeOffsetLock = new object();
-        protected string _broker;
         protected Action<MessageOffset> _commitOffset;
         protected bool _commitPerMessage;
         protected long _consumedOffset = -1L;
         protected long _lastCommittedOffset = -1L;
         protected long _lastOffset = -1L;
         protected SortedSet<long> _offsets;
+        protected SortedList<long, MessageOffset> _removedMessageOffsets;
         protected int _partition;
 
         public SlidingDoor(Action<MessageOffset> commitOffset,
-                           string broker,
                            int partition,
                            bool commitPerMessage = false)
         {
             _commitOffset = commitOffset;
-            _broker = broker;
             _partition = partition;
             _offsets = new SortedSet<long>();
+            _removedMessageOffsets = new SortedList<long, MessageOffset>();
             _commitPerMessage = commitPerMessage;
         }
 
@@ -32,29 +32,29 @@ namespace IFramework.MessageQueue
 
         public void AddOffset(long offset)
         {
-            lock (_removeOffsetLock)
+            if (!_commitPerMessage)
             {
-                _offsets.Add(offset);
-                _lastOffset = offset;
+                lock (_removeOffsetLock)
+                {
+                    _offsets.Add(offset);
+                    _lastOffset = offset;
+                }
             }
         }
 
-        public void RemoveOffset(long offset)
+        public void RemoveOffset(MessageOffset messageOffset)
         {
             if (_commitPerMessage)
             {
-                _commitOffset(new MessageOffset(_broker, _partition, offset));
-                lock (_removeOffsetLock)
-                {
-                    _offsets.Remove(offset);
-                }
+                _commitOffset(messageOffset);
             }
             else
             {
                 lock (_removeOffsetLock)
                 {
-                    if (_offsets.Remove(offset))
+                    if (_offsets.Remove(messageOffset.Offset))
                     {
+                        _removedMessageOffsets.Add(messageOffset.Offset, messageOffset);
                         if (_offsets.Count > 0)
                         {
                             _consumedOffset = _offsets.First() - 1;
@@ -66,7 +66,10 @@ namespace IFramework.MessageQueue
                     }
                     if (_consumedOffset > _lastCommittedOffset)
                     {
-                        _commitOffset(new MessageOffset(_broker, _partition, _consumedOffset));
+                        if (_removedMessageOffsets.TryRemoveBeforeKey(_consumedOffset, out var currentMessageOffset))
+                        {
+                            _commitOffset(currentMessageOffset);
+                        }
                         _lastCommittedOffset = _consumedOffset;
                     }
                 }

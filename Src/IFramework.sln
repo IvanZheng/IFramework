@@ -59,8 +59,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.MessageQueue.Client.Abstracts", "iFramework.Plugins\IFramework.MessageQueue.Client.Abstracts\IFramework.MessageQueue.Client.Abstracts.csproj", "{FED1EE35-3EAC-47BA-9125-4B99A944C577}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.MessageQueueCore.RabbitMQ", "iFramework.Plugins\IFramework.MessageQueueCore.RabbitMQ\IFramework.MessageQueueCore.RabbitMQ.csproj", "{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -452,24 +450,6 @@ Global
 		{FED1EE35-3EAC-47BA-9125-4B99A944C577}.Release|x64.Build.0 = Release|Any CPU
 		{FED1EE35-3EAC-47BA-9125-4B99A944C577}.Release|x86.ActiveCfg = Release|Any CPU
 		{FED1EE35-3EAC-47BA-9125-4B99A944C577}.Release|x86.Build.0 = Release|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Debug|x64.Build.0 = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Debug|x86.Build.0 = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Integration|Any CPU.ActiveCfg = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Integration|Any CPU.Build.0 = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Integration|x64.ActiveCfg = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Integration|x64.Build.0 = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Integration|x86.ActiveCfg = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Integration|x86.Build.0 = Debug|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Release|x64.ActiveCfg = Release|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Release|x64.Build.0 = Release|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Release|x86.ActiveCfg = Release|Any CPU
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -494,10 +474,9 @@ Global
 		{8703F543-285A-428B-92BC-2AC301F6C0BB} = {A9B2E731-E8B4-43A1-97B6-88517E1AA362}
 		{08E74EC3-F2DC-4F3E-99B9-B7337D65D92A} = {A9B2E731-E8B4-43A1-97B6-88517E1AA362}
 		{FED1EE35-3EAC-47BA-9125-4B99A944C577} = {A0DFB82C-D746-4443-8C1B-7AB2DF36EF85}
-		{B01F7239-10C6-4BE7-8D63-7BA99B1CF623} = {A0DFB82C-D746-4443-8C1B-7AB2DF36EF85}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
+		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 	EndGlobalSection
 EndGlobal

@@ -85,7 +85,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         {
             try
             {
-                AddMessageOffset(null, message.Partition, message.Offset);
+                AddMessageOffset(message.Partition, message.Offset);
                 OnMessageReceived(this, message);
             }
             catch (OperationCanceledException) { }

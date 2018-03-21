@@ -4,11 +4,10 @@ using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
 
-namespace IFramework.MessageQueueCore.RabbitMQ
+namespace IFramework.MessageQueueCore.EQueue
 {
     public class EQueueClientProvider : IMessageQueueClientProvider
     {
-      
         public EQueueClientProvider(string broker)
         {
 
