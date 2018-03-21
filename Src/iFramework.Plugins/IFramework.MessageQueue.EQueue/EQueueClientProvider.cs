@@ -1,14 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
+using IFramework.MessageQueue.EQueue.MessageFormat;
 
 namespace IFramework.MessageQueue.EQueue
 {
     public class EQueueClientProvider : IMessageQueueClientProvider
     {
+        private OnEQueueMessageReceived BuildOnEQueueMessageReceived(OnMessagesReceived onMessagesReceived)
+        {
+            return (consumer, message) =>
+            {
+                var equeueMessage = Encoding.UTF8.GetString(message.Body).ToJsonObject<EQueueMessage>();
+                var messageContext = new MessageContext(equeueMessage, message.BrokerName, message.QueueId, message.QueueOffset);
+                onMessagesReceived(messageContext);
+            };
+        }
+
         public IMessageConsumer CreateQueueConsumer(string commandQueueName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
         {
             throw new NotImplementedException();
