@@ -15,8 +15,11 @@ namespace IFramework.MessageQueue.EQueue
         {
             return (consumer, message) =>
             {
-                var equeueMessage = Encoding.UTF8.GetString(message.Body).ToJsonObject<EQueueMessage>();
-                var messageContext = new MessageContext(equeueMessage, message.BrokerName, message.QueueId, message.QueueOffset);
+                var equeueMessage = Encoding.UTF8
+                                            .GetString(message.Body)
+                                            .ToJsonObject<EQueueMessage>();
+                var messageContext = new MessageContext(equeueMessage, 
+                                                        new MessageOffset(message.BrokerName, message.QueueId, message.QueueOffset));
                 onMessagesReceived(messageContext);
             };
         }

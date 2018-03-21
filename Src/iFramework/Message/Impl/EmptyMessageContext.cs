@@ -24,8 +24,6 @@ namespace IFramework.Message.Impl
 
         public List<IMessageContext> ToBeSentMessageContexts => null;
 
-        public long Offset { get; set; }
-
         public IDictionary<string, object> Headers => null;
 
         public string Key => null;

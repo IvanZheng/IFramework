@@ -10,17 +10,15 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
 {
     public class MessageContext : IMessageContext
     {
-        private object _Message;
+        private object _message;
 
         private SagaInfo _sagaInfo;
 
-        public MessageContext(EQueueMessage equeueMessage, string broker, int partition, long offset)
+        public MessageContext(EQueueMessage equeueMessage, MessageOffset messageOffset)
         {
             EqueueMessage = equeueMessage;
-            Offset = offset;
-            Partition = partition;
             ToBeSentMessageContexts = new List<IMessageContext>();
-            MessageOffset = new MessageOffset(broker, partition, offset);
+            MessageOffset = messageOffset;
         }
 
         public MessageContext(object message, string id = null)
@@ -45,6 +43,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             {
                 Topic = ((IMessage) message).GetTopic();
             }
+            MessageOffset = new MessageOffset();
         }
 
 
@@ -61,9 +60,9 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         }
 
         public EQueueMessage EqueueMessage { get; protected set; }
-        public int Partition { get; protected set; }
+  
         public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
-        public long Offset { get; protected set; }
+      
 
         public IDictionary<string, object> Headers => EqueueMessage.Headers;
 
@@ -97,21 +96,21 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         {
             get
             {
-                if (_Message != null)
+                if (_message != null)
                 {
-                    return _Message;
+                    return _message;
                 }
 
                 if (Headers.TryGetValue("MessageType", out var messageType) && messageType != null)
                 {
                     var jsonValue = Encoding.UTF8.GetString(EqueueMessage.Payload);
-                    _Message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
+                    _message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
                 }
-                return _Message;
+                return _message;
             }
             protected set
             {
-                _Message = value;
+                _message = value;
                 EqueueMessage.Payload = Encoding.UTF8.GetBytes(value.ToJson());
                 if (value != null)
                 {
