@@ -54,7 +54,7 @@ namespace IFramework.Infrastructure
                 {
                     for (int i = 0; i <= index; i++)
                     {
-                        list.RemoveAt(i);
+                        list.RemoveAt(0);
                     }
                 }
             }

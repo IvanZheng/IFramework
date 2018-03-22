@@ -22,7 +22,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
             var message = ((MessageContext)messageContext).KafkaMessage;
-            return SendAsync(messageContext.Key, message, cancellationToken);
+            return SendAsync(messageContext.Topic, messageContext.Key, message, cancellationToken);
         }
     }
 
@@ -68,7 +68,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
             }
         }
 
-        public async Task<Message<TKey, TValue>> SendAsync(TKey key, TValue message, CancellationToken cancellationToken)
+        public async Task<Message<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
         {
             var retryTimes = 0;
             while (true)
@@ -80,7 +80,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                 var waitTime = Math.Min(retryTimes * 1000 * 5, 60000 * 5);
                 try
                 {
-                    var result = await _producer.ProduceAsync(_topic, key, message, false)
+                    var result = await _producer.ProduceAsync(topic, key, message, false)
                                                 .ConfigureAwait(false);
                     if (result.Error != ErrorCode.NoError)
                     {

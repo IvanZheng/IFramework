@@ -13,7 +13,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         {
             IoCFactory.Instance
                       .ObjectProviderBuilder
-                      .Register<IMessageQueueClientProvider, KafkaMessageQueueClientProvider>(ServiceLifetime.Singleton,
+                      .Register<IMessageQueueClientProvider, KafkaMQClientProvider>(ServiceLifetime.Singleton,
                                                                                               new ConstructInjection(new ParameterInjection("brokerList", brokerList)))
                       .Register<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
             return configuration;

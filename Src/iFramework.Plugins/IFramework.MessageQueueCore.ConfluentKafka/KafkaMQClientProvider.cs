@@ -9,11 +9,11 @@ using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
 
 namespace IFramework.MessageQueueCore.ConfluentKafka
 {
-    public class KafkaMessageQueueClientProvider : IMessageQueueClientProvider
+    public class KafkaMQClientProvider : IMessageQueueClientProvider
     {
         private readonly string _brokerList;
 
-        public KafkaMessageQueueClientProvider(string brokerList)
+        public KafkaMQClientProvider(string brokerList)
         {
             _brokerList = brokerList;
         }

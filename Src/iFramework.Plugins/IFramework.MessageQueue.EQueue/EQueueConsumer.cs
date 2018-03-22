@@ -66,7 +66,11 @@ namespace IFramework.MessageQueue.EQueue
         protected override void PollMessages()
         {
             var messages = PullMessages(100, 2000, CancellationTokenSource.Token);
-            messages.ForEach(message => _onMessageReceived(this, message));
+            messages.ForEach(message =>
+            {
+                AddMessageOffset(message.QueueId, message.QueueOffset);
+                _onMessageReceived(this, message);
+            });
         }
 
         public override Task CommitOffsetAsync(string broker, int partition, long offset)

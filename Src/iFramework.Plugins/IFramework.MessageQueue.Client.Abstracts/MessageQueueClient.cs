@@ -117,24 +117,12 @@ namespace IFramework.MessageQueue.Client.Abstracts
 
         private IMessageProducer GetTopicProducer(string topic)
         {
-            TopicClients.TryGetValue(topic, out var topicProducer);
-            if (topicProducer == null)
-            {
-                topicProducer = _clientProvider.CreateTopicProducer(topic);
-                TopicClients.GetOrAdd(topic, topicProducer);
-            }
-            return topicProducer;
+            return TopicClients.GetOrAdd(topic, _clientProvider.CreateTopicProducer);
         }
 
         private IMessageProducer GetQueueProducer(string queue)
         {
-            QueueClients.TryGetValue(queue, out var queueProducer);
-            if (queueProducer == null)
-            {
-                queueProducer = _clientProvider.CreateQueueProducer(queue);
-                QueueClients.GetOrAdd(queue, queueProducer);
-            }
-            return queueProducer;
+            return QueueClients.GetOrAdd(queue, _clientProvider.CreateQueueProducer);
         }
         #endregion
     }

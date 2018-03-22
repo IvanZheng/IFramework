@@ -62,8 +62,8 @@ namespace Sample.CommandServiceCore
                          .UseEntityFrameworkComponents<SampleModelContext>()
                          .UseMessageStore<SampleModelContext>()
                          //.UseInMemoryMessageQueue()
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
-                         //.UseEQueue()
+                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         .UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic");
         }

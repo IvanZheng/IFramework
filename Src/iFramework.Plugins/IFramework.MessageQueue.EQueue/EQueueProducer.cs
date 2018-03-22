@@ -19,7 +19,7 @@ namespace IFramework.MessageQueue.EQueue
     public class EQueueProducer: IMessageProducer
     {
         private readonly ILogger _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(EQueueProducer).Name);
-
+       
         public EQueueProducer(string clusterName, List<IPEndPoint> nameServerList)
         {
             ClusterName = clusterName;
@@ -29,9 +29,8 @@ namespace IFramework.MessageQueue.EQueue
         public Producer Producer { get; protected set; }
         public string ClusterName { get; protected set; }
         public List<IPEndPoint> NameServerList { get; protected set; }
-        public int AdminPort { get; protected set; }
 
-        public void Start()
+        public EQueueProducer Start()
         {
             var setting = new ProducerSetting
             {
@@ -39,6 +38,7 @@ namespace IFramework.MessageQueue.EQueue
                 NameServerList = NameServerList
             };
             Producer = new Producer(setting).Start();
+            return this;
         }
 
         public void Stop()
@@ -69,7 +69,7 @@ namespace IFramework.MessageQueue.EQueue
                 try
                 {
                     var result = await Producer.SendAsync(equeueMessage, key)
-                                                .ConfigureAwait(false);
+                                               .ConfigureAwait(false);
                     if (result.SendStatus != SendStatus.Success)
                     {
                         _logger.LogError($"send message failed topic: {equeueMessage.Topic} key:{key} error:{result.ErrorMessage}");

@@ -53,6 +53,7 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNetCore.csproj" />
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueueCore.ConfluentKafka.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.InMemory\IFramework.MessageQueueCore.InMemory.csproj" />
     <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
