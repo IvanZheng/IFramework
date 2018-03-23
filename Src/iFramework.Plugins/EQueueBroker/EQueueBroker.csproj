@@ -8,10 +8,9 @@
   <ItemGroup>
     <Compile Remove="equeue-store1\**" />
     <Compile Remove="logs\**" />
-    <EmbeddedResource Remove="equeue-store1\**" />
-    <EmbeddedResource Remove="logs\**" />
     <None Remove="equeue-store1\**" />
     <None Remove="logs\**" />
+    <None Remove="log\**" />
   </ItemGroup>
 
   <ItemGroup>
