@@ -104,16 +104,13 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(Topic, partition), offset + 1);
-            var committedOffset = await _consumer.CommitAsync(new[] {topicPartitionOffset})
+            var committedOffset = await _consumer.CommitAsync(new[] { topicPartitionOffset })
                                                  .ConfigureAwait(false);
             if (committedOffset.Error.Code != ErrorCode.NoError)
             {
-                Logger.LogError($"{Id} committed offset failed {committedOffset.Error}");
+                throw new Exception($"{Id} committed offset failed {committedOffset.Error} broker/partition/offset: {broker}/{partition}/{offset}");
             }
-            else
-            {
-                Logger.LogDebug($"{Id} committed offset {committedOffset.Offsets.FirstOrDefault()}");
-            }
+            Logger.LogDebug($"{Id} committed broker/partition/offset: {broker}/{partition}/{offset}");
         }
 
         public override void Stop()

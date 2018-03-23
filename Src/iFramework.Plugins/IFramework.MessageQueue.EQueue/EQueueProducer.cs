@@ -75,6 +75,10 @@ namespace IFramework.MessageQueue.EQueue
                         _logger.LogError($"send message failed topic: {equeueMessage.Topic} key:{key} error:{result.ErrorMessage}");
                         await Task.Delay(waitTime, cancellationToken);
                     }
+                    else
+                    {
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {

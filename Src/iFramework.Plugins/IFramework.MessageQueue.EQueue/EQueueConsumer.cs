@@ -51,7 +51,7 @@ namespace IFramework.MessageQueue.EQueue
                 ClusterName = ClusterName,
                 NameServerList = NameServerList
             };
-            Consumer = new EQueueConsumers.Consumer(GroupId, setting)
+            Consumer = new EQueueConsumers.Consumer(GroupId, setting, ConsumerId)
                 .Subscribe(Topic)
                 .Start();
            base.Start();

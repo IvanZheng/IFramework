@@ -107,7 +107,6 @@ namespace IFramework.MessageQueue.Client.Abstracts
             }
         }
 
-        
 
         protected void AddMessageOffset(int partition, long offset)
         {
@@ -133,9 +132,23 @@ namespace IFramework.MessageQueue.Client.Abstracts
 
         private void CommitOffset(MessageOffset messageOffset)
         {
-            CommitOffsetAsync(messageOffset.Broker,
-                              messageOffset.Partition,
-                              messageOffset.Offset);
+            try
+            {
+                CommitOffsetAsync(messageOffset.Broker,
+                                  messageOffset.Partition,
+                                  messageOffset.Offset)
+                    .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            Logger.LogError(t.Exception, $"CommitOFfsetAsync failed");
+                        }
+                    });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, $"CommitOffset failed {messageOffset.ToJson()}");
+            }
         }
 
         public abstract Task CommitOffsetAsync(string broker, int partition, long offset);

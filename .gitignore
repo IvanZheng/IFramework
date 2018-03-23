@@ -32,3 +32,6 @@ obj
 /Src/commandservicecore.zip
 /Src/publishes
 /Src/Sample/publishes
+/Src/iFramework.Plugins/EQueueBroker/log
+/Src/iFramework.Plugins/EQueueBroker/equeue-store1
+/Src/iFramework.Plugins/EQueue.AdminWeb/logs

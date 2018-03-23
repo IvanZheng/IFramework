@@ -62,8 +62,8 @@ namespace Sample.CommandServiceCore
                          .UseEntityFrameworkComponents<SampleModelContext>()
                          .UseMessageStore<SampleModelContext>()
                          //.UseInMemoryMessageQueue()
-                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
-                         .UseEQueue()
+                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic");
         }
@@ -85,8 +85,8 @@ namespace Sample.CommandServiceCore
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
-            services.AddDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)));
-            //services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
+            //services.AddDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)));
+            services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
             return IoCFactory.Instance
                              .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                              .Populate(services)

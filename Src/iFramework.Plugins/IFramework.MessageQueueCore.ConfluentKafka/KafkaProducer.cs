@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
+using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
 using IFramework.Infrastructure;
@@ -22,7 +23,8 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
             var message = ((MessageContext)messageContext).KafkaMessage;
-            return SendAsync(messageContext.Topic, messageContext.Key, message, cancellationToken);
+            var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
+            return SendAsync(topic, messageContext.Key, message, cancellationToken);
         }
     }
 
@@ -84,7 +86,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                                                 .ConfigureAwait(false);
                     if (result.Error != ErrorCode.NoError)
                     {
-                        _logger.LogError($"send message failed topic: {_topic} Partition: {result.Partition} key:{key} error:{result.Error}");
+                        _logger.LogError($"send message failed topic: {topic} Partition: {result.Partition} key:{key} error:{result.Error}");
                         await Task.Delay(waitTime, cancellationToken);
                     }
                     else
@@ -94,7 +96,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"send message failed topic: {_topic} key:{key}");
+                    _logger.LogError(e, $"send message failed topic: {topic} key:{key}");
                     await Task.Delay(waitTime, cancellationToken);
                 }
 
