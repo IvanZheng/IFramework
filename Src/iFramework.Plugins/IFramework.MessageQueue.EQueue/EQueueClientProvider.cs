@@ -17,10 +17,10 @@ namespace IFramework.MessageQueue.EQueue
         private readonly string _clusterName;
         private readonly List<IPEndPoint> _nameServerList;
 
-        public EQueueClientProvider(string clusterName, string nameServerList, int defaultPort)
+        public EQueueClientProvider(string clusterName, string nameServerList, int nameServerPort)
         {
             _clusterName = clusterName;
-            _nameServerList = GetIpEndPoints(nameServerList, defaultPort).ToList();
+            _nameServerList = GetIpEndPoints(nameServerList, nameServerPort).ToList();
         }
 
         public IMessageConsumer CreateQueueConsumer(string commandQueueName,

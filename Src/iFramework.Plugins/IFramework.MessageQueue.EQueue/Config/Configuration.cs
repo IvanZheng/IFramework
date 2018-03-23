@@ -29,7 +29,7 @@ namespace IFramework.Config
         public static Configuration UseEQueue(this Configuration configuration,
                                               string nameServerAddresses = null,
                                               string clusterName = "DefaultCluster",
-                                              int defaultPort = 9493)
+                                              int nameServerPort = 9493)
         {
             InitializeEqueue();
 
@@ -38,7 +38,7 @@ namespace IFramework.Config
                       .Register<IMessageQueueClientProvider, EQueueClientProvider>(ServiceLifetime.Singleton,
                                                                                    new ConstructInjection(new ParameterInjection("clusterName", clusterName),
                                                                                                           new ParameterInjection("nameServerList", nameServerAddresses),
-                                                                                                          new ParameterInjection("defaultPort", defaultPort)))
+                                                                                                          new ParameterInjection("nameServerPort", nameServerPort)))
                       .Register<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
 
             return configuration;
