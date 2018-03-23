@@ -14,7 +14,7 @@ namespace IFramework.DependencyInjection.Autofac
     public class ObjectProvider : IObjectProvider
     {
         private IComponentContext _componentContext;
-        private ILifetimeScope Scope => _componentContext as ILifetimeScope;
+        public ILifetimeScope Scope => _componentContext as ILifetimeScope;
         private IEnumerable<global::Autofac.Core.Parameter> GetResolvedParameters(Parameter[] resolvedParameters)
         {
             var parameters = new List<global::Autofac.Core.Parameter>();

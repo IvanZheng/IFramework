@@ -18,6 +18,7 @@ namespace Sample.CommandService.App_Start
     {
         private static readonly Lazy<IContainer> Container = new Lazy<IContainer>(() =>
         {
+            var serviceCollection
             Configuration.Instance
                          .UseAutofacContainer()
                          //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)

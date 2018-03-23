@@ -10,13 +10,9 @@ using System.Web.Routing;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
 using IFramework.Message;
 using IFramework.MessageQueue;
-using IFramework.MessageQueue.ConfluentKafka.Config;
-using IFramework.MessageQueue.InMemoryMQ;
-using IFramework.MessageQueue.MSKafka.Config;
+using Microsoft.Extensions.Logging;
 using Sample.Command;
 using Sample.Persistence;
 
