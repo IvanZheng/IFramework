@@ -42,7 +42,7 @@ namespace Sample.CommandServiceCore.Controllers
         {
             var profile = Configuration.GetAppSetting("Debug");
             var member = Configuration.GetAppSetting("Member:A");
-            _logger.LogWarning(profile.ToJson());
+            _logger.LogDebug(profile.ToJson());
             return View();
         }
 
