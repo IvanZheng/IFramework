@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using IFramework.Infrastructure;
 using Sample.CommandService.Tests;
 
 namespace Sample.ApiService.Controllers
@@ -8,6 +9,12 @@ namespace Sample.ApiService.Controllers
     //[Authorize]
     public class TestController : Controller
     {
+        private readonly IExceptionManager _exceptionManager;
+
+        public TestController(IExceptionManager exceptionManager)
+        {
+            _exceptionManager = exceptionManager;
+        }
         // GET: /Test/
         public ActionResult Index()
         {

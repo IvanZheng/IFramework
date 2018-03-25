@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
@@ -16,7 +14,6 @@ using IFramework.Infrastructure;
 using IFramework.JsonNetCore;
 using IFramework.Message;
 using IFramework.MessageQueue;
-using IFramework.MessageQueueCore.ConfluentKafka;
 using IFramework.MessageQueueCore.InMemory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +30,7 @@ namespace Sample.CommandService
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
     // visit http://go.microsoft.com/?LinkId=9394801
 
-    public class WebApiApplication: HttpApplication
+    public class WebApiApplication : HttpApplication
     {
         private static ILogger _Logger;
         private static IMessagePublisher _messagePublisher;
@@ -55,12 +52,13 @@ namespace Sample.CommandService
             try
             {
                 var kafkaBrokerList = new[]
-                 {
-                    new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString(),
+                {
+                    new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString()
                     //"192.168.99.60:9092"
                 };
                 Configuration.Instance
-                             .UseAutofacContainer("Sample.CommandHandler",
+                             .UseAutofacContainer("Sample.CommandService",
+                                                  "Sample.CommandHandler",
                                                   "Sample.DomainEventSubscriber",
                                                   "Sample.AsyncDomainEventSubscriber",
                                                   "Sample.ApplicationEventSubscriber")
@@ -79,23 +77,22 @@ namespace Sample.CommandService
                 services.AddDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)));
                 //services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
                 IoCFactory.Instance
-                                 .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
-                                 .Populate(services)
-                                 .Build();
+                          .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
+                          .Populate(services)
+                          .Build();
 
                 StartMessageQueueComponents();
                 _Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(WebApiApplication).Name);
 
 
                 _Logger.LogDebug($"App Started");
-
-               
             }
             catch (Exception ex)
             {
-                throw;//_Logger.LogError(ex.GetBaseException().Message, ex);
+                throw; //_Logger.LogError(ex.GetBaseException().Message, ex);
             }
         }
+
         private static void StartMessageQueueComponents()
         {
             #region Command Consuemrs init
@@ -145,16 +142,17 @@ namespace Sample.CommandService
 
             #endregion
         }
+
         // ZeroMQ Application_Start
         protected void Application_Start()
         {
             Bootstrap();
             AreaRegistration.RegisterAllAreas();
-            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             GlobalConfiguration.Configuration
-                               .Register()
                                .RegisterMvcDependencyInjection()
-                               .RegisterWebApiDependencyInjection();
+                               .RegisterWebApiDependencyInjection()
+                               .Register();
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
