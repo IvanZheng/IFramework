@@ -63,7 +63,8 @@ namespace Sample.CommandService
                                                   "Sample.DomainEventSubscriber",
                                                   "Sample.AsyncDomainEventSubscriber",
                                                   "Sample.ApplicationEventSubscriber")
-                             .UseConfiguration(new ConfigurationBuilder().Build())
+                             .UseConfiguration(new ConfigurationBuilder().AddJsonFile("appsettings.json")
+                                                                         .Build())
                              .UseCommonComponents()
                              .UseJsonNet()
                              .UseLog4Net()
