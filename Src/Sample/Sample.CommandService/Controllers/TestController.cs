@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using IFramework.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Sample.CommandService.Tests;
 
 namespace Sample.ApiService.Controllers
@@ -10,14 +11,17 @@ namespace Sample.ApiService.Controllers
     public class TestController : Controller
     {
         private readonly IExceptionManager _exceptionManager;
+        private readonly ILogger<TestController> _logger;
 
-        public TestController(IExceptionManager exceptionManager)
+        public TestController(IExceptionManager exceptionManager, ILogger<TestController> logger)
         {
             _exceptionManager = exceptionManager;
+            _logger = logger;
         }
         // GET: /Test/
         public ActionResult Index()
         {
+            _logger.LogError("TestController Index");
             return View();
         }
 

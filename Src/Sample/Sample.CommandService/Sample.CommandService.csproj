@@ -157,9 +157,6 @@
       <HintPath>..\..\packages\Microsoft.Extensions.Logging.Abstractions.2.1.0-preview1-final\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore, Version=2.0.3.0, Culture=neutral, PublicKeyToken=a02c72378a69f2ab, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Extensions.Logging.Log4Net.AspNetCore.2.0.3\lib\netstandard2.0\Microsoft.Extensions.Logging.Log4Net.AspNetCore.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Extensions.Options">
       <HintPath>..\..\packages\Microsoft.Extensions.Options.2.1.0-preview1-final\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
       <Private>True</Private>
@@ -417,7 +414,6 @@
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\CollectionModelDescription.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\Api.cshtml" />
-    <Compile Include="App_Start\MicrosoftExtension.cs" />
     <None Include="ipRestrict.json" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
@@ -478,6 +474,10 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNetCore.csproj">
       <Project>{8AF3ECAB-3E1F-485E-960E-05C7826E6617}</Project>
       <Name>IFramework.JsonNetCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj">
+      <Project>{1b9dcc2c-e251-427a-ae6f-b951a4b362f8}</Project>
+      <Name>IFramework.Log4Net</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueueCore.ConfluentKafka.csproj">
       <Project>{e1c3ca59-38de-4d7f-9a4b-e3a9722ac608}</Project>

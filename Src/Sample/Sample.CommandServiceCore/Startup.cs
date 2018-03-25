@@ -7,6 +7,7 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.JsonNetCore;
+using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueueCore.ConfluentKafka;
@@ -59,6 +60,7 @@ namespace Sample.CommandServiceCore
                          .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet()
+                         .UseLog4Net()
                          .UseEntityFrameworkComponents<SampleModelContext>()
                          .UseMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
@@ -103,8 +105,6 @@ namespace Sample.CommandServiceCore
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddLog4Net();
-
             StartMessageQueueComponents();
 
             if (env.IsDevelopment())

@@ -12,6 +12,7 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.JsonNetCore;
+using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueueCore.InMemory;
@@ -89,7 +90,7 @@ namespace Sample.CommandService
             }
             catch (Exception ex)
             {
-                throw; //_Logger.LogError(ex.GetBaseException().Message, ex);
+                _Logger.LogError(ex.GetBaseException().Message, ex);
             }
         }
 

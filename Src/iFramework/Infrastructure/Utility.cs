@@ -570,7 +570,7 @@ namespace IFramework.Infrastructure
 
         public static string MD5Encrypt(string pToEncrypt, CipherMode mode = CipherMode.CBC, string key = "IVANIVAN")
         {
-            var des = new DESCryptoServiceProvider {Mode = mode};
+            var des = new DESCryptoServiceProvider { Mode = mode };
             var inputByteArray = Encoding.Default.GetBytes(pToEncrypt);
             des.Key = Encoding.ASCII.GetBytes(key);
             des.IV = Encoding.ASCII.GetBytes(key);
@@ -589,7 +589,7 @@ namespace IFramework.Infrastructure
 
         public static string MD5Decrypt(string pToDecrypt, CipherMode mode = CipherMode.CBC, string key = "IVANIVAN")
         {
-            var des = new DESCryptoServiceProvider {Mode = mode};
+            var des = new DESCryptoServiceProvider { Mode = mode };
             var inputByteArray = new byte[pToDecrypt.Length / 2];
             for (var x = 0; x < pToDecrypt.Length / 2; x++)
             {
@@ -817,5 +817,28 @@ namespace IFramework.Infrastructure
             }
             return null;
         }
+#if FULL_NET_FRAMEWORK
+        public static void SetEntryAssembly()
+        {
+            SetEntryAssembly(Assembly.GetCallingAssembly());
+        }
+
+        public static void SetEntryAssembly(Assembly assembly)
+        {
+            AppDomainManager manager = new AppDomainManager();
+            FieldInfo entryAssemblyfield = manager.GetType().GetField("m_entryAssembly", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (entryAssemblyfield != null)
+            {
+                entryAssemblyfield.SetValue(manager, assembly);
+            }
+
+            AppDomain domain = AppDomain.CurrentDomain;
+            FieldInfo domainManagerField = domain.GetType().GetField("_domainManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (domainManagerField != null)
+            {
+                domainManagerField.SetValue(domain, manager);
+            }
+        }
+#endif
     }
 }
