@@ -137,14 +137,16 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             {
                 if (_sagaInfo == null)
                 {
-                    var sagaInfoJson = Headers.TryGetValue("SagaInfo") as JObject;
-                    if (sagaInfoJson != null)
+                    if (Headers.TryGetValue("SagaInfo") is JObject sagaInfoJson)
                     {
                         try
                         {
-                            _sagaInfo = ((JObject) Headers.TryGetValue("SagaInfo")).ToObject<SagaInfo>();
+                            _sagaInfo = sagaInfoJson.ToObject<SagaInfo>();
                         }
-                        catch (Exception) { }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
                     }
                 }
                 return _sagaInfo;

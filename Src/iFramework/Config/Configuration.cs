@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using IFramework.DependencyInjection;
 using IFramework.Event;
 using IFramework.Event.Impl;
@@ -174,7 +175,7 @@ namespace IFramework.Config
         public static string GetConnectionString(string name)
         {
             return Instance.ConfigurationCore
-                           ?.GetConnectionString(name);
+                           ?.GetConnectionString(name) ?? ConfigurationManager.ConnectionStrings[name].ConnectionString;
         }
 
         public static string Get(string key)
@@ -184,12 +185,35 @@ namespace IFramework.Config
 
         public static string GetAppSetting(string key)
         {
-            return Get($"AppSettings:{key}");
+            return Get($"AppSettings:{key}") ?? ConfigurationManager.AppSettings[key];
         }
 
         public static T GetAppSetting<T>(string key)
         {
-            return Get<T>($"AppSettings:{key}");
+            var appSetting = Get<T>($"AppSettings:{key}");
+            if (appSetting == null)
+            {
+                appSetting =  GetAppConfig<T>(ConfigurationManager.AppSettings[key]);
+            }
+            return appSetting;
+        }
+
+        private static T GetAppConfig<T>(string appSetting)
+        {
+            var val = default(T);
+            try
+            {
+                if (typeof(T).IsEquivalentTo(typeof(Guid)))
+                {
+                    val = (T) Convert.ChangeType(new Guid(appSetting), typeof(T));
+                }
+                else
+                {
+                    val = (T) Convert.ChangeType(appSetting, typeof(T));
+                }
+            }
+            catch (Exception) { }
+            return val;
         }
     }
 }

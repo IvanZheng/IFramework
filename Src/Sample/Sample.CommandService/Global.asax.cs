@@ -9,12 +9,24 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using IFramework.Command;
 using IFramework.Config;
+using IFramework.DependencyInjection;
+using IFramework.DependencyInjection.Autofac;
+using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
+using IFramework.JsonNetCore;
 using IFramework.Message;
 using IFramework.MessageQueue;
+using IFramework.MessageQueueCore.ConfluentKafka;
+using IFramework.MessageQueueCore.InMemory;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sample.Command;
+using Sample.CommandService.App_Start;
+using Sample.Domain;
 using Sample.Persistence;
+using Sample.Persistence.Repositories;
 
 namespace Sample.CommandService
 {
@@ -24,14 +36,19 @@ namespace Sample.CommandService
     public class WebApiApplication: HttpApplication
     {
         private static ILogger _Logger;
-        private static IMessagePublisher _MessagePublisher;
-        private static ICommandBus _CommandBus;
-        private static IMessageConsumer _CommandConsumer1;
-        private static IMessageConsumer _CommandConsumer2;
-        private static IMessageConsumer _CommandConsumer3;
-        private static IMessageConsumer _DomainEventConsumer;
-        private static IMessageConsumer _ApplicationEventConsumer;
+        private static IMessagePublisher _messagePublisher;
+        private static ICommandBus _commandBus;
+        private static IMessageProcessor _commandConsumer1;
+        private static IMessageProcessor _commandConsumer2;
+        private static IMessageProcessor _commandConsumer3;
+        private static IMessageProcessor _domainEventProcessor;
+        private static IMessageProcessor _applicationEventProcessor;
 
+        private static void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
+        {
+            // TODO: register other components or services
+            providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
+        }
 
         public static void Bootstrap()
         {
@@ -43,81 +60,101 @@ namespace Sample.CommandService
                     //"192.168.99.60:9092"
                 };
                 Configuration.Instance
-                             .UseLog4Net("CommandService")
-                             .MessageQueueUseMachineNameFormat()
-                             .UseMessageQueue()
+                             .UseAutofacContainer("Sample.CommandHandler",
+                                                  "Sample.DomainEventSubscriber",
+                                                  "Sample.AsyncDomainEventSubscriber",
+                                                  "Sample.ApplicationEventSubscriber")
+                             .UseConfiguration(new ConfigurationBuilder().Build())
+                             .UseCommonComponents()
+                             .UseJsonNet()
+                             .UseLog4Net()
+                             .UseEntityFrameworkComponents<SampleModelContext>()
                              .UseMessageStore<SampleModelContext>()
-                             //.UseInMemoryMessageQueue()
-                             .UseConfluentKafka(string.Join(",", kafkaBrokerList))
-                             //.UseKafka("localhost:2181")
+                             .UseInMemoryMessageQueue()
+                             //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                              //.UseEQueue()
                              .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                              .UseMessagePublisher("eventTopic");
-                _Logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(WebApiApplication).Name);
+                var services = new ServiceCollection();
+                services.AddDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)));
+                //services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
+                IoCFactory.Instance
+                                 .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
+                                 .Populate(services)
+                                 .Build();
+
+                StartMessageQueueComponents();
+                _Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(WebApiApplication).Name);
 
 
-                _Logger.Debug($"App Started");
+                _Logger.LogDebug($"App Started");
 
-                #region Command Consuemrs init
-
-                var commandQueueName = "commandqueue";
-                _CommandConsumer1 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
-                _CommandConsumer1.Start();
-
-                _CommandConsumer2 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
-                _CommandConsumer2.Start();
-
-                _CommandConsumer3 =
-                    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
-                _CommandConsumer3.Start();
-
-                #endregion
-
-                #region event subscriber init
-
-                _DomainEventConsumer = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
-                                                                                 Environment.MachineName, new[] { "DomainEventSubscriber" });
-                _DomainEventConsumer.Start();
-
-                #endregion
-
-                #region application event subscriber init
-
-                _ApplicationEventConsumer = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber",
-                                                                                      Environment.MachineName, new[] { "ApplicationEventSubscriber" });
-                _ApplicationEventConsumer.Start();
-
-                #endregion
-
-                #region EventPublisher init
-
-                _MessagePublisher = MessageQueueFactory.GetMessagePublisher();
-                _MessagePublisher.Start();
-
-                #endregion
-
-                #region CommandBus init
-
-                _CommandBus = MessageQueueFactory.GetCommandBus();
-                _CommandBus.Start();
-
-                #endregion
+               
             }
             catch (Exception ex)
             {
-                _Logger.Error(ex.GetBaseException().Message, ex);
+                throw;//_Logger.LogError(ex.GetBaseException().Message, ex);
             }
         }
+        private static void StartMessageQueueComponents()
+        {
+            #region Command Consuemrs init
 
+            var commandQueueName = "commandqueue";
+            _commandConsumer1 =
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] {"CommandHandlers"});
+            _commandConsumer1.Start();
+
+            _commandConsumer2 =
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] {"CommandHandlers"});
+            _commandConsumer2.Start();
+
+            _commandConsumer3 =
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] {"CommandHandlers"});
+            _commandConsumer3.Start();
+
+            #endregion
+
+            #region event subscriber init
+
+            _domainEventProcessor = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
+                                                                              Environment.MachineName, new[] {"DomainEventSubscriber"});
+            _domainEventProcessor.Start();
+
+            #endregion
+
+            #region application event subscriber init
+
+            _applicationEventProcessor = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber",
+                                                                                   Environment.MachineName, new[] {"ApplicationEventSubscriber"});
+            _applicationEventProcessor.Start();
+
+            #endregion
+
+            #region EventPublisher init
+
+            _messagePublisher = MessageQueueFactory.GetMessagePublisher();
+            _messagePublisher.Start();
+
+            #endregion
+
+            #region CommandBus init
+
+            _commandBus = MessageQueueFactory.GetCommandBus();
+            _commandBus.Start();
+
+            #endregion
+        }
         // ZeroMQ Application_Start
         protected void Application_Start()
         {
             Bootstrap();
             AreaRegistration.RegisterAllAreas();
-            WebApiConfig.Register(GlobalConfiguration.Configuration);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            GlobalConfiguration.Configuration
+                               .Register()
+                               .RegisterMvcDependencyInjection()
+                               .RegisterWebApiDependencyInjection();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
@@ -126,42 +163,22 @@ namespace Sample.CommandService
         {
             try
             {
-                CloseMessageQueue();
+                IoCFactory.Instance.ObjectProvider.Dispose();
             }
             catch (Exception ex)
             {
-                _Logger.Error(ex.GetBaseException().Message, ex);
+                _Logger.LogError(ex.GetBaseException().Message, ex);
             }
             finally
             {
-                _Logger.Debug($"App Ended");
-                IoCFactory.Instance.CurrentContainer.Dispose();
-            }
-        }
-
-
-        public static void CloseMessageQueue()
-        {
-            var endSuccesss = Task.WaitAll(new[]
-              {
-                    Task.Run(() => _CommandConsumer1?.Stop()),
-                    Task.Run(() => _CommandConsumer2?.Stop()),
-                    Task.Run(() => _CommandConsumer3?.Stop()),
-                    Task.Run(() => _DomainEventConsumer?.Stop()),
-                    Task.Run(() => _ApplicationEventConsumer?.Stop()),
-                    Task.Run(() => _CommandBus?.Stop()),
-                    Task.Run(() => _MessagePublisher?.Stop())
-                }, 10000);
-            if (!endSuccesss)
-            {
-                throw new Exception($"stop message queue client timeout!");
+                _Logger.LogDebug($"App Ended");
             }
         }
 
         protected void Application_Error(object sender, EventArgs e)
         {
             var ex = Server.GetLastError().GetBaseException(); //获取错误
-            _Logger.Error(ex.Message, ex);
+            _Logger.LogError(ex.Message, ex);
         }
     }
 }

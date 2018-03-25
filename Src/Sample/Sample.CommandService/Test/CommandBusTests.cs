@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IFramework.Command;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sample.Command;
 
 namespace Sample.CommandService.Tests
@@ -20,9 +20,9 @@ namespace Sample.CommandService.Tests
 
         public CommandBusTests()
         {
-            _logger = IoCFactory.Resolve<ILoggerFactory>().Create(typeof(CommandBusTests));
+            _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(CommandBusTests));
 
-            _commandBus = IoCFactory.Resolve<ICommandBus>();
+            _commandBus = IoCFactory.GetService<ICommandBus>();
 
             _createProducts = new List<CreateProduct>();
             var tasks = new List<Task>();
@@ -57,7 +57,7 @@ namespace Sample.CommandService.Tests
             }
             Task.WaitAll(tasks.ToArray());
             var costTime = (DateTime.Now - startTime).TotalMilliseconds;
-            _logger.ErrorFormat("cost time : {0} ms", costTime);
+            _logger.LogError("cost time : {0} ms", costTime);
         }
     }
 }

@@ -570,8 +570,7 @@ namespace IFramework.Infrastructure
 
         public static string MD5Encrypt(string pToEncrypt, CipherMode mode = CipherMode.CBC, string key = "IVANIVAN")
         {
-            var des = new DESCryptoServiceProvider();
-            des.Mode = mode;
+            var des = new DESCryptoServiceProvider {Mode = mode};
             var inputByteArray = Encoding.Default.GetBytes(pToEncrypt);
             des.Key = Encoding.ASCII.GetBytes(key);
             des.IV = Encoding.ASCII.GetBytes(key);
@@ -590,8 +589,7 @@ namespace IFramework.Infrastructure
 
         public static string MD5Decrypt(string pToDecrypt, CipherMode mode = CipherMode.CBC, string key = "IVANIVAN")
         {
-            var des = new DESCryptoServiceProvider();
-            des.Mode = mode;
+            var des = new DESCryptoServiceProvider {Mode = mode};
             var inputByteArray = new byte[pToDecrypt.Length / 2];
             for (var x = 0; x < pToDecrypt.Length / 2; x++)
             {
@@ -716,10 +714,12 @@ namespace IFramework.Infrastructure
             //return builder.ToString();
 
             var stream = new MemoryStream();
-            var setting = new XmlWriterSettings();
-            setting.OmitXmlDeclaration = omitXmlDeclaration;
-            setting.Encoding = encoding ?? Encoding.GetEncoding("utf-8");
-            setting.Indent = true;
+            var setting = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = omitXmlDeclaration,
+                Encoding = encoding ?? Encoding.GetEncoding("utf-8"),
+                Indent = true
+            };
             using (var writer = XmlWriter.Create(stream, setting))
             {
                 serializer.Serialize(writer, xmlContent);
