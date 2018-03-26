@@ -22,7 +22,10 @@ namespace IFramework.Config
         public static readonly Configuration Instance = new Configuration();
         public IConfiguration ConfigurationCore;
 
-        private Configuration() { }
+        private Configuration()
+        {
+
+        }
 
         public bool NeedMessageStore { get; protected set; }
 

@@ -75,6 +75,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CommandService", "Sa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Log4Net", "iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj", "{1B9DCC2C-E251-427A-AE6F-B951A4B362F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Log4NetTests", "iFramework.Plugins\IFramework.Log4NetTests\IFramework.Log4NetTests.csproj", "{B310681E-F64A-420C-B621-28A4D3E7755E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -574,6 +576,24 @@ Global
 		{1B9DCC2C-E251-427A-AE6F-B951A4B362F8}.Release|x64.Build.0 = Release|Any CPU
 		{1B9DCC2C-E251-427A-AE6F-B951A4B362F8}.Release|x86.ActiveCfg = Release|Any CPU
 		{1B9DCC2C-E251-427A-AE6F-B951A4B362F8}.Release|x86.Build.0 = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Debug|x64.Build.0 = Debug|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Debug|x86.Build.0 = Debug|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Integration|Any CPU.ActiveCfg = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Integration|Any CPU.Build.0 = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Integration|x64.ActiveCfg = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Integration|x64.Build.0 = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Integration|x86.ActiveCfg = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Integration|x86.Build.0 = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Release|x64.ActiveCfg = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Release|x64.Build.0 = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Release|x86.ActiveCfg = Release|Any CPU
+		{B310681E-F64A-420C-B621-28A4D3E7755E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -606,9 +626,10 @@ Global
 		{1BF427DA-0965-4F8E-BFEB-439DCD3228B0} = {533AC4D0-87C7-4372-ACA7-F37023836EDA}
 		{B7F4EECD-970B-4D00-B11C-65F36B3EC590} = {A9B2E731-E8B4-43A1-97B6-88517E1AA362}
 		{1B9DCC2C-E251-427A-AE6F-B951A4B362F8} = {D85A2D0B-5D20-4C0F-B06F-D688EFAD1624}
+		{B310681E-F64A-420C-B621-28A4D3E7755E} = {D85A2D0B-5D20-4C0F-B06F-D688EFAD1624}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
+		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 	EndGlobalSection
 EndGlobal

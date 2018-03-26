@@ -1,65 +1,47 @@
 ﻿using System;
 using System.Diagnostics;
 using IFramework.Config;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
-using log4netCore = log4net.Core;
+using IFramework.DependencyInjection;
+using IFramework.DependencyInjection.Autofac;
+using IFramework.Log4Net;
+using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Log4NetTests
 {
     [TestClass]
     [DeploymentItem("log4net.config", "")]
+    [DeploymentItem("appsettings.json", "")]
     public class Log4NetLoggerTests
     {
         [TestInitialize]
         public void Initialize()
         {
             Configuration.Instance
-                         //.UseAutofacContainer()
-                         //.RegisterAssemblyTypes(System.Reflection.Assembly.GetExecutingAssembly().FullName)
-                         .UseUnityContainer()
-                         .RegisterCommonComponents()
-                         .UseLog4Net("Log4NetLoggerTest");
+                         .UseAutofacContainer(System.Reflection.Assembly.GetExecutingAssembly().FullName)
+                         .UseConfiguration(new ConfigurationBuilder().Build())
+                         .UseCommonComponents()
+                         .UseLog4Net();
+            IoCFactory.Instance.Build();
         }
 
         [TestMethod]
         public void TestLog()
         {
-            var loggerFactory = IoCFactory.Resolve<ILoggerFactory>();
-            var logger = loggerFactory.Create(nameof(Log4NetLoggerTests));
+            var loggerFactory = IoCFactory.GetService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger(nameof(Log4NetLoggerTests));
             var message = "test log level";
-            Console.WriteLine(logger.Level);
-            LogTest(logger, message);
-
-            logger.ChangeLogLevel(Level.Debug);
-            Console.WriteLine(logger.Level);
-            LogTest(logger, message);
-
-            logger.ChangeLogLevel(Level.Info);
-            Console.WriteLine(logger.Level);
-            LogTest(logger, message);
-
-            logger.ChangeLogLevel(Level.Warn);
-            Console.WriteLine(logger.Level);
-            LogTest(logger, message);
-
-            logger.ChangeLogLevel(Level.Error);
-            Console.WriteLine(logger.Level);
-            LogTest(logger, message);
-
-            logger.ChangeLogLevel(Level.Fatal);
-            Console.WriteLine(logger.Level);
             LogTest(logger, message);
         }
 
         void LogTest(ILogger logger, string message)
         {
-            logger.Debug(message);
-            logger.Info(message);
-            logger.Warn(message);
-            logger.Error(message);
-            logger.Fatal(message);
+            logger.LogDebug(message);
+            logger.LogInformation(message);
+            logger.LogWarning(message);
+            logger.LogError(message);
+            logger.LogCritical(message);
         }
     }
 }

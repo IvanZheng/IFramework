@@ -1,100 +1,108 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Xml;
 using log4net;
 using log4net.Config;
-using log4net.Repository;
+using log4net.Repository.Hierarchy;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Log4Net
 {
     public class Log4NetLogger : ILogger
-  {
-    private readonly string name;
-    private readonly XmlElement xmlElement;
-    private readonly ILog log;
-    private Func<object, Exception, string> exceptionDetailsFormatter;
-    private ILoggerRepository loggerRepository;
-
-    public Log4NetLogger(string name, XmlElement xmlElement)
     {
-      this.name = name;
-      this.xmlElement = xmlElement;
-      this.loggerRepository = LogManager.CreateRepository(Assembly.GetEntryAssembly(), typeof (log4net.Repository.Hierarchy.Hierarchy));
-      this.log = LogManager.GetLogger(this.loggerRepository.Name, name);
-      XmlConfigurator.Configure(loggerRepository, xmlElement);
-    }
+        private readonly ILog _log;
+        private Func<object, Exception, string> _exceptionDetailsFormatter;
 
-    public IDisposable BeginScope<TState>(TState state)
-    {
-      return (IDisposable) null;
-    }
+#if FULL_NET_FRAMEWORK
+        public Log4NetLogger(string name)
+        {
+            _log = LogManager.GetLogger(name);
+        }
+#else
+        public Log4NetLogger(string repositoryName, string name)
+        {
+            _log = LogManager.GetLogger(repositoryName, name);
+        }
+#endif
+        public IDisposable BeginScope<TState>(TState state)
+        {
+            return null;
+        }
 
-    public bool IsEnabled(LogLevel logLevel)
-    {
-      switch (logLevel)
-      {
-        case LogLevel.Trace:
-        case LogLevel.Debug:
-          return this.log.IsDebugEnabled;
-        case LogLevel.Information:
-          return this.log.IsInfoEnabled;
-        case LogLevel.Warning:
-          return this.log.IsWarnEnabled;
-        case LogLevel.Error:
-          return this.log.IsErrorEnabled;
-        case LogLevel.Critical:
-          return this.log.IsFatalEnabled;
-        default:
-          throw new ArgumentOutOfRangeException(nameof (logLevel));
-      }
-    }
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            switch (logLevel)
+            {
+                case LogLevel.Trace:
+                case LogLevel.Debug:
+                    return _log.IsDebugEnabled;
+                case LogLevel.Information:
+                    return _log.IsInfoEnabled;
+                case LogLevel.Warning:
+                    return _log.IsWarnEnabled;
+                case LogLevel.Error:
+                    return _log.IsErrorEnabled;
+                case LogLevel.Critical:
+                    return _log.IsFatalEnabled;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(logLevel));
+            }
+        }
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-    {
-      if (!this.IsEnabled(logLevel))
-        return;
-      if (formatter == null)
-        throw new ArgumentNullException(nameof (formatter));
-      string str = (string) null;
-      if (formatter != null)
-        str = formatter(state, exception);
-      if (exception != null && this.exceptionDetailsFormatter != null)
-        str = this.exceptionDetailsFormatter((object) str, exception);
-      if (string.IsNullOrEmpty(str) && exception == null)
-        return;
-      switch (logLevel)
-      {
-        case LogLevel.Trace:
-        case LogLevel.Debug:
-          this.log.Debug((object) str);
-          break;
-        case LogLevel.Information:
-          this.log.Info((object) str);
-          break;
-        case LogLevel.Warning:
-          this.log.Warn((object) str);
-          break;
-        case LogLevel.Error:
-          this.log.Error((object) str);
-          break;
-        case LogLevel.Critical:
-          this.log.Fatal((object) str);
-          break;
-        default:
-          this.log.Warn((object) string.Format("Encountered unknown log level {0}, writing out as Info.", (object) logLevel));
-          this.log.Info((object) str, exception);
-          break;
-      }
-    }
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            if (!IsEnabled(logLevel))
+            {
+                return;
+            }
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+            string str = null;
+            if (formatter != null)
+            {
+                str = formatter(state, exception);
+            }
+            if (exception != null && _exceptionDetailsFormatter != null)
+            {
+                str = _exceptionDetailsFormatter(str, exception);
+            }
+            if (string.IsNullOrEmpty(str) && exception == null)
+            {
+                return;
+            }
+            switch (logLevel)
+            {
+                case LogLevel.Trace:
+                case LogLevel.Debug:
+                    _log.Debug(str);
+                    break;
+                case LogLevel.Information:
+                    _log.Info(str);
+                    break;
+                case LogLevel.Warning:
+                    _log.Warn(str);
+                    break;
+                case LogLevel.Error:
+                    _log.Error(str);
+                    break;
+                case LogLevel.Critical:
+                    _log.Fatal(str);
+                    break;
+                default:
+                    _log.Warn($"Encountered unknown log level {logLevel}, writing out as Info.");
+                    _log.Info(str, exception);
+                    break;
+            }
+        }
 
-    public Log4NetLogger UsingCustomExceptionFormatter(Func<object, Exception, string> formatter)
-    {
-      Func<object, Exception, string> func = formatter;
-        this.exceptionDetailsFormatter = func ?? throw new ArgumentNullException(nameof (formatter));
-      return this;
+        public Log4NetLogger UsingCustomExceptionFormatter(Func<object, Exception, string> formatter)
+        {
+            var func = formatter;
+            _exceptionDetailsFormatter = func ?? throw new ArgumentNullException(nameof(formatter));
+            return this;
+        }
     }
-  }
 }

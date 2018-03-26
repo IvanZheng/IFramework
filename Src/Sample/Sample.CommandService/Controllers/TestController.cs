@@ -11,7 +11,7 @@ namespace Sample.ApiService.Controllers
     public class TestController : Controller
     {
         private readonly IExceptionManager _exceptionManager;
-        private readonly ILogger<TestController> _logger;
+        private readonly ILogger _logger;
 
         public TestController(IExceptionManager exceptionManager, ILogger<TestController> logger)
         {
@@ -21,7 +21,7 @@ namespace Sample.ApiService.Controllers
         // GET: /Test/
         public ActionResult Index()
         {
-            _logger.LogError("TestController Index");
+            _logger.LogDebug("TestController Index");
             return View();
         }
 

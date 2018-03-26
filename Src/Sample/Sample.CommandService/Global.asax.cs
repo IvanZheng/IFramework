@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Reflection;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
@@ -58,7 +59,7 @@ namespace Sample.CommandService
                     //"192.168.99.60:9092"
                 };
                 Configuration.Instance
-                             .UseAutofacContainer("Sample.CommandService",
+                             .UseAutofacContainer(Assembly.GetExecutingAssembly().FullName,
                                                   "Sample.CommandHandler",
                                                   "Sample.DomainEventSubscriber",
                                                   "Sample.AsyncDomainEventSubscriber",
@@ -67,21 +68,19 @@ namespace Sample.CommandService
                                                                          .Build())
                              .UseCommonComponents()
                              .UseJsonNet()
-                             .UseLog4Net()
                              .UseEntityFrameworkComponents<SampleModelContext>()
                              .UseMessageStore<SampleModelContext>()
                              .UseInMemoryMessageQueue()
                              //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                              //.UseEQueue()
                              .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
-                             .UseMessagePublisher("eventTopic");
-                var services = new ServiceCollection();
-                services.AddDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)));
-                //services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
-                IoCFactory.Instance
-                          .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
-                          .Populate(services)
-                          .Build();
+                             .UseMessagePublisher("eventTopic")
+                             .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
+                              //.UseDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))))
+                             .UseLog4Net();
+                    IoCFactory.Instance
+                              .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
+                              .Build();
 
                 StartMessageQueueComponents();
                 _Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(WebApiApplication).Name);

@@ -8,12 +8,22 @@ using IFramework.EntityFrameworkCore.Repositories;
 using IFramework.EntityFrameworkCore.UnitOfWorks;
 using IFramework.Repositories;
 using IFramework.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.EntityFrameworkCore
 {
     public static class ConfigurationExtension
     {
+        public static Configuration UseDbContextPool<TDbContext>(this Configuration configuration, Action<DbContextOptionsBuilder> optionsAction, int poolSize = 128)
+            where TDbContext : DbContext
+        {
+            var services = new ServiceCollection();
+            services.AddDbContextPool<TDbContext>(optionsAction, poolSize);
+            IoCFactory.Instance.Populate(services);
+            return configuration;
+        }
+
         /// <summary>
         /// TDbContext is the default type for Repository<TEntity>'s dbContext injected paramter
         /// </summary>

@@ -16,6 +16,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
+using IFramework.Config;
 using IFramework.MessageQueue;
 
 namespace IFramework.Infrastructure
@@ -818,12 +819,14 @@ namespace IFramework.Infrastructure
             return null;
         }
 #if FULL_NET_FRAMEWORK
-        public static void SetEntryAssembly()
+
+        public static Configuration SetEntryAssembly(this Configuration configuration)
         {
-            SetEntryAssembly(Assembly.GetCallingAssembly());
+            configuration.SetEntryAssembly(Assembly.GetCallingAssembly());
+            return configuration;
         }
 
-        public static void SetEntryAssembly(Assembly assembly)
+        public static Configuration SetEntryAssembly(this Configuration configuration, Assembly assembly)
         {
             AppDomainManager manager = new AppDomainManager();
             FieldInfo entryAssemblyfield = manager.GetType().GetField("m_entryAssembly", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -838,6 +841,7 @@ namespace IFramework.Infrastructure
             {
                 domainManagerField.SetValue(domain, manager);
             }
+            return configuration;
         }
 #endif
     }
