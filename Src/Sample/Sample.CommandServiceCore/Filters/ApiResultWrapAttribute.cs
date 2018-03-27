@@ -27,13 +27,18 @@ namespace Sample.CommandServiceCore.Filters
                 var ex = context.Exception;
                 if (ex is DomainException domainException)
                 {
+#if DEBUG
+                    exceptionResult = new ApiResult(domainException.ErrorCode, $"Message: {domainException.Message} StackTrace:{ex.GetBaseException().StackTrace}");
+#else
                     exceptionResult = new ApiResult(domainException.ErrorCode, domainException.Message);
+
+#endif
                     logger.LogWarning(ex, $"action failed due to domain exception");
                 }
                 else
                 {
 #if DEBUG
-                    exceptionResult = new ApiResult(ErrorCode.UnknownError, $"Message:{ex.GetBaseException().Message}\r\nStackTrace:{ex.GetBaseException().StackTrace}");
+                    exceptionResult = new ApiResult(ErrorCode.UnknownError, $"Message: {ex.GetBaseException().Message} StackTrace:{ex.GetBaseException().StackTrace}");
 #else
                     exceptionResult = new ApiResult(ErrorCode.UnknownError, ServerInternalError);
 #endif

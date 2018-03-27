@@ -16,6 +16,7 @@ using IFramework.JsonNetCore;
 using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
+using IFramework.MessageQueueCore.ConfluentKafka;
 using IFramework.MessageQueueCore.InMemory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -55,8 +56,8 @@ namespace Sample.CommandService
             {
                 var kafkaBrokerList = new[]
                 {
-                    new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString()
-                    //"192.168.99.60:9092"
+                    //new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString()
+                    "10.100.7.46:9092"
                 };
                 Configuration.Instance
                              .UseAutofacContainer(Assembly.GetExecutingAssembly().FullName,
@@ -71,8 +72,8 @@ namespace Sample.CommandService
                              .UseLog4Net()
                              .UseEntityFrameworkComponents<SampleModelContext>()
                              .UseMessageStore<SampleModelContext>()
-                             .UseInMemoryMessageQueue()
-                             //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                             //.UseInMemoryMessageQueue()
+                             .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                              //.UseEQueue()
                              .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                              .UseMessagePublisher("eventTopic")
