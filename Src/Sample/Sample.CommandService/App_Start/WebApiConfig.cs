@@ -21,7 +21,7 @@ namespace Sample.CommandService
             config.Formatters.JsonFormatter.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
 
             //config.Formatters.Insert(0, new MultipartMediaTypeFormatter());
-            //config.Formatters.Insert(0, new CommandMediaTypeFormatter());
+            config.Formatters.Insert(0, new CommandMediaTypeFormatter());
             config.Routes.MapHttpRoute(
                                        "DefaultApi",
                                        "api/{controller}/{command}",

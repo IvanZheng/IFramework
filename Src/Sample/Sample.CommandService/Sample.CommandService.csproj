@@ -298,7 +298,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\CommandMediaTypeFormatter.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\FormUrlEncodedJson.cs" />
     <Compile Include="App_Start\HierarchicalDependencyResolver.cs" />
     <Compile Include="App_Start\MvcDependencyInjection.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />

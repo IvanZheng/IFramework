@@ -16,16 +16,19 @@
         var showResult = function(result) {
             $("#result").prepend(result + "<br>");
         }
+        var showResult = function(result) {
+            $("#result").prepend(result + "<br>");
+        }
         var doSaga = function(commandName, command) {
             $.ajax({
                 cache: false,
-                contentType: "application/command+form;command=" + commandName,
+                contentType: "application/json",
                 type: "POST",
-                url: '@Url.Content("~/api/SagaApi")',
-                data: command,
+                url: '@Url.Content("~/api/SagaApi/")' + commandName + '?t=' + new Date().getTime().toString(),
+                data: JSON.stringify(command),
                 success: function(data) {
                     if (data.errorCode == 0) {
-                        showResult($.toJSON(data));
+                        showResult(JSON.stringify(data));
                     } else {
                         showResult(data.errorCode + " " + data.message);
                     }
@@ -38,13 +41,13 @@
         var doCommand = function(commandName, command) {
             $.ajax({
                 cache: false,
-                contentType: "application/command+form;command=" + commandName,
+                //contentType: "application/json",
                 type: "POST",
-                url: '@Url.Content("~/api/Command")?t=' + new Date().getTime().toString(),
-                data: command,
+                url: '@Url.Content("~/api/Command/")' + commandName + '?t=' + new Date().getTime().toString(),
+                data: command,//JSON.stringify(command),
                 success: function(data) {
-                    if (data.errorCode == 0) {
-                        showResult($.toJSON(data));
+                    if (data.errorCode === 0) {
+                        showResult(JSON.stringify(data));
                     } else {
                         showResult(data.errorCode + " " + data.message);
                     }
@@ -105,7 +108,7 @@
             $("#batchRegisterCommand").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
-                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
+                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn", Tags: [{Id:1, Name:"1"}, {Id:2, Name:"2"}]};
                 batchCommandTest("Register", registerCommand, $("#batchCount").val());
             });
 
@@ -131,7 +134,7 @@
             $("#registerCommand").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
-                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
+                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn", Tags: [{Id:1, Name:"1"}, {Id:2, Name:"2"}]};
                 doCommand("Register", registerCommand);
             });
 
