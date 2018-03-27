@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Xml;
 using IFramework.Config;
 using log4net;
 using log4net.Config;
@@ -14,17 +13,18 @@ namespace IFramework.Log4Net
 {
     public class Log4NetProvider : ILoggerProvider
     {
-        private readonly ConcurrentDictionary<string, Log4NetLogger> _loggers = new ConcurrentDictionary<string, Log4NetLogger>();
-
         private readonly ILoggerRepository _loggerRepository;
+        private readonly ConcurrentDictionary<string, Log4NetLogger> _loggers = new ConcurrentDictionary<string, Log4NetLogger>();
 
         public Log4NetProvider(string log4NetConfigFile)
         {
             var configFile = GetLog4NetConfigFile(log4NetConfigFile);
-            _loggerRepository = LogManager.CreateRepository(Configuration.GetAppSetting("app") ?? Assembly.GetCallingAssembly().FullName,
-                                                            typeof(log4net.Repository.Hierarchy.Hierarchy));
-            XmlConfigurator.ConfigureAndWatch(_loggerRepository, configFile);
 
+            var repositoryName = Configuration.GetAppSetting("app") ?? Assembly.GetCallingAssembly()
+                                                                               .FullName;
+            _loggerRepository = LogManager.GetAllRepositories()
+                                          .FirstOrDefault(r => r.Name == repositoryName) ?? LogManager.CreateRepository(repositoryName);
+            XmlConfigurator.ConfigureAndWatch(_loggerRepository, configFile);
         }
 
         public ILogger CreateLogger(string categoryName)
@@ -44,7 +44,6 @@ namespace IFramework.Log4Net
             return new FileInfo(filename);
         }
 
- 
 
         private Log4NetLogger CreateLoggerImplementation(string name)
         {
