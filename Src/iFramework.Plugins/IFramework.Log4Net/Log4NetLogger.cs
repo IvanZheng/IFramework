@@ -14,17 +14,12 @@ namespace IFramework.Log4Net
         private readonly ILog _log;
         private Func<object, Exception, string> _exceptionDetailsFormatter;
 
-#if FULL_NET_FRAMEWORK
-        public Log4NetLogger(string name)
-        {
-            _log = LogManager.GetLogger(name);
-        }
-#else
+
         public Log4NetLogger(string repositoryName, string name)
         {
             _log = LogManager.GetLogger(repositoryName, name);
         }
-#endif
+
         public IDisposable BeginScope<TState>(TState state)
         {
             return null;

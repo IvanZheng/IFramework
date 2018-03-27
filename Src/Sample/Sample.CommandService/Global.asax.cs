@@ -68,6 +68,7 @@ namespace Sample.CommandService
                                                                          .Build())
                              .UseCommonComponents()
                              .UseJsonNet()
+                             .UseLog4Net()
                              .UseEntityFrameworkComponents<SampleModelContext>()
                              .UseMessageStore<SampleModelContext>()
                              .UseInMemoryMessageQueue()
@@ -77,7 +78,8 @@ namespace Sample.CommandService
                              .UseMessagePublisher("eventTopic")
                              .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
                               //.UseDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))))
-                             .UseLog4Net();
+                             ;
+
                     IoCFactory.Instance
                               .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                               .Build();

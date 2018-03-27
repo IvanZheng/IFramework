@@ -69,7 +69,7 @@ namespace Sample.CommandServiceCore
                          .UseMessagePublisher("eventTopic")
                          .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
                          //.UseDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))))
-                         .UseLog4Net();
+                         ;
         }
 
 
@@ -89,8 +89,6 @@ namespace Sample.CommandServiceCore
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
-            //services.AddDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)));
-            //services.AddDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))));
             return IoCFactory.Instance
                              .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                              .Populate(services)
@@ -105,8 +103,9 @@ namespace Sample.CommandServiceCore
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.UseLog4Net();
             StartMessageQueueComponents();
 
             if (env.IsDevelopment())
