@@ -11,14 +11,14 @@ namespace IFramework.DependencyInjection.Microsoft
         public static Configuration UseMicrosoftDependencyInjection(this Configuration configuration)
         {
             var serviceCollection = new ServiceCollection();
-            IoCFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(serviceCollection));
+            ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(serviceCollection));
             return configuration;
         }
 
         public static Configuration UseAutofacContainer(this Configuration configuration,
                                                         IServiceCollection serviceCollection)
         {
-            IoCFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(serviceCollection));
+            ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(serviceCollection));
             return configuration;
         }
     }

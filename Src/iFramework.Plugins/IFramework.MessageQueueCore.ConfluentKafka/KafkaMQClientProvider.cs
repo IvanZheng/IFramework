@@ -33,7 +33,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
             var messageContext = new MessageContext(message, messageId)
             {
                 Producer = producer,
-                Ip = Utility.GetLocalIPV4()?.ToString()
+                Ip = Utility.GetLocalIpv4()?.ToString()
             };
             if (!string.IsNullOrEmpty(correlationId))
             {

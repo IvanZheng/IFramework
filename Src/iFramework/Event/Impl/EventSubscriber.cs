@@ -50,7 +50,7 @@ namespace IFramework.Event.Impl
             CommandBus = commandBus;
             MessageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
                                                      ConsumerConfig.MailboxProcessBatchCount);
-            Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
         public string Producer => _producer ?? (_producer = $"{SubscriptionName}.{_topic}.{ConsumerId}");
@@ -108,7 +108,7 @@ namespace IFramework.Event.Impl
                 //messageHandlerTypes.ForEach(messageHandlerType =>
                 foreach (var messageHandlerType in messageHandlerTypes)
                 {
-                    using (var scope = IoCFactory.Instance
+                    using (var scope = ObjectProviderFactory.Instance
                                                  .ObjectProvider
                                                  .CreateScope(builder => builder.RegisterInstance(typeof(IMessageContext), eventContext)))
                     {

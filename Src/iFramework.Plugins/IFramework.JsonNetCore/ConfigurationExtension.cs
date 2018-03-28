@@ -12,7 +12,7 @@ namespace IFramework.JsonNetCore
         /// <returns></returns>
         public static Configuration UseJsonNet(this Configuration configuration)
         {
-            IoCFactory.Instance
+            ObjectProviderFactory.Instance
                       .ObjectProviderBuilder
                       .RegisterInstance(typeof(IJsonConvert), new JsonConvertImpl());
             return configuration;

@@ -1,13 +1,27 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using System.Transactions;
+using IFramework.Config;
+using IFramework.DependencyInjection;
+using IFramework.DependencyInjection.Autofac;
 using IFramework.Infrastructure;
+using IFramework.Log4Net;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace IFramework.Test.EntityFramework
 {
-    public class EntityFrameworkTests : TestBase
+    public class EntityFrameworkTests 
     {
+        public EntityFrameworkTests()
+        {
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                                                    .AddJsonFile("appsettings.json");
+            Configuration.Instance
+                         .UseConfiguration(builder.Build());
+        }
+
         [Fact]
         public async Task AddUserTest()
         {
@@ -42,7 +56,6 @@ namespace IFramework.Test.EntityFramework
                 users.ForEach(u =>
                 {
                     Assert.NotNull(u.GetDbContext<DemoDbContext>());
-                    Assert.True(u.Cards.Count > 0);
                 });
             }
         }

@@ -13,7 +13,7 @@ namespace IFramework.UnitOfWork
         //static Type GetUnitOfWorkLifetimeManagerType()
         //{
         //    Type type = null;
-        //    var unitOfWorkRegistration = IoCFactory.Instance.CurrentContainer.Registrations.FirstOrDefault(r => r.RegisteredType == typeof(IUnitOfWork));
+        //    var unitOfWorkRegistration = ObjectProviderFactory.Instance.CurrentContainer.Registrations.FirstOrDefault(r => r.RegisteredType == typeof(IUnitOfWork));
         //    if (unitOfWorkRegistration != null)
         //    {
         //        type = unitOfWorkRegistration.LifetimeManagerType;

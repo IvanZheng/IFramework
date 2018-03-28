@@ -11,7 +11,7 @@ namespace IFramework.MessageQueueCore.InMemory
     {
         public static Configuration UseInMemoryMessageQueue(this Configuration configuration)
         {
-            IoCFactory.Instance
+            ObjectProviderFactory.Instance
                       .ObjectProviderBuilder
                       .Register<IMessageQueueClient, InMemoryClient>(ServiceLifetime.Singleton);
             return configuration;

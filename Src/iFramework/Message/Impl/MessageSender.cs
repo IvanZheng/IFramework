@@ -26,7 +26,7 @@ namespace IFramework.Message.Impl
             DefaultTopic = defaultTopic;
             NeedMessageStore = Configuration.Instance.NeedMessageStore;
             MessageStateQueue = new BlockingCollection<MessageState>();
-            Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
         protected BlockingCollection<MessageState> MessageStateQueue { get; set; }

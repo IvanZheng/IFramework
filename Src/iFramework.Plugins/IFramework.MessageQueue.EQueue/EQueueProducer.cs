@@ -18,7 +18,7 @@ namespace IFramework.MessageQueue.EQueue
 {
     public class EQueueProducer: IMessageProducer
     {
-        private readonly ILogger _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(EQueueProducer).Name);
+        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(EQueueProducer).Name);
        
         public EQueueProducer(string clusterName, List<IPEndPoint> nameServerList)
         {

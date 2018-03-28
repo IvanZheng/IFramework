@@ -77,21 +77,21 @@ namespace IFramework.Config
 
         public Configuration UseNullLogger()
         {
-            IoCFactory.Instance
+            ObjectProviderFactory.Instance
                       .RegisterType<ILoggerFactory, NullLoggerFactory>(ServiceLifetime.Singleton);
             return this;
         }
 
         public Configuration RegisterExceptionManager<TExceptionManager>() where TExceptionManager : class, IExceptionManager
         {
-            IoCFactory.Instance
+            ObjectProviderFactory.Instance
                       .RegisterType<IExceptionManager, TExceptionManager>(ServiceLifetime.Singleton);
             return this;
         }
 
         private Configuration UserDataContractJson()
         {
-            IoCFactory.Instance
+            ObjectProviderFactory.Instance
                       .RegisterInstance(typeof(IJsonConvert)
                                         , new DataContractJsonConvert());
             return this;
@@ -99,7 +99,7 @@ namespace IFramework.Config
 
         public Configuration UseMemoryCahce(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            IoCFactory.Instance.RegisterType<ICacheManager, MemoryCacheManager>(lifetime);
+            ObjectProviderFactory.Instance.RegisterType<ICacheManager, MemoryCacheManager>(lifetime);
             return this;
         }
 
@@ -116,20 +116,20 @@ namespace IFramework.Config
             NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
             if (NeedMessageStore)
             {
-                IoCFactory.Instance.RegisterType<TMessageStore, TMessageStore>(lifetime);
-                IoCFactory.Instance.RegisterType<IMessageStore>(provider => provider.GetService<TMessageStore>(), lifetime);
+                ObjectProviderFactory.Instance.RegisterType<TMessageStore, TMessageStore>(lifetime);
+                ObjectProviderFactory.Instance.RegisterType<IMessageStore>(provider => provider.GetService<TMessageStore>(), lifetime);
             }
             else
             {
-                IoCFactory.Instance.RegisterType<IMessageStore, MockMessageStore>(lifetime);
+                ObjectProviderFactory.Instance.RegisterType<IMessageStore, MockMessageStore>(lifetime);
             }
             return this;
         }
 
         //public Configuration UseNoneLogger()
         //{
-        //    IoCFactory.Instance.RegisterType<ILoggerLevelController, LoggerLevelController>(ServiceLifetime.Singleton);
-        //    IoCFactory.Instance.RegisterInstance(typeof(ILoggerFactory)
+        //    ObjectProviderFactory.Instance.RegisterType<ILoggerLevelController, LoggerLevelController>(ServiceLifetime.Singleton);
+        //    ObjectProviderFactory.Instance.RegisterInstance(typeof(ILoggerFactory)
         //                                         , new MockLoggerFactory());
         //    return this;
         //}
@@ -147,13 +147,13 @@ namespace IFramework.Config
         public Configuration UseSyncEventSubscriberProvider(params string[] eventSubscriberProviders)
         {
             var provider = new SyncEventSubscriberProvider(eventSubscriberProviders);
-            IoCFactory.Instance.RegisterInstance(provider);
+            ObjectProviderFactory.Instance.RegisterInstance(provider);
             return this;
         }
 
         public Configuration RegisterDefaultEventBus(IObjectProviderBuilder builder, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            builder = builder ?? IoCFactory.Instance.ObjectProviderBuilder;
+            builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
             builder.RegisterInstance(new SyncEventSubscriberProvider());
             builder.Register<IEventBus, EventBus>(lifetime);
             return this;
@@ -178,7 +178,7 @@ namespace IFramework.Config
         public static string GetConnectionString(string name)
         {
             return Instance.ConfigurationCore
-                           ?.GetConnectionString(name) ?? ConfigurationManager.ConnectionStrings[name].ConnectionString;
+                           ?.GetConnectionString(name) ?? ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
         }
 
         public static string Get(string key)

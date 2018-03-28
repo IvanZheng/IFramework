@@ -37,8 +37,8 @@ namespace Sample.ApiService.Controllers
         {
             return Task.Factory.StartNew(() =>
             {
-                //var commandDistributor = IoCFactory.Resolve<IMessageConsumer>("CommandDistributor");
-                //var domainEventConsumer = IoCFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
+                //var commandDistributor = ObjectProviderFactory.Resolve<IMessageConsumer>("CommandDistributor");
+                //var domainEventConsumer = ObjectProviderFactory.Resolve<IMessageConsumer>("DomainEventConsumer");
                 //var distributorStatus = commandDistributor.GetStatus() +
                 //    "event consumer:" + domainEventConsumer.GetStatus();
                 //return distributorStatus;

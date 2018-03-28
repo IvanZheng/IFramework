@@ -23,7 +23,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
                                   string consumerId,
                                   ConsumerConfig consumerConfig = null)
         {
-            Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
             ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             Topic = topic;
             GroupId = groupId;

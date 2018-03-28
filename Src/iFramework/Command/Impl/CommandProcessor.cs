@@ -49,7 +49,7 @@ namespace IFramework.Command.Impl
             MessageQueueClient = messageQueueClient;
             MessageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
                                                     ConsumerConfig.MailboxProcessBatchCount);
-            Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
         public string Producer => _producer ?? (_producer = $"{CommandQueueName}.{ConsumerId}");
@@ -131,7 +131,7 @@ namespace IFramework.Command.Impl
                 }
                 var needRetry = command.NeedRetry;
 
-                using (var scope = IoCFactory.Instance
+                using (var scope = ObjectProviderFactory.Instance
                                              .ObjectProvider
                                              .CreateScope(builder => builder.RegisterInstance(typeof(IMessageContext), commandContext)))
                 {

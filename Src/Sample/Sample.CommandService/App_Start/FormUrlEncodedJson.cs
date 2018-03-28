@@ -291,9 +291,7 @@ namespace Sample.CommandService
                     if (obj[key].Type == JTokenType.String)
                     {
                         var str = obj[key].ToObject<string>();
-                        var jobject = new JObject();
-                        jobject.Add("0", str);
-                        jobject.Add("1", value);
+                        var jobject = new JObject {{"0", str}, {"1", value}};
                         obj[key] = jobject;
                     }
                     else if (obj[key] is JObject)
@@ -318,7 +316,7 @@ namespace Sample.CommandService
             }
             else
             {
-                obj[key] = value != null ? value : null;
+                obj[key] = value;
             }
             return true;
         }
@@ -351,8 +349,7 @@ namespace Sample.CommandService
             {
                 foreach (var key in ((IDictionary<string, JToken>) jsonObject).Keys)
                 {
-                    int result;
-                    if (int.TryParse(key, NumberStyles.Integer, NumberFormatInfo.InvariantInfo, out result) && result > num)
+                    if (int.TryParse(key, NumberStyles.Integer, NumberFormatInfo.InvariantInfo, out var result) && result > num)
                     {
                         num = result;
                     }
@@ -371,8 +368,7 @@ namespace Sample.CommandService
 
         private static void FixContiguousArrays(JToken jv)
         {
-            var jarray = jv as JArray;
-            if (jarray != null)
+            if (jv is JArray jarray)
             {
                 for (var index = 0; index < jarray.Count; ++index)
                 {
@@ -403,9 +399,7 @@ namespace Sample.CommandService
 
         private static JToken FixSingleContiguousArray(JToken original)
         {
-            var jobject = original as JObject;
-            List<string> sortedKeys;
-            if (jobject == null || jobject.Count <= 0 || !CanBecomeArray(new List<string>(((IDictionary<string, JToken>) jobject).Keys), out sortedKeys))
+            if (!(original is JObject jobject) || jobject.Count <= 0 || !CanBecomeArray(new List<string>(((IDictionary<string, JToken>) jobject).Keys), out var sortedKeys))
             {
                 return original;
             }
@@ -424,8 +418,7 @@ namespace Sample.CommandService
             var flag = true;
             foreach (var key in keys)
             {
-                int result;
-                if (!int.TryParse(key, NumberStyles.None, CultureInfo.InvariantCulture, out result))
+                if (!int.TryParse(key, NumberStyles.None, CultureInfo.InvariantCulture, out var result))
                 {
                     flag = false;
                     break;

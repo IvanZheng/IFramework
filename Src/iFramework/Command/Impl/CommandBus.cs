@@ -200,7 +200,7 @@ namespace IFramework.Command.Impl
 
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {
-            using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
+            using (var scope = ObjectProviderFactory.Instance.ObjectProvider.CreateScope())
             using (var messageStore = scope.GetService<IMessageStore>())
             {
                 return messageStore.GetAllUnSentCommands((messageId,
@@ -237,7 +237,7 @@ namespace IFramework.Command.Impl
             {
                 Task.Run(() =>
                 {
-                    using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
+                    using (var scope = ObjectProviderFactory.Instance.ObjectProvider.CreateScope())
                     using (var messageStore = scope.GetService<IMessageStore>())
                     {
                         messageStore.RemoveSentCommand(messageState.MessageID);

@@ -20,7 +20,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         public MessageProcessor(IProcessingMessageScheduler<IMessageContext> scheduler, int batchCount = 100)
         {
-            _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+            _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
             _batchCount = batchCount;
             _processingMessageScheduler = scheduler;
             MailboxDictionary = new ConcurrentDictionary<string, ProcessingMailbox<IMessageContext>>();

@@ -14,7 +14,7 @@ namespace Sample.CommandService.App_Start
     {
         public static HttpConfiguration RegisterMvcDependencyInjection(this HttpConfiguration configuration)
         {
-            var objectProvider = (ObjectProvider)IoCFactory.Instance.ObjectProvider;
+            var objectProvider = (ObjectProvider)ObjectProviderFactory.Instance.ObjectProvider;
 
             FilterProviders.Providers.Remove(FilterProviders.Providers.OfType<FilterAttributeFilterProvider>().First());
             FilterProviders.Providers.Add(new AutofacFilterProvider());
@@ -24,7 +24,7 @@ namespace Sample.CommandService.App_Start
 
         public static HttpConfiguration RegisterWebApiDependencyInjection(this HttpConfiguration configuration)
         {
-            var resolver = new HierarchicalDependencyResolver(IoCFactory.Instance.ObjectProvider);
+            var resolver = new HierarchicalDependencyResolver(ObjectProviderFactory.Instance.ObjectProvider);
             configuration.DependencyResolver = resolver;
             return configuration;
         }

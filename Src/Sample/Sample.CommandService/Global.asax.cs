@@ -56,7 +56,7 @@ namespace Sample.CommandService
             {
                 var kafkaBrokerList = new[]
                 {
-                    new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString()
+                    new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
                     //"10.100.7.46:9092"
                 };
                 Configuration.Instance
@@ -81,12 +81,12 @@ namespace Sample.CommandService
                               //.UseDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))))
                              ;
 
-                    IoCFactory.Instance
+                    ObjectProviderFactory.Instance
                               .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                               .Build();
 
                 StartMessageQueueComponents();
-                _Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(WebApiApplication).Name);
+                _Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(WebApiApplication).Name);
 
 
                 _Logger.LogDebug($"App Started");
@@ -165,7 +165,7 @@ namespace Sample.CommandService
         {
             try
             {
-                IoCFactory.Instance.ObjectProvider.Dispose();
+                ObjectProviderFactory.Instance.ObjectProvider.Dispose();
             }
             catch (Exception ex)
             {

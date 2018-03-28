@@ -74,7 +74,7 @@ namespace IFramework.Infrastructure
 
         public ExceptionManager()
         {
-            Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
         protected virtual string UnKnownMessage { get; set; } = ErrorCode.UnknownError.ToString();
