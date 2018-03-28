@@ -49,8 +49,8 @@ namespace Sample.CommandServiceCore
             //    .AddEnvironmentVariables();
             var kafkaBrokerList = new[]
             {
-                new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString()
-                //"192.168.99.60:9092"
+                //new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString()
+                "10.100.7.46:9092"
             };
             Configuration.Instance
                          .UseAutofacContainer("Sample.CommandHandler",
@@ -62,8 +62,8 @@ namespace Sample.CommandServiceCore
                          .UseJsonNet()
                          .UseEntityFrameworkComponents<SampleModelContext>()
                          .UseMessageStore<SampleModelContext>()
-                         .UseInMemoryMessageQueue()
-                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseInMemoryMessageQueue()
+                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
