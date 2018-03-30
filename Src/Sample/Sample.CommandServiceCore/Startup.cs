@@ -43,14 +43,10 @@ namespace Sample.CommandServiceCore
 
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            //var builder = new ConfigurationBuilder()
-            //    .AddJsonFile("appsettings.json")
-            //    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
-            //    .AddEnvironmentVariables();
             var kafkaBrokerList = new[]
             {
-                //new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString()
-                "10.100.7.46:9092"
+                new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
+                //"10.100.7.46:9092"
             };
             Configuration.Instance
                          .UseAutofacContainer("Sample.CommandHandler",
