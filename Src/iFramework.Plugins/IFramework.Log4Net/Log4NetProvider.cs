@@ -20,7 +20,7 @@ namespace IFramework.Log4Net
         {
             var configFile = GetLog4NetConfigFile(log4NetConfigFile);
 
-            var repositoryName = Configuration.GetAppSetting("app") ?? Assembly.GetCallingAssembly()
+            var repositoryName = Configuration.Get("app") ?? Assembly.GetCallingAssembly()
                                                                                .FullName;
             _loggerRepository = LogManager.GetAllRepositories()
                                           .FirstOrDefault(r => r.Name == repositoryName) ?? LogManager.CreateRepository(repositoryName);

@@ -107,7 +107,6 @@ namespace IFramework.Config
         /// if sameIntanceAsBusinessDbContext is true, TMessageStore must be registerd before object provider to be built!
         /// </summary>
         /// <typeparam name="TMessageStore"></typeparam>
-        /// <param name="sameIntanceAsBusinessDbContext"></param>
         /// <param name="lifetime"></param>
         /// <returns></returns>
         public Configuration UseMessageStore<TMessageStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
@@ -172,7 +171,12 @@ namespace IFramework.Config
 
         public static T Get<T>(string key)
         {
-            return Instance.ConfigurationCore != null ? Instance.ConfigurationCore.GetValue<T>(key) : default(T);
+            var value = Instance.ConfigurationCore != null ? Instance.ConfigurationCore.GetValue<T>(key) : default(T);
+            if (value != null)
+            {
+                value = GetAppConfig<T>(ConfigurationManager.AppSettings[key]);
+            }
+            return value;
         }
 
         public static string GetConnectionString(string name)
@@ -183,22 +187,7 @@ namespace IFramework.Config
 
         public static string Get(string key)
         {
-            return Instance.ConfigurationCore?[key];
-        }
-
-        public static string GetAppSetting(string key)
-        {
-            return Get($"AppSettings:{key}") ?? ConfigurationManager.AppSettings[key];
-        }
-
-        public static T GetAppSetting<T>(string key)
-        {
-            var appSetting = Get<T>($"AppSettings:{key}");
-            if (appSetting == null)
-            {
-                appSetting =  GetAppConfig<T>(ConfigurationManager.AppSettings[key]);
-            }
-            return appSetting;
+            return Instance.ConfigurationCore?[key] ?? ConfigurationManager.AppSettings[key];;
         }
 
         private static T GetAppConfig<T>(string appSetting)

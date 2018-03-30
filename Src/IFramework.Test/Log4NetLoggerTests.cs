@@ -14,6 +14,11 @@ namespace IFramework.Test
     {
         public Log4NetLoggerTests()
         {
+        }
+
+        [Fact]
+        public void TestLog()
+        {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
             
@@ -22,11 +27,7 @@ namespace IFramework.Test
                          .UseAutofacContainer(new ContainerBuilder())
                          .UseLog4Net();
             ObjectProviderFactory.Instance.Build();
-        }
 
-        [Fact]
-        public void TestLog()
-        {
             var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(nameof(Log4NetLoggerTests));
             var message = "test log level";

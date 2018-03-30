@@ -14,6 +14,11 @@ namespace IFramework.DependencyInjection
         /// </summary>
         public static ObjectProviderFactory Instance { get; } = new ObjectProviderFactory();
 
+        public void Clear()
+        {
+            _objectProviderBuilder = null;
+            _objectProvider = null;
+        }
         #endregion
 
         #region Members

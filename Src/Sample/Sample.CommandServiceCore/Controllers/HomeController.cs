@@ -40,8 +40,8 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Index()
         {
-            var profile = Configuration.GetAppSetting("Debug");
-            var member = Configuration.GetAppSetting("Member:A");
+            var profile = Configuration.Get("Debug");
+            var member = Configuration.Get("Member:A");
             _logger.LogDebug(profile.ToJson());
             return View();
         }

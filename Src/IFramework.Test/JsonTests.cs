@@ -32,17 +32,18 @@ namespace IFramework.Test
         public JsonTests(ITestOutputHelper output)
         {
             _output = output;
-            Configuration.Instance
-                         .UseAutofacContainer()
-                         .UseJsonNet();
-
-            ObjectProviderFactory.Instance
-                                 .Build();
+            
            
         }
         [Fact]
         public void SerializeReadonlyObject()
         {
+            Configuration.Instance
+                      .UseAutofacContainer()
+                      .UseJsonNet();
+
+            ObjectProviderFactory.Instance
+                                 .Build();
             //var ex = new Exception("test");
             //var json = ex.ToJson();
             //var ex2 = json.ToObject<Exception>();
