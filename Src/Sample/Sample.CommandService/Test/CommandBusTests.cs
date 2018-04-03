@@ -20,9 +20,9 @@ namespace Sample.CommandService.Tests
 
         public CommandBusTests()
         {
-            _logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(CommandBusTests));
+            _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(CommandBusTests));
 
-            _commandBus = IoCFactory.GetService<ICommandBus>();
+            _commandBus = ObjectProviderFactory.GetService<ICommandBus>();
 
             _createProducts = new List<CreateProduct>();
             var tasks = new List<Task>();

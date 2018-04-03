@@ -1,8 +1,5 @@
-﻿using IFramework.Config;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using System;
+using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.EntityFrameworkCore.Repositories;
 using IFramework.EntityFrameworkCore.UnitOfWorks;
@@ -20,12 +17,12 @@ namespace IFramework.EntityFrameworkCore
         {
             var services = new ServiceCollection();
             services.AddDbContextPool<TDbContext>(optionsAction, poolSize);
-            IoCFactory.Instance.Populate(services);
+            ObjectProviderFactory.Instance.Populate(services);
             return configuration;
         }
 
         /// <summary>
-        /// TDbContext is the default type for Repository<TEntity>'s dbContext injected paramter
+        ///     TDbContext is the default type for Repository<TEntity>'s dbContext injected paramter
         /// </summary>
         /// <typeparam name="TDbContext"></typeparam>
         /// <param name="configuration"></param>
@@ -33,11 +30,11 @@ namespace IFramework.EntityFrameworkCore
         /// <param name="lifetime"></param>
         /// <returns></returns>
         public static Configuration UseEntityFrameworkComponents<TDbContext>(this Configuration configuration,
-                                                                      IObjectProviderBuilder builder,
-                                                                      ServiceLifetime lifetime = ServiceLifetime.Scoped)
+                                                                             IObjectProviderBuilder builder,
+                                                                             ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TDbContext : MsDbContext
         {
-            builder = builder ?? IoCFactory.Instance.ObjectProviderBuilder;
+            builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
             builder.Register<TDbContext, TDbContext>(lifetime);
             builder.Register<MsDbContext>(provider => provider.GetService<TDbContext>(), lifetime);
             return configuration.RegisterUnitOfWork(builder, lifetime)
@@ -55,7 +52,7 @@ namespace IFramework.EntityFrameworkCore
                                                        IObjectProviderBuilder builder,
                                                        ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            builder = builder ?? IoCFactory.Instance.ObjectProviderBuilder;
+            builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
             builder.Register<IUnitOfWork, UnitOfWorks.UnitOfWork>(lifetime);
             builder.Register<IAppUnitOfWork, AppUnitOfWork>(lifetime);
             return configuration;
@@ -65,7 +62,7 @@ namespace IFramework.EntityFrameworkCore
                                                          IObjectProviderBuilder builder,
                                                          ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            builder = builder ?? IoCFactory.Instance.ObjectProviderBuilder;
+            builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
             builder.Register(typeof(IRepository<>), typeof(Repository<>));
             builder.Register<IDomainRepository, DomainRepository>(lifetime);
             return configuration;

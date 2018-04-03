@@ -21,24 +21,11 @@ using IFramework.MessageQueue;
 
 namespace IFramework.Infrastructure
 {
-    public class QueryParameter
-    {
-        public QueryParameter(string name, string value)
-        {
-            Name = name;
-            Value = value;
-        }
-
-        public string Name { get; }
-
-        public string Value { get; set; }
-    }
-
     public static class Utility
     {
         private static readonly ConcurrentDictionary<string, MethodInfo> MethodInfoDictionary = new ConcurrentDictionary<string, MethodInfo>();
-        private const string k_base36_digits = "0123456789abcdefghijklmnopqrstuvwxyz";
-        private static readonly uint[] _lookup32 = CreateLookup32();
+        private const string KBase36Digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+        private static readonly uint[] Lookup32 = CreateLookup32();
 
 
         public static bool TryRemoveBeforeKey<TKey, TElement>(this SortedList<TKey, TElement> list, TKey key, out TElement obj)
@@ -67,13 +54,13 @@ namespace IFramework.Infrastructure
         }
 
 
-        public static IPAddress[] GetLocalIPAddresses()
+        public static IPAddress[] GetLocalIpAddresses()
         {
             Dns.GetHostName();
             return Dns.GetHostAddresses(Dns.GetHostName());
         }
 
-        public static IPAddress GetLocalIPV4()
+        public static IPAddress GetLocalIpv4()
         {
             return Dns.GetHostEntry(Dns.GetHostName())
                       .AddressList
@@ -91,20 +78,20 @@ namespace IFramework.Infrastructure
             return result;
         }
 
-        public static string ToBase36string(this byte[] bytes,
+        public static string ToBase36String(this byte[] bytes,
                                             EndianFormat bytesEndian = EndianFormat.Little,
                                             bool includeProceedingZeros = true)
         {
-            var base36_no_zeros = new RadixEncoding(k_base36_digits, bytesEndian, includeProceedingZeros);
-            return base36_no_zeros.Encode(bytes);
+            var base36NoZeros = new RadixEncoding(KBase36Digits, bytesEndian, includeProceedingZeros);
+            return base36NoZeros.Encode(bytes);
         }
 
-        public static byte[] ConvertBase36StringToBytes(string base36string,
+        public static byte[] ConvertBase36StringToBytes(string base36String,
                                                         EndianFormat bytesEndian = EndianFormat.Little,
                                                         bool includeProceedingZeros = true)
         {
-            var base36_no_zeros = new RadixEncoding(k_base36_digits, bytesEndian, includeProceedingZeros);
-            var bytes = new List<byte>(base36_no_zeros.Decode(base36string));
+            var base36NoZeros = new RadixEncoding(KBase36Digits, bytesEndian, includeProceedingZeros);
+            var bytes = new List<byte>(base36NoZeros.Decode(base36String));
             //while (bytes[bytes.Count - 1] == 0)
             //{
             //    bytes.RemoveAt(bytes.Count - 1);
@@ -118,7 +105,7 @@ namespace IFramework.Infrastructure
             {
                 throw new ArgumentNullException("bytes");
             }
-            var lookup32 = _lookup32;
+            var lookup32 = Lookup32;
             var result = new char[bytes.Length * 2];
             for (var i = 0; i < bytes.Length; i++)
             {
@@ -321,95 +308,27 @@ namespace IFramework.Infrastructure
             return null;
         }
 
-
-        public static IEnumerable<T> OrEmptyIfNull<T>(this IEnumerable<T> source)
-        {
-            return source ?? Enumerable.Empty<T>();
-        }
-
-        public static IEnumerable<T> ForEach<T>(
+        public static void ForEach<T>(
             this IEnumerable<T> source,
             Action<T> act)
         {
-            foreach (var element in source.OrEmptyIfNull())
+            if (source == null)
+            {
+                return;
+            }
+            foreach (var element in source)
             {
                 act(element);
             }
-            return source;
         }
-
-        //public static string GetTimeToString(DateTime datetime, bool isEnglish)
-        //{
-        //    var lang = isEnglish ? "en-US" : "zh-CN";
-        //    var timetext = string.Empty;
-        //    var span = DateTime.Now - datetime;
-        //    if (span.Days > 30)
-        //    {
-        //        timetext = datetime.ToShortDateString();
-        //    }
-        //    else if (span.Days >= 1)
-        //    {
-        //        timetext = string.Format("{0}{1}", span.Days, GetResource("Day", lang));
-        //    }
-        //    else if (span.Hours >= 1)
-        //    {
-        //        timetext = string.Format("{0}{1}", span.Hours, GetResource("Hour", lang));
-        //    }
-        //    else if (span.Minutes >= 1)
-        //    {
-        //        timetext = string.Format("{0}{1}", span.Minutes, GetResource("Minute", lang));
-        //    }
-        //    else if (span.Seconds >= 1)
-        //    {
-        //        timetext = string.Format("{0}{1}", span.Seconds, GetResource("Second", lang));
-        //    }
-        //    else
-        //    {
-        //        timetext = string.Format("1{0}", GetResource("Second", lang));
-        //    }
-        //    return timetext;
-        //}
 
         public static IQueryable<T> GetPageElements<T>(this IQueryable<T> query, int pageIndex, int pageSize)
         {
             return query.Skip(pageIndex * pageSize).Take(pageSize);
         }
 
-        internal static string GetUniqueIdentifier(int length)
-        {
-            try
-            {
-                var maxSize = length;
-                var chars = new char[62];
-                string a;
-                a = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-                chars = a.ToCharArray();
-                var size = maxSize;
-                var data = new byte[1];
-                var crypto = new RNGCryptoServiceProvider();
-                crypto.GetNonZeroBytes(data);
-                size = maxSize;
-                data = new byte[size];
-                crypto.GetNonZeroBytes(data);
-                var result = new StringBuilder(size);
-                foreach (var b in data)
-                {
-                    result.Append(chars[b % (chars.Length - 1)]);
-                }
-                // Unique identifiers cannot begin with 0-9
-                if (result[0] >= '0' && result[0] <= '9')
-                {
-                    return GetUniqueIdentifier(length);
-                }
-                return result.ToString();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("GENERATE_UID_FAIL", ex);
-            }
-        }
-
-        public static T GetValueByKey<T>(this object obj, string name)
+    
+        public static T GetPropertyValue<T>(this object obj, string name)
         {
             var retValue = default(T);
             object objValue = null;
@@ -436,7 +355,7 @@ namespace IFramework.Infrastructure
             return retValue;
         }
 
-        public static object GetValueByKey(this object obj, string name)
+        public static object GetPropertyValue(this object obj, string name)
         {
             object objValue = null;
             var property = obj.GetType()
@@ -460,13 +379,9 @@ namespace IFramework.Infrastructure
                 FastInvoke.GetMethodInvoker(property.GetSetMethod(true))(obj, new[] { value });
             }
         }
+        
 
         public static T ToEnum<T>(this string val)
-        {
-            return ParseEnum<T>(val);
-        }
-
-        public static T ParseEnum<T>(string val)
         {
             try
             {
@@ -516,60 +431,9 @@ namespace IFramework.Infrastructure
             return query.Provider.CreateQuery<TEntity>(orderByCallExpression);
         }
 
-
-        public static List<QueryParameter> GetQueryParameters(string parameters)
-        {
-            if (parameters.StartsWith("?"))
-            {
-                parameters = parameters.Remove(0, 1);
-            }
-
-            var result = new List<QueryParameter>();
-
-            if (!string.IsNullOrEmpty(parameters))
-            {
-                var p = parameters.Split('&');
-                foreach (var s in p)
-                {
-                    if (!string.IsNullOrEmpty(s))
-                    {
-                        if (s.IndexOf('=') > -1)
-                        {
-                            var temp = s.Split('=');
-                            result.Add(new QueryParameter(temp[0], temp[1]));
-                        }
-                        else
-                        {
-                            result.Add(new QueryParameter(s, string.Empty));
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        public static string NormalizeRequestParameters(IList<QueryParameter> parameters)
-        {
-            var sb = new StringBuilder();
-            QueryParameter p = null;
-            for (var i = 0; i < parameters.Count; i++)
-            {
-                p = parameters[i];
-                sb.AppendFormat("{0}={1}", p.Name, p.Value);
-
-                if (i < parameters.Count - 1)
-                {
-                    sb.Append("&");
-                }
-            }
-
-            return sb.ToString();
-        }
-
         //加密算法
 
-        public static string MD5Encrypt(string pToEncrypt, CipherMode mode = CipherMode.CBC, string key = "IVANIVAN")
+        public static string Md5Encrypt(string pToEncrypt, CipherMode mode = CipherMode.CBC, string key = "12345678")
         {
             var des = new DESCryptoServiceProvider { Mode = mode };
             var inputByteArray = Encoding.Default.GetBytes(pToEncrypt);
@@ -588,7 +452,7 @@ namespace IFramework.Infrastructure
             return ret.ToString();
         }
 
-        public static string MD5Decrypt(string pToDecrypt, CipherMode mode = CipherMode.CBC, string key = "IVANIVAN")
+        public static string Md5Decrypt(string pToDecrypt, CipherMode mode = CipherMode.CBC, string key = "12345678")
         {
             var des = new DESCryptoServiceProvider { Mode = mode };
             var inputByteArray = new byte[pToDecrypt.Length / 2];
@@ -608,90 +472,6 @@ namespace IFramework.Infrastructure
             return Encoding.ASCII.GetString(ms.ToArray());
         }
 
-        public static Exception GetRescureInnerException(this Exception ex)
-        {
-            var innerEx = ex;
-            while (innerEx.InnerException != null)
-            {
-                innerEx = innerEx.InnerException;
-            }
-            return innerEx;
-        }
-
-        public static bool IsGuid(string id)
-        {
-            var flag = true;
-            try
-            {
-                new Guid(id.Trim());
-            }
-            catch (Exception)
-            {
-                flag = false;
-            }
-            return flag;
-        }
-
-        //public static string GetLocalResource(string path, string key, string lang)
-        //{
-        //    object resource = string.Empty;
-        //    if (!string.IsNullOrEmpty(lang))
-        //    {
-        //        resource = HttpContext.GetLocalResourceObject(path, key, new CultureInfo(lang));
-        //    }
-        //    else
-        //    {
-        //        resource = HttpContext.GetLocalResourceObject(path, key);
-        //    }
-        //    if (resource != null)
-        //    {
-        //        return resource.ToString();
-        //    }
-        //    return string.Empty;
-        //}
-
-        //public static string GetLocalResource(string path, string key)
-        //{
-        //    return GetLocalResource(path, key, string.Empty);
-        //}
-
-        //public static string GetResource(string key, string lang)
-        //{
-        //    object resource = string.Empty;
-        //    if (!string.IsNullOrEmpty(lang))
-        //    {
-        //        resource = HttpContext.GetGlobalResourceObject("GlobalResource", key, new CultureInfo(lang));
-        //    }
-        //    else
-        //    {
-        //        resource = HttpContext.GetGlobalResourceObject("GlobalResource", key);
-        //    }
-        //    if (resource != null)
-        //    {
-        //        return resource.ToString();
-        //    }
-        //    return string.Empty;
-        //}
-
-
-        //public static string GetResource(string key)
-        //{
-        //    return GetResource(key, string.Empty);
-        //}
-
-        public static string StyledSheetEncode(string s)
-        {
-            s = s.Replace("\\", "\\\\")
-                 .Replace("'", "\\'")
-                 .Replace("\"", "\\\"")
-                 .Replace("\r\n", "\\n")
-                 .Replace("\n\r", "\\n")
-                 .Replace("\r", "\\n")
-                 .Replace("\n", "\\n");
-            s = s.Replace("/", "\\/");
-            return s;
-        }
-
         public static string GetMd5Hash(string input)
         {
             var md5Hasher = MD5.Create();
@@ -707,30 +487,26 @@ namespace IFramework.Infrastructure
         public static string Serialize(object xmlContent, bool omitXmlDeclaration = false, Encoding encoding = null)
         {
             var serializer = new XmlSerializer(xmlContent.GetType());
-            //StringBuilder builder = new System.Text.StringBuilder();
-            //StringWriter writer = new StringWriterWithEncoding(Encoding.UTF8);
-            //new System.IO.StringWriter(builder);
-            //System.Xml.XmlTextWriter writer = new System.Xml.XmlTextWriter(@"c:\test.xml", System.Text.Encoding.UTF8);
-            //serializer.Serialize(writer, xmlContent);
-            //return builder.ToString();
 
-            var stream = new MemoryStream();
-            var setting = new XmlWriterSettings
+            using (var stream = new MemoryStream())
             {
-                OmitXmlDeclaration = omitXmlDeclaration,
-                Encoding = encoding ?? Encoding.GetEncoding("utf-8"),
-                Indent = true
-            };
-            using (var writer = XmlWriter.Create(stream, setting))
-            {
-                serializer.Serialize(writer, xmlContent);
+                var setting = new XmlWriterSettings
+                {
+                    OmitXmlDeclaration = omitXmlDeclaration,
+                    Encoding = encoding ?? Encoding.GetEncoding("utf-8"),
+                    Indent = true
+                };
+                using (var writer = XmlWriter.Create(stream, setting))
+                {
+                    serializer.Serialize(writer, xmlContent);
+                }
+                return Regex.Replace(Encoding.GetEncoding("utf-8").GetString(stream.ToArray()), "^[^<]", "");
             }
-            return Regex.Replace(Encoding.GetEncoding("utf-8").GetString(stream.ToArray()), "^[^<]", "");
         }
 
-        public static object DeSerialize<XmlType>(string xmlString)
+        public static object DeSerialize<TXmlType>(string xmlString)
         {
-            var serializer = new XmlSerializer(typeof(XmlType));
+            var serializer = new XmlSerializer(typeof(TXmlType));
             var builder = new StringBuilder(xmlString);
             var reader = new StringReader(builder.ToString());
             try
@@ -777,30 +553,6 @@ namespace IFramework.Infrastructure
             return formatter.Deserialize(rems);
         }
 
-
-        //public static TValueObject Clone<TValueObject>(this TValueObject valueObject,
-        //                                               Action<TValueObject> initAction = null)
-        //    where  TValueObject : ValueObject, new()
-        //{
-        //    var clonedObject = valueObject.Clone() as TValueObject;
-        //    initAction(clonedObject);
-        //    return clonedObject;
-        //}
-
-        //public static string ResolveVirtualPath(string path)
-        //{
-        //    if (string.IsNullOrEmpty(HttpRuntime.AppDomainAppVirtualPath))
-        //    {
-        //        return Path.Combine("/", path).Replace('\\', '/').Replace("//", "/");
-        //    }
-        //    return Path.Combine(HttpRuntime.AppDomainAppVirtualPath, path).Replace('\\', '/').Replace("//", "/");
-        //}
-
-        //public static string MapPath(string virtualPath)
-        //{
-        //    return HostingEnvironment.MapPath(virtualPath);
-        //}
-
         public static string GetDescription(this object obj)
         {
             if (obj == null)
@@ -818,31 +570,5 @@ namespace IFramework.Infrastructure
             }
             return null;
         }
-#if FULL_NET_FRAMEWORK
-
-        public static Configuration SetEntryAssembly(this Configuration configuration)
-        {
-            configuration.SetEntryAssembly(Assembly.GetCallingAssembly());
-            return configuration;
-        }
-
-        public static Configuration SetEntryAssembly(this Configuration configuration, Assembly assembly)
-        {
-            AppDomainManager manager = new AppDomainManager();
-            FieldInfo entryAssemblyfield = manager.GetType().GetField("m_entryAssembly", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (entryAssemblyfield != null)
-            {
-                entryAssemblyfield.SetValue(manager, assembly);
-            }
-
-            AppDomain domain = AppDomain.CurrentDomain;
-            FieldInfo domainManagerField = domain.GetType().GetField("_domainManager", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (domainManagerField != null)
-            {
-                domainManagerField.SetValue(domain, manager);
-            }
-            return configuration;
-        }
-#endif
     }
 }

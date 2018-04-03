@@ -12,7 +12,7 @@ namespace IFramework.Log4Net
                                                LogLevel logLevel = LogLevel.Information,
                                                string log4NetConfigFile = "log4net.config")
         {
-            IoCFactory.Instance.Populate(UseLog4Net(new ServiceCollection(),
+            ObjectProviderFactory.Instance.Populate(UseLog4Net(new ServiceCollection(),
                                                     logLevel,
                                                     log4NetConfigFile));
             return configuration;

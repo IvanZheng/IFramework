@@ -14,7 +14,7 @@ namespace IFramework.DependencyInjection.Autofac
         {
             var builder = new ContainerBuilder();
             builder.RegisterAssemblyTypes(assemblies.Select(Assembly.Load).ToArray());
-            IoCFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
+            ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
             return configuration;
         }
 
@@ -25,14 +25,14 @@ namespace IFramework.DependencyInjection.Autofac
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            IoCFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
+            ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
             return configuration;
         }
 
         public static Configuration UseAutofacContainer(this Configuration configuration,
                                                         IServiceCollection serviceCollection)
         {
-            IoCFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(serviceCollection));
+            ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(serviceCollection));
             return configuration;
         }
     }

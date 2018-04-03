@@ -16,7 +16,7 @@ namespace Sample.CommandService
 {
      public class CommandMediaTypeFormatter : JsonMediaTypeFormatter
     {
-        private static readonly string CommandTypeTemplate = Configuration.GetAppSetting("CommandTypeTemplate");
+        private static readonly string CommandTypeTemplate = Configuration.Get("CommandTypeTemplate");
         private const string ApplicationFormUrlEncodedFormMediaType = "application/x-www-form-urlencoded";
 
         private readonly bool _useCamelCase;

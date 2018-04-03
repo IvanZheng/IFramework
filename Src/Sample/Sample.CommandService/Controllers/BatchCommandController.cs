@@ -28,8 +28,8 @@ namespace Sample.CommandService.Controllers
     public class BatchCommandController : ApiControllerBase
     {
         private static List<ICommand> _batchCommands = new List<ICommand>();
-        private IMessagePublisher _messagePublisher = IoCFactory.GetService<IMessagePublisher>();
-        private SampleModelContext _queryContext = IoCFactory.GetService<SampleModelContext>();
+        private IMessagePublisher _messagePublisher = ObjectProviderFactory.GetService<IMessagePublisher>();
+        private SampleModelContext _queryContext = ObjectProviderFactory.GetService<SampleModelContext>();
 
         public BatchCommandController(ICommandBus commandBus, IExceptionManager exceptionManager)
             :base(exceptionManager)

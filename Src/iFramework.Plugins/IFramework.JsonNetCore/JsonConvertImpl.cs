@@ -17,7 +17,7 @@ namespace IFramework.JsonNetCore
 
         public object DeserializeObject(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return value.ToJsonObject(serializeNonPublic, loopSerialize, useCamelCase);
+            return value.ToObject(serializeNonPublic, loopSerialize, useCamelCase);
         }
 
         public dynamic DeserializeDynamicObject(string json, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
@@ -39,12 +39,12 @@ namespace IFramework.JsonNetCore
 
         public T DeserializeObject<T>(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return value.ToJsonObject<T>(serializeNonPublic, loopSerialize, useCamelCase);
+            return value.ToObject<T>(serializeNonPublic, loopSerialize, useCamelCase);
         }
 
         public object DeserializeObject(string value, Type type, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return value.ToJsonObject(type, serializeNonPublic, loopSerialize, useCamelCase);
+            return value.ToObject(type, serializeNonPublic, loopSerialize, useCamelCase);
         }
 
         public void PopulateObject(string value, object target, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)

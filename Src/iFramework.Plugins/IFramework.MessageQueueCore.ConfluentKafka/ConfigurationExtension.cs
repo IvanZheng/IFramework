@@ -11,7 +11,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
         public static Configuration UseConfluentKafka(this Configuration configuration,
                                                       string brokerList)
         {
-            IoCFactory.Instance
+            ObjectProviderFactory.Instance
                       .ObjectProviderBuilder
                       .Register<IMessageQueueClientProvider, KafkaMQClientProvider>(ServiceLifetime.Singleton,
                                                                                               new ConstructInjection(new ParameterInjection("brokerList", brokerList)))

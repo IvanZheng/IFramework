@@ -11,7 +11,7 @@ namespace IFramework.MessageQueue
     {
         public static ICommandBus GetCommandBus()
         {
-            return IoCFactory.GetService<ICommandBus>();
+            return ObjectProviderFactory.GetService<ICommandBus>();
         }
 
         /// <summary>
@@ -21,17 +21,17 @@ namespace IFramework.MessageQueue
         /// <returns></returns>
         public static IMessagePublisher GetMessagePublisher()
         {
-            return IoCFactory.GetService<IMessagePublisher>();
+            return ObjectProviderFactory.GetService<IMessagePublisher>();
         }
 
         public static IMessageProcessor CreateCommandConsumer(string commandQueue, string consumerId,
                                                              string[] handlerProvierNames, 
                                                              ConsumerConfig consumerConfig = null)
         {
-            var container = IoCFactory.Instance.ObjectProvider;
+            var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
             var handlerProvider = new CommandHandlerProvider(handlerProvierNames);
-            var messageQueueClient = IoCFactory.GetService<IMessageQueueClient>();
+            var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
             var commandConsumer = new CommandProcessor(messageQueueClient, messagePublisher, handlerProvider,
                                                       commandQueue, consumerId, consumerConfig);
             return commandConsumer;
@@ -45,7 +45,7 @@ namespace IFramework.MessageQueue
             var handlerProvider = new EventSubscriberProvider(handlerProviderNames);
             var commandBus = GetCommandBus();
             var messagePublisher = GetMessagePublisher();
-            var messageQueueClient = IoCFactory.GetService<IMessageQueueClient>();
+            var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
 
             var eventSubscriber = new EventSubscriber(messageQueueClient, handlerProvider, commandBus, messagePublisher,
                                                       subscription, topic, consumerId, consumerConfig);

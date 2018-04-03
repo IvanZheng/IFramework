@@ -18,7 +18,7 @@ namespace IFramework.MessageQueueCore.InMemory
         private readonly OnMessagesReceived _onMessagesReceived;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _consumerTask;
-        protected static ILogger Logger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(nameof(SubscriptionClient));
+        protected static ILogger Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(nameof(SubscriptionClient));
 
         public SubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, bool start = true)
         {

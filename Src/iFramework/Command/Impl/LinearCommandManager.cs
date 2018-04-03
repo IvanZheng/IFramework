@@ -45,7 +45,7 @@ namespace IFramework.Command.Impl
                     return keyProperty;
                 });
 
-                linearKey = propertyWithKeyAttribute == null ? typeof(TLinearCommand).Name : command.GetValueByKey(propertyWithKeyAttribute.Name);
+                linearKey = propertyWithKeyAttribute == null ? typeof(TLinearCommand).Name : command.GetPropertyValue(propertyWithKeyAttribute.Name);
             }
             return linearKey;
         }

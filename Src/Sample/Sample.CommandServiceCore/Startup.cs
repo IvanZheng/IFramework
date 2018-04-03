@@ -43,14 +43,10 @@ namespace Sample.CommandServiceCore
 
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            //var builder = new ConfigurationBuilder()
-            //    .AddJsonFile("appsettings.json")
-            //    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
-            //    .AddEnvironmentVariables();
             var kafkaBrokerList = new[]
             {
-                //new IPEndPoint(Utility.GetLocalIPV4(), 9092).ToString()
-                "10.100.7.46:9092"
+                new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
+                //"10.100.7.46:9092"
             };
             Configuration.Instance
                          .UseAutofacContainer("Sample.CommandHandler",
@@ -62,8 +58,8 @@ namespace Sample.CommandServiceCore
                          .UseJsonNet()
                          .UseEntityFrameworkComponents<SampleModelContext>()
                          .UseMessageStore<SampleModelContext>()
-                         //.UseInMemoryMessageQueue()
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         .UseInMemoryMessageQueue()
+                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
@@ -71,15 +67,6 @@ namespace Sample.CommandServiceCore
                          //.UseDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.GetConnectionString(nameof(SampleModelContext))))
                          ;
         }
-
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        //public void ConfigureServices(IServiceCollection services)
-        //{
-        //    Configuration.UseServiceContainer(services.BuildServiceProvider())
-        //                 .RegisterCommonComponents();
-        //    services.AddMvc();
-        //}
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
@@ -89,7 +76,7 @@ namespace Sample.CommandServiceCore
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
-            return IoCFactory.Instance
+            return ObjectProviderFactory.Instance
                              .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                              .Populate(services)
                              .Build();

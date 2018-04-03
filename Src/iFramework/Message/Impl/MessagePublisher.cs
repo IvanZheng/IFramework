@@ -20,7 +20,7 @@ namespace IFramework.Message.Impl
 
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {
-            using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
+            using (var scope = ObjectProviderFactory.Instance.ObjectProvider.CreateScope())
             using (var messageStore = scope.GetService<IMessageStore>())
             {
                 return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationId, replyEndPoint, sagaInfo, producer) =>
@@ -49,7 +49,7 @@ namespace IFramework.Message.Impl
             {
                 Task.Run(() =>
                 {
-                    using (var scope = IoCFactory.Instance.ObjectProvider.CreateScope())
+                    using (var scope = ObjectProviderFactory.Instance.ObjectProvider.CreateScope())
                     using (var messageStore = scope.GetService<IMessageStore>())
                     {
                         messageStore.RemovePublishedEvent(messageState.MessageID);

@@ -33,7 +33,7 @@ namespace IFramework.Config
         {
             InitializeEqueue();
 
-            IoCFactory.Instance
+            ObjectProviderFactory.Instance
                       .ObjectProviderBuilder
                       .Register<IMessageQueueClientProvider, EQueueClientProvider>(ServiceLifetime.Singleton,
                                                                                    new ConstructInjection(new ParameterInjection("clusterName", clusterName),

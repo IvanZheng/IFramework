@@ -14,8 +14,6 @@ namespace IFramework.JsonNetCore
     {
         private static readonly ConcurrentDictionary<string, JsonSerializerSettings> SettingDictionary = new ConcurrentDictionary<string, JsonSerializerSettings>();
 
-        private static readonly ILogger JsonLogger = IoCFactory.GetService<ILoggerFactory>().CreateLogger(typeof(JsonHelper).Name);
-
         internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPulibc,
                                                                                        bool loopSerialize,
                                                                                        bool useCamelCase,
@@ -43,7 +41,7 @@ namespace IFramework.JsonNetCore
                 customSettings.Converters.Add(new StringEnumConverter());
             }
 
-            ((DefaultContractResolver) customSettings.ContractResolver).IgnoreSerializableAttribute = ignoreSerializableAttribute;
+            ((DefaultContractResolver)customSettings.ContractResolver).IgnoreSerializableAttribute = ignoreSerializableAttribute;
 
             if (useCamelCase)
             {
@@ -100,7 +98,7 @@ namespace IFramework.JsonNetCore
             return settings;
         }
 
-        public static string ToJson(this object obj,
+        internal static string ToJson(this object obj,
                                     bool serializeNonPublic = false,
                                     bool loopSerialize = false,
                                     bool useCamelCase = false,
@@ -111,28 +109,22 @@ namespace IFramework.JsonNetCore
                                                GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, useStringEnumConvert, ignoreNullValue: ignoreNullValue));
         }
 
-        public static object ToJsonObject(this string json,
+        internal static object ToObject(this string json,
                                           bool serializeNonPublic = false,
                                           bool loopSerialize = false,
                                           bool useCamelCase = false)
         {
-            try
+
+            if (string.IsNullOrWhiteSpace(json))
             {
-                if (string.IsNullOrWhiteSpace(json))
-                {
-                    return null;
-                }
-                return JsonConvert.DeserializeObject(json,
-                                                     GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
-            }
-            catch (Exception ex)
-            {
-                JsonLogger.LogError(ex, $"ToJsonObject Failed {json}");
                 return null;
             }
+            return JsonConvert.DeserializeObject(json,
+                                                 GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
+
         }
 
-        public static object ToJsonObject(this string json,
+        internal static object ToObject(this string json,
                                           Type jsonType,
                                           bool serializeNonPublic = false,
                                           bool loopSerialize = false,
@@ -142,30 +134,23 @@ namespace IFramework.JsonNetCore
             {
                 return null;
             }
-            try
+            if (jsonType == typeof(List<dynamic>))
             {
-                if (jsonType == typeof(List<dynamic>))
-                {
-                    return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
-                }
-                if (jsonType == typeof(object))
-                {
-                    return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
-                }
-                return JsonConvert.DeserializeObject(json,
-                                                     jsonType,
-                                                     GetCustomJsonSerializerSettings(serializeNonPublic,
-                                                                                     loopSerialize,
-                                                                                     useCamelCase));
+                return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
             }
-            catch (Exception ex)
+            if (jsonType == typeof(object))
             {
-                JsonLogger.LogError(ex, $"ToJsonObject Failed {json}");
-                return null;
+                return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
             }
+            return JsonConvert.DeserializeObject(json,
+                                                 jsonType,
+                                                 GetCustomJsonSerializerSettings(serializeNonPublic,
+                                                                                 loopSerialize,
+                                                                                 useCamelCase));
+
         }
 
-        public static T ToJsonObject<T>(this string json,
+        internal static T ToObject<T>(this string json,
                                         bool serializeNonPublic = false,
                                         bool loopSerialize = false,
                                         bool useCamelCase = false)
@@ -174,46 +159,39 @@ namespace IFramework.JsonNetCore
             {
                 return default(T);
             }
-            try
+            if (typeof(T) == typeof(List<dynamic>))
             {
-                if (typeof(T) == typeof(List<dynamic>))
-                {
-                    return (T) json.ToDynamicObjects(serializeNonPublic,
-                                                     loopSerialize,
-                                                     useCamelCase);
-                }
-                if (typeof(T) == typeof(object))
-                {
-                    return json.ToDynamicObject(serializeNonPublic,
-                                                loopSerialize,
-                                                useCamelCase);
-                }
-                return JsonConvert.DeserializeObject<T>(json,
-                                                        GetCustomJsonSerializerSettings(serializeNonPublic,
-                                                                                        loopSerialize,
-                                                                                        useCamelCase));
+                return (T)json.ToDynamicObjects(serializeNonPublic,
+                                                 loopSerialize,
+                                                 useCamelCase);
             }
-            catch (Exception ex)
+            if (typeof(T) == typeof(object))
             {
-                JsonLogger.LogError(ex, $"ToJsonObject Failed {json}");
-                return default(T);
+                return json.ToDynamicObject(serializeNonPublic,
+                                            loopSerialize,
+                                            useCamelCase);
             }
+            return JsonConvert.DeserializeObject<T>(json,
+                                                    GetCustomJsonSerializerSettings(serializeNonPublic,
+                                                                                    loopSerialize,
+                                                                                    useCamelCase));
+
         }
 
-        public static dynamic ToDynamicObject(this string json,
+        internal static dynamic ToDynamicObject(this string json,
                                               bool serializeNonPublic = false,
                                               bool loopSerialize = false,
                                               bool useCamelCase = false)
         {
-            return json.ToJsonObject<JObject>(serializeNonPublic, loopSerialize, useCamelCase);
+            return json.ToObject<JObject>(serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public static IEnumerable<dynamic> ToDynamicObjects(this string json,
+        internal static IEnumerable<dynamic> ToDynamicObjects(this string json,
                                                             bool serializeNonPublic = false,
                                                             bool loopSerialize = false,
                                                             bool useCamelCase = false)
         {
-            return json.ToJsonObject<JArray>(serializeNonPublic, loopSerialize);
+            return json.ToObject<JArray>(serializeNonPublic, loopSerialize);
         }
     }
 }

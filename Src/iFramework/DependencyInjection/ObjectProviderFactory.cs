@@ -5,15 +5,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.DependencyInjection
 {
-    public sealed class IoCFactory
+    public sealed class ObjectProviderFactory
     {
         #region Singleton
 
         /// <summary>
-        ///     Get singleton instance of IoCFactory
+        ///     Get singleton instance of ObjectProviderFactory
         /// </summary>
-        public static IoCFactory Instance { get; } = new IoCFactory();
+        public static ObjectProviderFactory Instance { get; } = new ObjectProviderFactory();
 
+        public void Clear()
+        {
+            _objectProviderBuilder = null;
+            _objectProvider = null;
+        }
         #endregion
 
         #region Members
@@ -121,14 +126,14 @@ namespace IFramework.DependencyInjection
             return ObjectProviderBuilder;
         }
 
-        public IoCFactory RegisterComponents(Action<IObjectProviderBuilder, ServiceLifetime> registerComponents,
+        public ObjectProviderFactory RegisterComponents(Action<IObjectProviderBuilder, ServiceLifetime> registerComponents,
                                              ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             registerComponents(ObjectProviderBuilder, lifetime);
             return Instance;
         }
 
-        public IoCFactory Populate(IServiceCollection services)
+        public ObjectProviderFactory Populate(IServiceCollection services)
         {
             ObjectProviderBuilder.Populate(services);
             return this;

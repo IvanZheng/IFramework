@@ -15,7 +15,7 @@ namespace Sample.CommandServiceCore.Controllers
         {
             ExceptionManager = exceptionManager;
         }
-
+         
         protected IExceptionManager ExceptionManager { get; }
 
         protected virtual string GetModelErrorMessage(ModelStateDictionary modelState)

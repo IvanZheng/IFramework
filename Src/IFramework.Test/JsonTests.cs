@@ -7,7 +7,7 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using Newtonsoft.Json;
-using JsonNetCore = IFramework.JsonNetCore;
+using IFramework.JsonNetCore;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,26 +25,28 @@ namespace IFramework.Test
         {
         }
     }
-    public class JsonTests: TestBase
+    public class JsonTests
     {
         private readonly ITestOutputHelper _output;
+
         public JsonTests(ITestOutputHelper output)
         {
             _output = output;
-            Configuration.Instance
-                         .UseAutofacContainer()
-                         .UseCommonComponents();
-            JsonNetCore.FrameworkConfigurationExtension.UseJsonNet(Configuration.Instance);
-
-            IoCFactory.Instance
-                      .Build();
+            
+           
         }
         [Fact]
         public void SerializeReadonlyObject()
         {
+            Configuration.Instance
+                      .UseAutofacContainer()
+                      .UseJsonNet();
+
+            ObjectProviderFactory.Instance
+                                 .Build();
             //var ex = new Exception("test");
             //var json = ex.ToJson();
-            //var ex2 = json.ToJsonObject<Exception>();
+            //var ex2 = json.ToObject<Exception>();
             //Assert.Equal(ex.Message, ex2.Message);
             var a = new AClass {Id = "ddd"};
             var aJson = a.ToJson();

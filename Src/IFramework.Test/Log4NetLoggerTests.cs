@@ -1,35 +1,34 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.IO;
+using Autofac;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.Log4Net;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
-namespace IFramework.Log4NetTests
+namespace IFramework.Test
 {
-    [TestClass]
-    [DeploymentItem("log4net.config", "")]
-    [DeploymentItem("appsettings.json", "")]
     public class Log4NetLoggerTests
     {
-        [TestInitialize]
-        public void Initialize()
+        public Log4NetLoggerTests()
         {
-            Configuration.Instance
-                         .UseAutofacContainer(System.Reflection.Assembly.GetExecutingAssembly().FullName)
-                         .UseConfiguration(new ConfigurationBuilder().Build())
-                         .UseCommonComponents()
-                         .UseLog4Net();
-            ObjectProviderFactory.Instance.Build();
         }
 
-        [TestMethod]
+        [Fact]
         public void TestLog()
         {
-            var loggerFactory = IoCFactory.GetService<ILoggerFactory>();
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                                                    .AddJsonFile("appsettings.json");
+            
+            Configuration.Instance
+                         .UseConfiguration(builder.Build())
+                         .UseAutofacContainer(new ContainerBuilder())
+                         .UseLog4Net();
+            ObjectProviderFactory.Instance.Build();
+
+            var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(nameof(Log4NetLoggerTests));
             var message = "test log level";
             LogTest(logger, message);

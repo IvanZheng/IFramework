@@ -282,8 +282,8 @@ namespace IFramework.Infrastructure
             {
                 throw new ArgumentNullException("s");
             }
-            ObjectId objectId;
-            if (TryParse(s, out objectId))
+
+            if (TryParse(s, out var objectId))
             {
                 return objectId;
             }
@@ -302,8 +302,7 @@ namespace IFramework.Infrastructure
             // don't throw ArgumentNullException if s is null
             if (s != null && s.Length == 24)
             {
-                byte[] bytes;
-                if (TryParseHexString(s, out bytes))
+                if (TryParseHexString(s, out var bytes))
                 {
                     objectId = new ObjectId(bytes);
                     return true;
@@ -454,7 +453,7 @@ namespace IFramework.Infrastructure
 
         public string ToBase36String()
         {
-            return Pack(_timestamp, _machine, _pid, _increment).ToBase36string();
+            return Pack(_timestamp, _machine, _pid, _increment).ToBase36String();
         }
 
         /// <summary>

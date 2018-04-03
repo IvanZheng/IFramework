@@ -22,7 +22,7 @@ namespace Sample.CommandServiceCore.CommandInputExtension
 
         public CommandInputFormatter()
         {
-            _commandTypeTemplate = Configuration.GetAppSetting(CommandTypeTemplate);
+            _commandTypeTemplate = Configuration.Get(CommandTypeTemplate);
             SupportedMediaTypes.Add(new MediaTypeHeaderValue(ApplicationCommandMediaType));
             SupportedMediaTypes.Add(new MediaTypeHeaderValue(ApplicationJsonMediaType));
             SupportedMediaTypes.Add(new MediaTypeHeaderValue(ApplicationFormUrlEncodedFormMediaType));
