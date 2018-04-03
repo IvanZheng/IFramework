@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Config\Constants.cs" />
     <Compile Remove="Config\EndpointElement.cs" />
     <Compile Remove="Config\HandlerElementCollection.cs" />
     <Compile Remove="Config\MessageEndpointElementCollection.cs" />
