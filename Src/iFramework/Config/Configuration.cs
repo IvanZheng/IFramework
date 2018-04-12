@@ -20,7 +20,7 @@ namespace IFramework.Config
     public class Configuration : IConfiguration
     {
         public static readonly Configuration Instance = new Configuration();
-        public IConfiguration ConfigurationCore;
+        public IConfiguration ConfigurationCore = new ConfigurationBuilder().Build();
 
         private Configuration()
         {
@@ -57,6 +57,7 @@ namespace IFramework.Config
         public Configuration UseConfiguration(IConfiguration configuration)
         {
             ConfigurationCore = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            ObjectProviderFactory.Instance.RegisterInstance(typeof(Configuration), this);
             return this;
         }
 
@@ -169,20 +170,33 @@ namespace IFramework.Config
             return this;
         }
 
-        public static T Get<T>(string key)
+        public T Get<T>(string key)
         {
-            var value = Instance.ConfigurationCore != null ? Instance.ConfigurationCore.GetValue<T>(key) : default(T);
-            if (value != null)
+            T appSetting = default(T);
+            if (typeof(T).IsPrimitive)
             {
-                value = GetAppConfig<T>(ConfigurationManager.AppSettings[key]);
+                appSetting = ConfigurationCore.GetValue<T>(key);
             }
-            return value;
+            else
+            {
+                var configSection = GetSection(key);
+                if (configSection != null)
+                {
+                    appSetting = Activator.CreateInstance<T>();
+                    configSection.Bind(appSetting);
+                }
+            }
+            if (appSetting == null || appSetting.Equals(default(T)))
+            {
+                appSetting = GetAppConfig<T>(ConfigurationManager.AppSettings[key]);
+            }
+            return appSetting;
         }
 
-        public static string GetConnectionString(string name)
+        public ConnectionStringSettings GetConnectionString(string name)
         {
-            return Instance.ConfigurationCore
-                           ?.GetConnectionString(name) ?? ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
+            return Get<ConnectionStringSettings>($"ConnectionStrings:{name}")
+                   ?? ConfigurationManager.ConnectionStrings[name];
         }
 
         public static string Get(string key)

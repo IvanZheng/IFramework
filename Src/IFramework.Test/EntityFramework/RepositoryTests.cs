@@ -44,7 +44,9 @@ namespace IFramework.Test.EntityFramework
         private static void RegisterComponents(IObjectProviderBuilder builder, ServiceLifetime lifeTime = ServiceLifetime.Scoped)
         {
             var services = new ServiceCollection();
-            services.AddDbContextPool<DemoDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DemoDb")));
+            services.AddDbContextPool<DemoDbContext>(options => options.UseSqlServer(Configuration.Instance
+                                                                                                  .GetConnectionString("DemoDb")
+                                                                                                  .ConnectionString));
             builder.Register<IDemoRepository, DemoRepository>(lifeTime);
             builder.Populate(services);
         }
