@@ -38,7 +38,7 @@ namespace IFramework.JsonNetCore
             }
             if (useStringEnumConvert)
             {
-                customSettings.Converters.Add(new StringEnumConverter());
+                customSettings.Converters.Add(new IgnoreInvalidStringEnumConverter());
             }
 
             ((DefaultContractResolver)customSettings.ContractResolver).IgnoreSerializableAttribute = ignoreSerializableAttribute;
