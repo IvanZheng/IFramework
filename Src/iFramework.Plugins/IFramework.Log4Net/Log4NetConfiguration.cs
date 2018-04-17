@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using IFramework.Config;
 using IFramework.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -26,7 +27,7 @@ namespace IFramework.Log4Net
             services.AddLogging(config =>
             {
                 var loggerConfiguration = Configuration.Instance.GetSection("logging");
-                if (loggerConfiguration.GetChildren().Any())
+                if (loggerConfiguration.Exists())
                 {
                     config.AddConfiguration(loggerConfiguration);
                 }

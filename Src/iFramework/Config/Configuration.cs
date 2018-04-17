@@ -180,7 +180,7 @@ namespace IFramework.Config
             else
             {
                 var configSection = GetSection(key);
-                if (configSection != null)
+                if (configSection.Exists())
                 {
                     appSetting = Activator.CreateInstance<T>();
                     configSection.Bind(appSetting);
