@@ -16,17 +16,12 @@ namespace Sample.CommandServiceCore.Authorizations
             {
                 return Task.CompletedTask;
             }
-            //context.Succeed(requirement);
-            //if (httpContext?.User.Identity.IsAuthenticated ?? false)
-            //{
-            //    context.Succeed(requirement); 
-            //}
-            //else
-            //{
-            //    context.Fail();
-            //}
-            filterContext.Result = new ObjectResult(new ApiResult((int)HttpStatusCode.Forbidden, "Authorization Handler Handle failed!"));
-            filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+
+            if (string.IsNullOrEmpty(filterContext.HttpContext.Request.Query["token"]))
+            {
+                filterContext.Result = new JsonResult(new ApiResult((int)HttpStatusCode.Forbidden, "Authorization Handler Handle failed!"));
+                filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+            }
             context.Succeed(requirement);
             return Task.CompletedTask;
         }

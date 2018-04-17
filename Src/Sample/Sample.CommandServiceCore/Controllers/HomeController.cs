@@ -31,7 +31,7 @@ namespace Sample.CommandServiceCore.Controllers
 
         [Authorize("AppAuthorization")]
         //[TypeFilter(typeof(AuthorizationFilterAttrubute))]
-        [AuthorizationFilterAttrubute]
+        //[AuthorizationFilterAttrubute]
         public Task<ApiResult<string>> DoApi()
         {
             return _exceptionManager.ProcessAsync(() => Task.Run(() => new {Name = "ivan"}.ToJson()));
