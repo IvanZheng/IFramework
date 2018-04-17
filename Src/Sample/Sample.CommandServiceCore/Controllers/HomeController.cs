@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -17,11 +18,14 @@ namespace Sample.CommandServiceCore.Controllers
     public class HomeController : Controller
     {
         private readonly IExceptionManager _exceptionManager;
+        private readonly IObjectProvider _objectProvider;
         private readonly ILogger _logger;
         public HomeController(IExceptionManager exceptionManager,
-                              ILoggerFactory loggerFactory)
+                              ILoggerFactory loggerFactory,
+                              IObjectProvider objectProvider)
         {
             _exceptionManager = exceptionManager;
+            _objectProvider = objectProvider;
             _logger = loggerFactory.CreateLogger(nameof(HomeController));
         }
 

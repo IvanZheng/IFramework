@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Autofac;
 using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
@@ -45,7 +46,16 @@ namespace IFramework.DependencyInjection.Autofac
                 Populate(serviceCollection);
             }
             var objectProvider = new ObjectProvider();
-            _containerBuilder.RegisterInstance<IObjectProvider>(objectProvider);
+            _containerBuilder.Register<IObjectProvider>(context =>
+                             {
+                                 var serviceProvider = context.Resolve<IServiceProvider>() as AutofacServiceProvider;
+                                 var componentContextField = typeof(AutofacServiceProvider).GetField("_componentContext",
+                                                  BindingFlags.NonPublic |
+                                                  BindingFlags.Instance);
+                                 return new ObjectProvider(componentContextField.GetValue(serviceProvider) as IComponentContext);
+                             })
+                             .InstancePerLifetimeScope();
+            //_containerBuilder.RegisterInstance<IObjectProvider>(objectProvider);
             objectProvider.SetComponentContext(_containerBuilder.Build());
             return objectProvider;
         }
