@@ -19,6 +19,83 @@ namespace IFramework.AspNet
     #if !Legency
     public static partial class Extensions
     {
+        public static bool IsAjaxRequest(this HttpRequest request)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+            if (request.Cookies["X-Requested-With"] == "XMLHttpRequest")
+                return true;
+            if (request.Headers != null)
+                return request.Headers["X-Requested-With"] == "XMLHttpRequest";
+            return false;
+        }
+
+        public static string GetClientIp(this HttpRequest me)
+        {
+            string ip = null;
+
+            // todo support new "Forwarded" header (2014) https://en.wikipedia.org/wiki/X-Forwarded-For
+
+            // X-Forwarded-For (csv list):  Using the First entry in the list seems to work
+            // for 99% of cases however it has been suggested that a better (although tedious)
+            // approach might be to read each IP from right to left and use the first public IP.
+            // http://stackoverflow.com/a/43554000/538763
+            //
+            ip = GetHeaderValueAs<string>(me.HttpContext, "X-Forwarded-For").SplitCsv().FirstOrDefault();
+
+            // RemoteIpAddress is always null in DNX RC1 Update1 (bug).
+            if (ip.IsNullOrWhitespace() && me.HttpContext?.Connection?.RemoteIpAddress != null)
+            {
+                ip = me.HttpContext.Connection.RemoteIpAddress.ToString();
+            }
+
+            if (ip.IsNullOrWhitespace())
+            {
+                ip = GetHeaderValueAs<string>(me.HttpContext, "REMOTE_ADDR");
+            }
+
+            // _httpContextAccessor.HttpContext?.Request?.Host this is the local host.
+
+            if (ip.IsNullOrWhitespace())
+            {
+                throw new Exception("Unable to determine caller's IP.");
+            }
+
+            return ip;
+        }
+
+        public static T GetHeaderValueAs<T>(HttpContext httpContext, string headerName)
+        {
+            if (httpContext?.Request?.Headers?.TryGetValue(headerName, out var values) ?? false)
+            {
+                var rawValues = values.ToString(); // writes out as Csv when there are multiple.
+
+                if (!rawValues.IsNullOrWhitespace())
+                {
+                    return (T) Convert.ChangeType(values.ToString(), typeof(T));
+                }
+            }
+            return default(T);
+        }
+
+        public static List<string> SplitCsv(this string csvList, bool nullOrWhitespaceInputReturnsNull = false)
+        {
+            if (string.IsNullOrWhiteSpace(csvList))
+            {
+                return nullOrWhitespaceInputReturnsNull ? null : new List<string>();
+            }
+
+            return csvList.TrimEnd(',')
+                          .Split(',')
+                          .Select(s => s.Trim())
+                          .ToList();
+        }
+
+        public static bool IsNullOrWhitespace(this string s)
+        {
+            return string.IsNullOrWhiteSpace(s);
+        }
+
         public static IApplicationBuilder UseEnableRewind(this IApplicationBuilder app)
         {
             app.Use(next => context => {
@@ -129,13 +206,6 @@ namespace IFramework.AspNet
                 return requestBody;
             }
         }
-
-        public static string GetClientIp(this HttpRequest me)
-        {
-            var ip = me.HttpContext.Connection.RemoteIpAddress;
-            return ip?.ToString().Trim();
-        }
-
 
         public static IDictionary<string, string> FromLegacyCookieString(this string legacyCookie)
         {

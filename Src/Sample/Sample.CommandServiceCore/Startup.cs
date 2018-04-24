@@ -10,12 +10,10 @@ using IFramework.JsonNetCore;
 using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
-using IFramework.MessageQueueCore.ConfluentKafka;
 using IFramework.MessageQueueCore.InMemory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +23,7 @@ using Sample.Command;
 using Sample.CommandServiceCore.Authorizations;
 using Sample.CommandServiceCore.CommandInputExtension;
 using Sample.CommandServiceCore.ExceptionHandlers;
+using Sample.CommandServiceCore.Filters;
 using Sample.Domain;
 using Sample.Persistence;
 using Sample.Persistence.Repositories;
@@ -65,21 +64,25 @@ namespace Sample.CommandServiceCore
                          .UseMessagePublisher("eventTopic")
                          //.UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
                          .UseDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)).ConnectionString))
-                         ;
+                ;
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options => { options.InputFormatters.Insert(0, new CommandInputFormatter()); });
+            services.AddMvc(options =>
+            {
+                options.Filters.Add<ExceptionFilter>();
+                options.InputFormatters.Insert(0, new CommandInputFormatter());
+            });
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
             return ObjectProviderFactory.Instance
-                             .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
-                             .Populate(services)
-                             .Build();
+                                        .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
+                                        .Populate(services)
+                                        .Build();
         }
 
         private static void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
@@ -101,11 +104,7 @@ namespace Sample.CommandServiceCore
             }
             else
             {
-                app.UseExceptionHandler(new ExceptionHandlerOptions
-                {
-                    ExceptionHandlingPath = new PathString("/Home/Error"),
-                    ExceptionHandler = AppExceptionHandler.Handle
-                });
+                app.UseExceptionHandler(new GlobalExceptionHandlerOptions(loggerFactory, env));
             }
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
@@ -143,7 +142,7 @@ namespace Sample.CommandServiceCore
             #region event subscriber init
 
             _domainEventProcessor = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
-                                                                             Environment.MachineName, new[] {"DomainEventSubscriber"});
+                                                                              Environment.MachineName, new[] {"DomainEventSubscriber"});
             _domainEventProcessor.Start();
 
             #endregion
@@ -151,7 +150,7 @@ namespace Sample.CommandServiceCore
             #region application event subscriber init
 
             _applicationEventProcessor = MessageQueueFactory.CreateEventSubscriber("AppEvent", "AppEventSubscriber",
-                                                                                  Environment.MachineName, new[] {"ApplicationEventSubscriber"});
+                                                                                   Environment.MachineName, new[] {"ApplicationEventSubscriber"});
             _applicationEventProcessor.Start();
 
             #endregion
