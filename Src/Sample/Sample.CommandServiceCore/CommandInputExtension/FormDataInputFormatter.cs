@@ -36,7 +36,8 @@ namespace Sample.CommandServiceCore.CommandInputExtension
             try
             {
                 object inputModel = null;
-                if (FormUrlEncodedJson.TryParse(request.Form.ToDictionary(f => f.Key, f => f.Value.ToString()), out var jObject))
+                var formCollection = request.Form.ToDictionary(f => f.Key, f => f.Value.ToString());
+                if (formCollection.Count > 0 && FormUrlEncodedJson.TryParse(formCollection, out var jObject))
                 {
                     inputModel = jObject.ToObject(context.ModelType);
                 }
