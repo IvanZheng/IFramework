@@ -15,6 +15,7 @@ using IFramework.MessageQueueCore.InMemory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,7 @@ namespace Sample.CommandServiceCore
         private static IMessageProcessor _commandConsumer3;
         private static IMessageProcessor _domainEventProcessor;
         private static IMessageProcessor _applicationEventProcessor;
+        public static string PathBase;
 
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
@@ -109,6 +111,25 @@ namespace Sample.CommandServiceCore
             {
                 app.UseExceptionHandler(new GlobalExceptionHandlerOptions(loggerFactory, env));
             }
+
+            PathBase = Configuration.Instance[nameof(PathBase)];
+            app.UsePathBase(PathBase);
+
+            app.Use(next => context =>
+            {
+                context.Request.Path = context.Request.Path.Value.Replace("//", "/");
+                return next(context);
+            });
+
+            //app.Use(async (context, next) =>
+            //{
+            //    await next();
+            //    if (context.Response.StatusCode == StatusCodes.Status404NotFound)
+            //    {
+            //        context.Request.Path = "/Home/Error";
+            //        await next();
+            //    }
+            //});
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
