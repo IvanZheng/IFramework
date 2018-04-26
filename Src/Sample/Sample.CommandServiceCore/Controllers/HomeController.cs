@@ -42,6 +42,14 @@ namespace Sample.CommandServiceCore.Controllers
             return View();
         }
 
+
+        public ApiResult PostAddRequest([FromBody]AddRequest request)
+        {
+            request = request ?? new AddRequest();
+            request.File = Request.HasFormContentType ? Request.Form.Files.FirstOrDefault()?.FileName: null;
+            return new ApiResult<AddRequest>(request);
+        }
+
         public IActionResult Index()
         {
             var profile = Configuration.Get("Debug");

@@ -217,6 +217,13 @@
         <input type="text" placeholder="reduceCount" id="reduceCount" />
         <input id="btnReduceProduct" type="button" value="ReduceProduct" />
     </div>
+    @using (Html.BeginForm("PostAddRequest", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.TextBox("Id", "id");
+        @Html.TextBox("Name", "name");
+        <input type="file" name="file1"/>
+        <button type="submit">submit</button>
+    }
     <div id="result">
 
     </div>

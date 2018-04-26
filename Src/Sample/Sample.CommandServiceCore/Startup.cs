@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using IFramework.Command;
 using IFramework.Config;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,8 +73,9 @@ namespace Sample.CommandServiceCore
         {
             services.AddMvc(options =>
             {
-                options.Filters.Add<ExceptionFilter>();
                 options.InputFormatters.Insert(0, new CommandInputFormatter());
+                options.InputFormatters.Add(new FormDataInputFormatter());
+                options.Filters.Add<ExceptionFilter>();
             });
             services.AddAuthorization(options =>
             {
