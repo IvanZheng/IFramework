@@ -25,9 +25,9 @@ namespace IFramework.Test.EntityFramework
         public DbSet<User> Users { get; set; }
         public DbSet<Card> Cards { get; set; }
 
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    base.OnModelCreating(modelBuilder);
-        //}
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

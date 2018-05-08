@@ -19,6 +19,7 @@ namespace IFramework.Test.EntityFramework
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
             Configuration.Instance
+                         .UseAutofacContainer()
                          .UseConfiguration(builder.Build());
         }
 
