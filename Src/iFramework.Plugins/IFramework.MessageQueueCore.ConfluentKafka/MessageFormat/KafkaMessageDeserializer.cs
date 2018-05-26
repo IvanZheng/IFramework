@@ -19,5 +19,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
         {
             return Encoding.UTF8.GetString(data).ToJsonObject<KafkaMessage>();
         }
+
+        public void Dispose() { }
     }
 }

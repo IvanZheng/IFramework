@@ -20,5 +20,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
         {
             return config;
         }
+
+        public void Dispose() { }
     }
 }

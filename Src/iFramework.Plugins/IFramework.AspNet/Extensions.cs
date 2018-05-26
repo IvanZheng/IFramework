@@ -151,8 +151,7 @@ namespace IFramework.AspNet
             {
                 return formValue;
             }
-
-            //TODO 还需要添加从ServerVariables取值的方式。
+            
             return null;
         }
 
