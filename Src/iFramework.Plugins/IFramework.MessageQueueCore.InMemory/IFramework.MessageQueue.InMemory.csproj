@@ -7,6 +7,10 @@
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\IFramework.MessageQueue.InMemory.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
   </ItemGroup>
