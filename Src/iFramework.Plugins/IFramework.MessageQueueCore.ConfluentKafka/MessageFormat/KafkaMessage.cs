@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
+namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
     public class KafkaMessage
     {

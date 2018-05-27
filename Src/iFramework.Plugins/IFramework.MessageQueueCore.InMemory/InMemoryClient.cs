@@ -11,7 +11,7 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 
-namespace IFramework.MessageQueueCore.InMemory
+namespace IFramework.MessageQueue.InMemory
 {
     public class InMemoryClient: IMessageQueueClient
     {

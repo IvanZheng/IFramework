@@ -5,9 +5,9 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
+using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 
-namespace IFramework.MessageQueueCore.ConfluentKafka
+namespace IFramework.MessageQueue.ConfluentKafka
 {
     public class KafkaMQClientProvider : IMessageQueueClientProvider
     {

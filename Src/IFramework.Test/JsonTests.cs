@@ -7,7 +7,7 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using Newtonsoft.Json;
-using IFramework.JsonNetCore;
+using IFramework.JsonNet;
 using Xunit;
 using Xunit.Abstractions;
 

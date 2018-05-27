@@ -2,7 +2,7 @@
 using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
 
-namespace IFramework.JsonNetCore
+namespace IFramework.JsonNet
 {
     public static class FrameworkConfigurationExtension
     {

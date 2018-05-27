@@ -4,7 +4,7 @@ using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace IFramework.MessageQueueCore.ConfluentKafka
+namespace IFramework.MessageQueue.ConfluentKafka
 {
     public static class ConfigurationExtension
     {

@@ -6,7 +6,7 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 
-namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
+namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
     public class MessageContext : IMessageContext
     {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace IFramework.JsonNetCore
+namespace IFramework.JsonNet
 {
     public class IgnoreInvalidStringEnumConverter : StringEnumConverter
     {

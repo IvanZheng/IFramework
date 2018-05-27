@@ -8,7 +8,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
-namespace IFramework.JsonNetCore
+namespace IFramework.JsonNet
 {
     public static class JsonHelper
     {

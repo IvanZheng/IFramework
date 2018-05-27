@@ -7,13 +7,13 @@ using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
 using IFramework.Config;
 using IFramework.DependencyInjection;
-using IFramework.MessageQueueCore.ConfluentKafka.MessageFormat;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.MessageQueue.Client.Abstracts;
+using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Logging;
 
-namespace IFramework.MessageQueueCore.ConfluentKafka
+namespace IFramework.MessageQueue.ConfluentKafka
 {
 
     public class KafkaProducer : KafkaProducer<string, KafkaMessage>, IMessageProducer

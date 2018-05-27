@@ -6,6 +6,13 @@
     <Version>2.0.0-prelease-0001</Version>
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
+    <AssemblyName>IFramework.JsonNet</AssemblyName>
+    <RootNamespace>IFramework.JsonNet</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;1591</NoWarn>
+    <DocumentationFile>bin\Release\netstandard2.0\IFramework.JsonNetCore.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -21,7 +21,7 @@ namespace IFramework.Repositories
         /// <summary>
         ///     Adds an entity to the repository.
         /// </summary>
-        /// <param name="entity">The entity object to be added.</param>
+        /// <param name="entities">The entity object to be added.</param>
         void Add(IEnumerable<TAggregateRoot> entities);
 
         void Add(TAggregateRoot entity);
@@ -29,7 +29,7 @@ namespace IFramework.Repositories
         /// <summary>
         ///     Gets the entity instance from repository by a given key.
         /// </summary>
-        /// <param name="key">The key of the entity.</param>
+        /// <param name="keyValues">The key of the entity.</param>
         /// <returns>The instance of the entity.</returns>
         TAggregateRoot GetByKey(params object[] keyValues);
 

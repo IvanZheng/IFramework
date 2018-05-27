@@ -10,7 +10,7 @@ using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
 using Microsoft.Extensions.Logging;
 
-namespace IFramework.MessageQueueCore.ConfluentKafka
+namespace IFramework.MessageQueue.ConfluentKafka
 {
     public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumerRecord<TKey, TValue> message);
 

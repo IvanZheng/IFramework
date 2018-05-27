@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka.Serialization;
 using IFramework.Infrastructure;
 
-namespace IFramework.MessageQueueCore.ConfluentKafka.MessageFormat
+namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
     public class KafkaMessageDeserializer : IDeserializer<KafkaMessage>
     {

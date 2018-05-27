@@ -7,7 +7,7 @@ using IFramework.Message;
 using IFramework.MessageQueue;
 using Microsoft.Extensions.Logging;
 
-namespace IFramework.MessageQueueCore.InMemory
+namespace IFramework.MessageQueue.InMemory
 {
     public class QueueClient : IMessageConsumer
     {

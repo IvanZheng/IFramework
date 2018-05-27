@@ -17,9 +17,7 @@ namespace IFramework.Repositories
     {
         #region Construct
 
-        protected BaseRepository(object dbContext, IUnitOfWork unitOfWork)
-        {
-        }
+        protected BaseRepository(object dbContext, IUnitOfWork unitOfWork) { }
 
         #endregion
 
@@ -28,7 +26,7 @@ namespace IFramework.Repositories
         /// <summary>
         ///     Adds an entity to the repository.
         /// </summary>
-        /// <param name="entity">The entity object to be added.</param>
+        /// <param name="entities"></param>
         protected abstract void DoAdd(IEnumerable<TAggregateRoot> entities);
 
         protected abstract void DoAdd(TAggregateRoot entity);
@@ -36,7 +34,7 @@ namespace IFramework.Repositories
         /// <summary>
         ///     Gets the entity instance from repository by a given key.
         /// </summary>
-        /// <param name="key">The key of the entity.</param>
+        /// <param name="keyValues">The key of the entity.</param>
         /// <returns>The instance of the entity.</returns>
         protected abstract TAggregateRoot DoGetByKey(params object[] keyValues);
 
@@ -47,8 +45,7 @@ namespace IFramework.Repositories
         ///     Finds all the aggregate roots from repository, sorting by using the provided sort predicate
         ///     and the specified sort order.
         /// </summary>
-        /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
+        /// <param name="orderExpressions">The sort predicate which is used for sorting.</param>
         /// <returns>
         ///     All the aggregate roots got from the repository, with the aggregate roots being sorted by
         ///     using the provided sort predicate and the sort order.
@@ -63,8 +60,7 @@ namespace IFramework.Repositories
         ///     by using the provided sort predicate and the specified sort order.
         /// </summary>
         /// <param name="specification">The specification with which the aggregate roots should match.</param>
-        /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
+        /// <param name="orderExpressions">The sort predicate which is used for sorting.</param>
         /// <returns>
         ///     All the aggregate roots that match the given specification and were sorted by using the given sort predicate
         ///     and the sort order.
@@ -126,8 +122,7 @@ namespace IFramework.Repositories
         /// <summary>
         ///     Adds an entity to the repository.
         /// </summary>
-        /// <param name="entity">The entity object to be added.</param>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
+        /// <param name="entities"></param>
         public void Add(IEnumerable<TAggregateRoot> entities)
         {
             DoAdd(entities);
@@ -141,9 +136,8 @@ namespace IFramework.Repositories
         /// <summary>
         ///     Gets the entity instance from repository by a given key.
         /// </summary>
-        /// <param name="key">The key of the entity.</param>
+        /// <param name="keyValues">The key of the entity.</param>
         /// <returns>The instance of the entity.</returns>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
         public TAggregateRoot GetByKey(params object[] keyValues)
         {
             return DoGetByKey(keyValues);
@@ -158,7 +152,6 @@ namespace IFramework.Repositories
         ///     Removes the entity from the repository.
         /// </summary>
         /// <param name="entity">The entity to be removed.</param>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
         public void Remove(TAggregateRoot entity)
         {
             DoRemove(entity);
@@ -176,7 +169,6 @@ namespace IFramework.Repositories
         ///     Updates the entity in the repository.
         /// </summary>
         /// <param name="entity">The entity to be updated.</param>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
         public void Update(TAggregateRoot entity)
         {
             DoUpdate(entity);
@@ -186,13 +178,11 @@ namespace IFramework.Repositories
         ///     Finds all the aggregate roots from repository, sorting by using the provided sort predicate
         ///     and the specified sort order.
         /// </summary>
-        /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
+        /// <param name="orderExpressions">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
         /// <returns>
         ///     All the aggregate roots got from the repository, with the aggregate roots being sorted by
         ///     using the provided sort predicate and the sort order.
         /// </returns>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
         public IQueryable<TAggregateRoot> FindAll(params OrderExpression[] orderExpressions)
         {
             return DoFindAll(orderExpressions);
@@ -203,7 +193,6 @@ namespace IFramework.Repositories
         /// </summary>
         /// <param name="specification">The specification with which the aggregate roots should match.</param>
         /// <returns>All the aggregate roots that match the given specification.</returns>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
         public IQueryable<TAggregateRoot> FindAll(ISpecification<TAggregateRoot> specification)
         {
             return DoFindAll(specification);
@@ -214,13 +203,11 @@ namespace IFramework.Repositories
         ///     by using the provided sort predicate and the specified sort order.
         /// </summary>
         /// <param name="specification">The specification with which the aggregate roots should match.</param>
-        /// <param name="sortPredicate">The sort predicate which is used for sorting.</param>
-        /// <param name="sortOrder">The <see cref="SortOrder" /> enum which specifies the sort order.</param>
+        /// <param name="orderExpressions">The sort predicate which is used for sorting.</param>
         /// <returns>
         ///     All the aggregate roots that match the given specification and were sorted by using the given sort predicate
         ///     and the sort order.
         /// </returns>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
         public IQueryable<TAggregateRoot> FindAll(ISpecification<TAggregateRoot> specification,
                                                   params OrderExpression[] orderExpressions)
         {
@@ -232,7 +219,6 @@ namespace IFramework.Repositories
         /// </summary>
         /// <param name="specification">The specification with which the aggregate root should match.</param>
         /// <returns>The instance of the aggregate root.</returns>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
         public TAggregateRoot Find(ISpecification<TAggregateRoot> specification)
         {
             return DoFind(specification);
@@ -248,7 +234,6 @@ namespace IFramework.Repositories
         /// </summary>
         /// <param name="specification">The specification with which the aggregate root should match.</param>
         /// <returns>True if the aggregate root exists, otherwise false.</returns>
-        /// <exception cref="Framework.Repositories.RepositoryException">Occurs when failed to perform the specific operation.</exception>
         public bool Exists(ISpecification<TAggregateRoot> specification)
         {
             return DoExists(specification);

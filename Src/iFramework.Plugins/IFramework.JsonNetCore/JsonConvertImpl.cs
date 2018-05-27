@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using IFramework.Infrastructure;
 using Newtonsoft.Json;
 
-namespace IFramework.JsonNetCore
+namespace IFramework.JsonNet
 {
     public class JsonConvertImpl: IJsonConvert
     {

@@ -23,6 +23,7 @@ namespace IFramework.Message
         ///     return event IMessageContext
         /// </summary>
         /// <param name="commandContext"></param>
+        /// <param name="result"></param>
         /// <param name="eventContexts"></param>
         void SaveCommand(IMessageContext commandContext, object result = null, params IMessageContext[] eventContexts);
 
