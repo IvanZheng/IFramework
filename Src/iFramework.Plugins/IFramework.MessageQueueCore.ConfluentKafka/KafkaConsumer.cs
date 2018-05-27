@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueueCore.ConfluentKafka
 {
-    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, Message<TKey, TValue> message);
+    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumerRecord<TKey, TValue> message);
 
     public class KafkaConsumer<TKey, TValue> : MessageConsumer
     {
@@ -76,12 +76,12 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
             _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);
             _consumer.Subscribe(Topic);
             _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
-            _consumer.OnMessage += _consumer_OnMessage;
+            _consumer.OnRecord += _consumer_OnMessage;
             base.Start();
         }
 
 
-        private void _consumer_OnMessage(object sender, Message<TKey, TValue> message)
+        private void _consumer_OnMessage(object sender, ConsumerRecord<TKey, TValue> message)
         {
             try
             {
@@ -100,17 +100,17 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
             }
         }
 
-        public override async Task CommitOffsetAsync(string broker, int partition, long offset)
+        public override Task CommitOffsetAsync(string broker, int partition, long offset)
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(Topic, partition), offset + 1);
-            var committedOffset = await _consumer.CommitAsync(new[] { topicPartitionOffset })
-                                                 .ConfigureAwait(false);
+            var committedOffset = _consumer.Commit(new[] {topicPartitionOffset});
             if (committedOffset.Error.Code != ErrorCode.NoError)
             {
                 throw new Exception($"{Id} committed offset failed {committedOffset.Error} broker/partition/offset: {broker}/{partition}/{offset}");
             }
             Logger.LogDebug($"{Id} committed broker/partition/offset: {broker}/{partition}/{offset}");
+            return Task.CompletedTask;
         }
 
         public override void Stop()

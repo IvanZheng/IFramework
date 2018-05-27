@@ -18,13 +18,13 @@
   
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions">
-      <Version>2.0.3</Version>
+      <Version>2.1.0-rc1-final</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Http">
-      <Version>2.0.3</Version>
+      <Version>2.1.0-rc1-final</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Localization">
-      <Version>2.0.3</Version>
+      <Version>2.1.0-rc1-final</Version>
     </PackageReference>
   </ItemGroup>
   

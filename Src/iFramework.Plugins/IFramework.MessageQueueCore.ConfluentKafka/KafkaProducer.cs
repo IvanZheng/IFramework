@@ -70,7 +70,7 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
             }
         }
 
-        public async Task<Message<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
+        public async Task<DeliveryReport<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
         {
             var retryTimes = 0;
             while (true)
@@ -82,8 +82,9 @@ namespace IFramework.MessageQueueCore.ConfluentKafka
                 var waitTime = Math.Min(retryTimes * 1000 * 5, 60000 * 5);
                 try
                 {
-                    var result = await _producer.ProduceAsync(topic, key, message, false)
-                                                .ConfigureAwait(false);
+                    var result = await _producer.ProduceAsync(topic, new Message<TKey, TValue>{
+                        Key = key,
+                        Value = message}).ConfigureAwait(false);
                     if (result.Error != ErrorCode.NoError)
                     {
                         _logger.LogError($"send message failed topic: {topic} Partition: {result.Partition} key:{key} error:{result.Error}");
