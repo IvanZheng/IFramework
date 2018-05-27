@@ -52,14 +52,13 @@ namespace IFramework.DependencyInjection.Autofac
                                  var componentContextField = typeof(AutofacServiceProvider).GetField("_componentContext",
                                                   BindingFlags.NonPublic |
                                                   BindingFlags.Instance);
-                                 if (componentContextField == null)
+                                 if (componentContextField?.GetValue(serviceProvider) is IComponentContext componentContext)
                                  {
-                                     return objectProvider.CreateScope();
+                                    return new ObjectProvider(componentContext);
                                  }
-                                 return new ObjectProvider(componentContextField.GetValue(serviceProvider) as IComponentContext);
+                                 return objectProvider.CreateScope();
                              })
                              .InstancePerLifetimeScope();
-            //_containerBuilder.RegisterInstance<IObjectProvider>(objectProvider);
             objectProvider.SetComponentContext(_containerBuilder.Build());
             return objectProvider;
         }

@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <Version>2.0.0-prelease-0001</Version>
+    <Authors>Ivan</Authors>
+    <Company>Ivan</Company>
+    <Description>Currently only implement standard2.0</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
