@@ -46,12 +46,16 @@ namespace IFramework.DependencyInjection.Autofac
                 Populate(serviceCollection);
             }
             var objectProvider = new ObjectProvider();
-            _containerBuilder.Register<IObjectProvider>(context =>
+            _containerBuilder.Register(context =>
                              {
                                  var serviceProvider = context.Resolve<IServiceProvider>() as AutofacServiceProvider;
                                  var componentContextField = typeof(AutofacServiceProvider).GetField("_componentContext",
                                                   BindingFlags.NonPublic |
                                                   BindingFlags.Instance);
+                                 if (componentContextField == null)
+                                 {
+                                     return objectProvider.CreateScope();
+                                 }
                                  return new ObjectProvider(componentContextField.GetValue(serviceProvider) as IComponentContext);
                              })
                              .InstancePerLifetimeScope();
