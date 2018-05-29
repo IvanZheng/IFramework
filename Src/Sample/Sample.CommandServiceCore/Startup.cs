@@ -52,10 +52,7 @@ namespace Sample.CommandServiceCore
                 //"10.100.7.46:9092"
             };
             Configuration.Instance
-                         .UseAutofacContainer("Sample.CommandHandler",
-                                              "Sample.DomainEventSubscriber",
-                                              "Sample.AsyncDomainEventSubscriber",
-                                              "Sample.ApplicationEventSubscriber")
+                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                          .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet()
