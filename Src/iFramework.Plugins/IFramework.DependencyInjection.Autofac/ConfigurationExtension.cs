@@ -25,7 +25,8 @@ namespace IFramework.DependencyInjection.Autofac
 
             var loadedAssemblies = AppDomain.CurrentDomain
                                             .GetAssemblies()
-                                            .Where(assembly => !assembly.GetName().Name.EndsWith(".PrecompiledViews"))
+                                            .Where(assembly => !assembly.GetName().Name.EndsWith(".PrecompiledViews")
+                                                               && !assembly.GetName().Name.EndsWith(".Views"))
                                             .Where(assemblyNameExpression);
 
             return loadedAssemblies.Union(assemblies)
