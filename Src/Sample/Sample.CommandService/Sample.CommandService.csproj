@@ -475,7 +475,7 @@
       <Project>{5A404E73-E592-43CB-9088-BA4EE50591F3}</Project>
       <Name>IFramework.EntityFrameworkCore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNetCore.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNet.csproj">
       <Project>{8AF3ECAB-3E1F-485E-960E-05C7826E6617}</Project>
       <Name>IFramework.JsonNetCore</Name>
     </ProjectReference>
@@ -483,11 +483,11 @@
       <Project>{1b9dcc2c-e251-427a-ae6f-b951a4b362f8}</Project>
       <Name>IFramework.Log4Net</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueueCore.ConfluentKafka.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj">
       <Project>{e1c3ca59-38de-4d7f-9a4b-e3a9722ac608}</Project>
       <Name>IFramework.MessageQueueCore.ConfluentKafka</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.InMemory\IFramework.MessageQueueCore.InMemory.csproj">
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.InMemory\IFramework.MessageQueue.InMemory.csproj">
       <Project>{8557C084-3EF0-4591-821A-62DEDABC8982}</Project>
       <Name>IFramework.MessageQueueCore.InMemory</Name>
     </ProjectReference>
