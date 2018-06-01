@@ -3,10 +3,10 @@ using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.AspNet;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
