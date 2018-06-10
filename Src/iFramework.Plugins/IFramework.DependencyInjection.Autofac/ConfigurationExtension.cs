@@ -54,7 +54,10 @@ namespace IFramework.DependencyInjection.Autofac
                                                         params Assembly[] assemblies)
         {
             var builder = new ContainerBuilder();
-            builder.RegisterAssemblyTypes(assemblies);
+            if (assemblies?.Length > 0)
+            {
+                builder.RegisterAssemblyTypes(assemblies);
+            }
             ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
             return configuration;
         }
