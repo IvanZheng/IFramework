@@ -64,8 +64,12 @@ namespace Sample.CommandServiceCore
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
                          .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
-                         //.UseDbContextPool<SampleModelContext>(options => options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)).ConnectionString))
-                ;
+                         //.UseDbContextPool<SampleModelContext>(options =>
+                         //{
+                         //    options.EnableSensitiveDataLogging();
+                         //    options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)).ConnectionString);
+                         //})
+                         ;
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
@@ -81,6 +85,8 @@ namespace Sample.CommandServiceCore
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
+            services.AddMiniProfiler()
+                    .AddEntityFramework();
             return ObjectProviderFactory.Instance
                                         .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                                         .Populate(services)
@@ -108,7 +114,7 @@ namespace Sample.CommandServiceCore
             {
                 app.UseExceptionHandler(new GlobalExceptionHandlerOptions(loggerFactory, env));
             }
-
+            app.UseMiniProfiler();
             PathBase = Configuration.Instance[nameof(PathBase)];
             app.UsePathBase(PathBase);
 
