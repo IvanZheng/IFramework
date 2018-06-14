@@ -9,8 +9,7 @@ namespace IFramework.Test.EntityFramework
         internal DemoDbContext()
             : this(new DbContextOptionsBuilder()//.UseInMemoryDatabase(nameof(DemoDbContext))
                                                 .UseSqlServer(Configuration.Instance
-                                                                           .GetConnectionString("DemoDb")
-                                                                           .ConnectionString)
+                                                                           .GetConnectionString("DemoDb"))
                                                 .Options)
         {
         }

@@ -45,8 +45,7 @@ namespace IFramework.Test.EntityFramework
         {
             var services = new ServiceCollection();
             services.AddDbContextPool<DemoDbContext>(options => options.UseSqlServer(Configuration.Instance
-                                                                                                  .GetConnectionString("DemoDb")
-                                                                                                  .ConnectionString));
+                                                                                                  .GetConnectionString("DemoDb")));
             builder.Register<IDemoRepository, DemoRepository>(lifeTime);
             builder.Populate(services);
         }

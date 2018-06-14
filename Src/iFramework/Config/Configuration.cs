@@ -193,10 +193,11 @@ namespace IFramework.Config
             return appSetting;
         }
 
-        public ConnectionStringSettings GetConnectionString(string name)
+        public string GetConnectionString(string name)
         {
-            return Get<ConnectionStringSettings>($"ConnectionStrings:{name}")
-                   ?? ConfigurationManager.ConnectionStrings[name];
+            return ConfigurationCore.GetConnectionString(name)??
+                   Get<ConnectionStringSettings>($"ConnectionStrings:{name}")?.ConnectionString ?? 
+                   ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
         }
 
         public static string Get(string key)
