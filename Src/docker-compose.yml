@@ -1,12 +1,8 @@
-version: '3'
-
+version: '3.4'
 
 services:
-  project_name: iframework
-  iframework.sample:
-    image: iframework.sample
+  sample.commandservicecore:
+    image: ${DOCKER_REGISTRY}samplecommandservicecore
     build:
       context: .
       dockerfile: Sample/Sample.CommandServiceCore/Dockerfile
-    ports:
-      - "5008:80"

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
   <PropertyGroup Label="Globals">
-    <ProjectVersion>2.0</ProjectVersion>
+    <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
-    <ProjectGuid>a3b1b505-88fc-4fb1-83dc-8e89967df9ad</ProjectGuid>
-    <DockerLaunchBrowser>True</DockerLaunchBrowser>
-    <DockerServiceUrl>http://localhost:{ServicePort}</DockerServiceUrl>
+    <ProjectGuid>b56ad89f-48d9-47c9-ba3d-e0e225bb8499</ProjectGuid>
+    <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+    <DockerServiceUrl>{Scheme}://10.100.7.46:{ServicePort}</DockerServiceUrl>
     <DockerServiceName>sample.commandservicecore</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
