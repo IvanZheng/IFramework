@@ -8,7 +8,7 @@ namespace IFramework.Infrastructure.Caching.Impl
     /// </summary>
     public class MemoryCacheManager : CacheManagerBase
     {
-        protected MemoryCache Cache => new MemoryCache(new MemoryCacheOptions());
+        protected MemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         /// <summary>
         ///     Gets or sets the value associated with the specified key.

@@ -98,7 +98,7 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration UseMemoryCahce(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public Configuration UseMemoryCahce(ServiceLifetime lifetime = ServiceLifetime.Singleton)
         {
             ObjectProviderFactory.Instance.RegisterType<ICacheManager, MemoryCacheManager>(lifetime);
             return this;
