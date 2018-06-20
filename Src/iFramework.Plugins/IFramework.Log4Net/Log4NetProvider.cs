@@ -13,15 +13,17 @@ namespace IFramework.Log4Net
 {
     public class Log4NetProvider : ILoggerProvider
     {
+        private readonly Log4NetProviderOptions _options;
         private readonly ILoggerRepository _loggerRepository;
         private readonly ConcurrentDictionary<string, Log4NetLogger> _loggers = new ConcurrentDictionary<string, Log4NetLogger>();
 
-        public Log4NetProvider(string log4NetConfigFile)
+        public Log4NetProvider(Log4NetProviderOptions options)
         {
-            var configFile = GetLog4NetConfigFile(log4NetConfigFile);
+            _options = options ?? Log4NetProviderOptions.Default;
+            var configFile = GetLog4NetConfigFile(_options.ConfigFile);
 
             var repositoryName = Configuration.Get("app") ?? Assembly.GetCallingAssembly()
-                                                                               .FullName;
+                                                                     .FullName;
             _loggerRepository = LogManager.GetAllRepositories()
                                           .FirstOrDefault(r => r.Name == repositoryName) ?? LogManager.CreateRepository(repositoryName);
             XmlConfigurator.ConfigureAndWatch(_loggerRepository, configFile);
@@ -29,7 +31,7 @@ namespace IFramework.Log4Net
 
         public ILogger CreateLogger(string categoryName)
         {
-            return _loggers.GetOrAdd(categoryName, CreateLoggerImplementation);
+            return _loggers.GetOrAdd(categoryName, key => CreateLoggerImplementation(key, _options));
         }
 
         public void Dispose()
@@ -45,9 +47,9 @@ namespace IFramework.Log4Net
         }
 
 
-        private Log4NetLogger CreateLoggerImplementation(string name)
+        private Log4NetLogger CreateLoggerImplementation(string name, Log4NetProviderOptions options)
         {
-            return new Log4NetLogger(_loggerRepository.Name, name);
+            return new Log4NetLogger(_loggerRepository.Name, name, options);
         }
     }
 }

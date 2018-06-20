@@ -52,10 +52,13 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Index()
         {
-            var profile = Configuration.Get("Debug");
-            var member = Configuration.Get("Member:A");
-            _logger.LogDebug(profile.ToJson());
-            return View();
+            using (_logger.BeginScope("begin scope"))
+            {
+                var profile = Configuration.Get("Debug");
+                var member = Configuration.Get("Member:A");
+                _logger.LogDebug(profile.ToJson());
+                return View();
+            }
         }
 
         public IActionResult About()

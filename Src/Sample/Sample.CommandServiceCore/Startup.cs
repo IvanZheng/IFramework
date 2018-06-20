@@ -103,7 +103,7 @@ namespace Sample.CommandServiceCore
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.UseLog4Net();
+            loggerFactory.UseLog4Net(new Log4NetProviderOptions { EnableScope = true});
             StartMessageQueueComponents();
 
             if (env.IsDevelopment())

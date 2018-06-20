@@ -11,18 +11,18 @@ namespace IFramework.Log4Net
     {
         public static Configuration UseLog4Net(this Configuration configuration,
                                                LogLevel logLevel = LogLevel.Information,
-                                               string log4NetConfigFile = "log4net.config")
+                                               Log4NetProviderOptions options = null)
         {
             ObjectProviderFactory.Instance.Populate(UseLog4Net(new ServiceCollection(),
                                                     logLevel,
-                                                    log4NetConfigFile));
+                                                    options));
             return configuration;
         }
 
 
         public static IServiceCollection UseLog4Net(this IServiceCollection services,
                                                     LogLevel logLevel = LogLevel.Information,
-                                                    string log4NetConfigFile = "log4net.config")
+                                                    Log4NetProviderOptions options = null)
         {
             services.AddLogging(config =>
             {
@@ -35,14 +35,14 @@ namespace IFramework.Log4Net
                 {
                     config.SetMinimumLevel(logLevel);
                 }
-                config.AddProvider(new Log4NetProvider(log4NetConfigFile));
+                config.AddProvider(new Log4NetProvider(options));
             });
             return services;
         }
 
-        public static void UseLog4Net(this ILoggerFactory loggerFactory, string log4NetConfigFile = "log4net.config")
+        public static void UseLog4Net(this ILoggerFactory loggerFactory, Log4NetProviderOptions options = null)
         {
-            loggerFactory.AddProvider(new Log4NetProvider(log4NetConfigFile));
+            loggerFactory.AddProvider(new Log4NetProvider(options));
         }
     }
 }
