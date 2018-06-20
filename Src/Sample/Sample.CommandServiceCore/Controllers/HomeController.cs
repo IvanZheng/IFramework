@@ -21,12 +21,12 @@ namespace Sample.CommandServiceCore.Controllers
         private readonly IObjectProvider _objectProvider;
         private readonly ILogger _logger;
         public HomeController(IExceptionManager exceptionManager,
-                              ILoggerFactory loggerFactory,
+                              ILogger<HomeController> logger,
                               IObjectProvider objectProvider)
         {
             _exceptionManager = exceptionManager;
             _objectProvider = objectProvider;
-            _logger = loggerFactory.CreateLogger(nameof(HomeController));
+            _logger = logger;
         }
 
         [Authorize("AppAuthorization")]
