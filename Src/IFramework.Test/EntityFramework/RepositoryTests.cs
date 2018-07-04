@@ -8,6 +8,7 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.EntityFrameworkCore;
+using IFramework.EntityFrameworkCore.Repositories;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,11 @@ using Xunit.Abstractions;
 
 namespace IFramework.Test.EntityFramework
 {
+    public class RepositoryBase<TEntity> : Repository<TEntity> where TEntity: class
+    {
+        public RepositoryBase(DemoDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork) { }
+
+    }
     public class RepositoryTests
     {
         private readonly ITestOutputHelper _output;
@@ -29,7 +35,7 @@ namespace IFramework.Test.EntityFramework
                          .UseConfiguration(builder.Build())
                          .UseAutofacContainer(new ContainerBuilder())
                          .UseCommonComponents()
-                         .UseEntityFrameworkComponents<DemoDbContext>();
+                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>), new []{typeof(DemoDbContext)});
 
             ObjectProviderFactory.Instance
                                  .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)

@@ -12,13 +12,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IFramework.EntityFrameworkCore.Repositories
 {
-    public class Repository<TEntity> : BaseRepository<TEntity>
+    public abstract class Repository<TEntity> : BaseRepository<TEntity>
         where TEntity : class
     {
         private DbSet<TEntity> _objectSet;
         protected MsDbContext Container;
 
-        public Repository(MsDbContext dbContext, IUnitOfWork unitOfWork)
+        protected Repository(MsDbContext dbContext, IUnitOfWork unitOfWork)
             : base(dbContext, unitOfWork)
         {
             if (dbContext == null)

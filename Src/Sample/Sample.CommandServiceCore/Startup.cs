@@ -56,7 +56,7 @@ namespace Sample.CommandServiceCore
                          .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet()
-                         .UseEntityFrameworkComponents<SampleModelContext>()
+                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>), new []{typeof(SampleModelContext)})
                          .UseMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))

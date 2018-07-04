@@ -14,23 +14,16 @@ namespace IFramework.Repositories
     public class DomainRepository : IDomainRepository
     {
         private readonly IObjectProvider _objectProvider;
-        private readonly ConcurrentDictionary<Type, IRepository> _repositories;
-        private readonly IUnitOfWork _unitOfWork;
 
         #region Construct
 
         /// <summary>
         ///     Initializes a new instance of DomainRepository.
         /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="unitOfWork"></param>
         /// <param name="objectProvider"></param>
-        public DomainRepository(object dbContext, IUnitOfWork unitOfWork, IObjectProvider objectProvider)
+        public DomainRepository(IObjectProvider objectProvider)
         {
-            DbContext = dbContext;
-            _unitOfWork = unitOfWork;
             _objectProvider = objectProvider;
-            _repositories = new ConcurrentDictionary<Type, IRepository>();
         }
 
         #endregion
@@ -41,20 +34,7 @@ namespace IFramework.Repositories
         public IRepository<TAggregateRoot> GetRepository<TAggregateRoot>()
             where TAggregateRoot : class
         {
-            return _repositories.GetOrAdd(typeof(IRepository<TAggregateRoot>),
-                                          key => _objectProvider.GetService<IRepository<TAggregateRoot>>(new Parameter("dbContext",
-                                                                                                                       DbContext),
-                                                                                                         new Parameter("unitOfWork",
-                                                                                                                       _unitOfWork)))
-                       as IRepository<TAggregateRoot>;
-
-            //if (!_repositories.TryGetValue(typeof(IRepository<TAggregateRoot>), out var repository))
-            //{
-            //    repository = _objectProvider.GetService<IRepository<TAggregateRoot>>(new Parameter("dbContext", DbContext),
-            //                                                                 new Parameter("unitOfWork", _unitOfWork));
-            //    _repositories.Add(typeof(IRepository<TAggregateRoot>), repository);
-            //}
-            //return repository as IRepository<TAggregateRoot>;
+            return _objectProvider.GetService<IRepository<TAggregateRoot>>();
         }
 
 

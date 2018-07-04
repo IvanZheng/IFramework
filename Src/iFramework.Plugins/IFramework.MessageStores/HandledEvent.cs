@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IFramework.MessageStores.Sqlserver
+namespace IFramework.MessageStores.Relational
 {
     public class HandledEvent
     {

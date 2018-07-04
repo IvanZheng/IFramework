@@ -1,4 +1,4 @@
-﻿namespace IFramework.MessageStores.Sqlserver
+﻿namespace IFramework.MessageStores.Relational
 {
     public enum MessageStatus
     {

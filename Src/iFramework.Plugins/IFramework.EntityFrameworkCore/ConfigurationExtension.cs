@@ -1,8 +1,8 @@
 ﻿using System;
 using IFramework.Config;
 using IFramework.DependencyInjection;
-using IFramework.EntityFrameworkCore.Repositories;
 using IFramework.EntityFrameworkCore.UnitOfWorks;
+using IFramework.Infrastructure;
 using IFramework.Repositories;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
@@ -22,30 +22,33 @@ namespace IFramework.EntityFrameworkCore
         }
 
         /// <summary>
-        ///     TDbContext is the default type for Repository<TEntity/>'s dbContext injected paramter
+        ///     TDbContext is the default type for Repository<TEntity />'s dbContext injected paramter
         /// </summary>
         /// <typeparam name="TDbContext"></typeparam>
         /// <param name="configuration"></param>
         /// <param name="builder"></param>
+        /// <param name="defaultRepositoryType"></param>
+        /// <param name="dbContextTypes"></param>
         /// <param name="lifetime"></param>
         /// <returns></returns>
-        public static Configuration UseEntityFrameworkComponents<TDbContext>(this Configuration configuration,
-                                                                             IObjectProviderBuilder builder,
-                                                                             ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TDbContext : MsDbContext
+        public static Configuration UseEntityFrameworkComponents(this Configuration configuration,
+                                                                 IObjectProviderBuilder builder,
+                                                                 Type defaultRepositoryType,
+                                                                 Type[] dbContextTypes,
+                                                                 ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
-            builder.Register<TDbContext, TDbContext>(lifetime);
-            builder.Register<MsDbContext>(provider => provider.GetService<TDbContext>(), lifetime);
+            dbContextTypes.ForEach(t => builder.Register(t, t, lifetime));
             return configuration.RegisterUnitOfWork(builder, lifetime)
-                                .RegisterRepositories(builder, lifetime);
+                                .RegisterRepositories(defaultRepositoryType, builder, lifetime);
         }
 
-        public static Configuration UseEntityFrameworkComponents<TDbContext>(this Configuration configuration,
-                                                                             ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TDbContext : MsDbContext
+        public static Configuration UseEntityFrameworkComponents(this Configuration configuration,
+                                                                 Type defaultRepositoryType,
+                                                                 Type[] dbContextTypes,
+                                                                 ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            return configuration.UseEntityFrameworkComponents<TDbContext>(null, lifetime);
+            return configuration.UseEntityFrameworkComponents(null, defaultRepositoryType, dbContextTypes, lifetime);
         }
 
         public static Configuration RegisterUnitOfWork(this Configuration configuration,
@@ -59,11 +62,12 @@ namespace IFramework.EntityFrameworkCore
         }
 
         public static Configuration RegisterRepositories(this Configuration configuration,
+                                                         Type repositoryType,
                                                          IObjectProviderBuilder builder,
                                                          ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
-            builder.Register(typeof(IRepository<>), typeof(Repository<>));
+            builder.Register(typeof(IRepository<>), repositoryType);
             builder.Register<IDomainRepository, DomainRepository>(lifetime);
             return configuration;
         }

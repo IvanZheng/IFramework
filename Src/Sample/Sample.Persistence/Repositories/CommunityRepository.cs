@@ -8,7 +8,7 @@ namespace Sample.Persistence.Repositories
 {
     public class CommunityRepository : DomainRepository, ICommunityRepository
     {
-        public CommunityRepository(SampleModelContext context, IUnitOfWork unitOfWork, IObjectProvider objectProvider)
-            : base(context, unitOfWork, objectProvider) { }
+        public CommunityRepository(IObjectProvider objectProvider)
+            : base(objectProvider) { }
     }
 }

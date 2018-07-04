@@ -2,7 +2,7 @@
 using IFramework.Event;
 using IFramework.Message;
 
-namespace IFramework.MessageStores.Sqlserver
+namespace IFramework.MessageStores.Relational
 {
     [Obsolete]
     public class Event : Message

@@ -1,5 +1,5 @@
 ﻿using IFramework.Config;
-using IFramework.MessageStores.Sqlserver;
+using IFramework.MessageStores.Relational;
 using Microsoft.EntityFrameworkCore;
 using Sample.Domain.Model;
 

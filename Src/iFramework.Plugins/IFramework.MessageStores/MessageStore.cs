@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using IFramework.DependencyInjection;
 using IFramework.EntityFrameworkCore;
-using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace IFramework.MessageStores.Sqlserver
+namespace IFramework.MessageStores.Relational
 {
     public abstract class MessageStore : MsDbContext, IMessageStore
     {
@@ -38,6 +37,7 @@ namespace IFramework.MessageStores.Sqlserver
                 var command = BuildCommand(commandContext, result);
                 Commands.Add(command);
             }
+
             messageContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationId = commandContext?.MessageId;
@@ -57,6 +57,7 @@ namespace IFramework.MessageStores.Sqlserver
                 command.Status = MessageStatus.Failed;
                 Commands.Add(command);
             }
+
             eventContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationId = commandContext?.MessageId;
@@ -157,6 +158,7 @@ namespace IFramework.MessageStores.Sqlserver
                     Id = command.Id
                 };
             }
+
             return commandHandledInfo;
         }
 

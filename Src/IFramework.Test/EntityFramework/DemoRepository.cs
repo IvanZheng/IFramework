@@ -6,9 +6,7 @@ namespace IFramework.Test.EntityFramework
 {
     public class DemoRepository : DomainRepository, IDemoRepository
     {
-        public DemoRepository(DemoDbContext dbContext,
-                              IAppUnitOfWork uow,
-                              IObjectProvider objectProvider)
-            : base(dbContext, uow, objectProvider) { }
+        public DemoRepository(IObjectProvider objectProvider)
+            : base(objectProvider) { }
     }
 }
