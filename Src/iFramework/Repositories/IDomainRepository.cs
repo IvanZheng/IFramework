@@ -126,28 +126,28 @@ namespace IFramework.Repositories
         /// <param name="entity">The entity to be updated.</param>
         void Update<TAggregateRoot>(TAggregateRoot entity) where TAggregateRoot : class;
 
-        IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex, int pageSize,
-                                                            Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
+        (IQueryable<TAggregateRoot>, long) PageFind<TAggregateRoot>(int pageIndex,
+                                                                    int pageSize,
+                                                                    Expression<Func<TAggregateRoot, bool>> specification,
+                                                                    params OrderExpression[] orderExpressions)
             where TAggregateRoot : class;
 
-        IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex, int pageSize,
-                                                            Expression<Func<TAggregateRoot, bool>> specification, ref long totalCount,
-                                                            params OrderExpression[] orderExpressions) where TAggregateRoot : class;
 
-        Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync<TAggregateRoot>(int pageIndex, int pageSize,
-                                                                                    Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderExpressions)
+        Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync<TAggregateRoot>(int pageIndex,
+                                                                               int pageSize,
+                                                                               Expression<Func<TAggregateRoot, bool>> specification,
+                                                                               params OrderExpression[] orderExpressions)
             where TAggregateRoot : class;
 
-        IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex, int pageSize,
-                                                            ISpecification<TAggregateRoot> specification, ref long totalCount,
-                                                            params OrderExpression[] orderExpressions) where TAggregateRoot : class;
+        (IQueryable<TAggregateRoot>, long) PageFind<TAggregateRoot>(int pageIndex,
+                                                                    int pageSize,
+                                                                    ISpecification<TAggregateRoot> specification,
+                                                                    params OrderExpression[] orderExpressions) where TAggregateRoot : class;
 
-        Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync<TAggregateRoot>(int pageIndex, int pageSize,
-                                                                                    ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
-            where TAggregateRoot : class;
-
-        IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex, int pageSize,
-                                                            ISpecification<TAggregateRoot> specification, params OrderExpression[] orderExpressions)
+        Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync<TAggregateRoot>(int pageIndex,
+                                                                               int pageSize,
+                                                                               ISpecification<TAggregateRoot> specification,
+                                                                               params OrderExpression[] orderExpressions)
             where TAggregateRoot : class;
     }
 }

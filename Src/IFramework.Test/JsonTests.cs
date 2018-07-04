@@ -13,10 +13,15 @@ using Xunit.Abstractions;
 
 namespace IFramework.Test
 {
-    public class AClass
+    public struct AClass
     {
         public string Id { get; set; }
         public string Name { get; set; }
+        public AClass(string id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
     }
     public class AException:Exception
     {
@@ -48,8 +53,11 @@ namespace IFramework.Test
             //var json = ex.ToJson();
             //var ex2 = json.ToObject<Exception>();
             //Assert.Equal(ex.Message, ex2.Message);
-            var a = new AClass {Id = "ddd"};
+            var a = new AClass("ddd", "name");
             var aJson = a.ToJson();
+            a = aJson.ToJsonObject<AClass>();
+            Assert.NotNull(aJson);
+            Assert.NotNull(a.Name);
 
             var de = new DomainException(1, "test");
             var json2 = de.ToJson();

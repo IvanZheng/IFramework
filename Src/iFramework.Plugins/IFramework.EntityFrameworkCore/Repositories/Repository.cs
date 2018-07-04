@@ -1,12 +1,11 @@
-﻿using IFramework.Repositories;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using IFramework.Domain;
-using System.Linq.Expressions;
 using IFramework.Infrastructure;
+using IFramework.Repositories;
 using IFramework.Specifications;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +13,18 @@ using Microsoft.EntityFrameworkCore;
 namespace IFramework.EntityFrameworkCore.Repositories
 {
     public class Repository<TEntity> : BaseRepository<TEntity>
-      where TEntity : class
+        where TEntity : class
     {
         private DbSet<TEntity> _objectSet;
         protected MsDbContext Container;
+
         public Repository(MsDbContext dbContext, IUnitOfWork unitOfWork)
-            :base(dbContext, unitOfWork)
+            : base(dbContext, unitOfWork)
         {
             if (dbContext == null)
+            {
                 throw new Exception("repository could not work without dbContext");
+            }
 
             (unitOfWork as UnitOfWorks.UnitOfWork)?.RegisterDbContext(dbContext);
             Container = dbContext;
@@ -81,45 +83,71 @@ namespace IFramework.EntityFrameworkCore.Repositories
             return DbSet.FindAll(specification, orderExpressions);
         }
 
-        protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize,
-                                                          ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
+        protected override (IQueryable<TEntity>, long) DoPageFind(int pageIndex,
+                                                                  int pageSize,
+                                                                  ISpecification<TEntity> specification,
+                                                                  params OrderExpression[] orderExpressions)
         {
             //checking arguments for this query 
             if (pageIndex < 0)
+            {
                 throw new ArgumentException("InvalidPageIndex");
+            }
 
             if (pageSize <= 0)
+            {
                 throw new ArgumentException("InvalidPageCount");
+            }
 
             if (orderExpressions == null || orderExpressions.Length == 0)
-                throw new ArgumentNullException("OrderByExpressionCannotBeNull");
+            {
+                throw new ArgumentNullException($"OrderByExpressionCannotBeNull");
+            }
 
             if (specification == null)
+            {
                 specification = new AllSpecification<TEntity>();
+            }
+
             var query = DoFindAll(specification, orderExpressions);
-            return query.GetPageElements(pageIndex, pageSize);
+            return (query.GetPageElements(pageIndex, pageSize), query.Count());
         }
 
-        protected override IQueryable<TEntity> DoPageFind(int pageIndex, int pageSize,
-                                                          ISpecification<TEntity> specification, ref long totalCount, params OrderExpression[] orderExpressions)
+        protected override async Task<(IQueryable<TEntity>, long)> DoPageFindAsync(int pageIndex,
+                                                                                   int pageSize,
+                                                                                   ISpecification<TEntity> specification,
+                                                                                   params OrderExpression[] orderExpressions)
         {
-            var query = DoPageFind(pageIndex, pageSize, specification, orderExpressions);
-            totalCount = Count(specification.GetExpression());
-            return query;
-        }
+            if (pageIndex < 0)
+            {
+                throw new ArgumentException("InvalidPageIndex");
+            }
 
-        protected override async Task<Tuple<IQueryable<TEntity>, long>> DoPageFindAsync(int pageIndex, int pageSize,
-                                                                                        ISpecification<TEntity> specification, params OrderExpression[] orderExpressions)
-        {
-            var query = DoPageFind(pageIndex, pageSize, specification, orderExpressions);
-            var totalCount = await CountAsync(specification.GetExpression()).ConfigureAwait(false);
-            return new Tuple<IQueryable<TEntity>, long>(query, totalCount);
+            if (pageSize <= 0)
+            {
+                throw new ArgumentException("InvalidPageCount");
+            }
+
+            if (orderExpressions == null || orderExpressions.Length == 0)
+            {
+                throw new ArgumentNullException($"OrderByExpressionCannotBeNull");
+            }
+
+            if (specification == null)
+            {
+                specification = new AllSpecification<TEntity>();
+            }
+
+            var query = DoFindAll(specification, orderExpressions);
+            return (query.GetPageElements(pageIndex, pageSize), await query.CountAsync());
         }
 
         protected override void DoAdd(IEnumerable<TEntity> entities)
         {
             foreach (var entity in entities)
+            {
                 DoAdd(entity);
+            }
         }
 
         protected override long DoCount(ISpecification<TEntity> specification)
@@ -151,11 +179,10 @@ namespace IFramework.EntityFrameworkCore.Repositories
         protected override async Task DoReloadAsync(TEntity entity)
         {
             await Container.Entry(entity)
-                            .ReloadAsync()
-                            .ConfigureAwait(false);
+                           .ReloadAsync()
+                           .ConfigureAwait(false);
 
             (entity as AggregateRoot)?.Rollback();
-
         }
     }
 }

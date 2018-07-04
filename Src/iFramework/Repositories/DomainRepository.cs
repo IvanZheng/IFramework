@@ -189,62 +189,42 @@ namespace IFramework.Repositories
             GetRepository<TAggregateRoot>().Update(entity);
         }
 
-        public IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex,
-                                                                   int pageSize,
-                                                                   Expression<Func<TAggregateRoot, bool>> specification,
-                                                                   params OrderExpression[] orderExpressions)
+        public (IQueryable<TAggregateRoot>, long) PageFind<TAggregateRoot>(int pageIndex,
+                                                                           int pageSize,
+                                                                           Expression<Func<TAggregateRoot, bool>> specification,
+                                                                           params OrderExpression[] orderExpressions)
             where TAggregateRoot : class
         {
             return GetRepository<TAggregateRoot>().PageFind(pageIndex, pageSize, specification, orderExpressions);
         }
 
-        public IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex,
-                                                                   int pageSize,
-                                                                   Expression<Func<TAggregateRoot, bool>> specification,
-                                                                   ref long totalCount,
-                                                                   params OrderExpression[] orderExpressions) where TAggregateRoot : class
-        {
-            return GetRepository<TAggregateRoot>()
-                .PageFind(pageIndex, pageSize, specification, ref totalCount,
-                          orderExpressions);
-        }
 
-        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync<TAggregateRoot>(int pageIndex,
-                                                                                           int pageSize,
-                                                                                           Expression<Func<TAggregateRoot, bool>> specification,
-                                                                                           params OrderExpression[] orderExpressions)
+        public Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync<TAggregateRoot>(int pageIndex,
+                                                                                      int pageSize,
+                                                                                      Expression<Func<TAggregateRoot, bool>> specification,
+                                                                                      params OrderExpression[] orderExpressions)
             where TAggregateRoot : class
         {
             return GetRepository<TAggregateRoot>().PageFindAsync(pageIndex, pageSize, specification, orderExpressions);
         }
 
-        public IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex,
-                                                                   int pageSize,
-                                                                   ISpecification<TAggregateRoot> specification,
-                                                                   ref long totalCount,
-                                                                   params OrderExpression[] orderExpressions) where TAggregateRoot : class
+        public (IQueryable<TAggregateRoot>, long) PageFind<TAggregateRoot>(int pageIndex,
+                                                                           int pageSize,
+                                                                           ISpecification<TAggregateRoot> specification,
+                                                                           params OrderExpression[] orderExpressions) where TAggregateRoot : class
         {
             return GetRepository<TAggregateRoot>()
-                .PageFind(pageIndex, pageSize, specification, ref totalCount,
+                .PageFind(pageIndex, pageSize, specification,
                           orderExpressions);
         }
 
-        public Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync<TAggregateRoot>(int pageIndex,
-                                                                                           int pageSize,
-                                                                                           ISpecification<TAggregateRoot> specification,
-                                                                                           params OrderExpression[] orderExpressions)
+        public Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync<TAggregateRoot>(int pageIndex,
+                                                                                      int pageSize,
+                                                                                      ISpecification<TAggregateRoot> specification,
+                                                                                      params OrderExpression[] orderExpressions)
             where TAggregateRoot : class
         {
             return GetRepository<TAggregateRoot>().PageFindAsync(pageIndex, pageSize, specification, orderExpressions);
-        }
-
-        public IQueryable<TAggregateRoot> PageFind<TAggregateRoot>(int pageIndex,
-                                                                   int pageSize,
-                                                                   ISpecification<TAggregateRoot> specification,
-                                                                   params OrderExpression[] orderExpressions)
-            where TAggregateRoot : class
-        {
-            return GetRepository<TAggregateRoot>().PageFind(pageIndex, pageSize, specification, orderExpressions);
         }
 
         public void Reload<TEntity>(TEntity entity) where TEntity : Entity

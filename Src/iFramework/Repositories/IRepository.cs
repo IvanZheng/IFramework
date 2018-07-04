@@ -7,15 +7,13 @@ using IFramework.Specifications;
 
 namespace IFramework.Repositories
 {
-    public interface IRepository
-    {
-    }
+    public interface IRepository { }
 
     /// <summary>
     ///     Represents the repositories.
     /// </summary>
     /// <typeparam name="TAggregateRoot">The type of the aggregation root with which the repository is working.</typeparam>
-    public interface IRepository<TAggregateRoot>: IRepository
+    public interface IRepository<TAggregateRoot> : IRepository
         where TAggregateRoot : class
     {
         /// <summary>
@@ -58,7 +56,7 @@ namespace IFramework.Repositories
         ///     by using the provided sort predicate and the specified sort order.
         /// </summary>
         /// <param name="specification">The specification with which the aggregate roots should match.</param>
-       /// <param name="orderByExpressions"></param>
+        /// <param name="orderByExpressions"></param>
         /// <returns>
         ///     All the aggregate roots that match the given specification and were sorted by using the given sort predicate
         ///     and the sort order.
@@ -103,29 +101,32 @@ namespace IFramework.Repositories
 
         void Reload(TAggregateRoot entity);
         Task ReloadAsync(TAggregateRoot entity);
+
         /// <summary>
         ///     Updates the entity in the repository.
         /// </summary>
         /// <param name="entity">The entity to be updated.</param>
         void Update(TAggregateRoot entity);
 
-        IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
-                                            Expression<Func<TAggregateRoot, bool>> expression, params OrderExpression[] orderByExpressions);
+        (IQueryable<TAggregateRoot>, long) PageFind(int pageIndex,
+                                                    int pageSize,
+                                                    Expression<Func<TAggregateRoot, bool>> expression,
+                                                    params OrderExpression[] orderByExpressions);
 
-        IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize,
-                                            Expression<Func<TAggregateRoot, bool>> expression, ref long totalCount,
-                                            params OrderExpression[] orderByExpressions);
+        Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync(int pageIndex,
+                                                               int pageSize,
+                                                               Expression<Func<TAggregateRoot, bool>> specification,
+                                                               params OrderExpression[] orderByExpressions);
 
-        Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize,
-                                                                    Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderByExpressions);
+        (IQueryable<TAggregateRoot>, long) PageFind(int pageIndex,
+                                                    int pageSize,
+                                                    ISpecification<TAggregateRoot> specification,
+                                                    params OrderExpression[] orderByExpressions);
 
-        IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification,
-                                            params OrderExpression[] orderByExpressions);
 
-        IQueryable<TAggregateRoot> PageFind(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification,
-                                            ref long totalCount, params OrderExpression[] orderByExpressions);
-
-        Task<Tuple<IQueryable<TAggregateRoot>, long>> PageFindAsync(int pageIndex, int pageSize,
-                                                                    ISpecification<TAggregateRoot> specification, params OrderExpression[] orderByExpressions);
+        Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync(int pageIndex,
+                                                               int pageSize,
+                                                               ISpecification<TAggregateRoot> specification,
+                                                               params OrderExpression[] orderByExpressions);
     }
 }
