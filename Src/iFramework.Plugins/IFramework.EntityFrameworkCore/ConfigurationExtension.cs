@@ -28,27 +28,23 @@ namespace IFramework.EntityFrameworkCore
         /// <param name="configuration"></param>
         /// <param name="builder"></param>
         /// <param name="defaultRepositoryType"></param>
-        /// <param name="dbContextTypes"></param>
         /// <param name="lifetime"></param>
         /// <returns></returns>
         public static Configuration UseEntityFrameworkComponents(this Configuration configuration,
                                                                  IObjectProviderBuilder builder,
                                                                  Type defaultRepositoryType,
-                                                                 Type[] dbContextTypes,
                                                                  ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
-            dbContextTypes.ForEach(t => builder.Register(t, t, lifetime));
             return configuration.RegisterUnitOfWork(builder, lifetime)
                                 .RegisterRepositories(defaultRepositoryType, builder, lifetime);
         }
 
         public static Configuration UseEntityFrameworkComponents(this Configuration configuration,
                                                                  Type defaultRepositoryType,
-                                                                 Type[] dbContextTypes,
                                                                  ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            return configuration.UseEntityFrameworkComponents(null, defaultRepositoryType, dbContextTypes, lifetime);
+            return configuration.UseEntityFrameworkComponents(null, defaultRepositoryType, lifetime);
         }
 
         public static Configuration RegisterUnitOfWork(this Configuration configuration,

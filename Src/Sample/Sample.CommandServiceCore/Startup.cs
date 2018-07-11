@@ -56,7 +56,7 @@ namespace Sample.CommandServiceCore
                          .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet()
-                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>), new []{typeof(SampleModelContext)})
+                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
@@ -87,6 +87,7 @@ namespace Sample.CommandServiceCore
             });
             services.AddMiniProfiler()
                     .AddEntityFramework();
+
             return ObjectProviderFactory.Instance
                                         .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                                         .Populate(services)
