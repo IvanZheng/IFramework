@@ -17,14 +17,22 @@ namespace IFramework.Message.Impl
         protected string DefaultTopic;
         protected ILogger Logger;
         protected IMessageQueueClient MessageQueueClient;
-        protected bool NeedMessageStore;
+        protected static bool NeedMessageStore;
         protected Task SendMessageTask;
+
+        static MessageSender()
+        {
+            NeedMessageStore = Configuration.Instance.NeedMessageStore;
+            if (NeedMessageStore)
+            { 
+                ObjectProviderFactory.GetService<IMessageStoreDaemon>().Start();
+            }
+        }
 
         protected MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null)
         {
             MessageQueueClient = messageQueueClient;
             DefaultTopic = defaultTopic;
-            NeedMessageStore = Configuration.Instance.NeedMessageStore;
             MessageStateQueue = new BlockingCollection<MessageState>();
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
         }

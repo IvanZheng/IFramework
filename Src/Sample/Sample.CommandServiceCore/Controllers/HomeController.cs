@@ -50,8 +50,12 @@ namespace Sample.CommandServiceCore.Controllers
             return new ApiResult<AddRequest>(request);
         }
 
-        public IActionResult Index()
+        public IActionResult Index([FromQuery]bool needGc)
         {
+            if (needGc)
+            {
+                GC.Collect();
+            }
             using (_logger.BeginScope("begin scope"))
             {
                 var profile = Configuration.Get("Debug");

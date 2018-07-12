@@ -67,6 +67,7 @@ namespace IFramework.Config
             UseMemoryCahce();
             UserDataContractJson();
             UseMessageStore<MockMessageStore>();
+            UseMessageStoreDaemon<MockMessageStoreDaemon>();
             this.UseMockMessageQueueClient();
             this.UseMockMessagePublisher();
             RegisterDefaultEventBus();
@@ -74,6 +75,13 @@ namespace IFramework.Config
             this.UseMessageQueue(app);
             this.MessageQueueUseMachineNameFormat();
             return this;
+        }
+
+        public Configuration UseMessageStoreDaemon<TMessageStoreDaemon>() where TMessageStoreDaemon : class, IMessageStoreDaemon
+        {
+            ObjectProviderFactory.Instance.RegisterType<IMessageStoreDaemon, TMessageStoreDaemon>(ServiceLifetime.Singleton);
+            return this;
+
         }
 
         public Configuration UseNullLogger()

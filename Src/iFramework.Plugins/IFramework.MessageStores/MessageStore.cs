@@ -168,32 +168,6 @@ namespace IFramework.MessageStores.Relational
                                                  && @event.SubscriptionName == subscriptionName) > 0;
         }
 
-
-        public void RemoveSentCommand(string commandId)
-        {
-            //var deleteSql = string.Format("delete from msgs_UnSentCommands where Id = '{0}'", commandId);
-            //Database.ExecuteSqlCommand(deleteSql);
-            var unSentCommand = UnSentCommands.Find(commandId);
-            if (unSentCommand != null)
-            {
-                UnSentCommands.Remove(unSentCommand);
-                SaveChanges();
-            }
-        }
-
-        public void RemovePublishedEvent(string eventId)
-        {
-            //var deleteSql = string.Format("delete from msgs_UnPublishedEvents where Id = '{0}'", eventId);
-            //Database.ExecuteSqlCommand(deleteSql);
-            var publishedEvent = UnPublishedEvents.Find(eventId);
-            if (publishedEvent != null)
-            {
-                UnPublishedEvents.Remove(publishedEvent);
-                SaveChanges();
-            }
-        }
-
-
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
         {

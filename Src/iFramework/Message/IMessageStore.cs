@@ -31,9 +31,6 @@ namespace IFramework.Message
                                Exception ex = null,
                                params IMessageContext[] eventContexts);
 
-        void RemoveSentCommand(string commandId);
-        void RemovePublishedEvent(string eventId);
-
         IEnumerable<IMessageContext> GetAllUnSentCommands(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage);
 

@@ -47,14 +47,10 @@ namespace IFramework.Message.Impl
                                                   false));
             if (NeedMessageStore)
             {
-                Task.Run(() =>
-                {
-                    using (var scope = ObjectProviderFactory.Instance.ObjectProvider.CreateScope())
-                    using (var messageStore = scope.GetService<IMessageStore>())
-                    {
-                        messageStore.RemovePublishedEvent(messageState.MessageID);
-                    }
-                });
+                ObjectProviderFactory.Instance
+                                     .ObjectProvider
+                                     .GetService<IMessageStoreDaemon>()
+                                     .RemovePublishedEvent(messageState.MessageID);
             }
         }
     }

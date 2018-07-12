@@ -13,6 +13,7 @@ using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.InMemory;
+using IFramework.MessageStores.Relational;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -58,18 +59,18 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseMessageStore<SampleModelContext>()
+                         .UseRelationalMessageStore<SampleModelContext>()// true 表示使用inmemorydatabase, 默认为false
                          .UseInMemoryMessageQueue()
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
-                         .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
-                         //.UseDbContextPool<SampleModelContext>(options =>
-                         //{
-                         //    options.EnableSensitiveDataLogging();
-                         //    options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)).ConnectionString);
-                         //})
+                         //.UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
+                         .UseDbContextPool<SampleModelContext>(options =>
+                         {
+                             options.EnableSensitiveDataLogging();
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                         })
                          ;
         }
 

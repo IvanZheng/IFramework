@@ -235,14 +235,10 @@ namespace IFramework.Command.Impl
 
             if (NeedMessageStore && messageState != null)
             {
-                Task.Run(() =>
-                {
-                    using (var scope = ObjectProviderFactory.Instance.ObjectProvider.CreateScope())
-                    using (var messageStore = scope.GetService<IMessageStore>())
-                    {
-                        messageStore.RemoveSentCommand(messageState.MessageID);
-                    }
-                });
+                ObjectProviderFactory.Instance
+                                     .ObjectProvider
+                                     .GetService<IMessageStoreDaemon>()
+                                     .RemoveSentCommand(messageState.MessageID);
             }
         }
 
