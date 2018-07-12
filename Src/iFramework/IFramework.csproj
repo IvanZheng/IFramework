@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>2.0.0-prelease-0008</Version>
-    <Description>Since 2.0.0, IFramework support bases on netcore standard2.0</Description>
+    <Description>Since dotnetcore2.0.0, IFramework supports on netcore standard2.0</Description>
     <Authors>Ivan</Authors>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
