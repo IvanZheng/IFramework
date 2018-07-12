@@ -17,14 +17,14 @@ namespace Sample.CommandServiceCore.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IExceptionManager _exceptionManager;
+        private readonly IConcurrencyProcessor _concurrencyProcessor;
         private readonly IObjectProvider _objectProvider;
         private readonly ILogger _logger;
-        public HomeController(IExceptionManager exceptionManager,
+        public HomeController(IConcurrencyProcessor concurrencyProcessor,
                               ILogger<HomeController> logger,
                               IObjectProvider objectProvider)
         {
-            _exceptionManager = exceptionManager;
+            _concurrencyProcessor = concurrencyProcessor;
             _objectProvider = objectProvider;
             _logger = logger;
         }
@@ -32,9 +32,9 @@ namespace Sample.CommandServiceCore.Controllers
         [Authorize("AppAuthorization")]
         //[TypeFilter(typeof(AuthorizationFilterAttrubute))]
         //[AuthorizationFilterAttrubute]
-        public Task<ApiResult<string>> DoApi()
+        public Task<string> DoApi()
         {
-            return _exceptionManager.ProcessAsync(() => Task.Run(() => new {Name = "ivan"}.ToJson()));
+            return _concurrencyProcessor.ProcessAsync(() => Task.Run(() => new {Name = "ivan"}.ToJson()));
         }
 
         public IActionResult Test()

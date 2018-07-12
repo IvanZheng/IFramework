@@ -70,7 +70,7 @@ namespace IFramework.Config
             this.UseMockMessageQueueClient();
             this.UseMockMessagePublisher();
             RegisterDefaultEventBus();
-            RegisterExceptionManager<ExceptionManager>();
+            RegisterConcurrencyProcessor<ConcurrencyProcessor>();
             this.UseMessageQueue(app);
             this.MessageQueueUseMachineNameFormat();
             return this;
@@ -83,10 +83,10 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration RegisterExceptionManager<TExceptionManager>() where TExceptionManager : class, IExceptionManager
+        public Configuration RegisterConcurrencyProcessor<TConcurrencyProcessor>() where TConcurrencyProcessor : class, IConcurrencyProcessor
         {
             ObjectProviderFactory.Instance
-                      .RegisterType<IExceptionManager, TExceptionManager>(ServiceLifetime.Singleton);
+                      .RegisterType<IConcurrencyProcessor, TConcurrencyProcessor>(ServiceLifetime.Singleton);
             return this;
         }
 

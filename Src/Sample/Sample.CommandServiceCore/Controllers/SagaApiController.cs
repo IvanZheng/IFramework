@@ -9,14 +9,14 @@ namespace Sample.CommandServiceCore.Controllers
     {
         private readonly ICommandBus _commandBus;
 
-        public SagaApiController(ICommandBus commandBus, IExceptionManager exceptionManager)
-            : base(exceptionManager)
+        public SagaApiController(ICommandBus commandBus, IConcurrencyProcessor concurrencyProcessor)
+            : base(concurrencyProcessor)
         {
             _commandBus = commandBus;
         }
 
         [HttpPost("{commandName}")]
-        public Task<ApiResult<object>> Post([FromBody] ICommand command)
+        public Task<object> Post([FromBody] ICommand command)
         {
             return ProcessAsync(async () =>
             {

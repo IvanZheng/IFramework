@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using IFramework.AspNet;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.DependencyInjection;
@@ -85,6 +86,7 @@ namespace Sample.CommandServiceCore
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
+            services.AddSingleton<IApiResultWrapAttribute, Filters.ApiResultWrapAttribute>();
             services.AddMiniProfiler()
                     .AddEntityFramework();
 
