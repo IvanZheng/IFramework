@@ -59,18 +59,18 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()// true 表示使用inmemorydatabase, 默认为false
+                         .UseRelationalMessageStore<SampleModelContext>(true)// true 表示使用inmemorydatabase, 默认为false
                          .UseInMemoryMessageQueue()
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
-                         //.UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
-                         .UseDbContextPool<SampleModelContext>(options =>
-                         {
-                             options.EnableSensitiveDataLogging();
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                         })
+                         .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
+                         //.UseDbContextPool<SampleModelContext>(options =>
+                         //{
+                         //    options.EnableSensitiveDataLogging();
+                         //    options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                         //})
                          ;
         }
 
@@ -107,7 +107,7 @@ namespace Sample.CommandServiceCore
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.UseLog4Net(new Log4NetProviderOptions { EnableScope = true});
+            loggerFactory.UseLog4Net(new Log4NetProviderOptions { EnableScope = false});
             StartMessageQueueComponents();
 
             if (env.IsDevelopment())

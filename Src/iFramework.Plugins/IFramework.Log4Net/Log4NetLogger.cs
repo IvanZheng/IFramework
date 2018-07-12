@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using IFramework.Infrastructure;
 using log4net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions.Internal;
+using Microsoft.Extensions.Logging.Internal;
 
 namespace IFramework.Log4Net
 {
@@ -32,7 +34,7 @@ namespace IFramework.Log4Net
 
             if (_options.CaptureMessageProperties && state is IEnumerable<KeyValuePair<string, object>> messageProperties)
             {
-                return ScopeProperties.CreateFromState(state, messageProperties);
+                return ScopeProperties.CreateFromState(messageProperties);
             }
             return NestedDiagnosticsLogicalContext.Push(state);
         }
@@ -64,24 +66,35 @@ namespace IFramework.Log4Net
                 return;
             }
 
-            if (formatter == null)
-            {
-                throw new ArgumentNullException(nameof(formatter));
-            }
+            //if (formatter == null)
+            //{
+            //    throw new ArgumentNullException(nameof(formatter));
+            //}
 
-            string str = formatter(state, exception);
+            //string str = formatter(state, exception);
 
-            if (string.IsNullOrEmpty(str) && exception == null)
+            if (state == null && exception == null)
             {
                 return;
             }
 
+            object log = state;
+            if (state is FormattedLogValues)
+            {
+                log = formatter(state, exception);
+                //if (logValues.Count == 1 && logValues[0].Value is string)
+                //{
+                //    log = logValues[0].Value;
+                //}
+            }
             if (_options.EnableScope)
             {
-                var scopeMessages = NestedDiagnosticsLogicalContext.GetAllMessages();
-                if (scopeMessages?.Length > 0)
+                var scopeMessages = NestedDiagnosticsLogicalContext.GetAllMessages()?
+                                                                   .ToList();
+                if (scopeMessages?.Count > 0)
                 {
-                    str = string.Join(" => ", scopeMessages) + Environment.NewLine + str;
+                    scopeMessages.Add(log);
+                    log = scopeMessages;
                 }
             }
 
@@ -89,23 +102,23 @@ namespace IFramework.Log4Net
             {
                 case LogLevel.Trace:
                 case LogLevel.Debug:
-                    _log.Debug(str, exception);
+                        _log.Debug(log, exception);
                     break;
                 case LogLevel.Information:
-                    _log.Info(str, exception);
+                        _log.Info(log, exception);
                     break;
                 case LogLevel.Warning:
-                    _log.Warn(str, exception);
+                        _log.Warn(log, exception);
                     break;
                 case LogLevel.Error:
-                    _log.Error(str, exception);
+                        _log.Error(log, exception);
                     break;
                 case LogLevel.Critical:
-                    _log.Fatal(str, exception);
+                        _log.Fatal(log, exception);
                     break;
                 default:
                     _log.Warn($"Encountered unknown log level {logLevel}, writing out as Info.", exception);
-                    _log.Info(str, exception);
+                    _log.Info(log, exception);
                     break;
             }
         }
@@ -139,26 +152,26 @@ namespace IFramework.Log4Net
             }
 
 
-            public static IDisposable CreateFromState<TState>(TState state, IEnumerable<KeyValuePair<string, object>> messageProperties)
+            public static IDisposable CreateFromState(IEnumerable<KeyValuePair<string, object>> messageProperties)
             {
                 var scope = new ScopeProperties();
-                var stateString = string.Empty;
-                foreach (var property in messageProperties)
+                //var stateString = string.Empty;
+                foreach (var property in messageProperties.ToArray())
                 {
                     if (string.IsNullOrEmpty(property.Key))
                     {
                         continue;
                     }
-                    stateString += $"{property.Key}:{property.Value} ";
+                    //stateString += $"{property.Key}:{property.Value} ";
                     scope.AddProperty(property.Key, property.Value);
                 }
-                scope.AddDispose(NestedDiagnosticsLogicalContext.Push(stateString));
+                scope.AddDispose(NestedDiagnosticsLogicalContext.Push(messageProperties));
                 return scope;
             }
 
             public void AddDispose(IDisposable disposable)
             {
-                Properties.Add(disposable);
+                 Properties.Add(disposable);
             }
 
             public void AddProperty(string key, object value)

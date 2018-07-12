@@ -48,7 +48,7 @@ namespace IFramework.Log4Net
         /// <param name="item">Item name.</param>
         /// <returns>The value of <paramref name="item" />, if defined; otherwise <see cref="F:System.String.Empty" />.</returns>
         /// <remarks>If the value isn't a <see cref="T:System.String" /> already, this call locks the <see cref="T:NLog.LogFactory" /> for reading the <see cref="P:NLog.Config.LoggingConfiguration.DefaultCultureInfo" /> needed for converting to <see cref="T:System.String" />. </remarks>
-        public static string Get(string item)
+        public static object Get(string item)
         {
             return MappedDiagnosticsLogicalContext.Get(item, (IFormatProvider)null);
         }
@@ -60,9 +60,9 @@ namespace IFramework.Log4Net
         /// <param name="formatProvider">The <see cref="T:System.IFormatProvider" /> to use when converting a value to a string.</param>
         /// <returns>The value of <paramref name="item" />, if defined; otherwise <see cref="F:System.String.Empty" />.</returns>
         /// <remarks>If <paramref name="formatProvider" /> is <c>null</c> and the value isn't a <see cref="T:System.String" /> already, this call locks the <see cref="T:NLog.LogFactory" /> for reading the <see cref="P:NLog.Config.LoggingConfiguration.DefaultCultureInfo" /> needed for converting to <see cref="T:System.String" />. </remarks>
-        public static string Get(string item, IFormatProvider formatProvider)
+        public static object Get(string item, IFormatProvider formatProvider)
         {
-            return FormatHelper.ConvertToString(MappedDiagnosticsLogicalContext.GetObject(item), formatProvider);
+            return FormatHelper.Convert(MappedDiagnosticsLogicalContext.GetObject(item), formatProvider);
         }
 
         /// <summary>

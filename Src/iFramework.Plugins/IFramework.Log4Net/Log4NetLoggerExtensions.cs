@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace IFramework.Log4Net
+namespace Microsoft.Extensions.Logging
 {
     public static class Log4NetLoggerExtensions
     {

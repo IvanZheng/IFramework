@@ -52,15 +52,12 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Index([FromQuery]bool needGc)
         {
-            if (needGc)
-            {
-                GC.Collect();
-            }
-            using (_logger.BeginScope("begin scope"))
+            using (_logger.BeginScope(new Dictionary<string, object>{{"needGc", needGc}}))
             {
                 var profile = Configuration.Get("Debug");
                 var member = Configuration.Get("Member:A");
-                _logger.LogDebug(profile.ToJson());
+                _logger.LogDebug(new {profile, member});
+                _logger.LogDebug("index test");
                 return View();
             }
         }

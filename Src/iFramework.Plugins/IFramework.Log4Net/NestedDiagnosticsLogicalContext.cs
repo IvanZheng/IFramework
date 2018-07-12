@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -29,13 +30,17 @@ namespace IFramework.Log4Net
         ///     <see cref="T:System.String" /> already, then the <see cref="T:NLog.LogFactory" /> will get a locked by
         ///     <see cref="P:NLog.LogManager.Configuration" />
         /// </remarks>
-        internal static string ConvertToString(object o, IFormatProvider formatProvider)
+        internal static object Convert(object o, IFormatProvider formatProvider)
         {
             if (formatProvider == null && !(o is string))
             {
+                if (o is IEnumerable<KeyValuePair<string, object>> keyValuePairs)
+                {
+                    return o is Dictionary<string, object> ? o : keyValuePairs.ToDictionary(kv => kv.Key, kv => kv.Value);
+                }
                 formatProvider = CultureInfo.DefaultThreadCurrentCulture;
             }
-            return Convert.ToString(o, formatProvider);
+            return System.Convert.ToString(o, formatProvider);
         }
     }
 
@@ -71,9 +76,9 @@ namespace IFramework.Log4Net
         /// <summary>Pops the top message from the NDLC stack.</summary>
         /// <param name="formatProvider">The <see cref="T:System.IFormatProvider" /> to use when converting the value to a string.</param>
         /// <returns>The top message, which is removed from the stack, as a string value.</returns>
-        public static string Pop(IFormatProvider formatProvider)
+        public static object Pop(IFormatProvider formatProvider)
         {
-            return FormatHelper.ConvertToString(PopObject() ?? string.Empty, formatProvider);
+            return FormatHelper.Convert(PopObject() ?? string.Empty, formatProvider);
         }
 
         /// <summary>Pops the top message off the current NDLC stack</summary>
@@ -137,7 +142,7 @@ namespace IFramework.Log4Net
 
         /// <summary>Gets all messages on the stack.</summary>
         /// <returns>Array of strings on the stack.</returns>
-        public static string[] GetAllMessages()
+        public static object[] GetAllMessages()
         {
             return GetAllMessages(null);
         }
@@ -147,9 +152,9 @@ namespace IFramework.Log4Net
         /// </summary>
         /// <param name="formatProvider">The <see cref="T:System.IFormatProvider" /> to use when converting a value to a string.</param>
         /// <returns>Array of strings.</returns>
-        public static string[] GetAllMessages(IFormatProvider formatProvider)
+        public static object[] GetAllMessages(IFormatProvider formatProvider)
         {
-            return GetAllObjects().Select(o => FormatHelper.ConvertToString(o, formatProvider)).Reverse().ToArray();
+            return GetAllObjects().Select(o => FormatHelper.Convert(o, formatProvider)).Reverse().ToArray();
         }
 
         /// <summary>
