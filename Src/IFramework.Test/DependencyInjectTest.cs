@@ -99,7 +99,16 @@ namespace IFramework.Test
             //             .UseAutofacContainer();
                          //.UseMicrosoftDependencyInjection();
             return new DependencyInjection.Autofac.ObjectProviderBuilder();
-            //return new DependencyInjection.Microsoft.ObjectProviderBuilder();
+        }
+
+        IObjectProviderBuilder GetMsNewBuilder()
+        {
+            B.ConstructedCount = 0;
+            //Configuration.Instance
+            //             .UseAutofacContainer();
+            //.UseMicrosoftDependencyInjection();
+            //return new DependencyInjection.Autofac.ObjectProviderBuilder();
+            return new DependencyInjection.Microsoft.ObjectProviderBuilder();
         }
 
         [Fact]
@@ -113,6 +122,30 @@ namespace IFramework.Test
             Assert.NotNull(bSet);
             Assert.Equal(2, bSet.Count());
             objectProvider.Dispose();
+        }
+
+        [Fact]
+        public void MsSameServiceTest()
+        {
+            var builder = GetNewBuilder();
+            builder.Register<IB>(p => new B(), ServiceLifetime.Scoped)
+                   .Register<B, B>(ServiceLifetime.Scoped);
+            var provider = builder.Build();
+            var hashCode1 = 0;
+            var hashCode2 = 0;
+            using (var scope = provider.CreateScope())
+            {
+                var b1 = scope.GetService<IB>();
+                var b2 = scope.GetService<IB>();
+
+                Assert.Equal(b1.GetHashCode(), b2.GetHashCode());
+                hashCode1 = b1.GetHashCode();
+            }
+            using (var scope = provider.CreateScope())
+            {
+                hashCode2 = scope.GetService<IB>().GetHashCode();
+            }
+            Assert.NotEqual(hashCode1, hashCode2);
         }
 
         [Fact]
@@ -159,7 +192,7 @@ namespace IFramework.Test
         [Fact]
         public void OverrideInjectTest()
         {
-            var builder = GetNewBuilder();
+            var builder = GetMsNewBuilder();
 
             builder.Register<IB, B2>(ServiceLifetime.Singleton);
             builder.Register<IB, B>(ServiceLifetime.Singleton);

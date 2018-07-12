@@ -47,20 +47,12 @@ namespace IFramework.DependencyInjection.Microsoft
 
         public IObjectProvider CreateScope(IServiceCollection serviceCollection)
         {
-            return new ObjectProvider(_serviceProvider.CreateScope(), this);
+            throw new NotImplementedException();
         }
 
         public IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction)
         {
-            if (buildAction == null)
-            {
-                throw new ArgumentNullException(nameof(buildAction));
-            }
-
-            //var providerBuilder = new ObjectProviderBuilder();
-            //buildAction(providerBuilder);
-            //var provider = providerBuilder.Build();
-            return new ObjectProvider(_serviceProvider.CreateScope(), this);
+            throw new NotImplementedException();
         }
 
         public object GetService(Type serviceType)

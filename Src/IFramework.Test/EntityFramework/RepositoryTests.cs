@@ -35,7 +35,7 @@ namespace IFramework.Test.EntityFramework
                          .UseConfiguration(builder.Build())
                          .UseAutofacContainer(new ContainerBuilder())
                          .UseCommonComponents()
-                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>), new []{typeof(DemoDbContext)});
+                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>));
 
             ObjectProviderFactory.Instance
                                  .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
