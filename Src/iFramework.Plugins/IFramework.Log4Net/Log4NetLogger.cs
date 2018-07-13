@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using IFramework.Infrastructure;
 using log4net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions.Internal;
@@ -89,12 +88,12 @@ namespace IFramework.Log4Net
             }
             if (_options.EnableScope)
             {
-                var scopeMessages = NestedDiagnosticsLogicalContext.GetAllMessages()?
+                var scopeMessages = NestedDiagnosticsLogicalContext.GetAllMessages()
+                                                                   ?
                                                                    .ToList();
                 if (scopeMessages?.Count > 0)
                 {
-                    scopeMessages.Add(log);
-                    log = scopeMessages;
+                    log = new {scopeMessages, body = log};
                 }
             }
 
@@ -102,19 +101,19 @@ namespace IFramework.Log4Net
             {
                 case LogLevel.Trace:
                 case LogLevel.Debug:
-                        _log.Debug(log, exception);
+                    _log.Debug(log, exception);
                     break;
                 case LogLevel.Information:
-                        _log.Info(log, exception);
+                    _log.Info(log, exception);
                     break;
                 case LogLevel.Warning:
-                        _log.Warn(log, exception);
+                    _log.Warn(log, exception);
                     break;
                 case LogLevel.Error:
-                        _log.Error(log, exception);
+                    _log.Error(log, exception);
                     break;
                 case LogLevel.Critical:
-                        _log.Fatal(log, exception);
+                    _log.Fatal(log, exception);
                     break;
                 default:
                     _log.Warn($"Encountered unknown log level {logLevel}, writing out as Info.", exception);
@@ -122,6 +121,7 @@ namespace IFramework.Log4Net
                     break;
             }
         }
+
         private class ScopeProperties : IDisposable
         {
             private List<IDisposable> _properties;
@@ -171,7 +171,7 @@ namespace IFramework.Log4Net
 
             public void AddDispose(IDisposable disposable)
             {
-                 Properties.Add(disposable);
+                Properties.Add(disposable);
             }
 
             public void AddProperty(string key, object value)

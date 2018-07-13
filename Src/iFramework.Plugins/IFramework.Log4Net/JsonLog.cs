@@ -8,13 +8,13 @@ namespace IFramework.Log4Net
     public class JsonLog
     {
         public string Host { get; set; }
-        public string Ip { get; set; }
+        public string HostIp { get; set; }
         public string App { get; set; }
         public string Module { get; set; }
         public string UserName { get; set; }
         public string Logger { get; set; }
         public string LogLevel { get; set; }
-        public string Time { get; set; }
+        public DateTime Time { get; set; }
         public LocationInfo LocationInfo { get; set; }
         public string Thread { get; set; }
         public string Target { get; set; }

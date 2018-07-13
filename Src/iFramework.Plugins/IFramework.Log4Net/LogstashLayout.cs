@@ -44,12 +44,12 @@ namespace IFramework.Log4Net
             };
             //log.LocationInfo = loggingEvent.LocationInformation;
             log.Thread = loggingEvent.ThreadName;
-            log.Time = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture);
+            log.Time = DateTime.Now;
             log.App = additionalProperties.TryGetValue(nameof(log.App), App)?.ToString();
             log.Module = additionalProperties.TryGetValue(nameof(log.Module), Module)?.ToString();
             log.Logger = additionalProperties.TryGetValue(nameof(log.Logger), loggingEvent.LoggerName).ToString();
             log.Host = Environment.MachineName;
-            log.Ip = Utility.GetLocalIpv4().ToString();
+            log.HostIp = Utility.GetLocalIpv4().ToString();
             log.LogLevel = loggingEvent.Level.ToString();
 
             if (loggingEvent.ExceptionObject != null)
