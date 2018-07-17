@@ -57,7 +57,7 @@ namespace IFramework.Log4Net
                 log.Exception = new LogException
                 {
                     Class = loggingEvent.ExceptionObject.GetType().ToString(),
-                    Message = loggingEvent.ExceptionObject.Message,
+                    Message = loggingEvent.ExceptionObject.GetBaseException().Message,
                     StackTrace = loggingEvent.ExceptionObject.StackTrace
                 };
             }
