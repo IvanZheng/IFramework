@@ -171,24 +171,55 @@ namespace IFramework.Infrastructure
             return true;
         }
 
+        public static object InvokeMethod(this object obj, string method, object[] args)
+        {
+            var mi = obj.GetType().GetMethodInfo(method, args);
+
+            if (mi == null)
+            {
+                throw new NotSupportedException();
+            }
+            var fastInvoker = FastInvoke.GetMethodInvoker(mi);
+            return fastInvoker(obj, args);
+        }
+
         public static object InvokeGenericMethod(this object obj, string method, object[] args, params Type[] genericTypes)
         {
-            var mi = obj.GetMethodInfo(method, args, genericTypes);
+            var mi = obj.GetType().GetMethodInfo(method, args, genericTypes);
             var miConstructed = mi.MakeGenericMethod(genericTypes);
             var fastInvoker = FastInvoke.GetMethodInvoker(miConstructed);
             return fastInvoker(obj, args);
         }
 
-        public static MethodInfo GetMethodInfo(this object obj, string method, object[] args, Type[] genericTypes)
+        public static object InvokeStaticMethod(this Type type, string method, object[] args)
         {
-            var type = obj.GetType();
+            var mi = type.GetMethodInfo(method, args, true);
+
+            if (mi == null)
+            {
+                throw new NotSupportedException();
+            }
+            var fastInvoker = FastInvoke.GetMethodInvoker(mi);
+            return fastInvoker(null, args);
+        }
+
+        public static object InvokeStaticGenericMethod(this Type type, string method, object[] args, params Type[] genericTypes)
+        {
+            var mi = type.GetMethodInfo(method, args, genericTypes, true);
+            var miConstructed = mi.MakeGenericMethod(genericTypes);
+            var fastInvoker = FastInvoke.GetMethodInvoker(miConstructed);
+            return fastInvoker(null, args);
+        }
+
+        public static MethodInfo GetMethodInfo(this Type type, string method, object[] args, Type[] genericTypes, bool staticMethod = false)
+        {
             var keyAttributes = new List<string>(args.Select(a => a?.GetType().MetadataToken.ToString() ?? "null")) { type.MetadataToken.ToString(), method };
             keyAttributes.AddRange(genericTypes.Select(t => t.MetadataToken.ToString()));
             var methodInfoKey = string.Join("", keyAttributes);
             return MethodInfoDictionary.GetOrAdd(methodInfoKey, key =>
             {
                 MethodInfo mi = null;
-                foreach (var m in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                foreach (var m in type.GetMethods((staticMethod ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.Public | BindingFlags.NonPublic)
                                       .Where(m => m.Name == method &&
                                                   m.IsGenericMethod &&
                                                   m.GetParameters().Length == args.Length))
@@ -218,16 +249,15 @@ namespace IFramework.Infrastructure
             });
         }
 
-        public static MethodInfo GetMethodInfo(this object obj, string method, object[] args)
+        public static MethodInfo GetMethodInfo(this Type type, string method, object[] args, bool staticMethod = false)
         {
-            var type = obj.GetType();
             //var methodInfoKey = string.Join("", new List<string>(args.Select(a => a?.GetType().FullName ?? null)) {type.FullName, method});
             var keyAttributes = new List<string>(args.Select(a => a?.GetType().MetadataToken.ToString() ?? "null")) { type.MetadataToken.ToString(), method };
             var methodInfoKey = string.Join("", keyAttributes);
             return MethodInfoDictionary.GetOrAdd(methodInfoKey, key =>
             {
                 MethodInfo mi = null;
-                foreach (var m in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                foreach (var m in type.GetMethods((staticMethod ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.Public | BindingFlags.NonPublic)
                                       .Where(m => m.Name == method &&
                                                   !m.IsGenericMethod &&
                                                   m.GetParameters().Length == args.Length))
@@ -252,18 +282,9 @@ namespace IFramework.Infrastructure
                 return mi;
             });
         }
+     
 
-        public static object InvokeMethod(this object obj, string method, object[] args)
-        {
-            var mi = obj.GetMethodInfo(method, args);
-
-            if (mi == null)
-            {
-                throw new NotSupportedException();
-            }
-            var fastInvoker = FastInvoke.GetMethodInvoker(mi);
-            return fastInvoker(obj, args);
-        }
+        
 
         public static TAttribute GetCustomAttribute<TAttribute>(this object obj, bool inherit = true)
             where TAttribute : Attribute

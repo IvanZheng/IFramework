@@ -7,8 +7,10 @@ using IFramework.Infrastructure;
 
 namespace IFramework.Domain
 {
-    public abstract class ValueObject<T>
+    public abstract class ValueObject<T> where T: class
     {
+        public static T Empty => Activator.CreateInstance<T>();
+
         public T Clone(object newValues = null)
         {
             //var cloned = default(T);
