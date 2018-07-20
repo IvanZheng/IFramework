@@ -28,9 +28,6 @@ namespace IFramework.Repositories
 
         #endregion
 
-        protected object DbContext { get; set; }
-
-
         public IRepository<TAggregateRoot> GetRepository<TAggregateRoot>()
             where TAggregateRoot : class
         {

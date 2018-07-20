@@ -38,6 +38,7 @@ namespace IFramework.Infrastructure
                 try
                 {
                     await func().ConfigureAwait(continueOnCapturedContext);
+                    return;
                 }
                 catch (Exception ex)
                 {
@@ -57,6 +58,7 @@ namespace IFramework.Infrastructure
                 try
                 {
                     action();
+                    return;
                 }
                 catch (Exception ex)
                 {
