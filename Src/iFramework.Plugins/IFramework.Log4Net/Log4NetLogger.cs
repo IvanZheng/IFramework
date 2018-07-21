@@ -86,6 +86,10 @@ namespace IFramework.Log4Net
                 //    log = logValues[0].Value;
                 //}
             }
+            else if (state is Exception ex)
+            {
+                log = new {ex.GetBaseException().Message, ex.StackTrace, Class = ex.GetType().Name};
+            }
             if (_options.EnableScope)
             {
                 var scopeMessages = NestedDiagnosticsLogicalContext.GetAllMessages()
