@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Domain;
@@ -58,6 +59,14 @@ namespace IFramework.EntityFrameworkCore
             ChangeTracker.Entries().ForEach(e => { (e.Entity as AggregateRoot)?.Rollback(); });
         }
 
+        protected virtual void OnException(Exception ex)
+        {
+            if (ex is DbUpdateConcurrencyException)
+            {
+                Rollback();
+            }
+        }
+
         public override int SaveChanges()
         {
             try
@@ -67,9 +76,9 @@ namespace IFramework.EntityFrameworkCore
                              .ForEach(e => { this.InitializeMaterializer(e.Entity); });
                 return base.SaveChanges();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                Rollback();
+                OnException(ex);
                 throw;
             }
         }
@@ -83,9 +92,9 @@ namespace IFramework.EntityFrameworkCore
                              .ForEach(e => { this.InitializeMaterializer(e.Entity); });
                 return await base.SaveChangesAsync(cancellationToken);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                Rollback();
+                OnException(ex);
                 throw;
             }
         }
