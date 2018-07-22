@@ -65,12 +65,12 @@ namespace Sample.CommandServiceCore
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
-                         .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
-                         //.UseDbContextPool<SampleModelContext>(options =>
-                         //{
-                         //    options.EnableSensitiveDataLogging();
-                         //    options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                         //})
+                         //.UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
+                         .UseDbContextPool<SampleModelContext>(options =>
+                         {
+                             options.EnableSensitiveDataLogging();
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                         })
                          ;
         }
 
