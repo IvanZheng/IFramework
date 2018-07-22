@@ -49,9 +49,12 @@ namespace IFramework.EntityFrameworkCore
 
         public virtual void Rollback()
         {
-            ChangeTracker.Entries()
-                         .ToArray()
-                         .ForEach(e => { e.State = EntityState.Detached; });
+            do
+            {
+                ChangeTracker.Entries()
+                             .ToArray()
+                             .ForEach(e => { e.State = EntityState.Detached; });
+            } while (ChangeTracker.Entries().Any());
         }
 
         protected virtual void OnException(Exception ex)
@@ -78,7 +81,7 @@ namespace IFramework.EntityFrameworkCore
             }
         }
 
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             try
             {
