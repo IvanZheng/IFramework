@@ -50,15 +50,8 @@ namespace IFramework.EntityFrameworkCore
         public virtual void Rollback()
         {
             ChangeTracker.Entries()
-                         .Where(e => e.State == EntityState.Added || e.State == EntityState.Deleted)
                          .ToArray()
                          .ForEach(e => { e.State = EntityState.Detached; });
-            var refreshableObjects = ChangeTracker.Entries()
-                                                  .Where(e => e.State == EntityState.Modified || e.State == EntityState.Unchanged)
-                                                  .Select(c => c.Entity)
-                                                  .ToArray();
-            refreshableObjects.ForEach(Reload);
-            ChangeTracker.Entries().ForEach(e => { (e.Entity as AggregateRoot)?.Rollback(); });
         }
 
         protected virtual void OnException(Exception ex)
