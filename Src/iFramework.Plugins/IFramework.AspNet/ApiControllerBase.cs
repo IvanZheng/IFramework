@@ -54,6 +54,7 @@ namespace IFramework.AspNet
                 {
                     action();
                 }
+                return;
             }
             getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
             throw new DomainException(ErrorCode.InvalidParameters, getModelErrorMessage(ModelState));
@@ -76,6 +77,7 @@ namespace IFramework.AspNet
                 {
                     await func().ConfigureAwait(continueOnCapturedContext);
                 }
+                return;
             }
             getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
             throw new DomainException(ErrorCode.InvalidParameters, getModelErrorMessage(ModelState));
