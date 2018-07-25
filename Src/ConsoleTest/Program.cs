@@ -12,12 +12,15 @@ namespace ConsoleTest
 
         private static void Main(string[] args)
         {
+            
+            ThreadPool.GetAvailableThreads(out var workerThreads, out var completionPortThreads);
+            Console.WriteLine($"init: workerThreads: {workerThreads} completionPortThreads: {completionPortThreads}");
             ThreadPool.SetMinThreads(2, 200);
             ThreadPool.SetMaxThreads(5, 200);
-            ThreadPool.GetAvailableThreads(out var workerThreads, out var completionPortThreads);
-            Console.WriteLine($"workerThreads: {workerThreads} completionPortThreads: {completionPortThreads}");
+            ThreadPool.GetAvailableThreads(out workerThreads, out completionPortThreads);
+            Console.WriteLine($"current: workerThreads: {workerThreads} completionPortThreads: {completionPortThreads}");
 
-            var batch = 5;
+            var batch = 500;
             var tasks = new List<Task<string>>();
             for (var i = 0; i < batch; i++)
             {
@@ -34,7 +37,7 @@ namespace ConsoleTest
 
         private static async Task<string> DoTaskAsync()
         {
-            await Task.Delay(2000);
+            await Task.Delay(200);
             return "done";
 
         }
