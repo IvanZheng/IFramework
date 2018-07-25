@@ -4,7 +4,6 @@ using IFramework.Message;
 
 namespace IFramework.MessageStores.Relational
 {
-    [Obsolete]
     public class Event : Message
     {
         public Event() { }

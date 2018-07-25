@@ -22,7 +22,7 @@ namespace IFramework.MessageStores.Relational
         }
 
         public DbSet<Command> Commands { get; set; }
-
+        public DbSet<Event> Events { get; set; }
         public DbSet<HandledEvent> HandledEvents { get; set; }
         public DbSet<FailHandledEvent> FailHandledEvents { get; set; }
         public DbSet<UnSentCommand> UnSentCommands { get; set; }
@@ -41,7 +41,7 @@ namespace IFramework.MessageStores.Relational
             messageContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationId = commandContext?.MessageId;
-                //Events.Add(BuildEvent(eventContext));
+                Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
             SaveChanges();
@@ -61,7 +61,7 @@ namespace IFramework.MessageStores.Relational
             eventContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationId = commandContext?.MessageId;
-                //Events.Add(BuildEvent(eventContext));
+                Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
             SaveChanges();
@@ -125,7 +125,7 @@ namespace IFramework.MessageStores.Relational
             messageContexts.ForEach(messageContext =>
             {
                 messageContext.CorrelationId = eventContext.MessageId;
-                //Events.Add(BuildEvent(messageContext));
+                Events.Add(BuildEvent(messageContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
             });
             SaveChanges();
@@ -141,6 +141,7 @@ namespace IFramework.MessageStores.Relational
             messageContexts.ForEach(messageContext =>
             {
                 messageContext.CorrelationId = eventContext.MessageId;
+                Events.Add(BuildEvent(messageContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
             });
             SaveChanges();
@@ -207,18 +208,6 @@ namespace IFramework.MessageStores.Relational
                         .HasMaxLength(322);
 
 
-            //modelBuilder.Entity<Message>()
-            //    .Map<Command>(map =>
-            //    {
-            //        map.ToTable("Commands");
-            //        map.MapInheritedProperties();
-            //    })
-            //    .Map<Event>(map =>
-            //    {
-            //        map.ToTable("Events");
-            //        map.MapInheritedProperties();
-            //    });
-
             modelBuilder.Entity<HandledEvent>()
                         .ToTable("msgs_HandledEvents");
 
@@ -240,27 +229,29 @@ namespace IFramework.MessageStores.Relational
             //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
             //    new IndexAnnotation(new IndexAttribute("TopicIndex")));
 
-            //modelBuilder.Entity<Event>()
-            //            .ToTable("msgs_Events")
-            //            .Property(e => e.CorrelationId)
-            //            .HasMaxLength(200);
+            var eventEntityBuilder = modelBuilder.Entity<Event>();
+            eventEntityBuilder.HasIndex(e => e.AggregateRootId);
+            eventEntityBuilder.HasIndex(e => e.CorrelationId);
+            eventEntityBuilder.HasIndex(e => e.Name);
+
+            eventEntityBuilder.ToTable("msgs_Events")
+                              .Property(e => e.CorrelationId)
+                              .HasMaxLength(200);
             //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
             //    new IndexAnnotation(new IndexAttribute("CorrelationIdIndex")));
-            //modelBuilder.Entity<Event>()
-            //            .Property(e => e.Name)
-            //            .HasMaxLength(200);
+            eventEntityBuilder.Property(e => e.Name)
+                              .HasMaxLength(200);
             //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
             //    new IndexAnnotation(new IndexAttribute("NameIndex")));
-            //modelBuilder.Entity<Event>()
-            //            .Property(e => e.AggregateRootId)
-            //            .HasMaxLength(200);
+            eventEntityBuilder.Property(e => e.AggregateRootId)
+                              .HasMaxLength(200);
             //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
             //    new IndexAnnotation(new IndexAttribute("AGRootIdIndex")));
-            //modelBuilder.Entity<Event>()
-            //            .Property(e => e.Topic)
-            //            .HasMaxLength(200);
+            eventEntityBuilder.Property(e => e.Topic)
+                              .HasMaxLength(200);
             //.HasColumnAnnotation(IndexAnnotation.AnnotationName,
             //    new IndexAnnotation(new IndexAttribute("TopicIndex")));
+            eventEntityBuilder.OwnsOne(e => e.SagaInfo);
 
             modelBuilder.Entity<UnSentCommand>()
                         .OwnsOne(m => m.SagaInfo);
@@ -278,10 +269,10 @@ namespace IFramework.MessageStores.Relational
             return new Command(commandContext, result);
         }
 
-        //protected virtual Event BuildEvent(IMessageContext eventContext)
-        //{
-        //    return new Event(eventContext);
-        //}
+        protected virtual Event BuildEvent(IMessageContext eventContext)
+        {
+            return new Event(eventContext);
+        }
 
         private IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
