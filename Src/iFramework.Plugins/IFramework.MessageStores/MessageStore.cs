@@ -296,10 +296,10 @@ namespace IFramework.MessageStores.Relational
                             Logger.LogError("get unsent message error: {0}", message.ToJson());
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         Set<TMessage>().Remove(message);
-                        Logger.LogError("get unsent message error: {0}", message.ToJson());
+                        Logger.LogError(ex, "get unsent message error: {0}", message.ToJson());
                     }
                 });
             SaveChanges();
