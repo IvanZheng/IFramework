@@ -55,12 +55,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 //{"statistics.interval.ms", 60000},
                 {"retry.backoff.ms", ConsumerConfig.BackOffIncrement},
                 {"bootstrap.servers", BrokerList},
-                {
-                    "default.topic.config", new Dictionary<string, object>
-                    {
-                        {"auto.offset.reset", ConsumerConfig.AutoOffsetReset}
-                    }
-                }
+                {"auto.offset.reset", ConsumerConfig.AutoOffsetReset}
             };
         }
 
