@@ -15,11 +15,14 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             return config;
         }
 
-        public KafkaMessage Deserialize(string topic, byte[] data)
+        public KafkaMessage Deserialize(string topic, ReadOnlySpan<byte> data, bool isNull)
         {
-            return Encoding.UTF8.GetString(data).ToJsonObject<KafkaMessage>();
+            return Encoding.UTF8.GetString(data.ToArray()).ToJsonObject<KafkaMessage>();
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            
+        }
     }
 }
