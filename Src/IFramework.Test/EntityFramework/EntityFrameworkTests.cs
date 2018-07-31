@@ -1,19 +1,22 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
+using IFramework.Domain;
+using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
-using IFramework.Log4Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Xunit;
-using IFramework.Domain;
 
 namespace IFramework.Test.EntityFramework
 {
-    public class EntityFrameworkTests 
+    public class EntityFrameworkTests
     {
         public EntityFrameworkTests()
         {
@@ -21,41 +24,62 @@ namespace IFramework.Test.EntityFramework
                                                     .AddJsonFile("appsettings.json");
             Configuration.Instance
                          .UseAutofacContainer()
-                         .UseConfiguration(builder.Build());
+                         .UseConfiguration(builder.Build())
+                         .UseDbContextPool<DemoDbContext>(options =>
+                         {
+                             options.EnableSensitiveDataLogging();
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
+                         });
+
+            ObjectProviderFactory.Instance.Build();
         }
 
         [Fact]
         public async Task AddUserTest()
         {
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
             using (var scope = new TransactionScope(TransactionScopeOption.Required,
-                                                    new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+                                                    new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
                                                     TransactionScopeAsyncFlowOption.Enabled))
             {
-                using (var dbContext = new DemoDbContext())
-                {
-                    var user = new User("ivan", "male");
-                    user.AddCard("ICBC");
-                    user.AddCard("CCB");
-                    user.AddCard("ABC");
+                var dbContext = serviceScope.GetService<DemoDbContext>();
 
-                    dbContext.Users.Add(user);
-                    await dbContext.SaveChangesAsync();
-                }
 
+                var user = new User("ivan", "male");
+                user.AddCard("ICBC");
+                user.AddCard("CCB");
+                user.AddCard("ABC");
+
+                dbContext.Users.Add(user);
+                await dbContext.SaveChangesAsync();
                 scope.Complete();
             }
         }
 
-         
+        [Fact]
+        public async Task ConcurrentTest()
+        {
+            var tasks = new List<Task>();
+            for (int i = 0; i < 200; i++)
+            {
+                tasks.Add(GetUsersTest());
+            }
+
+            await Task.WhenAll(tasks);
+            Console.WriteLine($"incremented : {DemoDbContext.Total }");
+
+        }
 
         [Fact]
         public async Task GetUsersTest()
         {
-            using (var dbContext = new DemoDbContext())
+            using (var scope = ObjectProviderFactory.CreateScope())
             {
+                var dbContext = scope.GetService<DemoDbContext>();
                 var users = await dbContext.Users
                                            //.Include(u => u.Cards)
                                            .FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
+                                           .Take(10)
                                            .ToArrayAsync();
                 foreach (var u in users)
                 {

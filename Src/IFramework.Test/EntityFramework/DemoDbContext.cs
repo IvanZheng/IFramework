@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.EntityFrameworkCore;
@@ -11,18 +12,11 @@ namespace IFramework.Test.EntityFramework
 {
     public class DemoDbContext : MsDbContext
     {
-        internal DemoDbContext()
-            : this(new DbContextOptionsBuilder()//.UseInMemoryDatabase(nameof(DemoDbContext))
-                                                .UseSqlServer(Configuration.Instance
-                                                                           .GetConnectionString("DemoDb"))
-                                                .Options)
-        {
-        }
-        
-
+        public static int Total;
         public DemoDbContext(DbContextOptions options)
             : base(options)
         {
+            Interlocked.Add(ref Total, 1);
             Database.EnsureCreated();
         }
 
