@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>2.0.0-prelease-0002</Version>
+    <Version>2.0.0-prelease-0003</Version>
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
