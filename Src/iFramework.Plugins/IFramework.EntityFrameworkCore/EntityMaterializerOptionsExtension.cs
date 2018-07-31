@@ -24,7 +24,7 @@ namespace IFramework.EntityFrameworkCore
 
         public long GetServiceProviderHashCode()
         {
-            return 0;
+            return _extensionEntityMaterializerSource.GetHashCode();
         }
 
         public void Validate(IDbContextOptions options)
