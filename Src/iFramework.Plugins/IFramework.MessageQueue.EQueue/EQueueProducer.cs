@@ -20,15 +20,17 @@ namespace IFramework.MessageQueue.EQueue
     {
         private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(EQueueProducer).Name);
        
-        public EQueueProducer(string clusterName, List<IPEndPoint> nameServerList)
+        public EQueueProducer(string clusterName, List<IPEndPoint> nameServerList, ProducerConfig config = null)
         {
             ClusterName = clusterName;
             NameServerList = nameServerList;
+            Config = config ?? new ProducerConfig();
         }
 
         public Producer Producer { get; protected set; }
         public string ClusterName { get; protected set; }
         public List<IPEndPoint> NameServerList { get; protected set; }
+        public ProducerConfig Config { get; private set; }
 
         public EQueueProducer Start()
         {

@@ -28,7 +28,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
                                                  ConsumerConfig consumerConfig,
                                                  bool start = true);
 
-        IMessageProducer CreateTopicProducer(string topic);
-        IMessageProducer CreateQueueProducer(string queue);
+        IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null);
+        IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null);
     }
 }

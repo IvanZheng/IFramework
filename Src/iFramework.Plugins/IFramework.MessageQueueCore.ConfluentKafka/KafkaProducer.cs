@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -15,14 +14,18 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-
     public class KafkaProducer : KafkaProducer<string, KafkaMessage>, IMessageProducer
     {
-        public KafkaProducer(string topic, string brokerList, ISerializer<string> keySerializer, ISerializer<KafkaMessage> valueSerializer)
-            : base(topic, brokerList, keySerializer, valueSerializer) { }
+        public KafkaProducer(string topic,
+                             string brokerList,
+                             ISerializer<string> keySerializer,
+                             ISerializer<KafkaMessage> valueSerializer,
+                             ProducerConfig config = null)
+            : base(topic, brokerList, keySerializer, valueSerializer, config) { }
+
         public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
-            var message = ((MessageContext)messageContext).KafkaMessage;
+            var message = ((MessageContext) messageContext).KafkaMessage;
             var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
             return SendAsync(topic, messageContext.Key, message, cancellationToken);
         }
@@ -30,23 +33,30 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
     public class KafkaProducer<TKey, TValue>
     {
+        public ProducerConfig Config { get; private set; }
         private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>).Name);
         private readonly Producer<TKey, TValue> _producer;
         private readonly string _topic;
         private readonly ISerializer<TValue> _valueSerializer;
 
-        public KafkaProducer(string topic, string brokerList, ISerializer<TKey> keySerializer, ISerializer<TValue> valueSerializer)
+        public KafkaProducer(string topic,
+                             string brokerList,
+                             ISerializer<TKey> keySerializer,
+                             ISerializer<TValue> valueSerializer,
+                             ProducerConfig config = null)
         {
+            Config = config ??  new ProducerConfig();
+
             var keySerializer1 = keySerializer ?? throw new ArgumentNullException(nameof(keySerializer));
             _valueSerializer = valueSerializer ?? throw new ArgumentNullException(nameof(valueSerializer));
             _topic = topic;
             var producerConfiguration = new Dictionary<string, object>
             {
-                { "bootstrap.servers", brokerList },
-                {"request.required.acks", 1},
+                {"bootstrap.servers", brokerList},
+                {"request.required.acks", Config["request.required.acks"] ?? 1},
                 {"socket.nagle.disable", true},
-                {"socket.blocking.max.ms", 1},
-                {"queue.buffering.max.ms", 1}
+                {"socket.blocking.max.ms", Config["socket.blocking.max.ms"] ?? 50},
+                {"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
             };
 
             _producer = new Producer<TKey, TValue>(producerConfiguration, keySerializer1, valueSerializer);
@@ -82,9 +92,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 var waitTime = Math.Min(retryTimes * 1000 * 5, 60000 * 5);
                 try
                 {
-                    var result = await _producer.ProduceAsync(topic, new Message<TKey, TValue>{
-                        Key = key,
-                        Value = message}).ConfigureAwait(false);
+                    var result = await _producer.ProduceAsync(topic, new Message<TKey, TValue>
+                                                {
+                                                    Key = key,
+                                                    Value = message
+                                                })
+                                                .ConfigureAwait(false);
                     if (result.Error != ErrorCode.NoError)
                     {
                         _logger.LogError($"send message failed topic: {topic} Partition: {result.Partition} key:{key} error:{result.Error}");
@@ -100,7 +113,6 @@ namespace IFramework.MessageQueue.ConfluentKafka
                     _logger.LogError(e, $"send message failed topic: {topic} key:{key}");
                     await Task.Delay(waitTime, cancellationToken);
                 }
-
             }
             //_logger.Debug($"send message topic: {_topic} Partition: {result.Partition}, Offset: {result.Offset}");
         }

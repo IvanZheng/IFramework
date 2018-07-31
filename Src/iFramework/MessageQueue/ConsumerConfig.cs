@@ -14,5 +14,12 @@ namespace IFramework.MessageQueue
         public int WaitInterval { get; set; } = 1000;
         public int MailboxProcessBatchCount { get; set; } = 100;
         public string AutoOffsetReset { get; set; } = MessageQueue.AutoOffsetReset.Smallest;
+        public Dictionary<string, object> Extensions { get; set; } = new Dictionary<string, object>();
+
+        public object this[string key]
+        {
+            get => Extensions.TryGetValue(key, out var value) ? value : null;
+            set => Extensions[key] = value;
+        }
     }
 }

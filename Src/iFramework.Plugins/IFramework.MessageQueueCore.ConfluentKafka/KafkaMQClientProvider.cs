@@ -18,14 +18,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
             _brokerList = brokerList;
         }
 
-        public IMessageProducer CreateQueueProducer(string queue)
+        public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
-            return new KafkaProducer(queue, _brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
+            return new KafkaProducer(queue, _brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer(), config);
         }
 
-        public IMessageProducer CreateTopicProducer(string topic)
+        public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
         {
-            return new KafkaProducer(topic, _brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer());
+            return new KafkaProducer(topic, _brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer(), config);
         }
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null, string producer = null)

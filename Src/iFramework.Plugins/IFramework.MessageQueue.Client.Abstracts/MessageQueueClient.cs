@@ -115,14 +115,14 @@ namespace IFramework.MessageQueue.Client.Abstracts
 
         #region private methods
 
-        private IMessageProducer GetTopicProducer(string topic)
+        private IMessageProducer GetTopicProducer(string topic, ProducerConfig config = null)
         {
-            return TopicClients.GetOrAdd(topic, _clientProvider.CreateTopicProducer);
+            return TopicClients.GetOrAdd(topic, key => _clientProvider.CreateTopicProducer(key, config));
         }
 
-        private IMessageProducer GetQueueProducer(string queue)
+        private IMessageProducer GetQueueProducer(string queue, ProducerConfig config = null)
         {
-            return QueueClients.GetOrAdd(queue, _clientProvider.CreateQueueProducer);
+            return QueueClients.GetOrAdd(queue, key => _clientProvider.CreateQueueProducer(key, config));
         }
         #endregion
     }

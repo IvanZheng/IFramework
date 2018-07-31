@@ -44,14 +44,14 @@ namespace IFramework.MessageQueue.EQueue
             return consumer;
         }
 
-        public IMessageProducer CreateQueueProducer(string queue)
+        public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
-            return new EQueueProducer(_clusterName, _nameServerList).Start();
+            return new EQueueProducer(_clusterName, _nameServerList, config).Start();
         }
 
-        public IMessageProducer CreateTopicProducer(string topic)
+        public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
         {
-            return new EQueueProducer(_clusterName, _nameServerList).Start();
+            return new EQueueProducer(_clusterName, _nameServerList, config).Start();
         }
 
         public IMessageConsumer CreateTopicSubscription(string topic,
