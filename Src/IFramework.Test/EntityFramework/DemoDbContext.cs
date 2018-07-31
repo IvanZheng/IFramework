@@ -1,6 +1,11 @@
-﻿using IFramework.Config;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using IFramework.Config;
 using IFramework.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace IFramework.Test.EntityFramework
 {

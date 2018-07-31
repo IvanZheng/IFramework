@@ -9,6 +9,7 @@ using IFramework.Log4Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Xunit;
+using IFramework.Domain;
 
 namespace IFramework.Test.EntityFramework
 {
@@ -45,19 +46,22 @@ namespace IFramework.Test.EntityFramework
             }
         }
 
+         
+
         [Fact]
         public async Task GetUsersTest()
         {
             using (var dbContext = new DemoDbContext())
             {
                 var users = await dbContext.Users
-                                           .Include(u => u.Cards)
+                                           //.Include(u => u.Cards)
                                            .FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
                                            .ToArrayAsync();
-                users.ForEach(u =>
+                foreach (var u in users)
                 {
+                    await u.LoadCollectionAsync(u1 => u1.Cards);
                     Assert.NotNull(u.GetDbContext<DemoDbContext>());
-                });
+                }
             }
         }
     }
