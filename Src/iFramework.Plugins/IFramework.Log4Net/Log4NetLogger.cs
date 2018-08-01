@@ -77,8 +77,10 @@ namespace IFramework.Log4Net
                 return;
             }
 
+            	//UnderlyingSystemType	{Microsoft.Extensions.Logging.LoggerMessage+LogValues`3[System.Type,System.String,System.Exception]}	System.Type {System.RuntimeType}
+
             object log = state;
-            if (state is FormattedLogValues)
+            if (state != null && (state is FormattedLogValues || state.GetType().Name.StartsWith("LogValues")))
             {
                 log = formatter(state, exception);
                 //if (logValues.Count == 1 && logValues[0].Value is string)
