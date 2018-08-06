@@ -31,6 +31,12 @@ namespace IFramework.Log4Net
 
             writer.Write(message + Environment.NewLine + Environment.NewLine);
         }
+
+        protected virtual object FormatMessageObject(object messageObject)
+        {
+            return messageObject is string ? messageObject : messageObject.ToJson();
+        }
+
         private object GetJsonObject(LoggingEvent loggingEvent)
         {
             var additionalProperties = log4net.LogicalThreadContext
@@ -40,11 +46,11 @@ namespace IFramework.Log4Net
 
             var log = new JsonLog
             {
-                Message = loggingEvent.MessageObject
+                Message = FormatMessageObject(loggingEvent.MessageObject),
+                Thread = loggingEvent.ThreadName,
+                Time = DateTime.Now
             };
             //log.LocationInfo = loggingEvent.LocationInformation;
-            log.Thread = loggingEvent.ThreadName;
-            log.Time = DateTime.Now;
             log.App = additionalProperties.TryGetValue(nameof(log.App), App)?.ToString();
             log.Module = additionalProperties.TryGetValue(nameof(log.Module), Module)?.ToString();
             log.Logger = additionalProperties.TryGetValue(nameof(log.Logger), loggingEvent.LoggerName).ToString();
