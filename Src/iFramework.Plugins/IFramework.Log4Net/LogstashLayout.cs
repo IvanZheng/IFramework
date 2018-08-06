@@ -48,7 +48,7 @@ namespace IFramework.Log4Net
             {
                 Message = FormatMessageObject(loggingEvent.MessageObject),
                 Thread = loggingEvent.ThreadName,
-                Time = DateTime.Now
+                Time = loggingEvent.TimeStamp
             };
             //log.LocationInfo = loggingEvent.LocationInformation;
             log.App = additionalProperties.TryGetValue(nameof(log.App), App)?.ToString();
