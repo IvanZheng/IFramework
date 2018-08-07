@@ -4,6 +4,7 @@ using System.Text;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
+using IFramework.Domain;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using Newtonsoft.Json;
@@ -13,10 +14,22 @@ using Xunit.Abstractions;
 
 namespace IFramework.Test
 {
-    public struct AClass
+    public class AValueObject<T> : ValueObject<T>
+        where T : class
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
+        public new static T Empty => Activator.CreateInstance<T>();
+    }
+
+    public class AClass: AValueObject<AClass>
+    {
+        public string Id { get; protected set; }
+        public string Name { get; protected set; }
+
+        public AClass()
+        {
+            
+        }
+
         public AClass(string id, string name)
         {
             Id = id;
@@ -40,6 +53,25 @@ namespace IFramework.Test
             
            
         }
+
+        [Fact]
+        public void CloneTest()
+        {
+            Configuration.Instance
+                         .UseAutofacContainer()
+                         .UseJsonNet();
+
+            ObjectProviderFactory.Instance
+                                 .Build();
+            
+            var a = new AClass("ddd", "name");
+            var cloneObject = a.Clone();
+            Assert.True(a.Name == cloneObject.Name);
+            cloneObject = a.Clone(new { Name = "ivan"});
+            Assert.True("ivan" == cloneObject.Name);
+
+        }
+
         [Fact]
         public void SerializeReadonlyObject()
         {

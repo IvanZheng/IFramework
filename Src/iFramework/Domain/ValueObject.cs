@@ -11,7 +11,7 @@ namespace IFramework.Domain
     {
         public static T Empty => Activator.CreateInstance<T>();
 
-        public T Clone(object newValues = null)
+        public T Clone(object newValues = null, bool deSerializeNonPublic = true)
         {
             //var cloned = default(T);
             //using (var ms = new MemoryStream())
@@ -21,7 +21,7 @@ namespace IFramework.Domain
             //    ms.Position = 0;
             //    cloned = (T) formatter.Deserialize(ms);
             //}
-            var cloned = this.ToJson().ToJsonObject<T>();
+            var cloned = this.ToJson().ToJsonObject<T>(deSerializeNonPublic);
             newValues?.GetType().GetProperties().ForEach(p => { cloned.SetValueByKey(p.Name, p.GetValue(newValues)); });
             return cloned;
         }
