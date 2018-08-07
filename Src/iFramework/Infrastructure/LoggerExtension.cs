@@ -1,12 +1,9 @@
-﻿using IFramework.Infrastructure;
+﻿using System;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Microsoft.Extensions.Logging
+namespace IFramework.Infrastructure
 {
-    public static class Log4NetLoggerExtensions
+    public static class LoggerExtensions
     {
         public static Func<object, Exception, string> MessageFormatter = (o, e) => o.ToJson();
         public static void LogDebug(this ILogger logger, Exception exception, object state, Func<object, Exception, string> formatter = null)
