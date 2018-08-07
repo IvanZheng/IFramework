@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Autofac;
 using IFramework.Config;
 using IFramework.DependencyInjection;
@@ -7,6 +8,7 @@ using IFramework.Log4Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using IFramework.Infrastructure;
 
 namespace IFramework.Test
 {
@@ -23,18 +25,29 @@ namespace IFramework.Test
                                                     .AddJsonFile("appsettings.json");
             
             Configuration.Instance
-                         .UseConfiguration(builder.Build())
                          .UseAutofacContainer(new ContainerBuilder())
+                         .UseConfiguration(builder.Build())
                          .UseLog4Net();
+
             ObjectProviderFactory.Instance.Build();
 
             var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(nameof(Log4NetLoggerTests));
-            var message = "test log level";
-            LogTest(logger, message);
+
+
+            try
+            {
+                throw new NotImplementedException("test exception");
+            }
+            catch (Exception e)
+            {
+                LogTest(logger, e);
+            }
+
+          
         }
 
-        void LogTest(ILogger logger, string message)
+        void LogTest(ILogger logger, object message)
         {
             logger.LogDebug(message);
             logger.LogInformation(message);
