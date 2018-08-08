@@ -171,40 +171,47 @@ namespace IFramework.AspNet
 
         public static string GetRequestBodyString(this HttpRequest request)
         {
+            var oriPosition = request.Body.Position;
+            string body = null;
             if (request.Body.CanSeek)
             {
                 request.Body.Seek(0, SeekOrigin.Begin);
+                var streamReader = new StreamReader(request.Body);
+                request.HttpContext.Response.RegisterForDispose(streamReader);
+                body = streamReader.ReadToEnd();
+                request.Body.Seek(oriPosition, SeekOrigin.Begin);
             }
-            var streamReader = new StreamReader(request.Body);
-            request.HttpContext.Response.RegisterForDispose(streamReader);
-            return streamReader.ReadToEnd();
+            return body;
         }
 
         public static async Task<string> GetRequestBodyStringAsync(this HttpRequest request)
         {
+            var oriposition = request.Body.Position;
+            string body = null;
             if (request.Body.CanSeek)
             {
                 request.Body.Seek(0, SeekOrigin.Begin);
+                var streamReader = new StreamReader(request.Body);
+                request.HttpContext.Response.RegisterForDispose(streamReader);
+                body = await streamReader.ReadToEndAsync();
+                request.Body.Seek(oriposition, SeekOrigin.Begin);
             }
-            var streamReader = new StreamReader(request.Body);
-            request.HttpContext.Response.RegisterForDispose(streamReader);
-            return await streamReader.ReadToEndAsync();
+            return body;
         }
 
 
 
-        public static string GetRequestContent(this HttpContext me, [CallerMemberName] string tag = null)
-        {
-            var request = me.Request;
-            using (var stream = new MemoryStream())
-            {
-                me.Request.Body.Seek(0, SeekOrigin.Begin);
-                me.Request.Body.CopyTo(stream);
-                var requestBody = Encoding.UTF8.GetString(stream.ToArray());
-
-                return requestBody;
-            }
-        }
+        //public static string GetRequestContent(this HttpContext me, [CallerMemberName] string tag = null)
+        //{
+        //    var request = me.Request;
+        //    using (var stream = new MemoryStream())
+        //    {
+        //        me.Request.Body.Seek(0, SeekOrigin.Begin);
+        //        me.Request.Body.CopyTo(stream);
+        //        var requestBody = Encoding.UTF8.GetString(stream.ToArray());
+        //        return requestBody;
+        //    }
+        //}
 
         public static IDictionary<string, string> FromLegacyCookieString(this string legacyCookie)
         {
