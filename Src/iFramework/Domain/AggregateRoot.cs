@@ -30,6 +30,11 @@ namespace IFramework.Domain
             return _eventQueue.ToList();
         }
 
+        public void ClearDomainEvents()
+        {
+            _eventQueue.Clear();
+        }
+
         public virtual void Rollback()
         {
             _eventQueue.Clear();

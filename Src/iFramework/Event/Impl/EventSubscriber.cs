@@ -83,7 +83,7 @@ namespace IFramework.Event.Impl
 
         public string GetStatus()
         {
-            return string.Format("Handled message count {0}", MessageCount);
+            return $"Handled message count {MessageCount}";
         }
 
         public decimal MessageCount { get; set; }

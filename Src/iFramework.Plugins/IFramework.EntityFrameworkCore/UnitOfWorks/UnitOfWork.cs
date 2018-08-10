@@ -64,6 +64,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                      if (e.Entity is AggregateRoot root)
                                      {
                                          EventBus.Publish(root.GetDomainEvents());
+                                         root.ClearDomainEvents();
                                      }
                                  });
                     });
@@ -112,9 +113,10 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                         dbContext.ChangeTracker.Entries()
                                  .ForEach(e =>
                                  {
-                                     if (e.Entity is AggregateRoot)
+                                     if (e.Entity is AggregateRoot root)
                                      {
-                                         EventBus.Publish((e.Entity as AggregateRoot).GetDomainEvents());
+                                         EventBus.Publish(root.GetDomainEvents());
+                                         root.ClearDomainEvents();
                                      }
                                  });
                     }

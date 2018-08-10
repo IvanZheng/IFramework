@@ -5,7 +5,7 @@
     <AssemblyName>IFramework.EntityFrameworkCore</AssemblyName>
     <RootNamespace>IFramework.EntityFrameworkCore</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-prelease-0011</Version>
+    <Version>2.0.0-prelease-0012</Version>
     <Company>Ivan</Company>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
   </PropertyGroup>
