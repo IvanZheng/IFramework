@@ -19,7 +19,7 @@ namespace IFramework.Domain
             where TEntity : Entity
             where TEntityProperty : class
         {
-            return entity.GetDbContext<IDbContext>()?.LoadReferenceAsync(entity, expression);
+            return entity.GetDbContext<IDbContext>()?.LoadReferenceAsync(entity, expression) ?? Task.CompletedTask;
         }
 
         public static void LoadCollection<TEntity, TEntityProperty>(this TEntity entity,
@@ -35,7 +35,7 @@ namespace IFramework.Domain
             where TEntity : Entity
             where TEntityProperty : class
         {
-            return entity.GetDbContext<IDbContext>()?.LoadCollectionAsync(entity, expression);
+            return entity.GetDbContext<IDbContext>()?.LoadCollectionAsync(entity, expression) ?? Task.CompletedTask;
         }
     }
 }
