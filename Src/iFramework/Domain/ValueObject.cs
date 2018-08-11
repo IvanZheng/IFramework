@@ -11,7 +11,7 @@ namespace IFramework.Domain
     {
         public static T Empty => Activator.CreateInstance<T>();
 
-        public T Clone(object newValues = null, bool deSerializeNonPublic = true)
+        public virtual T Clone(object newValues = null, bool deSerializeNonPublic = true)
         {
             //var cloned = default(T);
             //using (var ms = new MemoryStream())
