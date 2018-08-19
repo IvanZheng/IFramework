@@ -35,8 +35,14 @@ namespace IFramework.MessageQueue.RabbitMQ
         public async Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
             var message = ((MessageContext)messageContext).RabbitMQMessage;
-            var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic ?? _topic);
-            _channel.BasicPublish(_exchange, null, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));
+            try
+            {
+                _channel.BasicPublish(_exchange, _topic, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
     }
 }

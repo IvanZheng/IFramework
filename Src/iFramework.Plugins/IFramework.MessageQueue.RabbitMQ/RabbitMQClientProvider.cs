@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -55,11 +56,13 @@ namespace IFramework.MessageQueue.RabbitMQ
         public IMessageConsumer CreateQueueConsumer(string commandQueueName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
         {
             var channel = _connection.CreateModel();
+            commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
+
             channel.QueueDeclare(commandQueueName, true, false, false, null);
 
             var consumer = new RabbitMQConsumer(channel,
                                         commandQueueName,
-                                        $"{commandQueueName}.consumer",
+                                        commandQueueName,
                                         consumerId,
                                         BuildOnRabbitMQMessageReceived(onMessagesReceived),
                                         consumerConfig);
@@ -73,6 +76,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         public IMessageConsumer CreateTopicSubscription(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
         {
             var channel = _connection.CreateModel();
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
             channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
             var queueName = channel.QueueDeclare(subscriptionName, true, false, false, null).QueueName;
             channel.QueueBind(queueName,
@@ -80,7 +84,7 @@ namespace IFramework.MessageQueue.RabbitMQ
                               string.Empty);
             var subscriber = new RabbitMQConsumer(channel,
                                         topic,
-                                        subscriptionName,
+                                        queueName,
                                         consumerId,
                                         BuildOnRabbitMQMessageReceived(onMessagesReceived),
                                         consumerConfig);
@@ -95,17 +99,21 @@ namespace IFramework.MessageQueue.RabbitMQ
         public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
         {
             var channel = _connection.CreateModel();
+            topic = Configuration.Instance.FormatMessageQueueName(topic);
+
             channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
 
-            return new RabbitMQProducer(channel, topic, topic, config);
+            return new RabbitMQProducer(channel, topic, string.Empty, config);
         }
 
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
             var channel = _connection.CreateModel();
+            queue = Configuration.Instance.FormatMessageQueueName(queue);
+
             channel.QueueDeclare(queue, true, false, false, null);
 
-            return new RabbitMQProducer(channel, null, queue, config);
+            return new RabbitMQProducer(channel, string.Empty, queue, config);
         }
 
         private OnRabbitMQMessageReceived BuildOnRabbitMQMessageReceived(OnMessagesReceived onMessagesReceived)

@@ -13,6 +13,7 @@ using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.InMemory;
+using IFramework.MessageQueue.RabbitMQ;
 using IFramework.MessageStores.Relational;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -53,6 +54,7 @@ namespace Sample.CommandServiceCore
                 new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
                 //"10.100.7.46:9092"
             };
+            var hostName = "localhost";
             Configuration.Instance
                          .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                          .UseConfiguration(configuration)
@@ -60,17 +62,18 @@ namespace Sample.CommandServiceCore
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseRelationalMessageStore<SampleModelContext>(true)// true 表示使用inmemorydatabase, 默认为false
-                         .UseInMemoryMessageQueue()
+                         //.UseInMemoryMessageQueue()
+                         .UseRabbitMQ(hostName)
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
-                         //.UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
-                         .UseDbContextPool<SampleModelContext>(options =>
-                         {
-                             options.EnableSensitiveDataLogging();
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                         })
+                         .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
+                         //.UseDbContextPool<SampleModelContext>(options =>
+                         //{
+                         //    options.EnableSensitiveDataLogging();
+                         //    options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                         //})
                          ;
         }
 
@@ -153,20 +156,22 @@ namespace Sample.CommandServiceCore
 
         private void StartMessageQueueComponents()
         {
+
+
             #region Command Consuemrs init
 
             var commandQueueName = "commandqueue";
             _commandConsumer1 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] {"CommandHandlers"});
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
             _commandConsumer1.Start();
 
-            _commandConsumer2 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] {"CommandHandlers"});
-            _commandConsumer2.Start();
+            //_commandConsumer2 =
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
+            //_commandConsumer2.Start();
 
-            _commandConsumer3 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] {"CommandHandlers"});
-            _commandConsumer3.Start();
+            //_commandConsumer3 =
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
+            //_commandConsumer3.Start();
 
             #endregion
 

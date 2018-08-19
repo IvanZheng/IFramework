@@ -61,13 +61,13 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 try
                 {
                     var command = _mailboxProcessorCommands.Take(cancellationSource.Token);
-                    if (command is ProcessMessageCommand<IMessageContext>)
+                    if (command is ProcessMessageCommand<IMessageContext> messageCommand)
                     {
-                        ExecuteProcessCommand((ProcessMessageCommand<IMessageContext>) command);
+                        ExecuteProcessCommand(messageCommand);
                     }
-                    else if (command is CompleteMessageCommand<IMessageContext>)
+                    else if (command is CompleteMessageCommand<IMessageContext> completeMessageCommand)
                     {
-                        CompleteProcessMessage((CompleteMessageCommand<IMessageContext>) command);
+                        CompleteProcessMessage(completeMessageCommand);
                     }
                 }
                 catch (OperationCanceledException)
@@ -109,11 +109,8 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             if (!string.IsNullOrWhiteSpace(key))
             {
                 var mailbox = MailboxDictionary.GetOrAdd(key,
-                                                         x =>
-                                                         {
-                                                             return new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler,
-                                                                                                           processingMessageFunc, HandleMailboxEmpty, _batchCount);
-                                                         });
+                                                         x => new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler,
+                                                                                                     processingMessageFunc, HandleMailboxEmpty, _batchCount));
                 mailbox.EnqueueMessage(messageContext);
                 _processingMessageScheduler.ScheduleMailbox(mailbox);
             }
