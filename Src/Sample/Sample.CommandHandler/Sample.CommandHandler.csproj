@@ -18,6 +18,7 @@
     <ProjectReference Include="..\Sample.Command\Sample.Command.csproj" />
     <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj" />
     <ProjectReference Include="..\Sample.DTO\Sample.DTO.csproj" />
+    <ProjectReference Include="..\Sample.Persistence\Sample.Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>

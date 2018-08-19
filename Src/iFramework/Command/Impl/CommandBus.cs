@@ -119,7 +119,7 @@ namespace IFramework.Command.Impl
                                                      string sagaId = null)
         {
             sagaId = sagaId ?? ObjectId.GenerateNewId().ToString();
-            var sagaInfo = new SagaInfo {SagaId = sagaId, ReplyEndPoint = _replyTopicName};
+            var sagaInfo = new SagaInfo { SagaId = sagaId, ReplyEndPoint = _replyTopicName };
 
             var commandContext = WrapCommand(command, false, sagaInfo);
             var commandState = BuildCommandState(commandContext,
@@ -247,29 +247,27 @@ namespace IFramework.Command.Impl
             replies.ForEach(reply => { _messageProcessor.Process(reply, ConsumeReply); });
         }
 
-        protected async Task ConsumeReply(IMessageContext reply)
+        protected Task ConsumeReply(IMessageContext reply)
         {
-            await Task.Run(() =>
-                      {
-                          Logger.LogInformation("Handle reply:{0} content:{1}", reply.MessageId, reply.ToJson());
-                          var sagaInfo = reply.SagaInfo;
-                          var correlationId = sagaInfo?.SagaId ?? reply.CorrelationId;
-                          var messageState = _commandStateQueues.TryGetValue(correlationId);
-                          if (messageState != null)
-                          {
-                              _commandStateQueues.TryRemove(correlationId);
-                              if (reply.Message is Exception exception)
-                              {
-                                  messageState.ReplyTaskCompletionSource.TrySetException(exception);
-                              }
-                              else
-                              {
-                                  messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
-                              }
-                          }
-                          _internalConsumer.CommitOffset(reply);
-                      })
-                      .ConfigureAwait(false);
+
+            Logger.LogInformation("Handle reply:{0} content:{1}", reply.MessageId, reply.ToJson());
+            var sagaInfo = reply.SagaInfo;
+            var correlationId = sagaInfo?.SagaId ?? reply.CorrelationId;
+            var messageState = _commandStateQueues.TryGetValue(correlationId);
+            if (messageState != null)
+            {
+                _commandStateQueues.TryRemove(correlationId);
+                if (reply.Message is Exception exception)
+                {
+                    messageState.ReplyTaskCompletionSource.TrySetException(exception);
+                }
+                else
+                {
+                    messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
+                }
+            }
+            _internalConsumer.CommitOffset(reply);
+            return Task.CompletedTask;
         }
 
         protected MessageState BuildCommandState(IMessageContext commandContext,
