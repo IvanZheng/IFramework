@@ -13,6 +13,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         public static Configuration UseRabbitMQ(this Configuration configuration,
                                                       string hostName)
         {
+            configuration.SetCommitPerMessage(true);
             ObjectProviderFactory.Instance
                                  .ObjectProviderBuilder
                                  .Register<IMessageQueueClientProvider, RabbitMQClientProvider>(ServiceLifetime.Singleton,

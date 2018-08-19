@@ -55,7 +55,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         public IMessageConsumer CreateQueueConsumer(string commandQueueName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
         {
             var channel = _connection.CreateModel();
-            channel.ExchangeDeclare(commandQueueName, ExchangeType.Fanout);
+            channel.QueueDeclare(commandQueueName, true, false, false, null);
 
             return new RabbitMQConsumer(channel,
                                         commandQueueName,
@@ -68,7 +68,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         public IMessageConsumer CreateTopicSubscription(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
         {
             var channel = _connection.CreateModel();
-            channel.ExchangeDeclare(topic, ExchangeType.Fanout);
+            channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
             
             channel.QueueBind(subscriptionName,
                               topic,
@@ -83,12 +83,18 @@ namespace IFramework.MessageQueue.RabbitMQ
 
         public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
         {
-            return new RabbitMQProducer(_connection.CreateModel(), topic, config);
+            var channel = _connection.CreateModel();
+            channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
+
+            return new RabbitMQProducer(channel, topic, config);
         }
 
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
-            return new RabbitMQProducer(_connection.CreateModel(), queue, config);
+            var channel = _connection.CreateModel();
+            channel.QueueDeclare(queue, true, false, false, null);
+
+            return new RabbitMQProducer(channel, queue, config);
         }
 
         private OnRabbitMQMessageReceived BuildOnRabbitMQMessageReceived(OnMessagesReceived onMessagesReceived)

@@ -15,11 +15,12 @@ namespace IFramework.MessageQueue.RabbitMQ
     public class RabbitMQProducer: IMessageProducer
     {
         private readonly IModel _channel;
+        private readonly string _topic;
         private readonly IBasicProperties _properties;
         public RabbitMQProducer(IModel channel, string topic, ProducerConfig config = null)
         {
             _channel = channel;
-            _channel.ExchangeDeclare(topic, ExchangeType.Fanout, true);
+            _topic = topic;
             _properties = _channel.CreateBasicProperties();
             _properties.Persistent = true;
         }
@@ -32,8 +33,8 @@ namespace IFramework.MessageQueue.RabbitMQ
         public async Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
             var message = ((MessageContext)messageContext).RabbitMQMessage;
-            var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
-            _channel.BasicPublish(topic, messageContext.Key, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));
+            var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic ?? _topic);
+            _channel.BasicPublish(topic, null, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));
         }
     }
 }
