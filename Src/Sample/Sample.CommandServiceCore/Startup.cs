@@ -12,6 +12,7 @@ using IFramework.JsonNet;
 using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
+using IFramework.MessageQueue.ConfluentKafka;
 using IFramework.MessageQueue.InMemory;
 using IFramework.MessageQueue.RabbitMQ;
 using IFramework.MessageStores.Relational;
@@ -61,19 +62,19 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()// true 表示使用inmemorydatabase, 默认为false
+                         .UseRelationalMessageStore<SampleModelContext>(true)// true 表示使用inmemorydatabase, 默认为false
                          //.UseInMemoryMessageQueue()
-                         .UseRabbitMQ(hostName)
-                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseRabbitMQ(hostName)
+                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
-                         //.UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
-                         .UseDbContextPool<SampleModelContext>(options =>
-                         {
-                             options.EnableSensitiveDataLogging();
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                         })
+                         .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
+                         //.UseDbContextPool<SampleModelContext>(options =>
+                         //{
+                         //    options.EnableSensitiveDataLogging();
+                         //    options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                         //})
                          ;
         }
 
@@ -121,7 +122,7 @@ namespace Sample.CommandServiceCore
             {
                 app.UseExceptionHandler(new GlobalExceptionHandlerOptions(loggerFactory, env));
             }
-            app.UseMiniProfiler();
+            //app.UseMiniProfiler();
             PathBase = Configuration.Instance[nameof(PathBase)];
             app.UsePathBase(PathBase);
 

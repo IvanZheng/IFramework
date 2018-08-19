@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumerRecord<TKey, TValue> message);
+    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumeResult<TKey, TValue> message);
 
     public class KafkaConsumer<TKey, TValue> : MessageConsumer
     {
@@ -60,10 +60,15 @@ namespace IFramework.MessageQueue.ConfluentKafka
         }
 
         public Dictionary<string, object> ConsumerConfiguration { get; protected set; }
-
+        
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         protected override void PollMessages()
         {
-            _consumer.Poll(100);
+            var consumeResult = _consumer.Consume(_cancellationTokenSource.Token);
+            if (consumeResult != null)
+            {
+                _consumer_OnMessage(consumeResult);
+            }
         }
 
         public override void Start()
@@ -71,12 +76,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
             _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);
             _consumer.Subscribe(Topic);
             _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
-            _consumer.OnRecord += _consumer_OnMessage;
             base.Start();
         }
 
 
-        private void _consumer_OnMessage(object sender, ConsumerRecord<TKey, TValue> message)
+        private void _consumer_OnMessage(ConsumeResult<TKey, TValue> message)
         {
             try
             {
@@ -99,17 +103,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(Topic, partition), offset + 1);
-            var committedOffset = _consumer.Commit(new[] {topicPartitionOffset});
-            if (committedOffset.Error.Code != ErrorCode.NoError)
-            {
-                throw new Exception($"{Id} committed offset failed {committedOffset.Error} broker/partition/offset: {broker}/{partition}/{offset}");
-            }
-            Logger.LogDebug($"{Id} committed broker/partition/offset: {broker}/{partition}/{offset}");
-            return Task.CompletedTask;
+            return _consumer.CommitAsync(new[] {topicPartitionOffset}, _cancellationTokenSource.Token);
         }
 
         public override void Stop()
         {
+            _cancellationTokenSource.Cancel(true);
             base.Stop();
             _consumer?.Dispose();
         }

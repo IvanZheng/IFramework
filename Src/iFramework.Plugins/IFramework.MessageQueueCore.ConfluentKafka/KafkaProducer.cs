@@ -96,17 +96,9 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                 {
                                                     Key = key,
                                                     Value = message
-                                                })
+                                                }, cancellationToken)
                                                 .ConfigureAwait(false);
-                    if (result.Error != ErrorCode.NoError)
-                    {
-                        _logger.LogError($"send message failed topic: {topic} Partition: {result.Partition} key:{key} error:{result.Error}");
-                        await Task.Delay(waitTime, cancellationToken);
-                    }
-                    else
-                    {
-                        return result;
-                    }
+                    return result;
                 }
                 catch (Exception e)
                 {
