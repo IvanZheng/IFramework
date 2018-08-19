@@ -4,10 +4,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.MessageQueue.Client.Abstracts;
 using IFramework.MessageQueue.RabbitMQ.MessageFormat;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
 namespace IFramework.MessageQueue.RabbitMQ
@@ -18,6 +20,8 @@ namespace IFramework.MessageQueue.RabbitMQ
         private readonly string _exchange;
         private readonly string _topic;
         private readonly IBasicProperties _properties;
+        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(RabbitMQProducer).Name);
+
         public RabbitMQProducer(IModel channel, string exchange, string topic, ProducerConfig config = null)
         {
             _channel = channel;
@@ -41,6 +45,7 @@ namespace IFramework.MessageQueue.RabbitMQ
             }
             catch (Exception e)
             {
+                _logger.LogError(e, "send message failed");
                 throw;
             }
         }

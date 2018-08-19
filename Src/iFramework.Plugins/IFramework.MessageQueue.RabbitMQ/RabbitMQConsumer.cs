@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using IFramework.DependencyInjection;
 using IFramework.Message;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -15,6 +17,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         private readonly string _topic;
         private readonly string _groupId;
         private readonly OnRabbitMQMessageReceived _onMessageReceived;
+        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(RabbitMQConsumer).Name);
 
         public RabbitMQConsumer(IModel channel, 
                                 string topic,
@@ -43,6 +46,7 @@ namespace IFramework.MessageQueue.RabbitMQ
             
             consumer.Received += (model, ea) =>
             {
+                _logger.LogDebug($"consumer({Id}) receive message, routingKey: {ea.RoutingKey} deliveryTag: {ea.DeliveryTag}");
                 _onMessageReceived(this, ea);
             };
             _channel.BasicConsume(queue: _groupId,

@@ -165,13 +165,13 @@ namespace Sample.CommandServiceCore
                 MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
             _commandConsumer1.Start();
 
-            //_commandConsumer2 =
-            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
-            //_commandConsumer2.Start();
+            _commandConsumer2 =
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
+            _commandConsumer2.Start();
 
-            //_commandConsumer3 =
-            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
-            //_commandConsumer3.Start();
+            _commandConsumer3 =
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
+            _commandConsumer3.Start();
 
             #endregion
 
