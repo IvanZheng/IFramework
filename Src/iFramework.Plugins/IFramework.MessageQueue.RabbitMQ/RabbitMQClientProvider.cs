@@ -59,7 +59,7 @@ namespace IFramework.MessageQueue.RabbitMQ
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
 
             channel.QueueDeclare(commandQueueName, true, false, false, null);
-
+            channel.BasicQos(0, (ushort)consumerConfig.FullLoadThreshold, false);
             var consumer = new RabbitMQConsumer(channel,
                                         commandQueueName,
                                         commandQueueName,
