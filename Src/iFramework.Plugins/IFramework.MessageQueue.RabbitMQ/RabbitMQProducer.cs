@@ -1,0 +1,39 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using IFramework.Config;
+using IFramework.Infrastructure;
+using IFramework.Message;
+using IFramework.MessageQueue.Client.Abstracts;
+using IFramework.MessageQueue.RabbitMQ.MessageFormat;
+using RabbitMQ.Client;
+
+namespace IFramework.MessageQueue.RabbitMQ
+{
+    public class RabbitMQProducer: IMessageProducer
+    {
+        private readonly IModel _channel;
+        private readonly IBasicProperties _properties;
+        public RabbitMQProducer(IModel channel, string topic, ProducerConfig config = null)
+        {
+            _channel = channel;
+            _channel.ExchangeDeclare(topic, ExchangeType.Fanout, true);
+            _properties = _channel.CreateBasicProperties();
+            _properties.Persistent = true;
+        }
+
+        public void Stop()
+        {
+            _channel.Dispose();
+        }
+
+        public async Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
+        {
+            var message = ((MessageContext)messageContext).RabbitMQMessage;
+            var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
+            _channel.BasicPublish(topic, messageContext.Key, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));
+        }
+    }
+}
