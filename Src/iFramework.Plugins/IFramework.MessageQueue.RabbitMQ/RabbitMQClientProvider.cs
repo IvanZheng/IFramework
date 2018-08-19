@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Text;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -54,12 +54,31 @@ namespace IFramework.MessageQueue.RabbitMQ
 
         public IMessageConsumer CreateQueueConsumer(string commandQueueName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
         {
-            throw new NotImplementedException();
+            var channel = _connection.CreateModel();
+            channel.ExchangeDeclare(commandQueueName, ExchangeType.Fanout);
+
+            return new RabbitMQConsumer(channel,
+                                        commandQueueName,
+                                        $"{commandQueueName}.consumer",
+                                        consumerId,
+                                        BuildOnRabbitMQMessageReceived(onMessagesReceived),
+                                        consumerConfig);
         }
 
         public IMessageConsumer CreateTopicSubscription(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
         {
-            throw new NotImplementedException();
+            var channel = _connection.CreateModel();
+            channel.ExchangeDeclare(topic, ExchangeType.Fanout);
+            
+            channel.QueueBind(subscriptionName,
+                              topic,
+                              string.Empty);
+            return new RabbitMQConsumer(channel,
+                                        topic,
+                                        subscriptionName,
+                                        consumerId,
+                                        BuildOnRabbitMQMessageReceived(onMessagesReceived),
+                                        consumerConfig);
         }
 
         public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
@@ -70,6 +89,16 @@ namespace IFramework.MessageQueue.RabbitMQ
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
             return new RabbitMQProducer(_connection.CreateModel(), queue, config);
+        }
+
+        private OnRabbitMQMessageReceived BuildOnRabbitMQMessageReceived(OnMessagesReceived onMessagesReceived)
+        {
+            return (consumer, args) =>
+            {
+                var message = Encoding.UTF8.GetString(args.Body).ToJsonObject<RabbitMQMessage>();
+                var messageContext = new MessageContext(message, new MessageOffset(string.Empty, 0, (long) args.DeliveryTag));
+                onMessagesReceived(messageContext);
+            };
         }
     }
 }

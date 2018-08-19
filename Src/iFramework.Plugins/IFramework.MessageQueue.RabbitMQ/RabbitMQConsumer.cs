@@ -12,6 +12,8 @@ namespace IFramework.MessageQueue.RabbitMQ
     public class RabbitMQConsumer:IMessageConsumer
     {
         private readonly IModel _channel;
+        private readonly string _topic;
+        private readonly string _groupId;
         private readonly OnRabbitMQMessageReceived _onMessageReceived;
 
         public RabbitMQConsumer(IModel channel, 
@@ -22,6 +24,8 @@ namespace IFramework.MessageQueue.RabbitMQ
                                 ConsumerConfig consumerConfig = null)
         {
             _channel = channel;
+            _topic = topic;
+            _groupId = groupId;
             _onMessageReceived = onMessageReceived;
 
             Id = $"{topic}.{groupId}.{consumerId}";
@@ -36,10 +40,15 @@ namespace IFramework.MessageQueue.RabbitMQ
         public void Start()
         {
             var consumer = new EventingBasicConsumer(_channel);
+            
             consumer.Received += (model, ea) =>
             {
                 _onMessageReceived(this, ea);
             };
+            _channel.BasicConsume(queue: _groupId,
+                                  autoAck: false,
+                                  consumer: consumer);
+
         }
 
         public void Stop()
