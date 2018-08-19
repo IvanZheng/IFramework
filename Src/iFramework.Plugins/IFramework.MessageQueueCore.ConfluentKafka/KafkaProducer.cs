@@ -55,8 +55,8 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {"bootstrap.servers", brokerList},
                 {"request.required.acks", Config["request.required.acks"] ?? 1},
                 {"socket.nagle.disable", true},
-                {"socket.blocking.max.ms", Config["socket.blocking.max.ms"] ?? 50},
-                {"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
+                //{"socket.blocking.max.ms", Config["socket.blocking.max.ms"] ?? 50},
+                //{"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
             };
 
             _producer = new Producer<TKey, TValue>(producerConfiguration, keySerializer1, valueSerializer);
