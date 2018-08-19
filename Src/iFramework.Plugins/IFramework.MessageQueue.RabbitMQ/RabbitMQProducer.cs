@@ -15,11 +15,13 @@ namespace IFramework.MessageQueue.RabbitMQ
     public class RabbitMQProducer: IMessageProducer
     {
         private readonly IModel _channel;
+        private readonly string _exchange;
         private readonly string _topic;
         private readonly IBasicProperties _properties;
-        public RabbitMQProducer(IModel channel, string topic, ProducerConfig config = null)
+        public RabbitMQProducer(IModel channel, string exchange, string topic, ProducerConfig config = null)
         {
             _channel = channel;
+            _exchange = exchange;
             _topic = topic;
             _properties = _channel.CreateBasicProperties();
             _properties.Persistent = true;
@@ -34,7 +36,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         {
             var message = ((MessageContext)messageContext).RabbitMQMessage;
             var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic ?? _topic);
-            _channel.BasicPublish(topic, null, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));
+            _channel.BasicPublish(_exchange, null, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));
         }
     }
 }
