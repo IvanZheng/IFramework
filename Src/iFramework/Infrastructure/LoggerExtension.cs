@@ -5,7 +5,7 @@ namespace Microsoft.Extensions.Logging
 {
     public static class LoggerExtensions
     {
-        public static Func<object, Exception, string> MessageFormatter = (o, e) =>
+        private static string MessageFormatter(object o, Exception e)
         {
             string message;
             if (o is Exception ex)
@@ -14,11 +14,11 @@ namespace Microsoft.Extensions.Logging
             }
             else
             {
-                
                 message =  o is string ? o.ToString() : o.ToJson();
             }
             return message;
-        };
+        }
+
         public static void LogDebug(this ILogger logger, Exception exception, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Debug, new EventId(), state, exception, formatter ?? MessageFormatter);
