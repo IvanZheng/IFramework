@@ -164,6 +164,7 @@ namespace IFramework.Config
             builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
             builder.RegisterInstance(new SyncEventSubscriberProvider());
             builder.Register<IEventBus, EventBus>(lifetime);
+            builder.Register<IMessageContext, EmptyMessageContext>(lifetime);
             return this;
         }
 

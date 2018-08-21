@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
+using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -19,13 +20,16 @@ namespace Sample.CommandServiceCore.Controllers
     {
         private readonly IConcurrencyProcessor _concurrencyProcessor;
         private readonly IObjectProvider _objectProvider;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger _logger;
         public HomeController(IConcurrencyProcessor concurrencyProcessor,
                               ILogger<HomeController> logger,
-                              IObjectProvider objectProvider)
+                              IObjectProvider objectProvider,
+                              IUnitOfWork unitOfWork)
         {
             _concurrencyProcessor = concurrencyProcessor;
             _objectProvider = objectProvider;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 

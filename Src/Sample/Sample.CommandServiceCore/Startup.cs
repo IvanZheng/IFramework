@@ -62,19 +62,19 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>(true)// true 表示使用inmemorydatabase, 默认为false
-                         //.UseInMemoryMessageQueue()
+                         .UseRelationalMessageStore<SampleModelContext>()// true 表示使用inmemorydatabase, 默认为false
+                         .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(hostName)
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
-                         .UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
-                         //.UseDbContextPool<SampleModelContext>(options =>
-                         //{
-                         //    options.EnableSensitiveDataLogging();
-                         //    options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                         //})
+                         //.UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
+                         .UseDbContextPool<SampleModelContext>(options =>
+                         {
+                             options.EnableSensitiveDataLogging();
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                         })
                          ;
         }
 

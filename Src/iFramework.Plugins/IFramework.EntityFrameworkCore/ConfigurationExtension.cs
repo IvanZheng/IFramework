@@ -52,7 +52,6 @@ namespace IFramework.EntityFrameworkCore
         {
             builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
             builder.Register<IUnitOfWork, UnitOfWorks.UnitOfWork>(lifetime);
-            builder.Register<IAppUnitOfWork, AppUnitOfWork>(lifetime);
             return configuration;
         }
 

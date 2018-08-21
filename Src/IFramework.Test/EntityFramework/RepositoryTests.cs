@@ -32,8 +32,8 @@ namespace IFramework.Test.EntityFramework
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
             Configuration.Instance
-                         .UseConfiguration(builder.Build())
                          .UseAutofacContainer(new ContainerBuilder())
+                         .UseConfiguration(builder.Build())
                          .UseCommonComponents()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>));
 
@@ -51,7 +51,7 @@ namespace IFramework.Test.EntityFramework
         {
             var services = new ServiceCollection();
             services.AddDbContextPool<DemoDbContext>(options => options.UseSqlServer(Configuration.Instance
-                                                                                                  .GetConnectionString("DemoDb")));
+                                                                                                  .GetConnectionString(nameof(DemoDbContext))));
             builder.Register<IDemoRepository, DemoRepository>(lifeTime);
             builder.Populate(services);
         }
@@ -105,7 +105,7 @@ namespace IFramework.Test.EntityFramework
             {
                 var dbCtx = scope.GetRequiredService<DemoDbContext>();
 
-                var unitOfWork = scope.GetRequiredService<IAppUnitOfWork>();
+                var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
                 var repository = scope.GetRequiredService<IDemoRepository>();
                 user = new User($"ivan-{DateTime.Now.Ticks}", "male");
                 repository.Add(user);
@@ -116,7 +116,7 @@ namespace IFramework.Test.EntityFramework
             using (var scope = ObjectProviderFactory.CreateScope())
             {
                 var repository = scope.GetRequiredService<IDemoRepository>();
-                var unitOfWork = scope.GetRequiredService<IAppUnitOfWork>();
+                var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
                 user = await repository.GetByKeyAsync<User>(user.Id)
                                        .ConfigureAwait(false);
                 Assert.NotNull(user);
@@ -130,7 +130,7 @@ namespace IFramework.Test.EntityFramework
             using (var scope = ObjectProviderFactory.CreateScope())
             {
                 var repository = scope.GetRequiredService<IDemoRepository>();
-                var unitOfWork = scope.GetRequiredService<IAppUnitOfWork>();
+                var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
                 user = await repository.GetByKeyAsync<User>(user.Id)
                                        .ConfigureAwait(false);
                 Assert.True(user.Name == newName);

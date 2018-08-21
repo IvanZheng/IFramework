@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-prelease-0018</Version>
+    <Version>2.0.0-prelease-0019</Version>
     <Description>Since dotnetcore2.0.0, IFramework supports on netcore standard2.0</Description>
     <Authors>Ivan</Authors>
     <PackageLicenseUrl></PackageLicenseUrl>
