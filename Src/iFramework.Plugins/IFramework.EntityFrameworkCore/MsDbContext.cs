@@ -80,6 +80,10 @@ namespace IFramework.EntityFrameworkCore
             catch (Exception ex)
             {
                 OnException(ex);
+                if (ex is DbUpdateConcurrencyException)
+                {
+                    throw new DBConcurrencyException(ex.Message, ex);
+                }
                 throw;
             }
         }
