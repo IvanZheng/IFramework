@@ -129,6 +129,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                     Logger.LogError(ex, $"_messagePublisher SendAsync error");
                 }
             }
+            Exception = null;
             EventBus.ClearMessages();
         }
     }
