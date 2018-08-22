@@ -25,6 +25,7 @@ namespace IFramework.Test.EntityFramework
             Configuration.Instance
                          .UseAutofacContainer()
                          .UseConfiguration(builder.Build())
+                         .UseCommonComponents()
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
@@ -39,7 +40,7 @@ namespace IFramework.Test.EntityFramework
         {
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             using (var scope = new TransactionScope(TransactionScopeOption.Required,
-                                                    new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
+                                                    new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
                                                     TransactionScopeAsyncFlowOption.Enabled))
             {
                 var dbContext = serviceScope.GetService<DemoDbContext>();
@@ -53,6 +54,32 @@ namespace IFramework.Test.EntityFramework
                 dbContext.Users.Add(user);
                 await dbContext.SaveChangesAsync();
                 scope.Complete();
+            }
+        }
+
+
+        [Fact]
+        public async Task ConcurrentUdpateTest()
+        {
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var concurrencyProcessor = serviceScope.GetService<IConcurrencyProcessor>();
+                var dbContext = serviceScope.GetService<DemoDbContext>();
+                using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+                                                                   new TransactionOptions
+                                                                   {
+                                                                       IsolationLevel = IsolationLevel.ReadCommitted
+                                                                   },
+                                                                   TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await concurrencyProcessor.ProcessAsync(async () =>
+                    {
+                        var account = await dbContext.Users.FirstOrDefaultAsync();
+                        account.ModifyName($"ivan{DateTime.Now}");
+                        await dbContext.SaveChangesAsync();
+                    });
+                    transactionScope.Complete();
+                }
             }
         }
 

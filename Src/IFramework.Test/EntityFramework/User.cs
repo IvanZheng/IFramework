@@ -6,7 +6,7 @@ using IFramework.Infrastructure;
 
 namespace IFramework.Test.EntityFramework
 {
-    public class User: AggregateRoot
+    public class User: TimestampedAggregateRoot
     {
         public string Id { get; protected set; }
         public string Name { get; protected set; }

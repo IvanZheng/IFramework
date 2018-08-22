@@ -20,7 +20,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
         protected IEventBus EventBus;
         protected Exception Exception;
         protected ILogger Logger;
-
+        protected bool InTransaction => Transaction.Current != null;
         protected UnitOfWorkBase(IEventBus eventBus,
                           ILoggerFactory loggerFactory)
         {
@@ -51,9 +51,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
         {
             try
             {
-                using (var scope = new TransactionScope(scopOption,
-                                                        new TransactionOptions {IsolationLevel = isolationLevel},
-                                                        TransactionScopeAsyncFlowOption.Enabled))
+                void CommitAction()
                 {
                     DbContexts.ForEach(dbContext =>
                     {
@@ -69,7 +67,21 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                  });
                     });
                     BeforeCommit();
-                    scope.Complete();
+                }
+
+                if (InTransaction)
+                {
+                    CommitAction();
+                }
+                else
+                {
+                    using (var scope = new TransactionScope(scopOption,
+                                                            new TransactionOptions { IsolationLevel = isolationLevel },
+                                                            TransactionScopeAsyncFlowOption.Enabled))
+                    {
+                        CommitAction();
+                        scope.Complete();
+                    }
                 }
             }
             catch (Exception ex)
@@ -103,9 +115,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
         {
             try
             {
-                using (var scope = new TransactionScope(scopOption,
-                                                        new TransactionOptions {IsolationLevel = isolationLevel},
-                                                        TransactionScopeAsyncFlowOption.Enabled))
+                async Task CommitFuncAsync()
                 {
                     foreach (var dbContext in DbContexts)
                     {
@@ -121,7 +131,22 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                  });
                     }
                     BeforeCommit();
-                    scope.Complete();
+                }
+
+                if (InTransaction)
+                {
+                    await CommitFuncAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    using (var scope = new TransactionScope(scopOption,
+                                                            new TransactionOptions { IsolationLevel = isolationLevel },
+                                                            TransactionScopeAsyncFlowOption.Enabled))
+                    {
+                        await CommitFuncAsync().ConfigureAwait(false);
+
+                        scope.Complete();
+                    }
                 }
             }
             catch (Exception ex)

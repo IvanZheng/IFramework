@@ -12,6 +12,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>7.1</LangVersion>
+    <NoWarn>1701;1702;EF1000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

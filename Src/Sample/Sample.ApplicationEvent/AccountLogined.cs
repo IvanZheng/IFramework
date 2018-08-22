@@ -6,5 +6,6 @@ namespace Sample.ApplicationEvent
     {
         public Guid AccountId { get; set; }
         public DateTime LoginTime { get; set; }
+        public string UserName { get; set; }
     }
 }
