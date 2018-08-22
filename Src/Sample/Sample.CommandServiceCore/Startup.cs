@@ -29,6 +29,7 @@ using Microsoft.Extensions.Logging;
 using Sample.Command;
 using Sample.CommandServiceCore.Authorizations;
 using Sample.CommandServiceCore.CommandInputExtension;
+using Sample.CommandServiceCore.Controllers;
 using Sample.CommandServiceCore.ExceptionHandlers;
 using Sample.CommandServiceCore.Filters;
 using Sample.Domain;
@@ -85,7 +86,9 @@ namespace Sample.CommandServiceCore
                 options.InputFormatters.Insert(0, new CommandInputFormatter());
                 options.InputFormatters.Add(new FormDataInputFormatter());
                 options.Filters.Add<ExceptionFilter>();
-            });
+            })  
+            .AddControllersAsServices();
+
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("AppAuthorization",
@@ -96,8 +99,8 @@ namespace Sample.CommandServiceCore
                     .AddEntityFramework();
 
             return ObjectProviderFactory.Instance
-                                        .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                                         .Populate(services)
+                                        .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                                         .Build();
         }
 
@@ -106,6 +109,9 @@ namespace Sample.CommandServiceCore
             // TODO: register other components or services
             providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
             providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
+            providerBuilder.Register<HomeController, HomeController>(lifetime,
+                                                                     new VirtualMethodInterceptorInjection(),
+                                                                     new InterceptionBehaviorInjection<DefaultInterceptor>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -58,6 +58,7 @@ namespace IFramework.DependencyInjection.Autofac
             {
                 builder.RegisterAssemblyTypes(assemblies);
             }
+            builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(ConfigurationExtension)));
             ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
             return configuration;
         }

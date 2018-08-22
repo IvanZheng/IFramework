@@ -298,9 +298,9 @@ namespace IFramework.DependencyInjection.Autofac
                     //RegistrationExtensions.InterceptTransparentProxy(registrationBuilder)
                     //                      .UseWcfSafeRelease();
                 }
-                else if (injection is InterceptionBehaviorInjection)
+                else if (injection is InterceptionBehaviorInjection behaviorInjection)
                 {
-                    var interceptorType = ((InterceptionBehaviorInjection) injection).BehaviorType;
+                    var interceptorType = behaviorInjection.BehaviorType;
                     RegistrationExtensions.InterceptedBy(registrationBuilder, interceptorType);
                 }
             });
