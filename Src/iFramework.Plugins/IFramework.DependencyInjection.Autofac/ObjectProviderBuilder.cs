@@ -49,7 +49,7 @@ namespace IFramework.DependencyInjection.Autofac
             _containerBuilder.Register(context =>
                              {
                                  var serviceProvider = context.Resolve<IServiceProvider>() as AutofacServiceProvider;
-                                 var componentContextField = typeof(AutofacServiceProvider).GetField("_componentContext",
+                                 var componentContextField = typeof(AutofacServiceProvider).GetField("_lifetimeScope",
                                                   BindingFlags.NonPublic |
                                                   BindingFlags.Instance);
                                  if (componentContextField?.GetValue(serviceProvider) is IComponentContext componentContext)
