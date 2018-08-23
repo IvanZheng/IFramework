@@ -1,31 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using IFramework.Infrastructure;
 using Microsoft.Extensions.Logging;
+using MethodInfo = System.Reflection.MethodInfo;
 
 namespace IFramework.DependencyInjection.Autofac
 {
     public abstract class InterceptorBase : IInterceptor
     {
-        private readonly ILoggerFactory _loggerFactory;
+        protected readonly ILoggerFactory LoggerFactory;
 
-        public InterceptorBase(ILoggerFactory loggerFactory)
+        protected InterceptorBase(ILoggerFactory loggerFactory)
         {
-            _loggerFactory = loggerFactory;
+            LoggerFactory = loggerFactory;
         }
 
         public virtual void Intercept(IInvocation invocation)
         {
             var isTaskResult = typeof(Task).IsAssignableFrom(invocation.Method.ReturnType);
-            if (isTaskResult)
-            {
-                ProcessAsync(invocation);
-            }
-            else
-            {
-                Process(invocation);
-            }
+            invocation.ReturnValue = isTaskResult ? ProcessAsync(invocation) : Process(invocation);
         }
 
         protected virtual object Process(IInvocation invocation)
@@ -66,49 +62,72 @@ namespace IFramework.DependencyInjection.Autofac
                    invocation.MethodInvocationTarget?.DeclaringType?.GetCustomAttribute<TAttribute>() ??
                    defaultValue;
         }
-    }
 
+        private static IEnumerable<InterceptorAttribute> GetInterceptorAttributes(MethodInfo methodInfo)
+        {
+            return methodInfo?.GetCustomAttributes(typeof(InterceptorAttribute), true).Cast<InterceptorAttribute>() ?? new InterceptorAttribute[0];
+        }
+
+        private static IEnumerable<InterceptorAttribute> GetInterceptorAttributes(Type type)
+        {
+            return type?.GetCustomAttributes(typeof(InterceptorAttribute), true).Cast<InterceptorAttribute>() ?? new InterceptorAttribute[0];
+        }
+
+        protected static InterceptorAttribute[] GetInterceptorAttributes(IInvocation invocation)
+        {
+            return GetInterceptorAttributes(invocation.Method)
+                .Union(GetInterceptorAttributes(invocation.Method.DeclaringType))
+                .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget))
+                .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget?.DeclaringType))
+                .OrderBy(i => i.Order)
+                .ToArray();
+        }
+    }
 
     public class DefaultInterceptor : InterceptorBase
     {
         public DefaultInterceptor(ILoggerFactory loggerFactory) : base(loggerFactory) { }
 
-        protected override object Process(IInvocation invocation)
+        public override void Intercept(IInvocation invocation)
         {
-            var transactionAttribute = GetMethodAttribute<TransactionAttribute>(invocation);
-            if (transactionAttribute != null)
+            var isTaskResult = typeof(Task).IsAssignableFrom(invocation.Method.ReturnType);
+            var interceptorAttributes = GetInterceptorAttributes(invocation);
+            if (interceptorAttributes.Length > 0)
             {
-                TransactionExtension.DoInTransaction(invocation.Proceed, transactionAttribute.IsolationLevel, transactionAttribute.Scope);
+                if (isTaskResult)
+                {
+                    Func<Task<object>> processAsyncFunc = () => ProcessAsync(invocation);
+
+                    foreach (var interceptor in interceptorAttributes)
+                    {
+                        var func = processAsyncFunc;
+                        processAsyncFunc = () => interceptor.ProcessAsync(func,
+                                                                          invocation.TargetType,
+                                                                          invocation.InvocationTarget,
+                                                                          invocation.Method,
+                                                                          invocation.MethodInvocationTarget);
+                    }
+                    invocation.ReturnValue = processAsyncFunc();
+                }
+                else
+                {
+                    Func<object> processFunc = () => Process(invocation);
+                    foreach (var interceptor in interceptorAttributes)
+                    {
+                        var func = processFunc;
+                        processFunc = () => interceptor.Process(func,
+                                                                invocation.TargetType,
+                                                                invocation.InvocationTarget,
+                                                                invocation.Method,
+                                                                invocation.MethodInvocationTarget);
+                    }
+                    invocation.ReturnValue = processFunc();
+                }
             }
             else
             {
-                base.Process(invocation);
+                base.Intercept(invocation);
             }
-
-            return invocation.ReturnValue;
-        }
-
-        protected override async Task<object> ProcessAsync(IInvocation invocation)
-        {
-            object result = null;
-            var transactionAttribute = GetMethodAttribute<TransactionAttribute>(invocation);
-            if (transactionAttribute != null)
-            {
-                await TransactionExtension.DoInTransactionAsync(async () =>
-                                                                {
-                                                                    result = await base.ProcessAsync(invocation)
-                                                                                       .ConfigureAwait(false);
-                                                                },
-                                                                transactionAttribute.IsolationLevel,
-                                                                transactionAttribute.Scope)
-                                          .ConfigureAwait(false);
-            }
-            else
-            {
-                result = await base.ProcessAsync(invocation).ConfigureAwait(false);
-            }
-
-            return result;
         }
     }
 }

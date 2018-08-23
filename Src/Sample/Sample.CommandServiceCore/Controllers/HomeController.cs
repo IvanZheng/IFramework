@@ -44,8 +44,9 @@ namespace Sample.CommandServiceCore.Controllers
         //[Authorize("AppAuthorization")]
         //[TypeFilter(typeof(AuthorizationFilterAttrubute))]
         //[AuthorizationFilterAttrubute]
-        [Transaction]
-        public virtual async Task DoApi()
+        [Transaction(Order = 1)]
+        [LogInterceptor(Order = 2)]
+        public virtual async Task<object> DoApi()
         {
             await _concurrencyProcessor.ProcessAsync(async () =>
             {
@@ -59,6 +60,7 @@ namespace Sample.CommandServiceCore.Controllers
                 account.Modify($"ivan@163.com{DateTime.Now}");
                 await _unitOfWork.CommitAsync();
             });
+            return $"{DateTime.Now} DoApi Done!";
         }
 
         public IActionResult Test()
