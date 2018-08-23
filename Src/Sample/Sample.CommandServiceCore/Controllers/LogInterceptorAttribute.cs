@@ -8,23 +8,14 @@ namespace Sample.CommandServiceCore.Controllers
 {
     public class LogInterceptorAttribute : InterceptorAttribute
     {
-        protected ILogger GetLogger(Type type)
-        {
-            return ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(type);
-        }
-
-        protected ILogger GetLogger<T>()
-        {
-            return ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger<T>();
-        }
-
         public override async Task<object> ProcessAsync(Func<Task<object>> funcAsync,
+                                                        IObjectProvider objectProvider,
                                                         Type targetType,
                                                         object invocationTarget,
                                                         MethodInfo method,
                                                         MethodInfo methodInvocationTarget)
         {
-            var logger = GetLogger(targetType);
+            var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
             var result = await funcAsync().ConfigureAwait(false);
             logger.LogDebug($"{method.Name} leave");
@@ -32,12 +23,13 @@ namespace Sample.CommandServiceCore.Controllers
         }
 
         public override object Process(Func<object> func,
+                                       IObjectProvider objectProvider,
                                        Type targetType,
                                        object invocationTarget,
                                        MethodInfo method,
                                        MethodInfo methodInvocationTarget)
         {
-            var logger = GetLogger(targetType);
+            var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
             var result = func();
             logger.LogDebug($"{method.Name} leave");

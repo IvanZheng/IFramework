@@ -10,6 +10,7 @@ using IFramework.Infrastructure;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Sample.Applications;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
@@ -21,6 +22,7 @@ namespace Sample.CommandServiceCore.Controllers
     {
         private readonly IConcurrencyProcessor _concurrencyProcessor;
         private readonly SampleModelContext _dbContext;
+        private readonly ICommunityService _communityService;
         private readonly ICommunityRepository _domainRepository;
         private readonly ILogger _logger;
         private readonly IObjectProvider _objectProvider;
@@ -31,13 +33,15 @@ namespace Sample.CommandServiceCore.Controllers
                               IObjectProvider objectProvider,
                               IUnitOfWork unitOfWork,
                               ICommunityRepository domainRepository,
-                              SampleModelContext dbContext)
+                              SampleModelContext dbContext,
+                              ICommunityService communityService)
         {
             _concurrencyProcessor = concurrencyProcessor;
             _objectProvider = objectProvider;
             _unitOfWork = unitOfWork;
             _domainRepository = domainRepository;
             _dbContext = dbContext;
+            _communityService = communityService;
             _logger = logger;
         }
 
@@ -48,18 +52,7 @@ namespace Sample.CommandServiceCore.Controllers
         [LogInterceptor(Order = 2)]
         public virtual async Task<object> DoApi()
         {
-            await _concurrencyProcessor.ProcessAsync(async () =>
-            {
-                var account = await _domainRepository.FindAsync<Account>(a => a.UserName == "ivan");
-                // var account = await _dbContext.Accounts.FindAsync(new Guid("d561edb4-f233-4ccc-bbd5-3a7badfdd65b"));
-                if (account == null)
-                {
-                    throw new DomainException(1, "UserNotExists");
-                }
-
-                account.Modify($"ivan@163.com{DateTime.Now}");
-                await _unitOfWork.CommitAsync();
-            });
+            await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
             return $"{DateTime.Now} DoApi Done!";
         }
 

@@ -11,11 +11,11 @@ namespace IFramework.DependencyInjection.Autofac
 {
     public abstract class InterceptorBase : IInterceptor
     {
-        protected readonly ILoggerFactory LoggerFactory;
+        protected readonly IObjectProvider ObjectProvider;
 
-        protected InterceptorBase(ILoggerFactory loggerFactory)
+        protected InterceptorBase(IObjectProvider objectProvider)
         {
-            LoggerFactory = loggerFactory;
+            ObjectProvider = objectProvider;
         }
 
         public virtual void Intercept(IInvocation invocation)
@@ -86,7 +86,7 @@ namespace IFramework.DependencyInjection.Autofac
 
     public class DefaultInterceptor : InterceptorBase
     {
-        public DefaultInterceptor(ILoggerFactory loggerFactory) : base(loggerFactory) { }
+        public DefaultInterceptor(IObjectProvider objectProvider) : base(objectProvider) { }
 
         public override void Intercept(IInvocation invocation)
         {
@@ -102,6 +102,7 @@ namespace IFramework.DependencyInjection.Autofac
                     {
                         var func = processAsyncFunc;
                         processAsyncFunc = () => interceptor.ProcessAsync(func,
+                                                                          ObjectProvider,
                                                                           invocation.TargetType,
                                                                           invocation.InvocationTarget,
                                                                           invocation.Method,
@@ -116,6 +117,7 @@ namespace IFramework.DependencyInjection.Autofac
                     {
                         var func = processFunc;
                         processFunc = () => interceptor.Process(func,
+                                                                ObjectProvider,
                                                                 invocation.TargetType,
                                                                 invocation.InvocationTarget,
                                                                 invocation.Method,

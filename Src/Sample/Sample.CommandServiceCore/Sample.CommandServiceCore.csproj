@@ -73,6 +73,7 @@
     <ProjectReference Include="..\ApplicationEventSubscriber\Sample.ApplicationEventSubscriber.csproj" />
     <ProjectReference Include="..\AsyncDomainEventSubscriber\Sample.AsyncDomainEventSubscriber.csproj" />
     <ProjectReference Include="..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj" />
+    <ProjectReference Include="..\Sample.Applications\Sample.Applications.csproj" />
     <ProjectReference Include="..\Sample.CommandHandler\Sample.CommandHandler.csproj" />
     <ProjectReference Include="..\Sample.DomainEventHandler\Sample.DomainEventSubscriber.csproj" />
     <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj" />

@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sample.Applications;
 using Sample.Command;
 using Sample.CommandServiceCore.Authorizations;
 using Sample.CommandServiceCore.CommandInputExtension;
@@ -108,7 +109,10 @@ namespace Sample.CommandServiceCore
         {
             // TODO: register other components or services
             providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
-            providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
+            providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime); 
+            providerBuilder.Register<ICommunityService, CommunityService>(lifetime,
+                                                                     new InterfaceInterceptorInjection(),
+                                                                     new InterceptionBehaviorInjection<DefaultInterceptor>());
             providerBuilder.Register<HomeController, HomeController>(lifetime,
                                                                      new VirtualMethodInterceptorInjection(),
                                                                      new InterceptionBehaviorInjection<DefaultInterceptor>());
