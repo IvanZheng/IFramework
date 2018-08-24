@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using EQueue.AdminWeb.Models;
 using EQueue.Utils;
@@ -17,37 +18,37 @@ namespace EQueue.AdminWeb.Controllers
             _messageService = messageService;
         }
 
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var clusterList = _messageService.GetAllClusters();
+            var clusterList = await _messageService.GetAllClusters();
             return View(new ClusterListViewModel
             {
                 ClusterList = clusterList
             });
         }
-        public ActionResult BrokerList(string clusterName)
+        public async Task<ActionResult> BrokerList(string clusterName)
         {
             ViewBag.ClusterName = clusterName;
-            var brokerList = _messageService.GetClusterBrokerStatusInfoList(clusterName);
+            var brokerList = await _messageService.GetClusterBrokerStatusInfoList(clusterName);
             return View(new ClusterBrokerListViewModel
             {
                 BrokerList = brokerList
             });
         }
-        public ActionResult QueueInfoList(string clusterName, string topic)
+        public async Task<ActionResult> QueueInfoList(string clusterName, string topic)
         {
             ViewBag.ClusterName = clusterName;
-            var topicQueueInfoList = _messageService.GetTopicQueueInfoList(clusterName, topic);
+            var topicQueueInfoList = await _messageService.GetTopicQueueInfoList(clusterName, topic);
             return View(new ClusterTopicQueueListViewModel
             {
                 Topic = topic,
                 TopicQueueInfoList = topicQueueInfoList
             });
         }
-        public ActionResult ConsumeInfoList(string clusterName, string group, string topic)
+        public async Task<ActionResult> ConsumeInfoList(string clusterName, string group, string topic)
         {
             ViewBag.ClusterName = clusterName;
-            var topicConsumeInfoList = _messageService.GetTopicConsumeInfoList(clusterName, group, topic);
+            var topicConsumeInfoList = await _messageService.GetTopicConsumeInfoList(clusterName, group, topic);
             return View(new ClusterTopicConsumeListViewModel
             {
                 Group = group,
@@ -55,19 +56,19 @@ namespace EQueue.AdminWeb.Controllers
                 TopicConsumeInfoList = topicConsumeInfoList
             });
         }
-        public ActionResult ProducerList(string clusterName)
+        public async Task<ActionResult> ProducerList(string clusterName)
         {
             ViewBag.ClusterName = clusterName;
-            var producerList = _messageService.GetProducerInfoList(clusterName);
+            var producerList = await _messageService.GetProducerInfoList(clusterName);
             return View(new ClusterProducerListViewModel
             {
                 ProducerList = producerList
             });
         }
-        public ActionResult ConsumerList(string clusterName, string group, string topic)
+        public async Task<ActionResult> ConsumerList(string clusterName, string group, string topic)
         {
             ViewBag.ClusterName = clusterName;
-            var consumerInfoList = _messageService.GetConsumerInfoList(clusterName, group, topic);
+            var consumerInfoList = await _messageService.GetConsumerInfoList(clusterName, group, topic);
             var modelList = new List<ConsumerViewModel>();
             foreach (var consumerInfo in consumerInfoList)
             {
@@ -119,7 +120,7 @@ namespace EQueue.AdminWeb.Controllers
                 ConsumerList = modelList
             });
         }
-        public ActionResult GetMessageById(string clusterName, string searchMessageId)
+        public async Task<ActionResult> GetMessageById(string clusterName, string searchMessageId)
         {
             ViewBag.ClusterName = clusterName;
             if (string.IsNullOrWhiteSpace(searchMessageId))
@@ -135,7 +136,7 @@ namespace EQueue.AdminWeb.Controllers
             {
                 throw new Exception("无效的消息ID", ex);
             }
-            var message = _messageService.GetMessageDetail(clusterName, searchMessageId);
+            var message = await _messageService.GetMessageDetail(clusterName, searchMessageId);
             var model = new MessageViewModel { ClusterName = clusterName, SearchMessageId = searchMessageId };
             if (message != null)
             {
@@ -152,7 +153,7 @@ namespace EQueue.AdminWeb.Controllers
             }
             return View(model);
         }
-        public ActionResult GetMessageByQueueOffset(string clusterName, string searchTopic, string searchQueueId, string searchQueueOffset)
+        public async Task<ActionResult> GetMessageByQueueOffset(string clusterName, string searchTopic, string searchQueueId, string searchQueueOffset)
         {
             ViewBag.ClusterName = clusterName;
             var model = new MessageViewModel
@@ -169,7 +170,7 @@ namespace EQueue.AdminWeb.Controllers
             {
                 return View(model);
             }
-            var message = _messageService.GetMessageDetailByQueueOffset(clusterName, searchTopic, int.Parse(searchQueueId), long.Parse(searchQueueOffset));
+            var message =await _messageService.GetMessageDetailByQueueOffset(clusterName, searchTopic, int.Parse(searchQueueId), long.Parse(searchQueueOffset));
             if (message != null)
             {
                 MessageIdInfo? messageIdInfo = null;

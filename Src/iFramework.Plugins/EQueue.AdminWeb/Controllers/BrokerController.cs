@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using EQueue.AdminWeb.Models;
 
@@ -23,22 +24,22 @@ namespace EQueue.AdminWeb.Controllers
             var result = _messageService.QueryBrokerStatisticInfo(clusterName, brokerName);
             return View(result);
         }
-        public ActionResult QueueInfoList(string clusterName, string brokerName, string topic)
+        public async Task<ActionResult> QueueInfoList(string clusterName, string brokerName, string topic)
         {
             ViewBag.ClusterName = clusterName;
             ViewBag.BrokerName = brokerName;
-            var topicQueueInfoList = _messageService.GetTopicQueueInfoList(clusterName, brokerName, topic);
+            var topicQueueInfoList = await _messageService.GetTopicQueueInfoList(clusterName, brokerName, topic);
             return View(new BrokerTopicQueueListViewModel
             {
                 Topic = topic,
                 TopicQueueInfoList = topicQueueInfoList
             });
         }
-        public ActionResult ConsumeInfoList(string clusterName, string brokerName, string group, string topic)
+        public async Task<ActionResult> ConsumeInfoList(string clusterName, string brokerName, string group, string topic)
         {
             ViewBag.ClusterName = clusterName;
             ViewBag.BrokerName = brokerName;
-            var topicConsumeInfoList = _messageService.GetTopicConsumeInfoList(clusterName, brokerName, group, topic);
+            var topicConsumeInfoList = await _messageService.GetTopicConsumeInfoList(clusterName, brokerName, group, topic);
             return View(new BrokerTopicConsumeListViewModel
             {
                 Group = group,
@@ -46,21 +47,21 @@ namespace EQueue.AdminWeb.Controllers
                 TopicConsumeInfoList = topicConsumeInfoList
             });
         }
-        public ActionResult ProducerList(string clusterName, string brokerName, string group, string topic)
+        public async Task<ActionResult> ProducerList(string clusterName, string brokerName, string group, string topic)
         {
             ViewBag.ClusterName = clusterName;
             ViewBag.BrokerName = brokerName;
-            var producerList = _messageService.GetProducerInfoList(clusterName, brokerName);
+            var producerList = await _messageService.GetProducerInfoList(clusterName, brokerName);
             return View(new BrokerProducerListViewModel
             {
                 ProducerList = producerList
             });
         }
-        public ActionResult ConsumerList(string clusterName, string brokerName, string group, string topic)
+        public async Task<ActionResult> ConsumerList(string clusterName, string brokerName, string group, string topic)
         {
             ViewBag.ClusterName = clusterName;
             ViewBag.BrokerName = brokerName;
-            var consumerList = _messageService.GetConsumerInfoList(clusterName, brokerName, group, topic);
+            var consumerList = await _messageService.GetConsumerInfoList(clusterName, brokerName, group, topic);
             return View(new BrokerConsumerListViewModel
             {
                 Group = group,
@@ -68,11 +69,11 @@ namespace EQueue.AdminWeb.Controllers
                 ConsumerList = consumerList
             });
         }
-        public ActionResult LatestSendMessages(string clusterName, string brokerName)
+        public async Task<ActionResult> LatestSendMessages(string clusterName, string brokerName)
         {
             ViewBag.ClusterName = clusterName;
             ViewBag.BrokerName = brokerName;
-            var messageList = _messageService.GetLatestSendMessagesList(clusterName, brokerName);
+            var messageList = await _messageService.GetLatestSendMessagesList(clusterName, brokerName);
             var messageInfoList = new List<MessageInfo>();
 
             foreach (var message in messageList)
