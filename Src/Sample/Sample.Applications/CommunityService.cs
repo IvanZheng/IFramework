@@ -25,8 +25,7 @@ namespace Sample.Applications
             _concurrencyProcessor = concurrencyProcessor;
         }
 
-        [ConcurrentProcess]
-        [Transaction]
+ 
         public async Task ModifyUserEmailAsync(Guid userId, string email)
         {
             var account = await _repository.FindAsync<Account>(a => a.UserName == "ivan");

@@ -112,10 +112,10 @@ namespace Sample.CommandServiceCore
             providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime); 
             providerBuilder.Register<ICommunityService, CommunityService>(lifetime,
                                                                      new InterfaceInterceptorInjection(),
-                                                                     new InterceptionBehaviorInjection<DefaultInterceptor>());
+                                                                     new InterceptionBehaviorInjection());
             providerBuilder.Register<HomeController, HomeController>(lifetime,
                                                                      new VirtualMethodInterceptorInjection(),
-                                                                     new InterceptionBehaviorInjection<DefaultInterceptor>());
+                                                                     new InterceptionBehaviorInjection());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
