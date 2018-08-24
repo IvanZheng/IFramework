@@ -15,7 +15,7 @@ namespace IFramework.MessageStores.Relational
             if (result != null)
             {
                 Result = result.ToJson();
-                ResultType = result.GetType().AssemblyQualifiedName;
+                ResultType = result.GetType().GetFullNameWithAssembly();
             }
         }
 

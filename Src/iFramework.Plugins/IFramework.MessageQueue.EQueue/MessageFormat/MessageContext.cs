@@ -114,7 +114,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
                 EqueueMessage.Payload = Encoding.UTF8.GetBytes(value.ToJson());
                 if (value != null)
                 {
-                    Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
+                    Headers["MessageType"] = value.GetType().GetFullNameWithAssembly();
                 }
             }
         }

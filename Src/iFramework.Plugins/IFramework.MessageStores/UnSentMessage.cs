@@ -20,7 +20,7 @@ namespace IFramework.MessageStores.Relational
             if (messageContext.Message != null)
             {
                 Name = messageContext.Message.GetType().Name;
-                Type = messageContext.Message.GetType().AssemblyQualifiedName;
+                Type = messageContext.Message.GetType().GetFullNameWithAssembly();
             }
             Topic = messageContext.Topic;
         }

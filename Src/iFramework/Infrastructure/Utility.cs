@@ -27,6 +27,10 @@ namespace IFramework.Infrastructure
         private const string KBase36Digits = "0123456789abcdefghijklmnopqrstuvwxyz";
         private static readonly uint[] Lookup32 = CreateLookup32();
 
+        public static string GetFullNameWithAssembly(this Type type)
+        {
+            return $"{type.FullName}, {type.Assembly.GetName().Name}";
+        }
 
         public static bool TryRemoveBeforeKey<TKey, TElement>(this SortedList<TKey, TElement> list, TKey key, out TElement obj)
         {

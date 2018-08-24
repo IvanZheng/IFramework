@@ -132,7 +132,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
                 KafkaMessage.Payload = value.ToJson();
                 if (value != null)
                 {
-                    Headers["MessageType"] = value.GetType().AssemblyQualifiedName;
+                    Headers["MessageType"] = value.GetType().GetFullNameWithAssembly();
                 }
             }
         }

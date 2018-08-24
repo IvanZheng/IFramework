@@ -138,9 +138,12 @@ namespace IFramework.Message.Impl
         {
             var isAsync = false;
             var handleMethod = handlerType.GetMethods()
-                                          .Where(m => m.GetParameters().Any(p => p.ParameterType == messageType))
-                                          .FirstOrDefault();
-            isAsync = typeof(Task).IsAssignableFrom(handleMethod.ReturnType);
+                                          .FirstOrDefault(m => m.GetParameters()
+                                                                .Any(p => p.ParameterType == messageType));
+            if (handleMethod != null)
+            {
+                isAsync = typeof(Task).IsAssignableFrom(handleMethod.ReturnType);
+            }
             if (_handlerTypes.ContainsKey(messageType))
             {
                 var registeredDispatcherHandlerTypes = _handlerTypes[messageType];
