@@ -25,6 +25,8 @@ namespace IFramework.DependencyInjection
     {
         public Type BehaviorType { get; }
 
+        public InterceptionBehaviorInjection() { }
+
         public InterceptionBehaviorInjection(Type behaviorType)
         {
             BehaviorType = behaviorType;

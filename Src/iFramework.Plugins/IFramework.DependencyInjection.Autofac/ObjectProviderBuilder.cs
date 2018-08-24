@@ -300,7 +300,7 @@ namespace IFramework.DependencyInjection.Autofac
                 }
                 else if (injection is InterceptionBehaviorInjection behaviorInjection)
                 {
-                    var interceptorType = behaviorInjection.BehaviorType;
+                    var interceptorType = behaviorInjection.BehaviorType ?? typeof(DefaultInterceptor);
                     RegistrationExtensions.InterceptedBy(registrationBuilder, interceptorType);
                 }
             });
