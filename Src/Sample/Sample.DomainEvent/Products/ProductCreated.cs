@@ -1,7 +1,9 @@
-﻿using System;
+﻿using IFramework.Message;
+using System;
 
 namespace Sample.DomainEvents.Products
 {
+    [Topic("ProductDomainEvent")]
     public class ProductCreated : AggregateRootEvent
     {
         public ProductCreated(Guid productId, string name, int count, DateTime createTime)

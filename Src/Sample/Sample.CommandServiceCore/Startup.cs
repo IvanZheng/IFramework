@@ -65,9 +65,9 @@ namespace Sample.CommandServiceCore
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseRelationalMessageStore<SampleModelContext>()// true 表示使用inmemorydatabase, 默认为false
-                         //.UseInMemoryMessageQueue()
+                         .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(hostName)
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
@@ -188,7 +188,7 @@ namespace Sample.CommandServiceCore
 
             #region event subscriber init
 
-            _domainEventProcessor = MessageQueueFactory.CreateEventSubscriber("DomainEvent", "DomainEventSubscriber",
+            _domainEventProcessor = MessageQueueFactory.CreateEventSubscriber(new []{"DomainEvent", "ProductDomainEvent"}, "DomainEventSubscriber",
                                                                               Environment.MachineName, new[] {"DomainEventSubscriber"});
             _domainEventProcessor.Start();
 

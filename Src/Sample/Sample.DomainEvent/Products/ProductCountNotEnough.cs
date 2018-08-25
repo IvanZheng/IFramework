@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.Message;
 using Sample.DTO;
 
 namespace Sample.DomainEvents.Products
 {
+    [Topic("ProductDomainEvent")]
     public class ProductCountNotEnough: AggregateRootExceptionEvent
     {
         public int ReduceCount { get; protected set; }
