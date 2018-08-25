@@ -13,9 +13,12 @@ namespace IFramework.MessageQueue.RabbitMQ
     {
         private readonly IConnection _connection;
 
-        public RabbitMQClientProvider(string hostName)
+        public RabbitMQClientProvider(string hostName, int port)
         {
-            _connection = new ConnectionFactory {HostName = hostName}.CreateConnection();
+            _connection = new ConnectionFactory
+            {
+                Endpoint = new AmqpTcpEndpoint(hostName, port)
+            }.CreateConnection();
         }
 
         public void Dispose()

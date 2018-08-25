@@ -54,10 +54,11 @@ namespace Sample.CommandServiceCore
         {
             var kafkaBrokerList = new[]
             {
-                new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
-                //"10.100.7.46:9092"
+                //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
+                "10.100.7.46:9092"
             };
-            var hostName = "localhost";
+            var rabbitMQHostName = "10.100.7.46";
+            var rabbitMQPort = 9012;
             Configuration.Instance
                          .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                          .UseConfiguration(configuration)
@@ -66,7 +67,7 @@ namespace Sample.CommandServiceCore
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseRelationalMessageStore<SampleModelContext>()// true 表示使用inmemorydatabase, 默认为false
                          .UseInMemoryMessageQueue()
-                         //.UseRabbitMQ(hostName)
+                         //.UseRabbitMQ(rabbitMQHostName, rabbitMQPort)
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
