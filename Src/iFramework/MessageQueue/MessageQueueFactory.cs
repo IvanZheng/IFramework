@@ -1,8 +1,8 @@
 ﻿using IFramework.Command;
 using IFramework.Command.Impl;
 using IFramework.Config;
-using IFramework.Event.Impl;
 using IFramework.DependencyInjection;
+using IFramework.Event.Impl;
 using IFramework.Message;
 
 namespace IFramework.MessageQueue
@@ -24,22 +24,42 @@ namespace IFramework.MessageQueue
             return ObjectProviderFactory.GetService<IMessagePublisher>();
         }
 
-        public static IMessageProcessor CreateCommandConsumer(string commandQueue, string consumerId,
-                                                             string[] handlerProvierNames, 
-                                                             ConsumerConfig consumerConfig = null)
+        public static IMessageProcessor CreateCommandConsumer(string commandQueue,
+                                                              string consumerId,
+                                                              string[] handlerProvierNames,
+                                                              ConsumerConfig consumerConfig = null)
         {
             var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
             var handlerProvider = new CommandHandlerProvider(handlerProvierNames);
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
-            var commandConsumer = new CommandProcessor(messageQueueClient, messagePublisher, handlerProvider,
-                                                      commandQueue, consumerId, consumerConfig);
+            var commandConsumer = new CommandProcessor(messageQueueClient,
+                                                       messagePublisher,
+                                                       handlerProvider,
+                                                       commandQueue,
+                                                       consumerId,
+                                                       consumerConfig);
             return commandConsumer;
         }
 
-        public static IMessageProcessor CreateEventSubscriber(string topic, string subscription, string consumerId,
-                                                             string[] handlerProviderNames,
-                                                             ConsumerConfig consumerConfig = null)
+        public static IMessageProcessor CreateEventSubscriber(string topic,
+                                                              string subscription,
+                                                              string consumerId,
+                                                              string[] handlerProviderNames,
+                                                              ConsumerConfig consumerConfig = null)
+        {
+            return CreateEventSubscriber(new[] {topic},
+                                         subscription,
+                                         consumerId,
+                                         handlerProviderNames,
+                                         consumerConfig);
+        }
+
+        public static IMessageProcessor CreateEventSubscriber(string[] topics,
+                                                              string subscription,
+                                                              string consumerId,
+                                                              string[] handlerProviderNames,
+                                                              ConsumerConfig consumerConfig = null)
         {
             subscription = Configuration.Instance.FormatAppName(subscription);
             var handlerProvider = new EventSubscriberProvider(handlerProviderNames);
@@ -47,8 +67,14 @@ namespace IFramework.MessageQueue
             var messagePublisher = GetMessagePublisher();
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
 
-            var eventSubscriber = new EventSubscriber(messageQueueClient, handlerProvider, commandBus, messagePublisher,
-                                                      subscription, topic, consumerId, consumerConfig);
+            var eventSubscriber = new EventSubscriber(messageQueueClient,
+                                                      handlerProvider,
+                                                      commandBus,
+                                                      messagePublisher,
+                                                      subscription,
+                                                      topics,
+                                                      consumerId,
+                                                      consumerConfig);
             return eventSubscriber;
         }
     }

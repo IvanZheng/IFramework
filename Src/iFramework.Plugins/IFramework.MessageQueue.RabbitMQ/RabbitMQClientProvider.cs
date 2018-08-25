@@ -23,7 +23,14 @@ namespace IFramework.MessageQueue.RabbitMQ
             _connection.Dispose();
         }
 
-        public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null, string producer = null)
+        public IMessageContext WrapMessage(object message,
+                                           string correlationId = null,
+                                           string topic = null,
+                                           string key = null,
+                                           string replyEndPoint = null,
+                                           string messageId = null,
+                                           SagaInfo sagaInfo = null,
+                                           string producer = null)
         {
             var messageContext = new MessageContext(message, messageId)
             {
@@ -34,60 +41,80 @@ namespace IFramework.MessageQueue.RabbitMQ
             {
                 messageContext.CorrelationId = correlationId;
             }
+
             if (!string.IsNullOrEmpty(topic))
             {
                 messageContext.Topic = topic;
             }
+
             if (!string.IsNullOrEmpty(key))
             {
                 messageContext.Key = key;
             }
+
             if (!string.IsNullOrEmpty(replyEndPoint))
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
             }
+
             if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
             {
                 messageContext.SagaInfo = sagaInfo;
             }
+
             return messageContext;
         }
 
-        public IMessageConsumer CreateQueueConsumer(string commandQueueName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
+        public IMessageConsumer CreateQueueConsumer(string commandQueueName,
+                                                    OnMessagesReceived onMessagesReceived,
+                                                    string consumerId,
+                                                    ConsumerConfig consumerConfig,
+                                                    bool start = true)
         {
             var channel = _connection.CreateModel();
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
 
             channel.QueueDeclare(commandQueueName, true, false, false, null);
-            channel.BasicQos(0, (ushort)consumerConfig.FullLoadThreshold, false);
+            channel.BasicQos(0, (ushort) consumerConfig.FullLoadThreshold, false);
             var consumer = new RabbitMQConsumer(channel,
-                                        commandQueueName,
-                                        commandQueueName,
-                                        consumerId,
-                                        BuildOnRabbitMQMessageReceived(onMessagesReceived),
-                                        consumerConfig);
+                                                new []{commandQueueName},
+                                                commandQueueName,
+                                                consumerId,
+                                                BuildOnRabbitMQMessageReceived(onMessagesReceived),
+                                                consumerConfig);
             if (start)
             {
                 consumer.Start();
             }
+
             return consumer;
         }
 
-        public IMessageConsumer CreateTopicSubscription(string topic, string subscriptionName, OnMessagesReceived onMessagesReceived, string consumerId, ConsumerConfig consumerConfig, bool start = true)
+        public IMessageConsumer CreateTopicSubscription(string[] topics,
+                                                        string subscriptionName,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        string consumerId,
+                                                        ConsumerConfig consumerConfig,
+                                                        bool start = true)
         {
             var channel = _connection.CreateModel();
-            topic = Configuration.Instance.FormatMessageQueueName(topic);
-            channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
             var queueName = channel.QueueDeclare(subscriptionName, true, false, false, null).QueueName;
-            channel.QueueBind(queueName,
-                              topic,
-                              string.Empty);
+
+            topics.ForEach(topic =>
+            {
+                topic = Configuration.Instance.FormatMessageQueueName(topic);
+                channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
+                channel.QueueBind(queueName,
+                                  topic,
+                                  string.Empty);
+            });
+
             var subscriber = new RabbitMQConsumer(channel,
-                                        topic,
-                                        queueName,
-                                        consumerId,
-                                        BuildOnRabbitMQMessageReceived(onMessagesReceived),
-                                        consumerConfig);
+                                                  topics,
+                                                  queueName,
+                                                  consumerId,
+                                                  BuildOnRabbitMQMessageReceived(onMessagesReceived),
+                                                  consumerConfig);
             if (start)
             {
                 subscriber.Start();
@@ -121,7 +148,7 @@ namespace IFramework.MessageQueue.RabbitMQ
             return (consumer, args) =>
             {
                 var message = Encoding.UTF8.GetString(args.Body).ToJsonObject<RabbitMQMessage>();
-                var messageContext = new MessageContext(message, new MessageOffset(string.Empty, 0, (long) args.DeliveryTag));
+                var messageContext = new MessageContext(message, new MessageOffset(string.Empty, args.Exchange, 0, (long) args.DeliveryTag));
                 onMessagesReceived(messageContext);
             };
         }

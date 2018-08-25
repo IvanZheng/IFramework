@@ -29,6 +29,11 @@ namespace IFramework.MessageQueue
             return null;
         }
 
+        public IMessageConsumer StartSubscriptionClient(string[] topics, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
+        {
+            return null;
+        }
+
         public IMessageConsumer StartSubscriptionClient(string topic, string subscriptionName, string consumerId,
                                                          OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
         {

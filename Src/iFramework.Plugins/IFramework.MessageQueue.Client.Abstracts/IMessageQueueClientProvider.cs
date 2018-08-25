@@ -21,7 +21,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
                                              ConsumerConfig consumerConfig,
                                              bool start = true);
 
-        IMessageConsumer CreateTopicSubscription(string topic,
+        IMessageConsumer CreateTopicSubscription(string[] topics,
                                                  string subscriptionName,
                                                  OnMessagesReceived onMessagesReceived,
                                                  string consumerId,

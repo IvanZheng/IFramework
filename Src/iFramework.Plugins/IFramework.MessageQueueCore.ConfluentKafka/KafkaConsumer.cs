@@ -22,14 +22,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
         protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
         protected readonly string BrokerList;
         public KafkaConsumer(string brokerList,
-                             string topic,
+                             string[] topics,
                              string groupId,
                              string consumerId,
                              OnKafkaMessageReceived<TKey, TValue> onMessageReceived,
                              IDeserializer<TKey> keyDeserializer,
                              IDeserializer<TValue> valueDeserializer,
                              ConsumerConfig consumerConfig = null)
-            : base(topic, groupId, consumerId, consumerConfig)
+            : base(topics, groupId, consumerId, consumerConfig)
         {
             _keyDeserializer = keyDeserializer ?? throw new ArgumentNullException(nameof(keyDeserializer));
             _valueDeserializer = valueDeserializer ?? throw new ArgumentNullException(nameof(valueDeserializer));
@@ -74,7 +74,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         public override void Start()
         {
             _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);
-            _consumer.Subscribe(Topic);
+            _consumer.Subscribe(Topics);
             _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
             base.Start();
         }
@@ -84,7 +84,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             try
             {
-                AddMessageOffset(message.Partition, message.Offset);
+                AddMessageOffset(message.Topic, message.Partition, message.Offset);
                 OnMessageReceived(this, message);
             }
             catch (OperationCanceledException) { }
@@ -93,16 +93,16 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 if (message.Value != null)
                 {
-                    FinishConsumingMessage(new MessageOffset(null, message.Partition, message.Offset));
+                    FinishConsumingMessage(new MessageOffset(null, message.Topic, message.Partition, message.Offset));
                 }
                 Logger.LogError(ex, $"{Id} _consumer_OnMessage failed!");
             }
         }
 
-        public override Task CommitOffsetAsync(string broker, int partition, long offset)
+        public override Task CommitOffsetAsync(string broker, string topic, int partition, long offset)
         {
             // kafka not use broker in cluster mode
-            var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(Topic, partition), offset + 1);
+            var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);
             return _consumer.CommitAsync(new[] {topicPartitionOffset}, _cancellationTokenSource.Token);
         }
 

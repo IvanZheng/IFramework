@@ -14,24 +14,24 @@ namespace IFramework.MessageQueue.RabbitMQ
     public class RabbitMQConsumer:IMessageConsumer
     {
         private readonly IModel _channel;
-        private readonly string _topic;
+        private readonly string[] _topics;
         private readonly string _groupId;
         private readonly OnRabbitMQMessageReceived _onMessageReceived;
         private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(RabbitMQConsumer).Name);
 
         public RabbitMQConsumer(IModel channel, 
-                                string topic,
+                                string[] topics,
                                 string groupId,
                                 string consumerId,
                                 OnRabbitMQMessageReceived onMessageReceived,
                                 ConsumerConfig consumerConfig = null)
         {
             _channel = channel;
-            _topic = topic;
+            _topics = topics;
             _groupId = groupId;
             _onMessageReceived = onMessageReceived;
 
-            Id = $"{topic}.{groupId}.{consumerId}";
+            Id = $"{groupId}.{consumerId}";
         }
 
         public void CommitOffset(IMessageContext messageContext)

@@ -32,35 +32,35 @@ namespace Sample.ApplicationEventSubscriber.Community
 
         public async Task Handle(AccountLogined @event)
         {
-            await _concurrencyProcessor.ProcessAsync(async () =>
-            {
-                var account = await _domainRepository.FindAsync<Account>(a => a.UserName == @event.UserName);
-                if (account == null)
-                {
-                    throw new DomainException(ErrorCode.UserNotExists);
-                }
-                account.Modify("ivan@163.com");
-                await _unitOfWork.CommitAsync();
-            });
-
-            await _concurrencyProcessor.ProcessAsync(async () =>
-            {
-                var account = await _domainRepository.FindAsync<Account>(a => a.UserName == "ivan1");
-                if (account == null)
-                {
-                    throw new DomainException(ErrorCode.UserNotExists);
-                }
-                account.Modify("ivan1@163.com");
-                await _unitOfWork.CommitAsync();
-            });
-            //Console.Write("account({0}) logined at {1}", @event.AccountId, @event.LoginTime);
-            //var createProduct = new CreateProduct
+            //await _concurrencyProcessor.ProcessAsync(async () =>
             //{
-            //    ProductId = Guid.NewGuid(),
-            //    Name = string.Format("{0}-{1}", DateTime.Now, @event.Id),
-            //    Count = 20000
-            //};
-            //_eventBus.SendCommand(createProduct);
+            //    var account = await _domainRepository.FindAsync<Account>(a => a.UserName == @event.UserName);
+            //    if (account == null)
+            //    {
+            //        throw new DomainException(ErrorCode.UserNotExists);
+            //    }
+            //    account.Modify("ivan@163.com");
+            //    await _unitOfWork.CommitAsync();
+            //});
+
+            //await _concurrencyProcessor.ProcessAsync(async () =>
+            //{
+            //    var account = await _domainRepository.FindAsync<Account>(a => a.UserName == "ivan1");
+            //    if (account == null)
+            //    {
+            //        throw new DomainException(ErrorCode.UserNotExists);
+            //    }
+            //    account.Modify("ivan1@163.com");
+            //    await _unitOfWork.CommitAsync();
+            //});
+            Console.Write("account({0}) logined at {1}", @event.AccountId, @event.LoginTime);
+            var createProduct = new CreateProduct
+            {
+                ProductId = Guid.NewGuid(),
+                Name = $"{DateTime.Now}-{@event.Id}",
+                Count = 20000
+            };
+            _eventBus.SendCommand(createProduct);
         }
 
         public void Handle(AccountRegistered @event)

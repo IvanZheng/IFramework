@@ -22,11 +22,17 @@ namespace IFramework.MessageQueue
                                     SagaInfo sagaInfo = null,
                                     string producer = null);
 
-        IMessageConsumer StartSubscriptionClient(string topic,
+        IMessageConsumer StartSubscriptionClient(string[] topics,
                                                   string subscriptionName,
                                                   string consumerId,
                                                   OnMessagesReceived onMessagesReceived,
                                                   ConsumerConfig consumerConfig = null);
+
+        IMessageConsumer StartSubscriptionClient(string topic,
+                                                 string subscriptionName,
+                                                 string consumerId,
+                                                 OnMessagesReceived onMessagesReceived,
+                                                 ConsumerConfig consumerConfig = null);
 
         IMessageConsumer StartQueueClient(string commandQueueName,
                                            string consumerId,

@@ -13,16 +13,16 @@ namespace IFramework.MessageQueue.InMemory
     public class SubscriptionClient : IMessageConsumer
     {
         private readonly BlockingCollection<IMessageContext> _messageQueue = new BlockingCollection<IMessageContext>();
-        private string _topic;
+        private string[] _topics;
         private string _subscriptionName;
         private readonly OnMessagesReceived _onMessagesReceived;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _consumerTask;
         protected static ILogger Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(nameof(SubscriptionClient));
 
-        public SubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, bool start = true)
+        public SubscriptionClient(string[] topics, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, bool start = true)
         {
-            _topic = topic;
+            _topics = topics;
             _subscriptionName = subscriptionName;
             Id = consumerId;
             _onMessagesReceived = onMessagesReceived;

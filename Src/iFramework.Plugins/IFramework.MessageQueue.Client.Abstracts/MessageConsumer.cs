@@ -18,24 +18,24 @@ namespace IFramework.MessageQueue.Client.Abstracts
         protected Task ConsumerTask;
         protected ILogger Logger;
 
-        protected MessageConsumer(string topic,
+        protected MessageConsumer(string[] topics,
                                   string groupId,
                                   string consumerId,
                                   ConsumerConfig consumerConfig = null)
         {
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
             ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
-            Topic = topic;
+            Topics = topics;
             GroupId = groupId;
             ConsumerId = consumerId ?? string.Empty;
-            SlidingDoors = new ConcurrentDictionary<int, SlidingDoor>();
+            SlidingDoors = new ConcurrentDictionary<string, SlidingDoor>();
         }
 
-        public ConcurrentDictionary<int, SlidingDoor> SlidingDoors { get; protected set; }
-        public string Topic { get; protected set; }
+        public ConcurrentDictionary<string, SlidingDoor> SlidingDoors { get; protected set; }
+        public string[] Topics { get; protected set; }
         public string GroupId { get; protected set; }
         public string ConsumerId { get; protected set; }
-        public string Id => $"{GroupId}.{Topic}.{ConsumerId}";
+        public string Id => $"{GroupId}.{ConsumerId}";
 
         public virtual void Start()
         {
@@ -108,11 +108,12 @@ namespace IFramework.MessageQueue.Client.Abstracts
         }
 
 
-        protected void AddMessageOffset(int partition, long offset)
+        protected void AddMessageOffset(string topic, int partition, long offset)
         {
-            var slidingDoor = SlidingDoors.GetOrAdd(partition,
+            var slidingDoor = SlidingDoors.GetOrAdd($"{topic}.{partition}",
                                                     key => new SlidingDoor(CommitOffset,
-                                                                           key,
+                                                                           topic,
+                                                                           partition,
                                                                            Configuration.Instance.GetCommitPerMessage()));
             slidingDoor.AddOffset(offset);
         }
@@ -122,7 +123,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
         /// <param name="messageOffset"></param>
         protected virtual void FinishConsumingMessage(MessageOffset messageOffset)
         {
-            var slidingDoor = SlidingDoors.TryGetValue(messageOffset.Partition);
+            var slidingDoor = SlidingDoors.TryGetValue(messageOffset.SlidingDoorKey);
             if (slidingDoor == null)
             {
                 throw new Exception("partition slidingDoor not exists");
@@ -135,6 +136,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             try
             {
                 CommitOffsetAsync(messageOffset.Broker,
+                                  messageOffset.Topic,
                                   messageOffset.Partition,
                                   messageOffset.Offset)
                     .ContinueWith(t =>
@@ -151,6 +153,6 @@ namespace IFramework.MessageQueue.Client.Abstracts
             }
         }
 
-        public abstract Task CommitOffsetAsync(string broker, int partition, long offset);
+        public abstract Task CommitOffsetAsync(string broker, string topic, int partition, long offset);
     }
 }

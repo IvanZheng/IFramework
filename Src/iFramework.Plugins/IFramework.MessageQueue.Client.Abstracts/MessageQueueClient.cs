@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,14 +66,28 @@ namespace IFramework.MessageQueue.Client.Abstracts
         }
 
         public IMessageConsumer StartSubscriptionClient(string topic,
+                                                        string subscriptionName,
+                                                        string consumerId,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        ConsumerConfig consumerConfig = null)
+        {
+            return StartSubscriptionClient(new[] {topic},
+                                           subscriptionName,
+                                           consumerId,
+                                           onMessagesReceived,
+                                           consumerConfig);
+        }
+
+        public IMessageConsumer StartSubscriptionClient(string[] topics,
                                                          string subscriptionName,
                                                          string consumerId,
                                                          OnMessagesReceived onMessagesReceived,
                                                          ConsumerConfig consumerConfig = null)
         {
-            topic = Configuration.Instance.FormatMessageQueueName(topic);
+            topics = topics.Select(topic => Configuration.Instance.FormatMessageQueueName(topic))
+                           .ToArray();
             subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
-            var topicSubscription = _clientProvider.CreateTopicSubscription(topic,
+            var topicSubscription = _clientProvider.CreateTopicSubscription(topics,
                                                                              subscriptionName,
                                                                              onMessagesReceived,
                                                                              consumerId,

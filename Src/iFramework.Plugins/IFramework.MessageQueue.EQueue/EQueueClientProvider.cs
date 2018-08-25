@@ -29,10 +29,10 @@ namespace IFramework.MessageQueue.EQueue
                                                     ConsumerConfig consumerConfig,
                                                     bool start = true)
         {
-            var consumer = new EQueueConsumer(_clusterName, 
-                                              _nameServerList, 
+            var consumer = new EQueueConsumer(_clusterName,
+                                              _nameServerList,
+                                              new[] {commandQueueName},
                                               commandQueueName,
-                                              commandQueueName, 
                                               consumerId,
                                               BuildOnEQueueMessageReceived(onMessagesReceived),
                                               consumerConfig);
@@ -54,14 +54,19 @@ namespace IFramework.MessageQueue.EQueue
             return new EQueueProducer(_clusterName, _nameServerList, config).Start();
         }
 
-        public IMessageConsumer CreateTopicSubscription(string topic,
+      
+        public IMessageConsumer CreateTopicSubscription(string[] topics,
                                                         string subscriptionName,
                                                         OnMessagesReceived onMessagesReceived,
                                                         string consumerId,
                                                         ConsumerConfig consumerConfig,
                                                         bool start = true)
         {
-            var consumer = new EQueueConsumer(_clusterName, _nameServerList, topic, subscriptionName, consumerId,
+            var consumer = new EQueueConsumer(_clusterName,
+                                              _nameServerList,
+                                              topics,
+                                              subscriptionName,
+                                              consumerId,
                                               BuildOnEQueueMessageReceived(onMessagesReceived),
                                               consumerConfig);
             if (start)
@@ -153,7 +158,7 @@ namespace IFramework.MessageQueue.EQueue
                                             .GetString(message.Body)
                                             .ToJsonObject<EQueueMessage>();
                 var messageContext = new MessageContext(equeueMessage,
-                                                        new MessageOffset(message.BrokerName, message.QueueId, message.QueueOffset));
+                                                        new MessageOffset(message.BrokerName, message.Topic, message.QueueId, message.QueueOffset));
                 onMessagesReceived(messageContext);
             };
         }

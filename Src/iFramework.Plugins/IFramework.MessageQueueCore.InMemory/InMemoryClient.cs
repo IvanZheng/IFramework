@@ -1,25 +1,21 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
-using IFramework.MessageQueue;
 
 namespace IFramework.MessageQueue.InMemory
 {
-    public class InMemoryClient: IMessageQueueClient
+    public class InMemoryClient : IMessageQueueClient
     {
         private static readonly ConcurrentDictionary<string, List<SubscriptionClient>> SubscriptionClients = new ConcurrentDictionary<string, List<SubscriptionClient>>();
         private static readonly ConcurrentDictionary<string, BlockingCollection<IMessageContext>> CommandQueues = new ConcurrentDictionary<string, BlockingCollection<IMessageContext>>();
-        public void Dispose()
-        {
-        }
+
+        public void Dispose() { }
 
         public Task SendAsync(IMessageContext messageContext, string queueTopic, CancellationToken cancellationToken)
         {
@@ -48,35 +44,65 @@ namespace IFramework.MessageQueue.InMemory
             {
                 messageContext.CorrelationId = correlationId;
             }
+
             if (!string.IsNullOrEmpty(topic))
             {
                 messageContext.Topic = topic;
             }
+
             if (!string.IsNullOrEmpty(key))
             {
                 messageContext.Key = key;
             }
+
             if (!string.IsNullOrEmpty(replyEndPoint))
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
             }
+
             if (!string.IsNullOrWhiteSpace(sagaInfo?.SagaId))
             {
                 messageContext.SagaInfo = sagaInfo;
             }
+
             return messageContext;
         }
 
-        public IMessageConsumer StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
+        public IMessageConsumer StartSubscriptionClient(string topic,
+                                                        string subscriptionName,
+                                                        string consumerId,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        ConsumerConfig consumerConfig = null)
         {
-            topic = Configuration.Instance.FormatMessageQueueName(topic);
-            var clients = SubscriptionClients.GetOrAdd(topic, key => new List<SubscriptionClient>());
-            var client = new SubscriptionClient(topic, subscriptionName, consumerId, onMessagesReceived);
-            clients.Add(client);
+            return StartSubscriptionClient(new[] {topic},
+                                           subscriptionName,
+                                           consumerId,
+                                           onMessagesReceived,
+                                           consumerConfig);
+        }
+
+        public IMessageConsumer StartSubscriptionClient(string[] topics,
+                                                        string subscriptionName,
+                                                        string consumerId,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        ConsumerConfig consumerConfig = null)
+        {
+            topics = topics.Select(topic => Configuration.Instance.FormatMessageQueueName(topic))
+                           .ToArray();
+            var client = new SubscriptionClient(topics, subscriptionName, consumerId, onMessagesReceived);
+
+            topics.ForEach(topic =>
+            {
+                var clients = SubscriptionClients.GetOrAdd(topic, key => new List<SubscriptionClient>());
+                clients.Add(client);
+            });
             return client;
         }
 
-        public IMessageConsumer StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
+        public IMessageConsumer StartQueueClient(string commandQueueName,
+                                                 string consumerId,
+                                                 OnMessagesReceived onMessagesReceived,
+                                                 ConsumerConfig consumerConfig = null)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var queue = CommandQueues.GetOrAdd(commandQueueName, key => new BlockingCollection<IMessageContext>());

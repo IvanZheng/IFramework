@@ -65,7 +65,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                     ConsumerConfig consumerConfig,
                                                     bool start = true)
         {
-            var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, queue, $"{queue}.consumer", consumerId,
+            var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, new []{queue}, $"{queue}.consumer", consumerId,
                                                                    BuildOnKafkaMessageReceived(onMessagesReceived),
                                                                    new StringDeserializer(Encoding.UTF8),
                                                                    new KafkaMessageDeserializer(),
@@ -77,14 +77,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
             return consumer;
         }
 
-        public IMessageConsumer CreateTopicSubscription(string topic,
+        public IMessageConsumer CreateTopicSubscription(string[] topics,
                                                         string subscriptionName,
                                                         OnMessagesReceived onMessagesReceived,
                                                         string consumerId,
                                                         ConsumerConfig consumerConfig,
                                                         bool start = true)
         {
-            var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, topic, subscriptionName, consumerId,
+            var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, topics, subscriptionName, consumerId,
                                                                    BuildOnKafkaMessageReceived(onMessagesReceived),
                                                                    new StringDeserializer(Encoding.UTF8),
                                                                    new KafkaMessageDeserializer(),
@@ -101,7 +101,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             return (consumer, message) =>
             {
                 var kafkaMessage = message.Value;
-                var messageContext = new MessageContext(kafkaMessage, message.Partition, message.Offset);
+                var messageContext = new MessageContext(kafkaMessage, message.Topic, message.Partition, message.Offset);
                 onMessagesReceived(messageContext);
             };
         }

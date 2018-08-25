@@ -18,7 +18,7 @@ namespace IFramework.Event.Impl
 {
     public class EventSubscriber: IMessageProcessor
     {
-        private readonly string _topic;
+        private readonly string[] _topics;
         protected ICommandBus CommandBus;
         protected string ConsumerId;
         protected IHandlerProvider HandlerProvider;
@@ -36,14 +36,14 @@ namespace IFramework.Event.Impl
                                ICommandBus commandBus,
                                IMessagePublisher messagePublisher,
                                string subscriptionName,
-                               string topic,
+                               string[] topics,
                                string consumerId,
                                ConsumerConfig consumerConfig = null)
         {
             ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             MessageQueueClient = messageQueueClient;
             HandlerProvider = handlerProvider;
-            _topic = topic;
+            _topics = topics ?? new string[0];
             ConsumerId = consumerId;
             SubscriptionName = subscriptionName;
             MessagePublisher = messagePublisher;
@@ -53,17 +53,17 @@ namespace IFramework.Event.Impl
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
         }
 
-        public string Producer => _producer ?? (_producer = $"{SubscriptionName}.{_topic}.{ConsumerId}");
+        public string Producer => _producer ?? (_producer = $"{SubscriptionName}.{ConsumerId}");
 
 
         public void Start()
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(_topic))
+                if (_topics?.Length > 0)
                 {
                     InternalConsumer =
-                        MessageQueueClient.StartSubscriptionClient(_topic, SubscriptionName, ConsumerId,
+                        MessageQueueClient.StartSubscriptionClient(_topics, SubscriptionName, ConsumerId,
                                                                     OnMessagesReceived, 
                                                                     ConsumerConfig);
                 }
@@ -71,7 +71,7 @@ namespace IFramework.Event.Impl
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"Event Subscriber {_topic} start faield");
+                Logger.LogError(e, $"Event Subscriber {string.Join(",", _topics ?? new string[0])} start faield");
             }
         }
 

@@ -14,10 +14,10 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 
         private SagaInfo _sagaInfo;
 
-        public MessageContext(KafkaMessage kafkaMessage, int partition, long offset)
+        public MessageContext(KafkaMessage kafkaMessage, string topic, int partition, long offset)
         {
             KafkaMessage = kafkaMessage;
-            MessageOffset = new MessageOffset(null, partition, offset);
+            MessageOffset = new MessageOffset(null, topic, partition, offset);
         }
 
         public MessageContext(object message, string id = null)

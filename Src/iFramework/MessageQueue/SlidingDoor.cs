@@ -9,42 +9,49 @@ namespace IFramework.MessageQueue
     {
         private readonly object _removeOffsetLock = new object();
         protected Action<MessageOffset> _commitOffset;
-        protected bool _commitPerMessage;
-        protected long _consumedOffset = -1L;
-        protected long _lastCommittedOffset = -1L;
-        protected long _lastOffset = -1L;
-        protected SortedSet<long> _offsets;
-        protected SortedList<long, MessageOffset> _removedMessageOffsets;
-        protected int _partition;
+        protected readonly string Topic;
+        protected bool CommitPerMessage;
+        protected long ConsumedOffset = -1L;
+        protected long LastCommittedOffset = -1L;
+        protected long LastOffset = -1L;
+        protected SortedSet<long> Offsets;
+        protected SortedList<long, MessageOffset> RemovedMessageOffsets;
+        protected int Partition;
 
+        public static string GetSlidingDoorKey(string topic, int partition)
+        {
+            return $"{topic}.{partition}";
+        }
         public SlidingDoor(Action<MessageOffset> commitOffset,
+                           string topic,
                            int partition,
                            bool commitPerMessage = false)
         {
             _commitOffset = commitOffset;
-            _partition = partition;
-            _offsets = new SortedSet<long>();
-            _removedMessageOffsets = new SortedList<long, MessageOffset>();
-            _commitPerMessage = commitPerMessage;
+            Topic = topic;
+            Partition = partition;
+            Offsets = new SortedSet<long>();
+            RemovedMessageOffsets = new SortedList<long, MessageOffset>();
+            CommitPerMessage = commitPerMessage;
         }
 
-        public int MessageCount => _offsets.Count;
+        public int MessageCount => Offsets.Count;
 
         public void AddOffset(long offset)
         {
-            if (!_commitPerMessage)
+            if (!CommitPerMessage)
             {
                 lock (_removeOffsetLock)
                 {
-                    _offsets.Add(offset);
-                    _lastOffset = offset;
+                    Offsets.Add(offset);
+                    LastOffset = offset;
                 }
             }
         }
 
         public void RemoveOffset(MessageOffset messageOffset)
         {
-            if (_commitPerMessage)
+            if (CommitPerMessage)
             {
                 _commitOffset(messageOffset);
             }
@@ -52,25 +59,25 @@ namespace IFramework.MessageQueue
             {
                 lock (_removeOffsetLock)
                 {
-                    if (_offsets.Remove(messageOffset.Offset))
+                    if (Offsets.Remove(messageOffset.Offset))
                     {
-                        _removedMessageOffsets.Add(messageOffset.Offset, messageOffset);
-                        if (_offsets.Count > 0)
+                        RemovedMessageOffsets.Add(messageOffset.Offset, messageOffset);
+                        if (Offsets.Count > 0)
                         {
-                            _consumedOffset = _offsets.First() - 1;
+                            ConsumedOffset = Offsets.First() - 1;
                         }
                         else
                         {
-                            _consumedOffset = _lastOffset;
+                            ConsumedOffset = LastOffset;
                         }
                     }
-                    if (_consumedOffset > _lastCommittedOffset)
+                    if (ConsumedOffset > LastCommittedOffset)
                     {
-                        if (_removedMessageOffsets.TryRemoveBeforeKey(_consumedOffset, out var currentMessageOffset))
+                        if (RemovedMessageOffsets.TryRemoveBeforeKey(ConsumedOffset, out var currentMessageOffset))
                         {
                             _commitOffset(currentMessageOffset);
                         }
-                        _lastCommittedOffset = _consumedOffset;
+                        LastCommittedOffset = ConsumedOffset;
                     }
                 }
             }
