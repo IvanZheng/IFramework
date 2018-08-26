@@ -8,7 +8,7 @@ namespace IFramework.MessageQueue
     public class SlidingDoor : ISlidingDoor
     {
         private readonly object _removeOffsetLock = new object();
-        protected Action<MessageOffset> _commitOffset;
+        protected Action<MessageOffset> CommitOffset;
         protected readonly string Topic;
         protected bool CommitPerMessage;
         protected long ConsumedOffset = -1L;
@@ -27,7 +27,7 @@ namespace IFramework.MessageQueue
                            int partition,
                            bool commitPerMessage = false)
         {
-            _commitOffset = commitOffset;
+            CommitOffset = commitOffset;
             Topic = topic;
             Partition = partition;
             Offsets = new SortedSet<long>();
@@ -53,7 +53,7 @@ namespace IFramework.MessageQueue
         {
             if (CommitPerMessage)
             {
-                _commitOffset(messageOffset);
+                CommitOffset(messageOffset);
             }
             else
             {
@@ -75,7 +75,7 @@ namespace IFramework.MessageQueue
                     {
                         if (RemovedMessageOffsets.TryRemoveBeforeKey(ConsumedOffset, out var currentMessageOffset))
                         {
-                            _commitOffset(currentMessageOffset);
+                            CommitOffset(currentMessageOffset);
                         }
                         LastCommittedOffset = ConsumedOffset;
                     }

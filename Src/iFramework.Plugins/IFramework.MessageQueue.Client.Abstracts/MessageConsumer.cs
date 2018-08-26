@@ -110,7 +110,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
 
         protected void AddMessageOffset(string topic, int partition, long offset)
         {
-            var slidingDoor = SlidingDoors.GetOrAdd($"{topic}.{partition}",
+            var slidingDoor = SlidingDoors.GetOrAdd(SlidingDoor.GetSlidingDoorKey(topic, partition),
                                                     key => new SlidingDoor(CommitOffset,
                                                                            topic,
                                                                            partition,
