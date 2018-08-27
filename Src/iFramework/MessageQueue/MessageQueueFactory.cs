@@ -1,4 +1,5 @@
-﻿using IFramework.Command;
+﻿using System;
+using IFramework.Command;
 using IFramework.Command.Impl;
 using IFramework.Config;
 using IFramework.DependencyInjection;
@@ -46,16 +47,17 @@ namespace IFramework.MessageQueue
                                                               string subscription,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
-                                                              ConsumerConfig consumerConfig = null)
+                                                              ConsumerConfig consumerConfig = null,
+                                                              Func<string[], bool> tagFilter = null)
         {
-            return CreateEventSubscriber(new[] {topic},
+            return CreateEventSubscriber(new[] {new TopicSubscription(topic, tagFilter)},
                                          subscription,
                                          consumerId,
                                          handlerProviderNames,
                                          consumerConfig);
         }
 
-        public static IMessageProcessor CreateEventSubscriber(string[] topics,
+        public static IMessageProcessor CreateEventSubscriber(TopicSubscription[] topicSubscriptions,
                                                               string subscription,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
@@ -72,7 +74,7 @@ namespace IFramework.MessageQueue
                                                       commandBus,
                                                       messagePublisher,
                                                       subscription,
-                                                      topics,
+                                                      topicSubscriptions,
                                                       consumerId,
                                                       consumerConfig);
             return eventSubscriber;

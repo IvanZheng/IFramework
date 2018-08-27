@@ -31,11 +31,13 @@ namespace IFramework.MessageQueue.InMemory
             if (message is IMessage iMessage)
             {
                 Topic = iMessage.GetTopic();
+                Tags = iMessage.Tags;
             }
             MessageOffset = new MessageOffset();
         }
         public IDictionary<string, object> Headers { get; set; }
         public string Key { get; set; }
+        public string[] Tags { get; set; }
         public string MessageId { get; set; }
         public string CorrelationId { get; set; }
         public string ReplyToEndPoint { get; set; }

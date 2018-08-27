@@ -56,7 +56,7 @@ namespace Sample.CommandHandler.Community
                 throw ex;
             }
 
-            _eventBus.Publish(new AccountLogined {AccountId = account.Id, LoginTime = DateTime.Now, UserName = command.UserName});
+            _eventBus.Publish(new AccountLogined {AccountId = account.Id, LoginTime = DateTime.Now, UserName = command.UserName, Tags = new []{command.UserName}});
 
             //await _UnitOfWork.CommitAsync()
             //                 .ConfigureAwait(false);

@@ -4,5 +4,6 @@
     {
         string Id { get; set; }
         string Key { get; set; }
+        string[] Tags { get; set; }
     }
 }

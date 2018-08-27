@@ -39,9 +39,10 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
                 MessageId = ObjectId.GenerateNewId().ToString();
             }
             ToBeSentMessageContexts = new List<IMessageContext>();
-            if (message is IMessage)
+            if (message is IMessage iMessage)
             {
-                Topic = ((IMessage) message).GetTopic();
+                Topic = iMessage.GetTopic();
+                Tags = iMessage.Tags;
             }
             MessageOffset = new MessageOffset();
         }
@@ -70,6 +71,11 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         {
             get => (string) Headers.TryGetValue("Key");
             set => Headers["Key"] = value;
+        }
+        public string[] Tags
+        {
+            get => (string[])Headers.TryGetValue(nameof(Tags));
+            set => Headers[nameof(Tags)] = value;
         }
 
         public string CorrelationId

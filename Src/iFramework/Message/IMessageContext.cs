@@ -9,6 +9,7 @@ namespace IFramework.Message
     {
         IDictionary<string, object> Headers { get; }
         string Key { get; }
+        string[] Tags { get; }
         string MessageId { get; }
         string CorrelationId { get; set; }
         string ReplyToEndPoint { get; }

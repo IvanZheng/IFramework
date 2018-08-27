@@ -37,9 +37,10 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             {
                 MessageId = ObjectId.GenerateNewId().ToString();
             }
-            if (message is IMessage)
+            if (message is IMessage iMessage)
             {
-                Topic = ((IMessage) message).GetTopic();
+                Topic = iMessage.GetTopic();
+                Tags = iMessage.Tags;
             }
             MessageOffset = new MessageOffset();
         }
@@ -91,6 +92,12 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             set => Headers["Key"] = value;
         }
 
+        public string[] Tags
+        {
+            get => (string[])Headers.TryGetValue(nameof(Tags));
+            set => Headers[nameof(Tags)] = value;
+        }
+
         public string CorrelationId
         {
             get => (string) Headers.TryGetValue("CorrelationID");
@@ -117,7 +124,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             {
                 if (_message != null)
                 {
-                    return _message;
+                    return _message; 
                 }
                 if (Headers.TryGetValue("MessageType", out var messageType) && messageType != null)
                 {
