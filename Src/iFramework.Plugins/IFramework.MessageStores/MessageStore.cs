@@ -7,6 +7,7 @@ using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageStores.Relational
@@ -14,11 +15,12 @@ namespace IFramework.MessageStores.Relational
     public abstract class MessageStore : MsDbContext, IMessageStore
     {
         protected readonly ILogger Logger;
-
+        public bool InMemoryStore { get; private set;}
         protected MessageStore(DbContextOptions options)
             : base(options)
         {
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+            InMemoryStore = options.FindExtension<InMemoryOptionsExtension>() != null;
         }
 
         public DbSet<Command> Commands { get; set; }

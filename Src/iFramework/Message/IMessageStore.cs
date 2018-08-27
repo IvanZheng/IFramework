@@ -6,6 +6,8 @@ namespace IFramework.Message
 {
     public interface IMessageStore : IDisposable
     {
+        bool InMemoryStore { get;}
+
         CommandHandledInfo GetCommandHandledInfo(string commandId);
         bool HasEventHandled(string eventId, string subscriptionName);
 

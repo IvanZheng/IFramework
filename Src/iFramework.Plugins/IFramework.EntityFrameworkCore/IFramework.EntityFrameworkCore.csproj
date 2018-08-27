@@ -5,7 +5,7 @@
     <AssemblyName>IFramework.EntityFrameworkCore</AssemblyName>
     <RootNamespace>IFramework.EntityFrameworkCore</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-prelease-0015</Version>
+    <Version>2.0.0-prelease-0016</Version>
     <Company>Ivan</Company>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>clear exception in UnitOfWork.AfterCommit</PackageReleaseNotes>
@@ -21,6 +21,7 @@
     <LangVersion>7.1</LangVersion>
     <NoWarn>1701;1702;EF1000</NoWarn>
   </PropertyGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0" />

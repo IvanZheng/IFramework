@@ -10,8 +10,10 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.Domain;
 using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
+using IFramework.Log4Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace IFramework.Test.EntityFramework
@@ -26,11 +28,13 @@ namespace IFramework.Test.EntityFramework
                          .UseAutofacContainer()
                          .UseConfiguration(builder.Build())
                          .UseCommonComponents()
+                         .UseLog4Net()
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
+                             //options.UseInMemoryDatabase(nameof(DemoDbContext));
                              options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
-                         });
+                         },2000);
 
             ObjectProviderFactory.Instance.Build();
         }
@@ -86,15 +90,17 @@ namespace IFramework.Test.EntityFramework
         [Fact]
         public async Task ConcurrentTest()
         {
+            await AddUserTest();
             var tasks = new List<Task>();
-            for (int i = 0; i < 200; i++)
+            for (int i = 0; i < 2000; i++)
             {
                 tasks.Add(GetUsersTest());
             }
 
             await Task.WhenAll(tasks);
-            Console.WriteLine($"incremented : {DemoDbContext.Total }");
 
+            var logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+            logger.LogDebug($"incremented : {DemoDbContext.Total }");
         }
 
         [Fact]
@@ -111,7 +117,7 @@ namespace IFramework.Test.EntityFramework
                 foreach (var u in users)
                 {
                     await u.LoadCollectionAsync(u1 => u1.Cards);
-                    Assert.NotNull(u.GetDbContext<DemoDbContext>());
+                    Assert.Equal(u.GetDbContext<DemoDbContext>().GetHashCode(), dbContext.GetHashCode());
                 }
             }
         }

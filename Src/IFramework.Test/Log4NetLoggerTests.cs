@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Autofac;
 using IFramework.Config;
 using IFramework.DependencyInjection;
@@ -32,7 +33,7 @@ namespace IFramework.Test
             ObjectProviderFactory.Instance.Build();
 
             var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger(nameof(Log4NetLoggerTests));
+            var logger = loggerFactory.CreateLogger(GetType());
 
 
             try
@@ -43,8 +44,6 @@ namespace IFramework.Test
             {
                 LogTest(logger, e);
             }
-
-          
         }
 
         void LogTest(ILogger logger, object message)

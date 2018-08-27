@@ -1,8 +1,6 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.Repositories;
@@ -25,9 +23,10 @@ namespace IFramework.Domain
         }
     }
 
-    public class Entity: IEntity
+    public class Entity : IEntity
     {
-        protected IDbContext DomainContext { get; set; }
+        protected object DomainContext { get; set; }
+        protected IDbContext DbContext => DomainContext as IDbContext;
 
         internal void SetDomainContext(IDbContext domainContext)
         {
@@ -39,7 +38,7 @@ namespace IFramework.Domain
         {
             var entities = collection.ToList();
             collection.Clear();
-            entities.ForEach(e => DomainContext?.RemoveEntity(e));
+            entities.ForEach(e => DbContext?.RemoveEntity(e));
         }
 
         public void RemoveCollectionEntities<TEntity>(ICollection<TEntity> collection, params TEntity[] entities)
@@ -48,7 +47,7 @@ namespace IFramework.Domain
             entities?.ForEach(e =>
             {
                 collection.Remove(e);
-                DomainContext?.RemoveEntity(e);
+                DbContext?.RemoveEntity(e);
             });
         }
 
@@ -58,7 +57,8 @@ namespace IFramework.Domain
             {
                 throw new NullReferenceException(nameof(DomainContext));
             }
-            DomainContext.Reload(this);
+
+            DbContext.Reload(this);
             (this as AggregateRoot)?.Rollback();
         }
 
@@ -68,8 +68,9 @@ namespace IFramework.Domain
             {
                 throw new NullReferenceException(nameof(DomainContext));
             }
-            await DomainContext.ReloadAsync(this)
-                               .ConfigureAwait(false);
+
+            await DbContext.ReloadAsync(this)
+                           .ConfigureAwait(false);
             (this as AggregateRoot)?.Rollback();
         }
 

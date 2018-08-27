@@ -36,7 +36,7 @@ namespace IFramework.MessageQueue.RabbitMQ
             _channel.Dispose();
         }
 
-        public async Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
+        public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
             var message = ((MessageContext)messageContext).RabbitMQMessage;
             try
@@ -48,6 +48,7 @@ namespace IFramework.MessageQueue.RabbitMQ
                 _logger.LogError(e, "send message failed");
                 throw;
             }
+            return Task.CompletedTask;
         }
     }
 }

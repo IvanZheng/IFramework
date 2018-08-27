@@ -98,7 +98,7 @@ namespace IFramework.MessageStores.Relational
                     }
                     else
                     {
-                        if (ConfigurationExtension.UseInMemoryDatabase)
+                        if (_messageStore.InMemoryStore)
                         {
                             toRemoveMessages.ForEach(rm =>
                             {

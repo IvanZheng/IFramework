@@ -9,19 +9,15 @@ using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace IFramework.EntityFrameworkCore
 {
     public class MsDbContext : DbContext, IDbContext
     {
         public MsDbContext(DbContextOptions options)
-            : this(options, new EntityMaterializerOptionsExtension()) { }
-
-        protected MsDbContext(DbContextOptions options, EntityMaterializerOptionsExtension entityMaterializerOptionsExtension)
-            : base(options.WithExtension(entityMaterializerOptionsExtension))
-        {
-            entityMaterializerOptionsExtension.SetDbContext(this);
-        }
+            : base(new DbContextOptionsBuilder(options).ReplaceService<IEntityMaterializerSource, ExtensionEntityMaterializerSource>()
+                                                       .Options) { }
 
         public void Reload<TEntity>(TEntity entity)
             where TEntity : class
@@ -48,6 +44,34 @@ namespace IFramework.EntityFrameworkCore
             {
                 entry.State = EntityState.Deleted;
             }
+        }
+
+        public void LoadReference<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, TEntityProperty>> expression)
+            where TEntity : class
+            where TEntityProperty : class
+        {
+            Entry(entity).Reference(expression).Load();
+        }
+
+        public Task LoadReferenceAsync<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, TEntityProperty>> expression)
+            where TEntity : class
+            where TEntityProperty : class
+        {
+            return Entry(entity).Reference(expression).LoadAsync();
+        }
+
+        public void LoadCollection<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TEntityProperty>>> expression)
+            where TEntity : class
+            where TEntityProperty : class
+        {
+            Entry(entity).Collection(expression).Load();
+        }
+
+        public Task LoadCollectionAsync<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TEntityProperty>>> expression)
+            where TEntity : class
+            where TEntityProperty : class
+        {
+            return Entry(entity).Collection(expression).LoadAsync();
         }
 
         public virtual void Rollback()
@@ -84,36 +108,9 @@ namespace IFramework.EntityFrameworkCore
                 {
                     throw new DBConcurrencyException(ex.Message, ex);
                 }
+
                 throw;
             }
-        }
-
-        public void LoadReference<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, TEntityProperty>> expression)
-            where TEntity : class
-            where TEntityProperty : class
-        {
-            Entry(entity).Reference(expression).Load();
-        }
-
-        public Task LoadReferenceAsync<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, TEntityProperty>> expression)
-            where TEntity : class
-            where TEntityProperty : class
-        {
-            return Entry(entity).Reference(expression).LoadAsync();
-        }
-
-        public void LoadCollection<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TEntityProperty>>> expression)
-            where TEntity : class
-            where TEntityProperty : class
-        {
-            Entry(entity).Collection(expression).Load();
-        }
-
-        public Task LoadCollectionAsync<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TEntityProperty>>> expression)
-            where TEntity : class
-            where TEntityProperty : class
-        {
-            return Entry(entity).Collection(expression).LoadAsync();
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -132,6 +129,7 @@ namespace IFramework.EntityFrameworkCore
                 {
                     throw new DBConcurrencyException(ex.Message, ex);
                 }
+
                 throw;
             }
         }

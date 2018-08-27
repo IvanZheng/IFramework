@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -62,20 +63,19 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>() // true 表示使用inmemorydatabase, 默认为false
+                         .UseRelationalMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitMQHostName, rabbitMQPort)
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
-                         //.UseDbContextPool<SampleModelContext>(options => options.UseInMemoryDatabase(nameof(SampleModelContext)))
                          .UseDbContextPool<SampleModelContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
                              options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                         })
-                ;
+                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                         }) ;
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
