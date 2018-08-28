@@ -18,19 +18,31 @@ namespace IFramework.DependencyInjection
         public TransactionScopeOption Scope { get; set; }
         public IsolationLevel IsolationLevel { get; set; }
 
-        public override Task<object> ProcessAsync(Func<Task<object>> funcAsync,
-                                                  IObjectProvider objectProvider,
-                                                  Type targetType,
-                                                  object invocationTarget,
-                                                  MethodInfo method,
-                                                  MethodInfo methodInvocationTarget)
+        public override Task<T> ProcessAsync<T>(Func<Task<T>> funcAsync,
+                                                IObjectProvider objectProvider,
+                                                Type targetType,
+                                                object invocationTarget,
+                                                MethodInfo method,
+                                                MethodInfo methodInvocationTarget)
         {
             return TransactionExtension.DoInTransactionAsync(funcAsync,
                                                              IsolationLevel,
                                                              Scope);
         }
 
-        public override object Process(Func<object> func,
+        public override Task ProcessAsync(Func<Task> funcAsync,
+                                          IObjectProvider objectProvider,
+                                          Type targetType,
+                                          object invocationTarget,
+                                          MethodInfo method,
+                                          MethodInfo methodInvocationTarget)
+        {
+            return TransactionExtension.DoInTransactionAsync(funcAsync,
+                                                             IsolationLevel,
+                                                             Scope);
+        }
+
+        public override object Process(Func<dynamic> func,
                                        IObjectProvider objectProvider,
                                        Type targetType,
                                        object invocationTarget,

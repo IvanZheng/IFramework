@@ -11,19 +11,32 @@ namespace IFramework.DependencyInjection
         {
             RetryTimes = retryTimes;
         }
+
         public int RetryTimes { get; set; }
-        public override Task<object> ProcessAsync(Func<Task<object>> funcAsync,
-                                                  IObjectProvider objectProvider,
-                                                  Type targetType,
-                                                  object invocationTarget,
-                                                  MethodInfo method,
-                                                  MethodInfo methodInvocationTarget)
+
+        public override Task<T> ProcessAsync<T>(Func<Task<T>> funcAsync,
+                                                IObjectProvider objectProvider,
+                                                Type targetType,
+                                                object invocationTarget,
+                                                MethodInfo method,
+                                                MethodInfo methodInvocationTarget)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
             return concurrencyProcessor.ProcessAsync(funcAsync, RetryTimes);
         }
 
-        public override object Process(Func<object> func,
+        public override Task ProcessAsync(Func<Task> funcAsync,
+                                          IObjectProvider objectProvider,
+                                          Type targetType,
+                                          object invocationTarget,
+                                          MethodInfo method,
+                                          MethodInfo methodInvocationTarget)
+        {
+            var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
+            return concurrencyProcessor.ProcessAsync(funcAsync, RetryTimes);
+        }
+
+        public override object Process(Func<dynamic> func,
                                        IObjectProvider objectProvider,
                                        Type targetType,
                                        object invocationTarget,

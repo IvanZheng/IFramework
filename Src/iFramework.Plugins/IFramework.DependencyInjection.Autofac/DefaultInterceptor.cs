@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using IFramework.Infrastructure;
-using Microsoft.Extensions.Logging;
 using MethodInfo = System.Reflection.MethodInfo;
 
 namespace IFramework.DependencyInjection.Autofac
@@ -20,8 +19,7 @@ namespace IFramework.DependencyInjection.Autofac
 
         public virtual void Intercept(IInvocation invocation)
         {
-            var isTaskResult = typeof(Task).IsAssignableFrom(invocation.Method.ReturnType);
-            invocation.ReturnValue = isTaskResult ? ProcessAsync(invocation) : Process(invocation);
+            invocation.Proceed();
         }
 
         protected virtual object Process(IInvocation invocation)
@@ -30,27 +28,15 @@ namespace IFramework.DependencyInjection.Autofac
             return invocation.ReturnValue;
         }
 
-        protected virtual Task<object> ProcessAsync(IInvocation invocation)
+        protected Type GetTaskResultType(IInvocation invocation)
         {
-            return ProcessTaskAsync(invocation);
+            return invocation.Method.ReturnType.GetGenericArguments().FirstOrDefault();
         }
 
-        protected static async Task<object> ProcessTaskAsync(IInvocation invocation)
+        protected static Task<T> ProcessTaskAsync<T>(IInvocation invocation)
         {
-            dynamic result = null;
-            var taskHasResult = invocation.Method.ReturnType.IsGenericType;
             invocation.Proceed();
-            dynamic task = invocation.ReturnValue;
-            if (taskHasResult)
-            {
-                result = await task.ConfigureAwait(false);
-            }
-            else
-            {
-                await task.ConfigureAwait(false);
-            }
-
-            return result;
+            return invocation.ReturnValue as Task<T>;
         }
 
         protected static TAttribute GetMethodAttribute<TAttribute>(IInvocation invocation, TAttribute defaultValue = null)
@@ -88,31 +74,71 @@ namespace IFramework.DependencyInjection.Autofac
     {
         public DefaultInterceptor(IObjectProvider objectProvider) : base(objectProvider) { }
 
+
+        public virtual void InterceptAsync<T>(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
+        {
+            Func<Task<T>> processAsyncFunc = () =>
+            {
+                invocation.Proceed();
+                return invocation.ReturnValue as Task<T>;
+            };
+            foreach (var interceptor in interceptorAttributes)
+            {
+                var func = processAsyncFunc;
+                processAsyncFunc = () => interceptor.ProcessAsync(func,
+                                                                  ObjectProvider,
+                                                                  invocation.TargetType,
+                                                                  invocation.InvocationTarget,
+                                                                  invocation.Method,
+                                                                  invocation.MethodInvocationTarget);
+            }
+            invocation.ReturnValue = processAsyncFunc();
+        }
+
+        public virtual void InterceptAsync(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
+        {
+            Func<Task> processAsyncFunc = () =>
+            {
+                invocation.Proceed();
+                return invocation.ReturnValue as Task;
+            };
+            foreach (var interceptor in interceptorAttributes)
+            {
+                var func = processAsyncFunc;
+                processAsyncFunc = () => interceptor.ProcessAsync(func,
+                                                                  ObjectProvider,
+                                                                  invocation.TargetType,
+                                                                  invocation.InvocationTarget,
+                                                                  invocation.Method,
+                                                                  invocation.MethodInvocationTarget);
+            }
+            invocation.ReturnValue = processAsyncFunc();
+        }
+
         public override void Intercept(IInvocation invocation)
         {
             var isTaskResult = typeof(Task).IsAssignableFrom(invocation.Method.ReturnType);
             var interceptorAttributes = GetInterceptorAttributes(invocation);
+
             if (interceptorAttributes.Length > 0)
             {
                 if (isTaskResult)
                 {
-                    Func<Task<object>> processAsyncFunc = () => ProcessAsync(invocation);
-
-                    foreach (var interceptor in interceptorAttributes)
+                    var resultType = GetTaskResultType(invocation);
+                    if (resultType == null)
                     {
-                        var func = processAsyncFunc;
-                        processAsyncFunc = () => interceptor.ProcessAsync(func,
-                                                                          ObjectProvider,
-                                                                          invocation.TargetType,
-                                                                          invocation.InvocationTarget,
-                                                                          invocation.Method,
-                                                                          invocation.MethodInvocationTarget);
+                        InterceptAsync(invocation, interceptorAttributes);
                     }
-                    invocation.ReturnValue = processAsyncFunc();
+                    else
+                    {
+                        this.InvokeGenericMethod(nameof(InterceptAsync),
+                                                 new object[] {invocation, interceptorAttributes},
+                                                 resultType);
+                    }
                 }
                 else
                 {
-                    Func<object> processFunc = () => Process(invocation);
+                    Func<dynamic> processFunc = () => Process(invocation);
                     foreach (var interceptor in interceptorAttributes)
                     {
                         var func = processFunc;

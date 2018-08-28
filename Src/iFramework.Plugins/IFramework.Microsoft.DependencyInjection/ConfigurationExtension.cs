@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using IFramework.Config;
+﻿using IFramework.Config;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.DependencyInjection.Microsoft
@@ -15,8 +12,8 @@ namespace IFramework.DependencyInjection.Microsoft
             return configuration;
         }
 
-        public static Configuration UseAutofacContainer(this Configuration configuration,
-                                                        IServiceCollection serviceCollection)
+        public static Configuration UseMicrosoftDependencyInjection(this Configuration configuration,
+                                                                    IServiceCollection serviceCollection)
         {
             ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(serviceCollection));
             return configuration;

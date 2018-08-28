@@ -22,7 +22,7 @@ namespace IFramework.Infrastructure
             }
         }
 
-        public static async Task<object> DoInTransactionAsync(Func<Task<object>> func,
+        public static async Task<T> DoInTransactionAsync<T>(Func<Task<T>> func,
                                                       IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                                       TransactionScopeOption scopOption = TransactionScopeOption.Required,
                                                       bool continueOnCapturedContext = false)

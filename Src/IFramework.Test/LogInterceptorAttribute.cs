@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 using IFramework.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Sample.CommandServiceCore.Controllers
+namespace IFramework.Test
 {
     public class LogInterceptorAttribute : InterceptorAttribute
     {
         public override async Task<T> ProcessAsync<T>(Func<Task<T>> funcAsync,
-                                                        IObjectProvider objectProvider,
-                                                        Type targetType,
-                                                        object invocationTarget,
-                                                        MethodInfo method,
-                                                        MethodInfo methodInvocationTarget)
+                                                      IObjectProvider objectProvider,
+                                                      Type targetType,
+                                                      object invocationTarget,
+                                                      MethodInfo method,
+                                                      MethodInfo methodInvocationTarget)
         {
             var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
@@ -23,11 +23,11 @@ namespace Sample.CommandServiceCore.Controllers
         }
 
         public override async Task ProcessAsync(Func<Task> funcAsync,
-                                                      IObjectProvider objectProvider,
-                                                      Type targetType,
-                                                      object invocationTarget,
-                                                      MethodInfo method,
-                                                      MethodInfo methodInvocationTarget)
+                                                IObjectProvider objectProvider,
+                                                Type targetType,
+                                                object invocationTarget,
+                                                MethodInfo method,
+                                                MethodInfo methodInvocationTarget)
         {
             var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");

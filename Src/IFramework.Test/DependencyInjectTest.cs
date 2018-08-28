@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Autofac;
 using Autofac.Core.Registration;
 using IFramework.Config;
@@ -89,32 +90,80 @@ namespace IFramework.Test
         public int Id { get; set; }
     }
 
+    public interface IPerson
+    {
+        Task<string> DoAsync(string str);
+        [LogInterceptor]
+        Task<(string, int)> DoAsync(string str, int i);
+    }
+
+    public class Person : IPerson
+    {
+        public Task<(string, int)> DoAsync(string str, int i)
+        {
+            return Task.FromResult((str, i));
+        }
+        public Task<string> DoAsync(string str)
+        {
+            return Task.FromResult(str);
+        }
+    }
 
     public class DependencyInjectTest
     {
-        IObjectProviderBuilder GetNewBuilder()
+        IObjectProviderBuilder GetAutofacBuilder()
         {
             B.ConstructedCount = 0;
             //Configuration.Instance
             //             .UseAutofacContainer();
                          //.UseMicrosoftDependencyInjection();
-            return new DependencyInjection.Autofac.ObjectProviderBuilder();
+            var builder = new DependencyInjection.Autofac.ObjectProviderBuilder();
+            var services = new ServiceCollection();
+            services.AddLogging();
+            builder.Populate(services);
+            return builder;
         }
 
-        IObjectProviderBuilder GetMsNewBuilder()
+        IObjectProviderBuilder GetMsBuilder()
         {
             B.ConstructedCount = 0;
             //Configuration.Instance
             //             .UseAutofacContainer();
             //.UseMicrosoftDependencyInjection();
             //return new DependencyInjection.Autofac.ObjectProviderBuilder();
-            return new DependencyInjection.Microsoft.ObjectProviderBuilder();
+            var builder = new DependencyInjection.Microsoft.ObjectProviderBuilder();
+            var services = new ServiceCollection();
+            services.AddLogging();
+            builder.Populate(services);
+            return builder;
         }
+
+        [Fact]
+        public async Task InterceptTest()
+        {
+            var builder = GetAutofacBuilder();
+            builder.Register<IPerson, Person>(ServiceLifetime.Scoped,
+                                              new InterfaceInterceptorInjection(),
+                                              new InterceptionBehaviorInjection());
+            var provider = builder.Build();
+            using (var scope = provider.CreateScope())
+            {
+                var person = scope.GetService<IPerson>();
+
+                var result1 = await person.DoAsync("ivan");
+                Assert.Equal("ivan", result1);
+
+                var result2 = await person.DoAsync("ivan", 10);
+                Assert.Equal("ivan", result2.Item1);
+                Assert.Equal(10, result2.Item2);
+            }
+        }
+
 
         [Fact]
         public void GetAllServicesTest()
         {
-            var builder = GetNewBuilder();
+            var builder = GetAutofacBuilder();
             builder.Register<IB, B>(ServiceLifetime.Singleton)
                    .Register<IB, B2>();
             var objectProvider = builder.Build();
@@ -127,7 +176,7 @@ namespace IFramework.Test
         [Fact]
         public void MsSameServiceTest()
         {
-            var builder = GetNewBuilder();
+            var builder = GetAutofacBuilder();
             builder.Register<IB>(p => new B(), ServiceLifetime.Scoped)
                    .Register<B, B>(ServiceLifetime.Scoped);
             var provider = builder.Build();
@@ -151,7 +200,7 @@ namespace IFramework.Test
         [Fact]
         public void SameServiceTest()
         {
-            var builder = GetNewBuilder();
+            var builder = GetAutofacBuilder();
             builder.Register<IB>(p => new B(), ServiceLifetime.Scoped)
                    .Register<B, B>(ServiceLifetime.Scoped);
             var provider = builder.Build();
@@ -167,7 +216,7 @@ namespace IFramework.Test
         [Fact]
         public void GetRequiredServiceTest()
         {
-            var builder = GetNewBuilder();
+            var builder = GetAutofacBuilder();
 
             builder.Register<IB, B>(ServiceLifetime.Singleton)
                    .Register<IB, B2>("B2");
@@ -192,7 +241,7 @@ namespace IFramework.Test
         [Fact]
         public void OverrideInjectTest()
         {
-            var builder = GetMsNewBuilder();
+            var builder = GetMsBuilder();
 
             builder.Register<IB, B2>(ServiceLifetime.Singleton);
             builder.Register<IB, B>(ServiceLifetime.Singleton);
@@ -205,7 +254,7 @@ namespace IFramework.Test
         [Fact]
         public void ScopeTest()
         {
-            var builder = GetNewBuilder();
+            var builder = GetAutofacBuilder();
 
             builder.Register<IB, B>(ServiceLifetime.Singleton);
             builder.Register<A, A>();

@@ -215,6 +215,27 @@ namespace IFramework.Infrastructure
             return fastInvoker(null, args);
         }
 
+        public static bool GenericTypeAssignable(Type sourceType, Type targetType)
+        {
+            if (sourceType == null)
+            {
+                return true;
+            }
+
+            if (sourceType.Name == targetType.Name && sourceType.GenericTypeArguments.Length == targetType.GenericTypeArguments.Length)
+            {
+                for (int i = 0; i < sourceType.GenericTypeArguments.Length; i++)
+                {
+                    if (sourceType.GenericTypeArguments[i].Name != targetType.GenericTypeArguments[i].Name)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
         public static MethodInfo GetMethodInfo(this Type type, string method, object[] args, Type[] genericTypes, bool staticMethod = false)
         {
             var keyAttributes = new List<string>(args.Select(a => a?.GetType().MetadataToken.ToString() ?? "null")) { type.MetadataToken.ToString(), method };
@@ -223,10 +244,10 @@ namespace IFramework.Infrastructure
             return MethodInfoDictionary.GetOrAdd(methodInfoKey, key =>
             {
                 MethodInfo mi = null;
-                foreach (var m in type.GetMethods((staticMethod ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.Public | BindingFlags.NonPublic)
-                                      .Where(m => m.Name == method &&
-                                                  m.IsGenericMethod &&
-                                                  m.GetParameters().Length == args.Length))
+                var methods = type.GetMethods((staticMethod ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.Public | BindingFlags.NonPublic);
+                foreach (var m in methods.Where(m => m.Name == method &&
+                                                     m.IsGenericMethod &&
+                                                     m.GetParameters().Length == args.Length))
                 {
                     var equalParameters = true;
                     for (var i = 0; i < m.GetParameters().Length; i++)
@@ -237,7 +258,9 @@ namespace IFramework.Infrastructure
                                                                         .GenericParameterPosition]
                                                 : parameter.ParameterType;
                         var arg = args[i];
-                        if ((arg != null || parameterType.IsValueType) && !parameterType.IsInstanceOfType(arg))
+                        if ((arg != null || parameterType.IsValueType) &&
+                            !parameterType.IsInstanceOfType(arg) && 
+                            !GenericTypeAssignable(arg?.GetType(), parameterType))
                         {
                             equalParameters = false;
                             break;

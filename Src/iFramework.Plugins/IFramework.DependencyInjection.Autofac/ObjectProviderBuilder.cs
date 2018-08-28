@@ -18,6 +18,7 @@ namespace IFramework.DependencyInjection.Autofac
         public ObjectProviderBuilder(ContainerBuilder builder = null)
         {
             _containerBuilder = builder ?? new ContainerBuilder();
+            _containerBuilder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(ConfigurationExtension)));
         }
 
         public ObjectProviderBuilder(IServiceCollection serviceCollection)
