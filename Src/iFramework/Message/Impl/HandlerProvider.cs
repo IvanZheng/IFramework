@@ -98,21 +98,17 @@ namespace IFramework.Message.Impl
                 {
                     if (Assemblies == null || Assemblies.Contains(handlerElement.Name))
                     {
-                        try
+                        switch (handlerElement.SourceType)
                         {
-                            switch (handlerElement.SourceType)
-                            {
-                                case HandlerSourceType.Type:
-                                    var type = Type.GetType(handlerElement.Source);
-                                    RegisterHandlerFromType(type);
-                                    break;
-                                case HandlerSourceType.Assembly:
-                                    var assembly = Assembly.Load(handlerElement.Source);
-                                    RegisterHandlerFromAssembly(assembly);
-                                    break;
-                            }
+                            case HandlerSourceType.Type:
+                                var type = Type.GetType(handlerElement.Source);
+                                RegisterHandlerFromType(type);
+                                break;
+                            case HandlerSourceType.Assembly:
+                                var assembly = Assembly.Load(handlerElement.Source);
+                                RegisterHandlerFromAssembly(assembly);
+                                break;
                         }
-                        catch { }
                     }
                 }
             }
