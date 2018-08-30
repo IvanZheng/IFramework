@@ -162,6 +162,8 @@ namespace Sample.CommandServiceCore
                 routes.MapRoute("default",
                                 "{controller=Home}/{action=Index}/{id?}");
             });
+            var logger = loggerFactory.CreateLogger<Startup>();
+            logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
         }
 
         private void StartMessageQueueComponents()
