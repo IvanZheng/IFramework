@@ -140,19 +140,38 @@ namespace IFramework.DependencyInjection.Autofac
                 }
                 else
                 {
-                    Func<dynamic> processFunc = () => Process(invocation);
-                    foreach (var interceptor in interceptorAttributes)
+                    if (invocation.Method.ReturnType != typeof(void))
                     {
-                        var func = processFunc;
-                        processFunc = () => interceptor.Process(func,
-                                                                ObjectProvider,
-                                                                invocation.TargetType,
-                                                                invocation.InvocationTarget,
-                                                                invocation.Method,
-                                                                invocation.MethodInvocationTarget,
-                                                                invocation.Arguments);
+                        Func<dynamic> processFunc = () => Process(invocation);
+                        foreach (var interceptor in interceptorAttributes)
+                        {
+                            var func = processFunc;
+                            processFunc = () => interceptor.Process(func,
+                                                                    ObjectProvider,
+                                                                    invocation.TargetType,
+                                                                    invocation.InvocationTarget,
+                                                                    invocation.Method,
+                                                                    invocation.MethodInvocationTarget,
+                                                                    invocation.Arguments);
+                        }
+                        invocation.ReturnValue = processFunc();
                     }
-                    invocation.ReturnValue = processFunc();
+                    else
+                    {
+                        Action processFunc = () => Process(invocation);
+                        foreach (var interceptor in interceptorAttributes)
+                        {
+                            var func = processFunc;
+                            processFunc = () => interceptor.Process(func,
+                                                                    ObjectProvider,
+                                                                    invocation.TargetType,
+                                                                    invocation.InvocationTarget,
+                                                                    invocation.Method,
+                                                                    invocation.MethodInvocationTarget,
+                                                                    invocation.Arguments);
+                        }
+                        processFunc(); 
+                    }
                 }
             }
             else

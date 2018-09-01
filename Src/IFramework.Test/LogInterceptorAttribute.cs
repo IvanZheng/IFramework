@@ -51,5 +51,19 @@ namespace IFramework.Test
             logger.LogDebug($"{method.Name} leave");
             return result;
         }
+
+        public override void Process(Action func,
+                                       IObjectProvider objectProvider,
+                                       Type targetType,
+                                       object invocationTarget,
+                                       MethodInfo method,
+                                       MethodInfo methodInvocationTarget,
+                                       object[] arguments)
+        {
+            var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
+            logger.LogDebug($"{method.Name} enter");
+            func();
+            logger.LogDebug($"{method.Name} leave");
+        }
     }
 }

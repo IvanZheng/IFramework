@@ -36,5 +36,13 @@ namespace IFramework.DependencyInjection
                                        MethodInfo method,
                                        MethodInfo methodInvocationTarget,
                                        object[] arguments);
+
+        public abstract void Process(Action func,
+                                       IObjectProvider objectProvider,
+                                       Type targetType,
+                                       object invocationTarget,
+                                       MethodInfo method,
+                                       MethodInfo methodInvocationTarget,
+                                       object[] arguments);
     }
 }

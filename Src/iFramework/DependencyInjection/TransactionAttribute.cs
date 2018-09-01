@@ -56,5 +56,18 @@ namespace IFramework.DependencyInjection
                                                         IsolationLevel,
                                                         Scope);
         }
+
+        public override void Process(Action func,
+                                     IObjectProvider objectProvider,
+                                     Type targetType,
+                                     object invocationTarget,
+                                     MethodInfo method,
+                                     MethodInfo methodInvocationTarget,
+                                     object[] arguments)
+        {
+            TransactionExtension.DoInTransaction(func,
+                                                 IsolationLevel,
+                                                 Scope);
+        }
     }
 }

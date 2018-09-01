@@ -9,11 +9,12 @@ namespace Sample.CommandServiceCore.Controllers
     public class LogInterceptorAttribute : InterceptorAttribute
     {
         public override async Task<T> ProcessAsync<T>(Func<Task<T>> funcAsync,
-                                                        IObjectProvider objectProvider,
-                                                        Type targetType,
-                                                        object invocationTarget,
-                                                        MethodInfo method,
-                                                        MethodInfo methodInvocationTarget)
+                                                      IObjectProvider objectProvider,
+                                                      Type targetType,
+                                                      object invocationTarget,
+                                                      MethodInfo method,
+                                                      MethodInfo methodInvocationTarget,
+                                                      object[] arguments)
         {
             var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
@@ -23,11 +24,12 @@ namespace Sample.CommandServiceCore.Controllers
         }
 
         public override async Task ProcessAsync(Func<Task> funcAsync,
-                                                      IObjectProvider objectProvider,
-                                                      Type targetType,
-                                                      object invocationTarget,
-                                                      MethodInfo method,
-                                                      MethodInfo methodInvocationTarget)
+                                                IObjectProvider objectProvider,
+                                                Type targetType,
+                                                object invocationTarget,
+                                                MethodInfo method,
+                                                MethodInfo methodInvocationTarget,
+                                                object[] arguments)
         {
             var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
@@ -40,13 +42,28 @@ namespace Sample.CommandServiceCore.Controllers
                                        Type targetType,
                                        object invocationTarget,
                                        MethodInfo method,
-                                       MethodInfo methodInvocationTarget)
+                                       MethodInfo methodInvocationTarget,
+                                       object[] arguments)
         {
             var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
             var result = func();
             logger.LogDebug($"{method.Name} leave");
             return result;
+        }
+
+        public override void Process(Action func,
+                                     IObjectProvider objectProvider,
+                                     Type targetType,
+                                     object invocationTarget,
+                                     MethodInfo method,
+                                     MethodInfo methodInvocationTarget,
+                                     object[] arguments)
+        {
+            var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
+            logger.LogDebug($"{method.Name} enter");
+            func();
+            logger.LogDebug($"{method.Name} leave");
         }
     }
 }

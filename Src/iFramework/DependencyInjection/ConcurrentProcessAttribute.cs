@@ -49,5 +49,17 @@ namespace IFramework.DependencyInjection
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
             return concurrencyProcessor.Process(func, RetryTimes);
         }
+
+        public override void Process(Action func,
+                                       IObjectProvider objectProvider,
+                                       Type targetType,
+                                       object invocationTarget,
+                                       MethodInfo method,
+                                       MethodInfo methodInvocationTarget,
+                                       object[] arguments)
+        {
+            var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
+            concurrencyProcessor.Process(func, RetryTimes);
+        }
     }
 }

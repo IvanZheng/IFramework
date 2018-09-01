@@ -135,7 +135,11 @@ namespace IFramework.DependencyInjection.Unity
         public override IMethodReturn Invoke(IMethodInvocation invocation, GetNextInterceptionBehaviorDelegate getNext)
         {
             var method = invocation.MethodBase as MethodInfo;
-            var isTaskResult = typeof(Task).IsAssignableFrom(method?.ReturnType);
+            if (method == null)
+            {
+                throw new Exception($"{invocation.MethodBase} is not MethodInfo!");
+            }
+            var isTaskResult = typeof(Task).IsAssignableFrom(method.ReturnType);
             var interceptorAttributes = GetInterceptorAttributes(invocation);
 
             if (interceptorAttributes.Length > 0)
@@ -156,19 +160,49 @@ namespace IFramework.DependencyInjection.Unity
                 }
                 else
                 {
-                    Func<dynamic> processFunc = () => Process(invocation, getNext);
-                    foreach (var interceptor in interceptorAttributes)
+                    IMethodReturn methodReturn = null;
+                    if (method.ReturnType != typeof(void))
                     {
-                        var func = processFunc;
-                        processFunc = () => interceptor.Process(func,
-                                                                ObjectProvider,
-                                                                invocation.Target.GetType(),
-                                                                invocation.Target,
-                                                                invocation.MethodBase as MethodInfo,
-                                                                null,
-                                                                invocation.Arguments.Cast<object>().ToArray());
+                        Func<dynamic> processFunc = () =>
+                        {
+                            methodReturn = Process(invocation, getNext);
+                            return methodReturn.ReturnValue;
+                        };
+                        foreach (var interceptor in interceptorAttributes)
+                        {
+                            var func = processFunc;
+                            processFunc = () => interceptor.Process(func,
+                                                                    ObjectProvider,
+                                                                    invocation.Target.GetType(),
+                                                                    invocation.Target,
+                                                                    invocation.MethodBase as MethodInfo,
+                                                                    null,
+                                                                    invocation.Arguments.Cast<object>().ToArray());
+                        }
+                        var returnValue = processFunc();
+                        methodReturn.ReturnValue = returnValue;
+                        return methodReturn;
                     }
-                    return processFunc();
+                    else
+                    {
+                        Action processFunc = () =>
+                        {
+                            methodReturn = Process(invocation, getNext);
+                        };
+                        foreach (var interceptor in interceptorAttributes)
+                        {
+                            var func = processFunc;
+                            processFunc = () => interceptor.Process(func,
+                                                                    ObjectProvider,
+                                                                    invocation.Target.GetType(),
+                                                                    invocation.Target,
+                                                                    invocation.MethodBase as MethodInfo,
+                                                                    null,
+                                                                    invocation.Arguments.Cast<object>().ToArray());
+                        }
+                        processFunc();
+                        return methodReturn;
+                    }
                 }
             }
             else
