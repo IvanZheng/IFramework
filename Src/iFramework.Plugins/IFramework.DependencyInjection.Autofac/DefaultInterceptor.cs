@@ -90,7 +90,8 @@ namespace IFramework.DependencyInjection.Autofac
                                                                   invocation.TargetType,
                                                                   invocation.InvocationTarget,
                                                                   invocation.Method,
-                                                                  invocation.MethodInvocationTarget);
+                                                                  invocation.MethodInvocationTarget,
+                                                                  invocation.Arguments);
             }
             invocation.ReturnValue = processAsyncFunc();
         }
@@ -110,7 +111,8 @@ namespace IFramework.DependencyInjection.Autofac
                                                                   invocation.TargetType,
                                                                   invocation.InvocationTarget,
                                                                   invocation.Method,
-                                                                  invocation.MethodInvocationTarget);
+                                                                  invocation.MethodInvocationTarget,
+                                                                  invocation.Arguments);
             }
             invocation.ReturnValue = processAsyncFunc();
         }
@@ -147,7 +149,8 @@ namespace IFramework.DependencyInjection.Autofac
                                                                 invocation.TargetType,
                                                                 invocation.InvocationTarget,
                                                                 invocation.Method,
-                                                                invocation.MethodInvocationTarget);
+                                                                invocation.MethodInvocationTarget,
+                                                                invocation.Arguments);
                     }
                     invocation.ReturnValue = processFunc();
                 }

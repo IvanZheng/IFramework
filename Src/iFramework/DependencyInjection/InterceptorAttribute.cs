@@ -18,20 +18,23 @@ namespace IFramework.DependencyInjection
                                           Type targetType,
                                           object invocationTarget,
                                           MethodInfo method,
-                                          MethodInfo methodInvocationTarget);
+                                          MethodInfo methodInvocationTarget,
+                                          object[] arguments);
 
         public abstract Task<T> ProcessAsync<T>(Func<Task<T>> funcAsync,
                                                 IObjectProvider objectProvider,
                                                 Type targetType,
                                                 object invocationTarget,
                                                 MethodInfo method,
-                                                MethodInfo methodInvocationTarget);
+                                                MethodInfo methodInvocationTarget,
+                                                object[] arguments);
 
         public abstract object Process(Func<dynamic> func,
                                        IObjectProvider objectProvider,
                                        Type targetType,
                                        object invocationTarget,
                                        MethodInfo method,
-                                       MethodInfo methodInvocationTarget);
+                                       MethodInfo methodInvocationTarget,
+                                       object[] arguments);
     }
 }

@@ -4,298 +4,177 @@ using System.Linq;
 using IFramework.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Unity;
-using Unity.Extension;
+using Unity.Injection;
+using Unity.Interception.ContainerIntegration;
+using Unity.Interception.Interceptors.InstanceInterceptors.InterfaceInterception;
+using Unity.Interception.Interceptors.TypeInterceptors.VirtualMethodInterception;
+using Unity.Lifetime;
+using Unity.Microsoft.DependencyInjection;
+using Unity.Registration;
 
 namespace IFramework.DependencyInjection.Unity
 {
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
+        private static readonly string LifetimeManagerKeyFormat = "IoC.{0}";
+        
         private readonly UnityContainer _container;
 
-        public ObjectProviderBuilder()
+        public ObjectProviderBuilder(UnityContainer container = null)
         {
-            _container = new UnityContainer();
-        }
+            _container = container ?? new UnityContainer();
 
-        public ObjectProviderBuilder(UnityContainer container)
-        {
-            _container = container ?? throw new ArgumentNullException(nameof(container));
-        }
+            _container.AddNewExtension<Interception>();
+            #region register lifetimemanager
 
-        public ObjectProviderBuilder(IServiceCollection serviceCollection = null)
-            : this()
-        {
-            _container.RegisterType(this.GetType(), c => { });
+            _container.RegisterType<LifetimeManager, ContainerControlledLifetimeManager>(GetLifetimeManagerKey(ServiceLifetime.Singleton));
+            _container.RegisterType<LifetimeManager, HierarchicalLifetimeManager>(GetLifetimeManagerKey(ServiceLifetime.Scoped));
+            _container.RegisterType<LifetimeManager, TransientLifetimeManager>(GetLifetimeManagerKey(ServiceLifetime.Transient));
+
+            #endregion
         }
 
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
             if (serviceCollection != null)
             {
-                _container.Populate(serviceCollection);
+                _container.BuildServiceProvider(serviceCollection);
             }
-            var objectProvider = new ObjectProvider();
-            _container.RegisterInstance<IObjectProvider>(objectProvider);
-            objectProvider.SetScope(_container.Build());
+
+            var objectProvider = new ObjectProvider(_container);
             return objectProvider;
         }
 
-        public IObjectProviderBuilder RegisterInstance(Type t, object instance)
+        public IObjectProviderBuilder Populate(IServiceCollection serviceCollection)
         {
-            _container.RegisterInstance(instance)
-                             .As(t);
+            _container.BuildServiceProvider(serviceCollection);
             return this;
-            ;
+        }
+
+        public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime)
+        {
+            _container.RegisterType<TFrom>(GetLifeTimeManager(lifetime),
+                                           new InjectionFactory(container => implementationFactory(new ObjectProvider(container as UnityContainer))));
+            return this;
+        }
+
+        public IObjectProviderBuilder Register(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections)
+        {
+            _container.RegisterType(from, to, name, GetLifeTimeManager(lifetime), GetInjectionParameters(from, injections));
+            return this;
+        }
+
+        public IObjectProviderBuilder Register(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections)
+        {
+            _container.RegisterType(from, to, GetLifeTimeManager(lifetime), GetInjectionParameters(from, injections));
+            return this;
+        }
+
+        public IObjectProviderBuilder Register(Type from, Type to, string name = null, params Injection[] injections)
+        {
+            _container.RegisterType(from, to, name, GetInjectionParameters(from, injections));
+            return this;
+        }
+
+        public IObjectProviderBuilder Register<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections) where TFrom : class where TTo : class, TFrom
+        {
+            _container.RegisterType<TFrom, TTo>(GetLifeTimeManager(lifetime), GetInjectionParameters(typeof(TFrom), injections));
+            return this;
+        }
+
+        public IObjectProviderBuilder Register<TFrom, TTo>(params Injection[] injections) where TFrom : class where TTo : class, TFrom
+        {
+            _container.RegisterType<TFrom, TTo>(GetInjectionParameters(typeof(TFrom), injections));
+            return this;
+        }
+
+        public IObjectProviderBuilder Register<TFrom, TTo>(string name, params Injection[] injections) where TFrom : class where TTo : class, TFrom
+        {
+            _container.RegisterType<TFrom, TTo>(name, GetInjectionParameters(typeof(TFrom), injections));
+            return this;
+        }
+
+        public IObjectProviderBuilder Register<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections) where TFrom : class where TTo : class, TFrom
+        {
+            _container.RegisterType<TFrom, TTo>(GetLifeTimeManager(lifetime), GetInjectionParameters(typeof(TFrom), injections));
+            return this;
         }
 
         public IObjectProviderBuilder RegisterInstance(Type t, string name, object instance)
         {
-            _container.RegisterInstance(instance)
-                             .Named(name, t);
+            _container.RegisterInstance(t, name, instance);
             return this;
         }
 
-        public IObjectProviderBuilder RegisterInstance<TInterface>(TInterface instance)
-            where TInterface : class
+        public IObjectProviderBuilder RegisterInstance(Type t, object instance)
+        {
+            _container.RegisterInstance(t, instance);
+            return this;
+        }
+
+        public IObjectProviderBuilder RegisterInstance<TInterface>(TInterface instance) where TInterface : class
         {
             _container.RegisterInstance(instance);
             return this;
         }
 
-        public IObjectProviderBuilder RegisterInstance<TInterface>(string name, TInterface instance)
-            where TInterface : class
+        public IObjectProviderBuilder RegisterInstance<TInterface>(string name, TInterface instance) where TInterface : class
         {
-            _container.RegisterInstance(instance)
-                             .Named<TInterface>(name);
+            _container.RegisterInstance(name, instance);
             return this;
         }
 
-
-        public IObjectProviderBuilder RegisterType(Type from, Type to, string name = null, params Injection[] injections)
+        public static string GetLifetimeManagerKey(ServiceLifetime lifetime)
         {
-            var injectionMembers = GetInjectionParameters(injections);
-
-            dynamic registrationBuilder;
-            if (string.IsNullOrEmpty(name))
-            {
-                if (to.IsGenericType)
-                {
-                    registrationBuilder = _container.RegisterGeneric(to).As(from);
-                }
-                else
-                {
-                    registrationBuilder = _container.RegisterType(to).As(from);
-                }
-            }
-            else
-            {
-                if (to.IsGenericType)
-                {
-                    registrationBuilder = _container.RegisterGeneric(to)
-                                                           .Named(name, from)
-                                                           .WithParameters(injectionMembers);
-                }
-                else
-                {
-                    registrationBuilder = _container.RegisterType(to)
-                                                           .Named(name, from)
-                                                           .WithParameters(injectionMembers);
-                }
-            }
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
+            return string.Format(LifetimeManagerKeyFormat, lifetime);
         }
 
-        public IObjectProviderBuilder RegisterType(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections)
+        private LifetimeManager GetLifeTimeManager(ServiceLifetime lifetime)
         {
-            var injectionMembers = GetInjectionParameters(injections);
-
-            dynamic registrationBuilder;
-            if (to.IsGenericType)
+            LifetimeManager lifetimeManager = null;
+            lifetimeManager = _container.Resolve<LifetimeManager>(GetLifetimeManagerKey(lifetime));
+            if (lifetimeManager == null)
             {
-                registrationBuilder = _container.RegisterGeneric(to)
-                                                       .As(from)
-                                                       .WithParameters(injectionMembers)
-                                                       .InstanceLifetime(lifetime);
-            }
-            else
-            {
-                registrationBuilder = _container.RegisterType(to)
-                                                       .As(from)
-                                                       .WithParameters(injectionMembers)
-                                                       .InstanceLifetime(lifetime);
+                throw new Exception($"{lifetime} is not supported.");
             }
 
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
+            return lifetimeManager;
         }
 
-        public IObjectProviderBuilder RegisterType(Type from,
-                                                   Type to,
-                                                   string name,
-                                                   ServiceLifetime lifetime,
-                                                   params Injection[] injections)
+        private InjectionMember[] GetInjectionParameters(Type from, Injection[] injections)
         {
-            var injectionMembers = GetInjectionParameters(injections);
-            dynamic registrationBuilder;
-            if (to.IsGenericType)
-            {
-                registrationBuilder = _container.RegisterGeneric(to)
-                                                       .Named(name, from)
-                                                       .InstanceLifetime(lifetime)
-                                                       .WithParameters(injectionMembers);
-            }
-            else
-            {
-                registrationBuilder = _container.RegisterType(to)
-                                                       .Named(name, from)
-                                                       .InstanceLifetime(lifetime)
-                                                       .WithParameters(injectionMembers);
-            }
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(ServiceLifetime lifetime, params Injection[] injections)
-            where TFrom : class where TTo : class, TFrom
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-
-            dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
-            {
-                registrationBuilder = _container.RegisterGeneric(typeof(TTo))
-                                                       .As(typeof(TFrom))
-                                                       .InstanceLifetime(lifetime)
-                                                       .WithParameters(injectionMembers);
-            }
-            else
-            {
-                registrationBuilder = _container.RegisterType(typeof(TTo))
-                                                       .As(typeof(TFrom))
-                                                       .InstanceLifetime(lifetime)
-                                                       .WithParameters(injectionMembers);
-            }
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(params Injection[] injections)
-            where TFrom : class where TTo : class, TFrom
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-            dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
-            {
-                registrationBuilder = _container.RegisterGeneric(typeof(TTo))
-                                                       .As(typeof(TFrom))
-                                                       .WithParameters(injectionMembers);
-            }
-            else
-            {
-                registrationBuilder = _container.RegisterType(typeof(TTo))
-                                                       .As(typeof(TFrom))
-                                                       .WithParameters(injectionMembers);
-            }
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, params Injection[] injections)
-            where TFrom : class where TTo : class, TFrom
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-            dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
-            {
-                registrationBuilder = _container.RegisterGeneric(typeof(TTo))
-                                                       .Named(name, typeof(TFrom))
-                                                       .WithParameters(injectionMembers);
-            }
-            else
-            {
-                registrationBuilder = _container.RegisterType(typeof(TTo))
-                                                       .Named(name, typeof(TFrom))
-                                                       .WithParameters(injectionMembers);
-            }
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        public IObjectProviderBuilder RegisterType<TFrom, TTo>(string name, ServiceLifetime lifetime, params Injection[] injections)
-            where TFrom : class where TTo : class, TFrom
-        {
-            var injectionMembers = GetInjectionParameters(injections);
-            var builder = new ContainerBuilder();
-            dynamic registrationBuilder;
-            if (typeof(TTo).IsGenericType)
-            {
-                registrationBuilder = builder.RegisterGeneric(typeof(TTo))
-                                             .Named(name, typeof(TFrom))
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
-            }
-            else
-            {
-                registrationBuilder = builder.RegisterType(typeof(TTo))
-                                             .Named(name, typeof(TFrom))
-                                             .InstanceLifetime(lifetime)
-                                             .WithParameters(injectionMembers);
-            }
-
-            RegisterInterceptor(registrationBuilder, injections);
-            return this;
-        }
-
-        private void RegisterInterceptor(dynamic registrationBuilder, Injection[] injections)
-        {
-            injections.ForEach(injection =>
-            {
-                if (injection is InterfaceInterceptorInjection)
-                {
-                    RegistrationExtensions.EnableInterfaceInterceptors(registrationBuilder);
-                }
-                else if (injection is VirtualMethodInterceptorInjection)
-                {
-                    RegistrationExtensions.EnableClassInterceptors(registrationBuilder);
-                }
-                else if (injection is TransparentProxyInterceptorInjection)
-                {
-                    throw new NotImplementedException();
-                    //RegistrationExtensions.InterceptTransparentProxy(registrationBuilder)
-                    //                      .UseWcfSafeRelease();
-                }
-                else if (injection is InterceptionBehaviorInjection)
-                {
-                    var interceptorType = ((InterceptionBehaviorInjection) injection).BehaviorType;
-                    RegistrationExtensions.InterceptedBy(registrationBuilder, interceptorType);
-                }
-            });
-        }
-
-        private IEnumerable<global::Autofac.Core.Parameter> GetInjectionParameters(Injection[] injections)
-        {
-            var injectionMembers = new List<global::Autofac.Core.Parameter>();
+            var injectionMembers = new List<InjectionMember>();
             injections.ForEach(injection =>
             {
                 if (injection is ConstructInjection)
                 {
-                    var constructInjection = injection as ConstructInjection;
-                    injectionMembers.AddRange(constructInjection.Parameters
-                                                                .Select(p => new NamedParameter(p.ParameterName, p.ParameterValue)));
+                    var constructInjection = (ConstructInjection) injection;
+                    injectionMembers.Add(new InjectionConstructor(constructInjection.Parameters
+                                                                                    .Select(p => p.ParameterValue)
+                                                                                    .ToArray()));
                 }
                 else if (injection is ParameterInjection)
                 {
-                    var propertyInjection = injection as ParameterInjection;
-                    injectionMembers.Add(new NamedPropertyParameter(propertyInjection.ParameterName,
-                                                                    propertyInjection.ParameterValue));
+                    var propertyInjection = (ParameterInjection) injection;
+                    injectionMembers.Add(new InjectionProperty(propertyInjection.ParameterName,
+                                                               propertyInjection.ParameterValue));
+                }
+                else if (injection is InterceptionBehaviorInjection)
+                {
+                    var behaviorType = ((InterceptionBehaviorInjection) injection).BehaviorType;
+                    var interceptorType = behaviorType ?? typeof(DefaultInterceptor);
+                    injectionMembers.Add(new InterceptionBehavior(interceptorType));
+                }
+                else if (injection is InterfaceInterceptorInjection)
+                {
+                    injectionMembers.Add(new Interceptor<InterfaceInterceptor>());
+                }
+                else if (injection is VirtualMethodInterceptorInjection)
+                {
+                    injectionMembers.Add(new Interceptor<VirtualMethodInterceptor>());
                 }
             });
-            return injectionMembers;
+            return injectionMembers.ToArray();
         }
     }
 }

@@ -13,7 +13,8 @@ namespace IFramework.Test
                                                       Type targetType,
                                                       object invocationTarget,
                                                       MethodInfo method,
-                                                      MethodInfo methodInvocationTarget)
+                                                      MethodInfo methodInvocationTarget,
+                                                      object[] arguments)
         {
             var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
@@ -27,7 +28,8 @@ namespace IFramework.Test
                                                 Type targetType,
                                                 object invocationTarget,
                                                 MethodInfo method,
-                                                MethodInfo methodInvocationTarget)
+                                                MethodInfo methodInvocationTarget,
+                                                object[] arguments)
         {
             var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
@@ -40,7 +42,8 @@ namespace IFramework.Test
                                        Type targetType,
                                        object invocationTarget,
                                        MethodInfo method,
-                                       MethodInfo methodInvocationTarget)
+                                       MethodInfo methodInvocationTarget,
+                                       object[] arguments)
         {
             var logger = objectProvider.GetService<ILoggerFactory>().CreateLogger(targetType);
             logger.LogDebug($"{method.Name} enter");
