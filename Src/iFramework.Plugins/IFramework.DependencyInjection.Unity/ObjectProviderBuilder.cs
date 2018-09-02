@@ -25,14 +25,6 @@ namespace IFramework.DependencyInjection.Unity
             _container = container ?? new UnityContainer();
 
             _container.AddNewExtension<Interception>();
-
-            #region register lifetimemanager
-
-            _container.RegisterType<LifetimeManager, ContainerControlledLifetimeManager>(GetLifetimeManagerKey(ServiceLifetime.Singleton));
-            _container.RegisterType<LifetimeManager, HierarchicalLifetimeManager>(GetLifetimeManagerKey(ServiceLifetime.Scoped));
-            _container.RegisterType<LifetimeManager, TransientLifetimeManager>(GetLifetimeManagerKey(ServiceLifetime.Transient));
-
-            #endregion
         }
 
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
@@ -49,6 +41,7 @@ namespace IFramework.DependencyInjection.Unity
                 {
                     throw new Exception("object provider is not Unity ObjectProvider!");
                 }
+
                 return new ObjectProvider(provider.UnityContainer);
             }, ServiceLifetime.Scoped);
             var objectProvider = new ObjectProvider(_container);
@@ -134,21 +127,19 @@ namespace IFramework.DependencyInjection.Unity
             return this;
         }
 
-        public static string GetLifetimeManagerKey(ServiceLifetime lifetime)
+        private LifetimeManager GetLifeTimeManager(ServiceLifetime serviceLifetime)
         {
-            return string.Format(LifetimeManagerKeyFormat, lifetime);
-        }
-
-        private LifetimeManager GetLifeTimeManager(ServiceLifetime lifetime)
-        {
-            LifetimeManager lifetimeManager = null;
-            lifetimeManager = _container.Resolve<LifetimeManager>(GetLifetimeManagerKey(lifetime));
-            if (lifetimeManager == null)
+            switch (serviceLifetime)
             {
-                throw new Exception($"{lifetime} is not supported.");
+                case ServiceLifetime.Singleton:
+                    return new ContainerControlledLifetimeManager();
+                case ServiceLifetime.Scoped:
+                    return new HierarchicalLifetimeManager();
+                case ServiceLifetime.Transient:
+                    return new TransientLifetimeManager();
+                default:
+                    throw new NotImplementedException($"Unsupported lifetime manager type '{serviceLifetime}'");
             }
-
-            return lifetimeManager;
         }
 
         private InjectionMember[] GetInjectionParameters(Type from, Injection[] injections)
@@ -156,22 +147,20 @@ namespace IFramework.DependencyInjection.Unity
             var injectionMembers = new List<InjectionMember>();
             injections.ForEach(injection =>
             {
-                if (injection is ConstructInjection)
+                if (injection is ConstructInjection constructInjection)
                 {
-                    var constructInjection = (ConstructInjection) injection;
                     injectionMembers.Add(new InjectionConstructor(constructInjection.Parameters
                                                                                     .Select(p => p.ParameterValue)
                                                                                     .ToArray()));
                 }
-                else if (injection is ParameterInjection)
+                else if (injection is ParameterInjection propertyInjection)
                 {
-                    var propertyInjection = (ParameterInjection) injection;
                     injectionMembers.Add(new InjectionProperty(propertyInjection.ParameterName,
                                                                propertyInjection.ParameterValue));
                 }
-                else if (injection is InterceptionBehaviorInjection)
+                else if (injection is InterceptionBehaviorInjection behaviorInjection)
                 {
-                    var behaviorType = ((InterceptionBehaviorInjection) injection).BehaviorType;
+                    var behaviorType = behaviorInjection.BehaviorType;
                     var interceptorType = behaviorType ?? typeof(DefaultInterceptor);
                     injectionMembers.Add(new InterceptionBehavior(interceptorType));
                 }

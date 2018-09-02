@@ -7,6 +7,8 @@ using System.Transactions;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
+using IFramework.DependencyInjection.Microsoft;
+using IFramework.DependencyInjection.Unity;
 using IFramework.Domain;
 using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
@@ -25,7 +27,9 @@ namespace IFramework.Test.EntityFramework
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
             Configuration.Instance
-                         .UseAutofacContainer()
+                         //.UseMicrosoftDependencyInjection()
+                         .UseUnityContainer()
+                         //.UseAutofacContainer()
                          .UseConfiguration(builder.Build())
                          .UseCommonComponents()
                          .UseLog4Net()
@@ -120,6 +124,27 @@ namespace IFramework.Test.EntityFramework
                     Assert.Equal(u.GetDbContext<DemoDbContext>().GetHashCode(), dbContext.GetHashCode());
                 }
             }
+        }
+
+        [Fact]
+        public void DbContextPoolTest()
+        {
+            int hashCode1, hashCode2;
+            using (var scope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = scope.GetService<DemoDbContext>();
+                hashCode1 = dbContext.GetHashCode();
+                dbContext.Database.AutoTransactionsEnabled = false;
+            }
+
+            using (var scope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = scope.GetService<DemoDbContext>();
+                hashCode2 = dbContext.GetHashCode();
+                Assert.True(dbContext.Database.AutoTransactionsEnabled);
+            }
+
+            Assert.Equal(hashCode1, hashCode2);
         }
     }
 }
