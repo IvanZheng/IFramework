@@ -99,7 +99,6 @@ namespace IFramework.DependencyInjection.Unity
                                                                   invocation.Target.GetType(),
                                                                   invocation.Target,
                                                                   invocation.MethodBase as MethodInfo,
-                                                                  null,
                                                                   invocation.Arguments.Cast<object>().ToArray());
             }
             var returnValue = processAsyncFunc();
@@ -124,7 +123,6 @@ namespace IFramework.DependencyInjection.Unity
                                                                   invocation.Target.GetType(),
                                                                   invocation.Target,
                                                                   invocation.MethodBase as MethodInfo,
-                                                                  null,
                                                                   invocation.Arguments.Cast<object>().ToArray());
             }
             var returnValue = processAsyncFunc();
@@ -176,7 +174,6 @@ namespace IFramework.DependencyInjection.Unity
                                                                     invocation.Target.GetType(),
                                                                     invocation.Target,
                                                                     invocation.MethodBase as MethodInfo,
-                                                                    null,
                                                                     invocation.Arguments.Cast<object>().ToArray());
                         }
                         var returnValue = processFunc();
@@ -197,7 +194,6 @@ namespace IFramework.DependencyInjection.Unity
                                                                     invocation.Target.GetType(),
                                                                     invocation.Target,
                                                                     invocation.MethodBase as MethodInfo,
-                                                                    null,
                                                                     invocation.Arguments.Cast<object>().ToArray());
                         }
                         processFunc();

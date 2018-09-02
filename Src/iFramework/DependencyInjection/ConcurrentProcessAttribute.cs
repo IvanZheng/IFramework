@@ -19,7 +19,6 @@ namespace IFramework.DependencyInjection
                                                 Type targetType,
                                                 object invocationTarget,
                                                 MethodInfo method,
-                                                MethodInfo methodInvocationTarget,
                                                 object[] arguments)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
@@ -31,7 +30,6 @@ namespace IFramework.DependencyInjection
                                           Type targetType,
                                           object invocationTarget,
                                           MethodInfo method,
-                                          MethodInfo methodInvocationTarget,
                                           object[] arguments)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
@@ -43,7 +41,6 @@ namespace IFramework.DependencyInjection
                                        Type targetType,
                                        object invocationTarget,
                                        MethodInfo method,
-                                       MethodInfo methodInvocationTarget,
                                        object[] arguments)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
@@ -55,7 +52,6 @@ namespace IFramework.DependencyInjection
                                        Type targetType,
                                        object invocationTarget,
                                        MethodInfo method,
-                                       MethodInfo methodInvocationTarget,
                                        object[] arguments)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();

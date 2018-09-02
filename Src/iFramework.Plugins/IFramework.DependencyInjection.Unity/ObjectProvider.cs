@@ -10,8 +10,7 @@ namespace IFramework.DependencyInjection.Unity
 {
     public class ObjectProvider : IObjectProvider
     {
-        private UnityContainer _container;
-
+        public UnityContainer UnityContainer { get; private set; }
         public ObjectProvider(ObjectProvider parent = null)
         {
             Parent = parent;
@@ -25,7 +24,7 @@ namespace IFramework.DependencyInjection.Unity
 
         public object GetService(Type serviceType)
         {
-            return _container.Resolve(serviceType);
+            return UnityContainer.Resolve(serviceType);
         }
 
         /// <summary>
@@ -36,12 +35,12 @@ namespace IFramework.DependencyInjection.Unity
         /// <exception cref="T:System.InvalidOperationException">There is no service of type <typeparamref name="T" />.</exception>
         public object GetRequiredService(Type serviceType)
         {
-            return _container.Resolve(serviceType) ?? throw new InvalidOperationException($"There is no service of type {serviceType.Name}");
+            return UnityContainer.Resolve(serviceType) ?? throw new InvalidOperationException($"There is no service of type {serviceType.Name}");
         }
 
         public void Dispose()
         {
-            _container.Dispose();
+            UnityContainer.Dispose();
         }
 
         public IObjectProvider Parent { get; }
@@ -49,7 +48,7 @@ namespace IFramework.DependencyInjection.Unity
         public IObjectProvider CreateScope()
         {
             var objectProvider = new ObjectProvider(this);
-            var childScope = _container.CreateChildContainer();
+            var childScope = UnityContainer.CreateChildContainer();
             childScope.RegisterInstance<IObjectProvider>(objectProvider);
             objectProvider.SetComponentContext(childScope as UnityContainer);
             return objectProvider;
@@ -58,7 +57,7 @@ namespace IFramework.DependencyInjection.Unity
         public IObjectProvider CreateScope(IServiceCollection serviceCollection)
         {
             var objectProvider = new ObjectProvider(this);
-            var childScope = _container.CreateChildContainer();
+            var childScope = UnityContainer.CreateChildContainer();
             childScope.RegisterInstance<IObjectProvider>(objectProvider);
             childScope.BuildServiceProvider(serviceCollection);
             objectProvider.SetComponentContext(childScope as UnityContainer);
@@ -73,7 +72,7 @@ namespace IFramework.DependencyInjection.Unity
             }
 
             var objectProvider = new ObjectProvider(this);
-            var childScope = _container.CreateChildContainer() as UnityContainer;
+            var childScope = UnityContainer.CreateChildContainer() as UnityContainer;
 
             childScope.RegisterInstance<IObjectProvider>(objectProvider);
             var providerBuilder = new ObjectProviderBuilder(childScope);
@@ -85,37 +84,37 @@ namespace IFramework.DependencyInjection.Unity
 
         public object GetService(Type t, string name, params Parameter[] parameters)
         {
-            return _container.Resolve(t, name, GetResolverOverrides(parameters));
+            return UnityContainer.Resolve(t, name, GetResolverOverrides(parameters));
         }
 
         public object GetService(Type t, params Parameter[] parameters)
         {
-            return _container.Resolve(t, GetResolverOverrides(parameters));
+            return UnityContainer.Resolve(t, GetResolverOverrides(parameters));
         }
 
         public T GetService<T>(params Parameter[] parameters) where T : class
         {
-            return _container.Resolve<T>(GetResolverOverrides(parameters));
+            return UnityContainer.Resolve<T>(GetResolverOverrides(parameters));
         }
 
         public T GetService<T>(string name, params Parameter[] parameters) where T : class
         {
-            return _container.Resolve<T>(name, GetResolverOverrides(parameters));
+            return UnityContainer.Resolve<T>(name, GetResolverOverrides(parameters));
         }
 
         public IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters)
         {
-            return _container.ResolveAll(type, GetResolverOverrides(parameters));
+            return UnityContainer.ResolveAll(type, GetResolverOverrides(parameters));
         }
 
         public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters) where T : class
         {
-            return _container.ResolveAll<T>(GetResolverOverrides(parameters));
+            return UnityContainer.ResolveAll<T>(GetResolverOverrides(parameters));
         }
 
         internal void SetComponentContext(UnityContainer container)
         {
-            _container = container;
+            UnityContainer = container;
         }
 
         private ResolverOverride[] GetResolverOverrides(Parameter[] parameters)

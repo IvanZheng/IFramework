@@ -5,6 +5,7 @@ using IFramework.Command;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
+using IFramework.DependencyInjection.Unity;
 using IFramework.EntityFrameworkCore;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
@@ -36,6 +37,7 @@ using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 
+
 namespace Sample.CommandServiceCore
 {
     public class Startup
@@ -59,7 +61,8 @@ namespace Sample.CommandServiceCore
             var rabbitMQHostName = "10.100.7.46";
             var rabbitMQPort = 9012;
             Configuration.Instance
-                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+                         .UseUnityContainer()
+                         //.UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                          .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet()
@@ -87,7 +90,8 @@ namespace Sample.CommandServiceCore
                         options.InputFormatters.Add(new FormDataInputFormatter());
                         options.Filters.Add<ExceptionFilter>();
                     })
-                    .AddControllersAsServices();
+                    .AddControllersAsServices()
+                ;
 
             services.AddAuthorization(options =>
             {
@@ -112,7 +116,7 @@ namespace Sample.CommandServiceCore
             providerBuilder.Register<ICommunityService, CommunityService>(lifetime,
                                                                           new InterfaceInterceptorInjection(),
                                                                           new InterceptionBehaviorInjection());
-            providerBuilder.Register<HomeController, HomeController>(lifetime,
+                                                                                                                                                                           providerBuilder.Register<HomeController, HomeController>(lifetime,
                                                                      new VirtualMethodInterceptorInjection(),
                                                                      new InterceptionBehaviorInjection());
         }

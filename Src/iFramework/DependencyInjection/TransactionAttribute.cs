@@ -23,7 +23,6 @@ namespace IFramework.DependencyInjection
                                                 Type targetType,
                                                 object invocationTarget,
                                                 MethodInfo method,
-                                                MethodInfo methodInvocationTarget,
                                                 object[] arguments)
         {
             return TransactionExtension.DoInTransactionAsync(funcAsync,
@@ -36,7 +35,6 @@ namespace IFramework.DependencyInjection
                                           Type targetType,
                                           object invocationTarget,
                                           MethodInfo method,
-                                          MethodInfo methodInvocationTarget,
                                           object[] arguments)
         {
             return TransactionExtension.DoInTransactionAsync(funcAsync,
@@ -49,7 +47,6 @@ namespace IFramework.DependencyInjection
                                        Type targetType,
                                        object invocationTarget,
                                        MethodInfo method,
-                                       MethodInfo methodInvocationTarget,
                                        object[] arguments)
         {
             return TransactionExtension.DoInTransaction(func,
@@ -62,7 +59,6 @@ namespace IFramework.DependencyInjection
                                      Type targetType,
                                      object invocationTarget,
                                      MethodInfo method,
-                                     MethodInfo methodInvocationTarget,
                                      object[] arguments)
         {
             TransactionExtension.DoInTransaction(func,

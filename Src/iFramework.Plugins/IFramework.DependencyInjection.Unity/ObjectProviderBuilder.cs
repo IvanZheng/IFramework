@@ -17,7 +17,7 @@ namespace IFramework.DependencyInjection.Unity
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
         private static readonly string LifetimeManagerKeyFormat = "IoC.{0}";
-        
+
         private readonly UnityContainer _container;
 
         public ObjectProviderBuilder(UnityContainer container = null)
@@ -25,6 +25,7 @@ namespace IFramework.DependencyInjection.Unity
             _container = container ?? new UnityContainer();
 
             _container.AddNewExtension<Interception>();
+
             #region register lifetimemanager
 
             _container.RegisterType<LifetimeManager, ContainerControlledLifetimeManager>(GetLifetimeManagerKey(ServiceLifetime.Singleton));
@@ -41,6 +42,15 @@ namespace IFramework.DependencyInjection.Unity
                 _container.BuildServiceProvider(serviceCollection);
             }
 
+            Register<IObjectProvider>(context =>
+            {
+                var provider = context as ObjectProvider;
+                if (provider == null)
+                {
+                    throw new Exception("object provider is not Unity ObjectProvider!");
+                }
+                return new ObjectProvider(provider.UnityContainer);
+            }, ServiceLifetime.Scoped);
             var objectProvider = new ObjectProvider(_container);
             return objectProvider;
         }

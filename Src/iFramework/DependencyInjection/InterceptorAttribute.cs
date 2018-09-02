@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using IFramework.Infrastructure;
 
 namespace IFramework.DependencyInjection
 {
@@ -18,7 +16,6 @@ namespace IFramework.DependencyInjection
                                           Type targetType,
                                           object invocationTarget,
                                           MethodInfo method,
-                                          MethodInfo methodInvocationTarget,
                                           object[] arguments);
 
         public abstract Task<T> ProcessAsync<T>(Func<Task<T>> funcAsync,
@@ -26,7 +23,6 @@ namespace IFramework.DependencyInjection
                                                 Type targetType,
                                                 object invocationTarget,
                                                 MethodInfo method,
-                                                MethodInfo methodInvocationTarget,
                                                 object[] arguments);
 
         public abstract object Process(Func<dynamic> func,
@@ -34,15 +30,13 @@ namespace IFramework.DependencyInjection
                                        Type targetType,
                                        object invocationTarget,
                                        MethodInfo method,
-                                       MethodInfo methodInvocationTarget,
                                        object[] arguments);
 
         public abstract void Process(Action func,
-                                       IObjectProvider objectProvider,
-                                       Type targetType,
-                                       object invocationTarget,
-                                       MethodInfo method,
-                                       MethodInfo methodInvocationTarget,
-                                       object[] arguments);
+                                     IObjectProvider objectProvider,
+                                     Type targetType,
+                                     object invocationTarget,
+                                     MethodInfo method,
+                                     object[] arguments);
     }
 }

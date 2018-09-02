@@ -2,12 +2,9 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
 using Autofac.Core.Registration;
-using IFramework.Config;
 using IFramework.DependencyInjection;
-using IFramework.DependencyInjection.Autofac;
-using IFramework.DependencyInjection.Microsoft;
+using IFramework.DependencyInjection.Unity;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -80,7 +77,8 @@ namespace IFramework.Test
     {
         int Id { get; set; }
     }
-    public class C:IC
+
+    public class C : IC
     {
         public C(int id)
         {
@@ -92,10 +90,21 @@ namespace IFramework.Test
 
     public interface IPerson
     {
-        Task<string> DoAsync(string str);
+        [Transaction]
+        [LogInterceptor]
+        Task DoAsync(string str);
+
         [Transaction]
         [LogInterceptor]
         Task<(string, int)> DoAsync(string str, int i);
+
+        [Transaction]
+        [LogInterceptor]
+        void Do(string str);
+
+        [Transaction]
+        [LogInterceptor]
+        (string, int) Do(string str, int i);
     }
 
     public class Person : IPerson
@@ -104,9 +113,21 @@ namespace IFramework.Test
         {
             return Task.FromResult((str, i));
         }
-        public Task<string> DoAsync(string str)
+
+        public void Do(string str)
         {
-            return Task.FromResult(str);
+            Console.WriteLine(str);
+        }
+
+        public (string, int) Do(string str, int i)
+        {
+            return (str, i);
+        }
+
+        public Task DoAsync(string str)
+        {
+            Console.WriteLine(str);
+            return Task.Delay(10);
         }
     }
 
@@ -114,19 +135,19 @@ namespace IFramework.Test
     {
         public IObjectProviderBuilder GetUnityBuilder()
         {
-            var builder = new DependencyInjection.Unity.ObjectProviderBuilder();
+            var builder = new ObjectProviderBuilder();
             var services = new ServiceCollection();
             services.AddLogging();
             builder.Populate(services);
             return builder;
         }
 
-        IObjectProviderBuilder GetAutofacBuilder()
+        private IObjectProviderBuilder GetAutofacBuilder()
         {
             B.ConstructedCount = 0;
             //Configuration.Instance
             //             .UseAutofacContainer();
-                         //.UseMicrosoftDependencyInjection();
+            //.UseMicrosoftDependencyInjection();
             var builder = new DependencyInjection.Autofac.ObjectProviderBuilder();
             var services = new ServiceCollection();
             services.AddLogging();
@@ -134,7 +155,7 @@ namespace IFramework.Test
             return builder;
         }
 
-        IObjectProviderBuilder GetMsBuilder()
+        private IObjectProviderBuilder GetMsBuilder()
         {
             B.ConstructedCount = 0;
             //Configuration.Instance
@@ -146,27 +167,6 @@ namespace IFramework.Test
             services.AddLogging();
             builder.Populate(services);
             return builder;
-        }
-
-        [Fact]
-        public async Task InterceptTest()
-        {
-            var builder = GetUnityBuilder();
-            builder.Register<IPerson, Person>(ServiceLifetime.Scoped,
-                                              new InterfaceInterceptorInjection(),
-                                              new InterceptionBehaviorInjection());
-            var provider = builder.Build();
-            using (var scope = provider.CreateScope())
-            {
-                var person = scope.GetService<IPerson>();
-
-                var result1 = await person.DoAsync("ivan");
-                Assert.Equal("ivan", result1);
-
-                var result2 = await person.DoAsync("ivan", 10);
-                Assert.Equal("ivan", result2.Item1);
-                Assert.Equal(10, result2.Item2);
-            }
         }
 
 
@@ -181,46 +181,6 @@ namespace IFramework.Test
             Assert.NotNull(bSet);
             Assert.Equal(2, bSet.Count());
             objectProvider.Dispose();
-        }
-
-        [Fact]
-        public void MsSameServiceTest()
-        {
-            var builder = GetUnityBuilder();
-            builder.Register<IB>(p => new B(), ServiceLifetime.Scoped)
-                   .Register<B, B>(ServiceLifetime.Scoped);
-            var provider = builder.Build();
-            var hashCode1 = 0;
-            var hashCode2 = 0;
-            using (var scope = provider.CreateScope())
-            {
-                var b1 = scope.GetService<IB>();
-                var b2 = scope.GetService<IB>();
-
-                Assert.Equal(b1.GetHashCode(), b2.GetHashCode());
-                hashCode1 = b1.GetHashCode();
-            }
-            using (var scope = provider.CreateScope())
-            {
-                hashCode2 = scope.GetService<IB>().GetHashCode();
-            }
-            Assert.NotEqual(hashCode1, hashCode2);
-        }
-
-        [Fact]
-        public void SameServiceTest()
-        {
-            var builder = GetUnityBuilder();
-            builder.Register<IB>(p => new B(), ServiceLifetime.Scoped)
-                   .Register<B, B>(ServiceLifetime.Scoped);
-            var provider = builder.Build();
-            using (var scope = provider.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(1))))
-            {
-                var b1 = scope.GetService<IB>();
-                var b2 = scope.GetService<IB>();
-
-                Assert.Equal(b1.GetHashCode(), b2.GetHashCode());
-            }
         }
 
         [Fact]
@@ -249,9 +209,61 @@ namespace IFramework.Test
         }
 
         [Fact]
+        public async Task InterceptTest()
+        {
+            var builder = GetUnityBuilder();
+            builder.Register<IPerson, Person>(ServiceLifetime.Scoped,
+                                              new InterfaceInterceptorInjection(),
+                                              new InterceptionBehaviorInjection());
+            var provider = builder.Build();
+            using (var scope = provider.CreateScope())
+            {
+                var person = scope.GetService<IPerson>();
+
+                await person.DoAsync("ivan");
+
+                var result2 = await person.DoAsync("ivan", 10);
+                Assert.Equal("ivan", result2.Item1);
+                Assert.Equal(10, result2.Item2);
+
+                person.Do("ivan2");
+
+                result2 = person.Do("ivan2", 20);
+                Assert.Equal("ivan2", result2.Item1);
+                Assert.Equal(20, result2.Item2);
+            }
+        }
+
+        [Fact]
+        public void MsSameServiceTest()
+        {
+            var builder = GetUnityBuilder();
+            builder.Register<IB>(p => new B(), ServiceLifetime.Scoped)
+                   .Register<B, B>(ServiceLifetime.Scoped);
+            var provider = builder.Build();
+            var hashCode1 = 0;
+            var hashCode2 = 0;
+            using (var scope = provider.CreateScope())
+            {
+                var b1 = scope.GetService<IB>();
+                var b2 = scope.GetService<IB>();
+
+                Assert.Equal(b1.GetHashCode(), b2.GetHashCode());
+                hashCode1 = b1.GetHashCode();
+            }
+
+            using (var scope = provider.CreateScope())
+            {
+                hashCode2 = scope.GetService<IB>().GetHashCode();
+            }
+
+            Assert.NotEqual(hashCode1, hashCode2);
+        }
+
+        [Fact]
         public void OverrideInjectTest()
         {
-            var builder = GetUnityBuilder();//GetMsBuilder();
+            var builder = GetUnityBuilder(); //GetMsBuilder();
 
             builder.Register<IB, B2>(ServiceLifetime.Singleton);
             builder.Register<IB, B>(ServiceLifetime.Singleton);
@@ -261,7 +273,22 @@ namespace IFramework.Test
                 var b = scope.GetService<IB>();
                 Assert.True(b is B);
             }
-           
+        }
+
+        [Fact]
+        public void SameServiceTest()
+        {
+            var builder = GetUnityBuilder();
+            builder.Register<IB>(p => new B(), ServiceLifetime.Scoped)
+                   .Register<B, B>(ServiceLifetime.Scoped);
+            var provider = builder.Build();
+            using (var scope = provider.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(1))))
+            {
+                var b1 = scope.GetService<IB>();
+                var b2 = scope.GetService<IB>();
+
+                Assert.Equal(b1.GetHashCode(), b2.GetHashCode());
+            }
         }
 
 
@@ -280,6 +307,7 @@ namespace IFramework.Test
                 scope.GetService<IB>();
                 Assert.True(scope.GetService(typeof(A)) is A a && a.C.Id == 1);
             }
+
             using (var scope = objectProvider.CreateScope(ob => ob.RegisterInstance(typeof(IC), new C(2))))
             {
                 scope.GetService<IB>();
