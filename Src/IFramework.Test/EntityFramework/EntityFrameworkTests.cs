@@ -15,6 +15,7 @@ using IFramework.Infrastructure;
 using IFramework.Log4Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -43,22 +44,42 @@ namespace IFramework.Test.EntityFramework
             ObjectProviderFactory.Instance.Build();
         }
 
+        public class DbTest : IDisposable
+        {
+            public int Count { get; }
+
+            public DbTest(int count)
+            {
+                Count = count;
+            }
+            public void Dispose()
+            {
+               Console.Write("dispose");
+            }
+        }
+
         [Fact]
         public void DbContextPoolTest()
         {
             int hashCode1, hashCode2;
-            using (var scope = ObjectProviderFactory.CreateScope())
+            var services = new ServiceCollection();
+            services.AddScoped<DbTest>();
+            using (var scope = ObjectProviderFactory.CreateScope(provider => provider.RegisterInstance(new DbTest(3))))
             {
                 var dbContext = scope.GetService<DemoDbContext>();
                 hashCode1 = dbContext.GetHashCode();
                 dbContext.Database.AutoTransactionsEnabled = false;
+                var dbTest = scope.GetService<DbTest>();
+                Assert.Equal(3, dbTest.Count);
             }
 
-            using (var scope = ObjectProviderFactory.CreateScope())
+            using (var scope = ObjectProviderFactory.CreateScope(provider => provider.RegisterInstance(new DbTest(1))))
             {
                 var dbContext = scope.GetService<DemoDbContext>();
                 hashCode2 = dbContext.GetHashCode();
-                //Assert.True(dbContext.Database.AutoTransactionsEnabled);
+                Assert.True(dbContext.Database.AutoTransactionsEnabled);
+                var dbTest = scope.GetService<DbTest>();
+                Assert.Equal(1, dbTest.Count);
             }
 
             Assert.Equal(hashCode1, hashCode2);

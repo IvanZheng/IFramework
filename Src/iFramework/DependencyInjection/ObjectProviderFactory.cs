@@ -68,12 +68,12 @@ namespace IFramework.DependencyInjection
             return Instance.ObjectProvider.CreateScope();
         }
 
-        public IObjectProvider CreateScope(IServiceCollection serviceCollection)
+        public static IObjectProvider CreateScope(IServiceCollection serviceCollection)
         {
             return Instance.ObjectProvider.CreateScope(serviceCollection);
         }
 
-        public IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction)
+        public static IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction)
         {
             return Instance.ObjectProvider.CreateScope(buildAction);
         }

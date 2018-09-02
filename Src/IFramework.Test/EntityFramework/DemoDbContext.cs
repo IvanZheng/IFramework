@@ -20,6 +20,11 @@ namespace IFramework.Test.EntityFramework
             Database.EnsureCreated();
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+        }
+
         public DbSet<User> Users { get; set; }
         public DbSet<Card> Cards { get; set; }
 
