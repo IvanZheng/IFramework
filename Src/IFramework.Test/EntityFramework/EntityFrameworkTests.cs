@@ -36,11 +36,32 @@ namespace IFramework.Test.EntityFramework
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
-                             //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
+                             options.UseInMemoryDatabase(nameof(DemoDbContext));
+                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
                          },2000);
 
             ObjectProviderFactory.Instance.Build();
+        }
+
+        [Fact]
+        public void DbContextPoolTest()
+        {
+            int hashCode1, hashCode2;
+            using (var scope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = scope.GetService<DemoDbContext>();
+                hashCode1 = dbContext.GetHashCode();
+                dbContext.Database.AutoTransactionsEnabled = false;
+            }
+
+            using (var scope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = scope.GetService<DemoDbContext>();
+                hashCode2 = dbContext.GetHashCode();
+                //Assert.True(dbContext.Database.AutoTransactionsEnabled);
+            }
+
+            Assert.Equal(hashCode1, hashCode2);
         }
 
         [Fact]
@@ -124,27 +145,6 @@ namespace IFramework.Test.EntityFramework
                     Assert.Equal(u.GetDbContext<DemoDbContext>().GetHashCode(), dbContext.GetHashCode());
                 }
             }
-        }
-
-        [Fact]
-        public void DbContextPoolTest()
-        {
-            int hashCode1, hashCode2;
-            using (var scope = ObjectProviderFactory.CreateScope())
-            {
-                var dbContext = scope.GetService<DemoDbContext>();
-                hashCode1 = dbContext.GetHashCode();
-                dbContext.Database.AutoTransactionsEnabled = false;
-            }
-
-            using (var scope = ObjectProviderFactory.CreateScope())
-            {
-                var dbContext = scope.GetService<DemoDbContext>();
-                hashCode2 = dbContext.GetHashCode();
-                Assert.True(dbContext.Database.AutoTransactionsEnabled);
-            }
-
-            Assert.Equal(hashCode1, hashCode2);
         }
     }
 }
