@@ -29,10 +29,8 @@ namespace IFramework.DependencyInjection.Unity
 
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
-            if (serviceCollection != null)
-            {
-                _container.BuildServiceProvider(serviceCollection);
-            }
+            serviceCollection = serviceCollection ?? new ServiceCollection();
+            _container.BuildServiceProvider(serviceCollection);
 
             Register<IObjectProvider>(context =>
             {
