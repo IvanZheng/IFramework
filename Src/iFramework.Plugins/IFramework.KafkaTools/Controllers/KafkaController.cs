@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using IFramework.KafkaTools.Models;
-using IFramework.MessageQueue;
-using IFramework.MessageQueue.ConfluentKafka;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TopicPartitionOffset = Confluent.Kafka.TopicPartitionOffset;
 
 namespace IFramework.KafkaTools.Controllers
 {
@@ -19,15 +13,18 @@ namespace IFramework.KafkaTools.Controllers
     [ApiController]
     public class KafkaController : ControllerBase
     {
-        static ConcurrentDictionary<string, Consumer> Consumers = new ConcurrentDictionary<string, Consumer>();
+        private static readonly ConcurrentDictionary<string, Consumer> Consumers = new ConcurrentDictionary<string, Consumer>();
+
         [HttpPost]
         public async Task<object> CommitOffset(CommitOffsetRequest request)
         {
             Consumer consumer = GetConsumer(request.Broker, request.Group);
-            return await consumer.CommitAsync(new []
-            {
-                new TopicPartitionOffset(new TopicPartition(request.Topic, request.Partition), request.Offset)
-            }).ConfigureAwait(false);
+            var offsets = request.Offsets
+                                 .Select(offset => new TopicPartitionOffset(new TopicPartition(offset.Topic,
+                                                                                               offset.Partition),
+                                                                            offset.Offset))
+                                 .ToArray();
+            return await consumer.CommitAsync(offsets).ConfigureAwait(false);
         }
 
         private Consumer GetConsumer(string broker, string group)
@@ -43,8 +40,7 @@ namespace IFramework.KafkaTools.Controllers
                     //{"fetch.error.backoff.ms", ConsumerConfig["fetch.error.backoff.ms"] ?? 50},
                     {"socket.nagle.disable", true},
                     //{"statistics.interval.ms", 60000},
-                    {"bootstrap.servers", broker},
-              
+                    {"bootstrap.servers", broker}
                 };
                 return new Consumer(consumerConfiguration);
             });
