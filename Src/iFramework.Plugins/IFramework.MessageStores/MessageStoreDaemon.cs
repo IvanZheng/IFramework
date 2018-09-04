@@ -2,10 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using IFramework.Infrastructure;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,46 +13,24 @@ namespace IFramework.MessageStores.Relational
 {
     public class MessageStoreDaemon : IMessageStoreDaemon
     {
-        private readonly ILogger<MessageStoreDaemon> _logger;
-        private readonly MessageStore _messageStore;
-
         public enum MessageType
         {
             Command,
             Event
         }
-        public class ToRemoveMessage
-        {
-            public string MessageId { get; }
-            public MessageType Type { get; }
 
-            public ToRemoveMessage(string messageId, MessageType type)
-            {
-                MessageId = messageId;
-                Type = type;
-            }
-        }
-
-        public MessageStoreDaemon(ILogger<MessageStoreDaemon> logger, IMessageStore messageStore)
-        {
-            _logger = logger;
-            _messageStore = messageStore as MessageStore;
-            if (_messageStore == null)
-            {
-                throw new ArgumentNullException(nameof(messageStore));
-            }
-           
-            _messageStore.Database.AutoTransactionsEnabled = false;
-            _messageStore.ChangeTracker.AutoDetectChangesEnabled = false;
-        }
+        private readonly ILogger<MessageStoreDaemon> _logger;
+        private readonly ConcurrentQueue<ToRemoveMessage> _toRemoveMessages = new ConcurrentQueue<ToRemoveMessage>();
 
         private CancellationTokenSource _cancellationTokenSource;
         private Task _task;
-        private readonly ConcurrentQueue<ToRemoveMessage> _toRemoveMessages = new ConcurrentQueue<ToRemoveMessage>();
-        public void Dispose()
+
+        public MessageStoreDaemon(ILogger<MessageStoreDaemon> logger)
         {
-            
+            _logger = logger;
         }
+
+        public void Dispose() { }
 
         public void RemovePublishedEvent(string eventId)
         {
@@ -69,10 +46,19 @@ namespace IFramework.MessageStores.Relational
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _task = Task.Factory.StartNew(cs => RemoveMessages(cs as CancellationTokenSource),
-                                                 _cancellationTokenSource,
-                                                 _cancellationTokenSource.Token,
-                                                 TaskCreationOptions.LongRunning,
-                                                 TaskScheduler.Default);
+                                          _cancellationTokenSource,
+                                          _cancellationTokenSource.Token,
+                                          TaskCreationOptions.LongRunning,
+                                          TaskScheduler.Default);
+        }
+
+        public void Stop()
+        {
+            if (_task != null)
+            {
+                _cancellationTokenSource.Cancel(true);
+                _task.Wait();
+            }
         }
 
         private void RemoveMessages(CancellationTokenSource cancellationTokenSource)
@@ -98,46 +84,59 @@ namespace IFramework.MessageStores.Relational
                     }
                     else
                     {
-                        if (_messageStore.InMemoryStore)
+                        using (var scope = ObjectProviderFactory.CreateScope())
                         {
-                            toRemoveMessages.ForEach(rm =>
+                            var messageStore = scope.GetService<IMessageStore>() as MessageStore;
+                            if (messageStore == null)
                             {
-                                if (rm.Type == MessageType.Command)
-                                {
-                                    var removeCommand = _messageStore.UnSentCommands.Find(rm.MessageId);
-                                    if (removeCommand != null)
-                                    {
-                                        _messageStore.RemoveEntity(removeCommand);
-                                    }
-                                }
-                                else if (rm.Type == MessageType.Event)
-                                {
-                                    var removeEvent = _messageStore.UnPublishedEvents.Find(rm.MessageId);
-                                    if (removeEvent != null)
-                                    {
-                                        _messageStore.RemoveEntity(removeEvent);
-                                    }
-                                }
-                            });
-                            _messageStore.SaveChanges();
-                        }
-                        else
-                        {
-                            var toRemoveCommands = toRemoveMessages.Where(rm => rm.Type == MessageType.Command)
-                                                                   .Select(rm => rm.MessageId)
-                                                                   .ToArray();
-                            if (toRemoveCommands.Length > 0)
-                            {
-                                var deleteCommandsSql = $"delete from msgs_UnSentCommands where Id in ({string.Join(",", toRemoveCommands.Select(rm => $"'{rm}'"))})";
-                                _messageStore.Database.ExecuteSqlCommand(deleteCommandsSql);
+                                throw new Exception("invalid messagestore!");
                             }
-                            var toRemoveEvents = toRemoveMessages.Where(rm => rm.Type == MessageType.Event)
-                                                                 .Select(rm => rm.MessageId)
-                                                                 .ToArray();
-                            if (toRemoveEvents.Length > 0)
+
+                            messageStore.Database.AutoTransactionsEnabled = false;
+                            messageStore.ChangeTracker.AutoDetectChangesEnabled = false;
+
+                            if (messageStore.InMemoryStore)
                             {
-                                var deleteEventsSql = $"delete from msgs_UnPublishedEvents where Id in ({string.Join(",", toRemoveEvents.Select(rm => $"'{rm}'"))})";
-                                _messageStore.Database.ExecuteSqlCommand(deleteEventsSql);
+                                toRemoveMessages.ForEach(rm =>
+                                {
+                                    if (rm.Type == MessageType.Command)
+                                    {
+                                        var removeCommand = messageStore.UnSentCommands.Find(rm.MessageId);
+                                        if (removeCommand != null)
+                                        {
+                                            messageStore.RemoveEntity(removeCommand);
+                                        }
+                                    }
+                                    else if (rm.Type == MessageType.Event)
+                                    {
+                                        var removeEvent = messageStore.UnPublishedEvents.Find(rm.MessageId);
+                                        if (removeEvent != null)
+                                        {
+                                            messageStore.RemoveEntity(removeEvent);
+                                        }
+                                    }
+                                });
+                                messageStore.SaveChanges();
+                            }
+                            else
+                            {
+                                var toRemoveCommands = toRemoveMessages.Where(rm => rm.Type == MessageType.Command)
+                                                                       .Select(rm => rm.MessageId)
+                                                                       .ToArray();
+                                if (toRemoveCommands.Length > 0)
+                                {
+                                    var deleteCommandsSql = $"delete from msgs_UnSentCommands where Id in ({string.Join(",", toRemoveCommands.Select(rm => $"'{rm}'"))})";
+                                    messageStore.Database.ExecuteSqlCommand(deleteCommandsSql);
+                                }
+
+                                var toRemoveEvents = toRemoveMessages.Where(rm => rm.Type == MessageType.Event)
+                                                                     .Select(rm => rm.MessageId)
+                                                                     .ToArray();
+                                if (toRemoveEvents.Length > 0)
+                                {
+                                    var deleteEventsSql = $"delete from msgs_UnPublishedEvents where Id in ({string.Join(",", toRemoveEvents.Select(rm => $"'{rm}'"))})";
+                                    messageStore.Database.ExecuteSqlCommand(deleteEventsSql);
+                                }
                             }
                         }
                     }
@@ -157,13 +156,16 @@ namespace IFramework.MessageStores.Relational
             }
         }
 
-        public void Stop()
+        public class ToRemoveMessage
         {
-            if (_task != null)
+            public ToRemoveMessage(string messageId, MessageType type)
             {
-                _cancellationTokenSource.Cancel(true);
-                _task.Wait();
+                MessageId = messageId;
+                Type = type;
             }
+
+            public string MessageId { get; }
+            public MessageType Type { get; }
         }
     }
 }

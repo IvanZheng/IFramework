@@ -90,6 +90,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Applications", "Samp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.DependencyInjection.Unity", "iFramework.Plugins\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj", "{D7FD82E1-9AD6-4B8B-902D-9C614F4CCB4C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.KafkaTools", "iFramework.Plugins\IFramework.KafkaTools\IFramework.KafkaTools.csproj", "{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -661,6 +663,24 @@ Global
 		{D7FD82E1-9AD6-4B8B-902D-9C614F4CCB4C}.Release|x64.Build.0 = Release|Any CPU
 		{D7FD82E1-9AD6-4B8B-902D-9C614F4CCB4C}.Release|x86.ActiveCfg = Release|Any CPU
 		{D7FD82E1-9AD6-4B8B-902D-9C614F4CCB4C}.Release|x86.Build.0 = Release|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Debug|x64.Build.0 = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Debug|x86.Build.0 = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Integration|Any CPU.ActiveCfg = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Integration|Any CPU.Build.0 = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Integration|x64.ActiveCfg = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Integration|x64.Build.0 = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Integration|x86.ActiveCfg = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Integration|x86.Build.0 = Debug|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Release|x64.ActiveCfg = Release|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Release|x64.Build.0 = Release|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Release|x86.ActiveCfg = Release|Any CPU
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -698,9 +718,10 @@ Global
 		{87960BA6-67D0-4005-9EAC-59FEDB5610E8} = {A0DFB82C-D746-4443-8C1B-7AB2DF36EF85}
 		{5458C8C7-4738-4FC6-A9CE-AC25F049B9EB} = {A9B2E731-E8B4-43A1-97B6-88517E1AA362}
 		{D7FD82E1-9AD6-4B8B-902D-9C614F4CCB4C} = {52FF150F-C8B1-48B4-A467-CE19622CDF1A}
+		{768DE1E1-0B8B-4D71-81F7-9F3C9C988B49} = {A0DFB82C-D746-4443-8C1B-7AB2DF36EF85}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
+		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 	EndGlobalSection
 EndGlobal

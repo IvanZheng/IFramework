@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="log4net.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" version="2.1.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj" />
+    <ProjectReference Include="..\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
+    <ProjectReference Include="..\IFramework.Log4Net\IFramework.Log4Net.csproj" />
+    <ProjectReference Include="..\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj" />
+  </ItemGroup>
+
+</Project>
