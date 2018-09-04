@@ -91,11 +91,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
             catch (ThreadAbortException) { }
             catch (Exception ex)
             {
+                Logger.LogError(ex, "{0} topic:{1} partition:{2} offset:{3} _consumer_OnMessage failed!",
+                                Id, message.Topic, message.Partition, message.Offset);
                 if (message.Value != null)
                 {
                     FinishConsumingMessage(new MessageOffset(null, message.Topic, message.Partition, message.Offset));
                 }
-                Logger.LogError(ex, $"{Id} _consumer_OnMessage failed!");
             }
         }
 

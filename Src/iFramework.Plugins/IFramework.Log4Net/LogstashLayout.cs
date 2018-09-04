@@ -46,7 +46,7 @@ namespace IFramework.Log4Net
 
             var log = new JsonLog
             {
-                Message = FormatMessageObject(loggingEvent.MessageObject),
+                Data = FormatMessageObject(loggingEvent.MessageObject),
                 Thread = loggingEvent.ThreadName,
                 Time = loggingEvent.TimeStamp
             };

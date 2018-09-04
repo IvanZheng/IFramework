@@ -18,7 +18,7 @@ namespace IFramework.Log4Net
         public LocationInfo LocationInfo { get; set; }
         public string Thread { get; set; }
         public string Target { get; set; }
-        public object Message { get; set; }
+        public object Data { get; set; }
         public LogException Exception { get; set; }
     }
 
