@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumeResult<TKey, TValue> message);
+    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, Message<TKey, TValue> message);
 
     public class KafkaConsumer<TKey, TValue> : MessageConsumer
     {
@@ -64,23 +64,25 @@ namespace IFramework.MessageQueue.ConfluentKafka
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         protected override void PollMessages()
         {
-            var consumeResult = _consumer.Consume(_cancellationTokenSource.Token);
-            if (consumeResult != null)
-            {
-                _consumer_OnMessage(consumeResult);
-            }
+            _consumer.Poll(TimeSpan.FromMilliseconds(1000));
+            //var consumeResult = _consumer.Consume(_cancellationTokenSource.Token);
+            //if (consumeResult != null)
+            //{
+            //    _consumer_OnMessage(consumeResult);
+            //}
         }
 
         public override void Start()
         {
             _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);
             _consumer.Subscribe(Topics);
+            _consumer.OnMessage += _consumer_OnMessage;
             _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
             base.Start();
         }
 
 
-        private void _consumer_OnMessage(ConsumeResult<TKey, TValue> message)
+        private void _consumer_OnMessage(object sender, Message<TKey, TValue> message)
         {
             try
             {
@@ -104,7 +106,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);
-            return _consumer.CommitAsync(new[] {topicPartitionOffset}, _cancellationTokenSource.Token);
+            return _consumer.CommitAsync(new[] {topicPartitionOffset});
         }
 
         public override void Stop()

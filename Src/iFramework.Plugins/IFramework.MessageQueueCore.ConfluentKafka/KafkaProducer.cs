@@ -80,7 +80,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        public async Task<DeliveryReport<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
+        public async Task<Message<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
         {
             var retryTimes = 0;
             while (true)
@@ -92,11 +92,9 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 var waitTime = Math.Min(retryTimes * 1000 * 5, 60000 * 5);
                 try
                 {
-                    var result = await _producer.ProduceAsync(topic, new Message<TKey, TValue>
-                                                {
-                                                    Key = key,
-                                                    Value = message
-                                                }, cancellationToken)
+                    var result = await _producer.ProduceAsync(topic,
+                                                              key,
+                                                              message)
                                                 .ConfigureAwait(false);
                     return result;
                 }
