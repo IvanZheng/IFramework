@@ -16,8 +16,6 @@ namespace IFramework.DependencyInjection.Unity
 {
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
-        private static readonly string LifetimeManagerKeyFormat = "IoC.{0}";
-
         private readonly UnityContainer _container;
 
         public ObjectProviderBuilder(UnityContainer container = null)

@@ -6,6 +6,7 @@ using IFramework.Event;
 using IFramework.Exceptions;
 using IFramework.Message;
 using IFramework.UnitOfWork;
+using Microsoft.Extensions.Logging;
 using Sample.ApplicationEvent;
 using Sample.Command;
 using Sample.Domain;
@@ -19,6 +20,7 @@ namespace Sample.CommandHandler.Community
                                            ICommandHandler<Modify>
     {
         private readonly IMessageContext _commandContext;
+        private readonly ILogger<CommunityCommandHandler> _logger;
         private readonly ICommunityRepository _domainRepository;
         private readonly IEventBus _eventBus;
 
@@ -28,11 +30,13 @@ namespace Sample.CommandHandler.Community
         public CommunityCommandHandler(IUnitOfWork unitOfWork,
                                        ICommunityRepository domainRepository,
                                        IEventBus eventBus,
-                                       IMessageContext commanadContext)
+                                       IMessageContext commanadContext,
+                                       ILogger<CommunityCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _domainRepository = domainRepository;
             _commandContext = commanadContext;
+            _logger = logger;
             _eventBus = eventBus;
             // _container = container;
         }
@@ -45,6 +49,7 @@ namespace Sample.CommandHandler.Community
         /// <param name="command"></param>
         public virtual async Task Handle(Login command)
         {
+            _logger.LogDebug($"Handle Login command enter.");
             var account = await _domainRepository.FindAsync<Account>(a => a.UserName.Equals(command.UserName)
                                                                           && a.Password.Equals(command.Password))
                                                  .ConfigureAwait(false);

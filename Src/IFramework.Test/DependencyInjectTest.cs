@@ -295,7 +295,7 @@ namespace IFramework.Test
         [Fact]
         public void ScopeTest()
         {
-            var builder = GetUnityBuilder();
+            var builder = GetAutofacBuilder();
 
             builder.Register<IB, B>(ServiceLifetime.Singleton);
             builder.Register<A, A>();

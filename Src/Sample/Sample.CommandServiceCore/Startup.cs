@@ -61,8 +61,8 @@ namespace Sample.CommandServiceCore
             var rabbitMQHostName = "10.100.7.46";
             var rabbitMQPort = 9012;
             Configuration.Instance
-                         .UseUnityContainer()
-                         //.UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+                         //.UseUnityContainer()
+                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                          .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet()
