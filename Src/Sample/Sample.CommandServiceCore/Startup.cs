@@ -77,8 +77,8 @@ namespace Sample.CommandServiceCore
                          .UseDbContextPool<SampleModelContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
-                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                             options.UseInMemoryDatabase(nameof(SampleModelContext));
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
                          }) ;
         }
 

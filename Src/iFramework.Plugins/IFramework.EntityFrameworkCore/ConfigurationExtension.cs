@@ -61,7 +61,7 @@ namespace IFramework.EntityFrameworkCore
                                                          ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
-            builder.Register(typeof(IRepository<>), repositoryType);
+            builder.Register(typeof(IRepository<>), repositoryType, lifetime);
             builder.Register<IDomainRepository, DomainRepository>(lifetime);
             return configuration;
         }
