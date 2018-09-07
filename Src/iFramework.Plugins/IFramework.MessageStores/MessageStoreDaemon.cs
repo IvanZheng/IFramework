@@ -91,10 +91,6 @@ namespace IFramework.MessageStores.Relational
                             {
                                 throw new Exception("invalid messagestore!");
                             }
-
-                            messageStore.Database.AutoTransactionsEnabled = false;
-                            messageStore.ChangeTracker.AutoDetectChangesEnabled = false;
-
                             if (messageStore.InMemoryStore)
                             {
                                 toRemoveMessages.ForEach(rm =>
