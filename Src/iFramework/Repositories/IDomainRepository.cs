@@ -32,6 +32,12 @@ namespace IFramework.Repositories
             where TAggregateRoot : class;
 
 
+        long Count<TAggregateRoot>()
+            where TAggregateRoot : class;
+
+        Task<long> CountAsync<TAggregateRoot>()
+            where TAggregateRoot : class;
+
         long Count<TAggregateRoot>(ISpecification<TAggregateRoot> specification)
             where TAggregateRoot : class;
 

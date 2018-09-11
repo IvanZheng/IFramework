@@ -11,6 +11,8 @@ namespace IFramework.Test.EntityFramework
         public string Id { get; protected set; }
         public string Name { get; protected set; }
         public string Gender { get; protected set; }
+        public DateTime CreatedTime { get; protected set; }
+        public DateTime ModifiedTime { get; protected set; }
         public virtual ICollection<Card> Cards { get; } = new HashSet<Card>();
 
         protected User()
@@ -23,16 +25,20 @@ namespace IFramework.Test.EntityFramework
                          .ToString();
             Name = name;
             Gender = gender;
+            CreatedTime = ModifiedTime = DateTime.Now;
+
         }
 
         public void ModifyName(string name)
         {
             Name = name;
+            ModifiedTime = DateTime.Now;
         }
 
         public void AddCard(string cardName)
         {
             Cards.Add(new Card(cardName));
+            ModifiedTime = DateTime.Now;
         }
     }
 }

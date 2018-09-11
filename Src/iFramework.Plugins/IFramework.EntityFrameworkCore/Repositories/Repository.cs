@@ -150,6 +150,16 @@ namespace IFramework.EntityFrameworkCore.Repositories
             }
         }
 
+        protected override long DoCount()
+        {
+            return DbSet.LongCount();
+        }
+
+        protected override Task<long> DoCountAsync()
+        {
+            return DbSet.LongCountAsync();
+        }
+
         protected override long DoCount(ISpecification<TEntity> specification)
         {
             return DbSet.LongCount(specification.GetExpression());

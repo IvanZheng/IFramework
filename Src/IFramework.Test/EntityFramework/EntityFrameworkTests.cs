@@ -37,9 +37,9 @@ namespace IFramework.Test.EntityFramework
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
-                             options.UseInMemoryDatabase(nameof(DemoDbContext));
-                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
-                         },2000);
+                             //options.UseInMemoryDatabase(nameof(DemoDbContext));
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
+                         }, 2000);
 
             ObjectProviderFactory.Instance.Build();
         }
@@ -136,17 +136,26 @@ namespace IFramework.Test.EntityFramework
         [Fact]
         public async Task ConcurrentTest()
         {
-            await AddUserTest();
-            var tasks = new List<Task>();
-            for (int i = 0; i < 2000; i++)
-            {
-                tasks.Add(GetUsersTest());
-            }
-
-            await Task.WhenAll(tasks);
-
             var logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
-            logger.LogDebug($"incremented : {DemoDbContext.Total }");
+
+            try
+            {
+                await AddUserTest();
+                var tasks = new List<Task>();
+                for (int i = 0; i < 2000; i++)
+                {
+                    tasks.Add(GetUsersTest());
+                }
+
+                await Task.WhenAll(tasks);
+
+                logger.LogDebug($"incremented : {DemoDbContext.Total }");
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, $"incremented : {DemoDbContext.Total }");
+                throw;
+            }
         }
 
         [Fact]

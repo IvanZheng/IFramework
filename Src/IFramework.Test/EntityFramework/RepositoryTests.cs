@@ -9,16 +9,18 @@ using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.EntityFrameworkCore;
 using IFramework.EntityFrameworkCore.Repositories;
+using IFramework.Log4Net;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Test.EntityFramework
 {
-    public class RepositoryBase<TEntity> : Repository<TEntity> where TEntity: class
+    public class RepositoryBase<TEntity> : Repository<TEntity> where TEntity : class
     {
         public RepositoryBase(DemoDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork) { }
 
@@ -34,9 +36,11 @@ namespace IFramework.Test.EntityFramework
             Configuration.Instance
                          .UseAutofacContainer(new ContainerBuilder())
                          .UseConfiguration(builder.Build())
+                         .UseLog4Net()
                          .UseCommonComponents()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>));
 
+          
             ObjectProviderFactory.Instance
                                  .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
                                  .Build();
@@ -54,6 +58,22 @@ namespace IFramework.Test.EntityFramework
                                                                                                   .GetConnectionString(nameof(DemoDbContext))));
             builder.Register<IDemoRepository, DemoRepository>(lifeTime);
             builder.Populate(services);
+        }
+
+        [Fact]
+        public async Task InnerJoinTest()
+        {
+            using (var scope = ObjectProviderFactory.CreateScope())
+            {
+                var repository = scope.GetRequiredService<IDemoRepository>();
+                var query = from user in repository.FindAll<User>()
+                            join card in repository.FindAll<Card>()
+                            on user.Id equals card.Id
+                            select new { user.Id, card.Name};
+
+                var sql = query.ToString();
+                var result = await query.ToListAsync();
+            }
         }
 
         [Fact]
