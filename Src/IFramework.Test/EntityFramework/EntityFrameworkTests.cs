@@ -86,6 +86,27 @@ namespace IFramework.Test.EntityFramework
         }
 
         [Fact]
+        public async Task AddPresonTest()
+        {
+            try
+            {
+                using (var serviceScope = ObjectProviderFactory.CreateScope())
+                {
+                    var dbContext = serviceScope.GetService<DemoDbContext>();
+                    var person = new Person("ivan");
+                    dbContext.Persons.Add(person);
+                    await dbContext.SaveChangesAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+       
+        }
+
+        [Fact]
         public async Task AddUserTest()
         {
             using (var serviceScope = ObjectProviderFactory.CreateScope())
