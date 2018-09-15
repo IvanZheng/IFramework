@@ -12,12 +12,14 @@ using IFramework.DependencyInjection.Unity;
 using IFramework.Domain;
 using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
+using IFramework.JsonNet;
 using IFramework.Log4Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using ObjectProvider = IFramework.DependencyInjection.Unity.ObjectProvider;
 
 namespace IFramework.Test.EntityFramework
 {
@@ -29,17 +31,18 @@ namespace IFramework.Test.EntityFramework
                                                     .AddJsonFile("appsettings.json");
             Configuration.Instance
                          //.UseMicrosoftDependencyInjection()
-                         .UseUnityContainer()
-                         //.UseAutofacContainer()
+                         //.UseUnityContainer()
+                         .UseAutofacContainer()
                          .UseConfiguration(builder.Build())
                          .UseCommonComponents()
+                         .UseJsonNet()
                          .UseLog4Net()
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
-                             //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
-                         }, 2000);
+                             options.UseInMemoryDatabase(nameof(DemoDbContext));
+                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
+                         });
 
             ObjectProviderFactory.Instance.Build();
         }
@@ -106,27 +109,7 @@ namespace IFramework.Test.EntityFramework
        
         }
 
-        [Fact]
-        public async Task AddUserTest()
-        {
-            using (var serviceScope = ObjectProviderFactory.CreateScope())
-            using (var scope = new TransactionScope(TransactionScopeOption.Required,
-                                                    new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
-                                                    TransactionScopeAsyncFlowOption.Enabled))
-            {
-                var dbContext = serviceScope.GetService<DemoDbContext>();
-
-
-                var user = new User("ivan", "male");
-                user.AddCard("ICBC");
-                user.AddCard("CCB");
-                user.AddCard("ABC");
-
-                dbContext.Users.Add(user);
-                await dbContext.SaveChangesAsync();
-                scope.Complete();
-            }
-        }
+        
 
 
         [Fact]
@@ -180,10 +163,63 @@ namespace IFramework.Test.EntityFramework
         }
 
         [Fact]
+        public async Task AddUserTest()
+        {
+
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            using (var scope = new TransactionScope(TransactionScopeOption.Required,
+                                                    new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+                                                    TransactionScopeAsyncFlowOption.Enabled))
+            {
+                var serviceProvider = serviceScope.GetService<IServiceProvider>();
+                if (serviceProvider == null)
+                {
+                    Assert.NotNull(serviceProvider);
+                }
+
+                try
+                {
+                    var dbContext = serviceProvider.GetService<DemoDbContext>();
+                    if (dbContext == null)
+                    {
+                        var logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+                        logger.LogError((serviceScope as ObjectProvider)?.UnityContainer.Registrations.ToJson());
+                        Assert.NotNull(dbContext);
+                    }
+                    
+                    var user = new User("ivan", "male");
+                    user.AddCard("ICBC");
+                    user.AddCard("CCB");
+                    user.AddCard("ABC");
+
+                    dbContext.Users.Add(user);
+                    await dbContext.SaveChangesAsync();
+                    scope.Complete();
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+
+
+               
+            }
+        }
+
+        [Fact]
         public async Task GetUsersTest()
         {
             using (var scope = ObjectProviderFactory.CreateScope())
             {
+                var serviceProvider = scope.GetService<IServiceProvider>();
+                if (serviceProvider == null)
+                {
+                    var logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+                    logger.LogError((scope as ObjectProvider)?.UnityContainer.Registrations.ToJson());
+                    Assert.NotNull(serviceProvider);
+                }
                 var dbContext = scope.GetService<DemoDbContext>();
                 var users = await dbContext.Users
                                            //.Include(u => u.Cards)
