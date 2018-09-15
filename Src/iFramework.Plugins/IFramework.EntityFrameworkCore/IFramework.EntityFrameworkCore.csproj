@@ -5,10 +5,10 @@
     <AssemblyName>IFramework.EntityFrameworkCore</AssemblyName>
     <RootNamespace>IFramework.EntityFrameworkCore</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-prelease-0019</Version>
+    <Version>2.0.0-prelease-0020</Version>
     <Company>Ivan</Company>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
-    <PackageReleaseNotes>update iframework</PackageReleaseNotes>
+    <PackageReleaseNotes>In UnitOfWork.Commit, don't use transactionscope  when process is already in transaction or internal Dbcontexts &lt;= 1</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
