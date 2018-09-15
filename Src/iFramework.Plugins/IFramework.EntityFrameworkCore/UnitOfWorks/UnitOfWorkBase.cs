@@ -69,7 +69,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                     BeforeCommit();
                 }
 
-                if (InTransaction || DbContexts.Count <= 1)
+                if (InTransaction)
                 {
                     CommitAction();
                 }
@@ -133,7 +133,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                     BeforeCommit();
                 }
 
-                if (InTransaction || DbContexts.Count <= 1)
+                if (InTransaction)
                 {
                     await CommitFuncAsync().ConfigureAwait(false);
                 }
