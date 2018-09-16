@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace IFramework.Test.EntityFramework
@@ -17,7 +18,6 @@ namespace IFramework.Test.EntityFramework
             : base(options)
         {
             Interlocked.Add(ref Total, 1);
-            //Database.EnsureCreated();
         }
 
         public override void Dispose()

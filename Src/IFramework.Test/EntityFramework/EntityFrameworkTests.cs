@@ -15,6 +15,7 @@ using IFramework.Infrastructure;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,23 @@ using ObjectProvider = IFramework.DependencyInjection.Unity.ObjectProvider;
 
 namespace IFramework.Test.EntityFramework
 {
+
+    public class DemoDbContextFactory : IDesignTimeDbContextFactory<DemoDbContext>
+    {
+        public static string ConnectionStringName = "DemoDbContext.MySql";
+        //public static string ConnectionStringName = "DemoDbContext";
+        public DemoDbContext CreateDbContext(string[] args)
+        {
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                                                    .AddJsonFile("appsettings.json");
+            var configuratoin = builder.Build();
+            var optionsBuilder = new DbContextOptionsBuilder<DemoDbContext>();
+            optionsBuilder.UseMySql(configuratoin.GetConnectionString(ConnectionStringName));
+            return new DemoDbContext(optionsBuilder.Options);
+        }
+    }
+
+
     public class EntityFrameworkTests
     {
         public EntityFrameworkTests()
@@ -40,11 +58,17 @@ namespace IFramework.Test.EntityFramework
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
+                             //options.UseMySql(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
                              options.UseInMemoryDatabase(nameof(DemoDbContext));
-                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(DemoDbContext)));
+                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
                          });
 
             ObjectProviderFactory.Instance.Build();
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = serviceScope.GetService<DemoDbContext>();
+                dbContext.Database.Migrate();
+            }
         }
 
         public class DbTest : IDisposable
