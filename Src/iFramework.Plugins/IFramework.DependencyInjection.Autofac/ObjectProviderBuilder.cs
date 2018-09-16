@@ -46,8 +46,8 @@ namespace IFramework.DependencyInjection.Autofac
             {
                 Populate(serviceCollection);
             }
-            var objectProvider = new ObjectProvider();
-            _containerBuilder.Register(context =>
+           
+            _containerBuilder.Register<IObjectProvider>(context =>
                              {
                                  var serviceProvider = context.Resolve<IServiceProvider>() as AutofacServiceProvider;
                                  var componentContextField = typeof(AutofacServiceProvider).GetField("_lifetimeScope",
@@ -57,9 +57,10 @@ namespace IFramework.DependencyInjection.Autofac
                                  {
                                     return new ObjectProvider(componentContext);
                                  }
-                                 return objectProvider.CreateScope();
+                                 throw new Exception("Autofac ServiceProvider not exists!");
                              })
                              .InstancePerLifetimeScope();
+            var objectProvider = new ObjectProvider();
             objectProvider.SetComponentContext(_containerBuilder.Build());
             return objectProvider;
         }
