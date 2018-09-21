@@ -14,9 +14,15 @@ namespace Microsoft.Extensions.Logging
             }
             else
             {
-                message =  o is string ? o.ToString() : o.ToJson();
+                message = o is string ? o.ToString() : o.ToJson();
             }
+
             return message;
+        }
+
+        public static void LogDebug(this ILogger logger, Exception exception, Func<object, Exception, string> formatter = null)
+        {
+            logger.Log(LogLevel.Debug, new EventId(), null, exception, formatter ?? MessageFormatter);
         }
 
         public static void LogDebug(this ILogger logger, Exception exception, object state, Func<object, Exception, string> formatter = null)
@@ -27,25 +33,43 @@ namespace Microsoft.Extensions.Logging
         public static void LogDebug(this ILogger logger, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Debug, new EventId(), state, null, formatter ?? MessageFormatter);
-
         }
+
+        public static void LogTrace(this ILogger logger, Exception exception, Func<object, Exception, string> formatter = null)
+        {
+            logger.Log(LogLevel.Trace, new EventId(), null, exception, formatter ?? MessageFormatter);
+        }
+
         public static void LogTrace(this ILogger logger, Exception exception, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Trace, new EventId(), state, exception, formatter ?? MessageFormatter);
         }
+
         public static void LogTrace(this ILogger logger, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Trace, new EventId(), state, null, formatter ?? MessageFormatter);
+        }
+
+        public static void LogInformation(this ILogger logger, Exception exception, Func<object, Exception, string> formatter = null)
+        {
+            logger.Log(LogLevel.Information, new EventId(), null, exception, formatter ?? MessageFormatter);
         }
 
         public static void LogInformation(this ILogger logger, Exception exception, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Information, new EventId(), state, exception, formatter ?? MessageFormatter);
         }
+
         public static void LogInformation(this ILogger logger, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Information, new EventId(), state, null, formatter ?? MessageFormatter);
         }
+
+        public static void LogWarning(this ILogger logger, Exception exception, Func<object, Exception, string> formatter = null)
+        {
+            logger.Log(LogLevel.Warning, new EventId(), null, exception, formatter ?? MessageFormatter);
+        }
+
         public static void LogWarning(this ILogger logger, Exception exception, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Warning, new EventId(), state, exception, formatter ?? MessageFormatter);
@@ -56,6 +80,11 @@ namespace Microsoft.Extensions.Logging
             logger.Log(LogLevel.Warning, new EventId(), state, null, formatter ?? MessageFormatter);
         }
 
+        public static void LogError(this ILogger logger, Exception exception, Func<object, Exception, string> formatter = null)
+        {
+            logger.Log(LogLevel.Error, new EventId(), null, exception, formatter ?? MessageFormatter);
+        }
+
         public static void LogError(this ILogger logger, Exception exception, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Error, new EventId(), state, exception, formatter ?? MessageFormatter);
@@ -64,6 +93,11 @@ namespace Microsoft.Extensions.Logging
         public static void LogError(this ILogger logger, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Error, new EventId(), state, null, formatter ?? MessageFormatter);
+        }
+
+        public static void LogCritical(this ILogger logger, Exception exception, Func<object, Exception, string> formatter = null)
+        {
+            logger.Log(LogLevel.Critical, new EventId(), null, exception, formatter ?? MessageFormatter);
         }
 
         public static void LogCritical(this ILogger logger, Exception exception, object state, Func<object, Exception, string> formatter = null)
