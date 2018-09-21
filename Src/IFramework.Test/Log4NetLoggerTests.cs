@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using IFramework.Infrastructure;
+using IFramework.JsonNet;
 
 namespace IFramework.Test
 {
@@ -28,6 +29,7 @@ namespace IFramework.Test
             Configuration.Instance
                          .UseAutofacContainer(new ContainerBuilder())
                          .UseConfiguration(builder.Build())
+                         .UseJsonNet()
                          .UseLog4Net();
 
             ObjectProviderFactory.Instance.Build();
@@ -46,7 +48,7 @@ namespace IFramework.Test
             }
         }
 
-        void LogTest(ILogger logger, object message)
+        void LogTest(ILogger logger, Exception message)
         {
             logger.LogDebug(message);
             logger.LogInformation(message);
