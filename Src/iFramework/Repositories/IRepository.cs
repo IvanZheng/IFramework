@@ -40,7 +40,8 @@ namespace IFramework.Repositories
         long Count(Expression<Func<TAggregateRoot, bool>> specification);
         Task<long> CountAsync(Expression<Func<TAggregateRoot, bool>> specification);
 
-
+        long Count();
+        Task<long> CountAsync();
         /// <summary>
         ///     Finds all the aggregate roots from repository, sorting by using the provided sort predicate
         ///     and the specified sort order.

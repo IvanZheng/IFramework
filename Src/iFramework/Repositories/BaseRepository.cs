@@ -52,7 +52,7 @@ namespace IFramework.Repositories
         /// </returns>
         protected virtual IQueryable<TAggregateRoot> DoFindAll(params OrderExpression[] orderExpressions)
         {
-            return DoFindAll(new AllSpecification<TAggregateRoot>(), orderExpressions);
+            return DoFindAll(null, orderExpressions);
         }
 
         /// <summary>
@@ -316,7 +316,15 @@ namespace IFramework.Repositories
         #endregion
 
         #region IRepository<TAggregateRoot> Members
+        public long Count()
+        {
+            return DoCount();
+        }
 
+        public Task<long> CountAsync()
+        {
+            return DoCountAsync();
+        }
         public long Count(Expression<Func<TAggregateRoot, bool>> specification)
         {
             return DoCount(specification);
@@ -342,6 +350,9 @@ namespace IFramework.Repositories
 
         protected abstract long DoCount(Expression<Func<TAggregateRoot, bool>> specification);
         protected abstract Task<long> DoCountAsync(Expression<Func<TAggregateRoot, bool>> specification);
+
+        protected abstract long DoCount();
+        protected abstract Task<long> DoCountAsync();
 
         protected abstract void DoReload(TAggregateRoot entity);
         protected abstract Task DoReloadAsync(TAggregateRoot entity);

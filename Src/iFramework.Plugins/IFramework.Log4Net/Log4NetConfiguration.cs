@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +11,15 @@ namespace IFramework.Log4Net
     public static class Log4NetConfiguration
     {
         public static Configuration UseLog4Net(this Configuration configuration,
-                                               LogLevel logLevel = LogLevel.Information,
+                                               Log4NetProviderOptions options = null)
+        {
+            ObjectProviderFactory.Instance.Populate(UseLog4Net(new ServiceCollection(),
+                                                               options));
+            return configuration;
+        }
+
+        public static Configuration UseLog4Net(this Configuration configuration,
+                                               LogLevel logLevel,
                                                Log4NetProviderOptions options = null)
         {
             ObjectProviderFactory.Instance.Populate(UseLog4Net(new ServiceCollection(),
@@ -19,9 +28,8 @@ namespace IFramework.Log4Net
             return configuration;
         }
 
-
         public static IServiceCollection UseLog4Net(this IServiceCollection services,
-                                                    LogLevel logLevel = LogLevel.Information,
+                                                    LogLevel logLevel,
                                                     Log4NetProviderOptions options = null)
         {
             services.AddLogging(config =>
@@ -31,9 +39,24 @@ namespace IFramework.Log4Net
                 {
                     config.AddConfiguration(loggerConfiguration);
                 }
-                else
+                config.SetMinimumLevel(logLevel);
+                config.AddProvider(new Log4NetProvider(options));
+            });
+            return services;
+        }
+        public static IServiceCollection UseLog4Net(this IServiceCollection services,
+                                                    Log4NetProviderOptions options = null)
+        {
+            services.AddLogging(config =>
+            {
+                var loggerConfiguration = Configuration.Instance.GetSection("logging");
+                if (loggerConfiguration.Exists())
                 {
-                    config.SetMinimumLevel(logLevel);
+                    config.AddConfiguration(loggerConfiguration);
+                    if (Enum.TryParse<LogLevel>(loggerConfiguration.GetSection("LogLevel")["Default"], out var logLevel))
+                    {
+                        config.SetMinimumLevel(logLevel);
+                    }
                 }
                 config.AddProvider(new Log4NetProvider(options));
             });

@@ -12,6 +12,14 @@ namespace IFramework.EntityFrameworkCore
 {
     public static class ConfigurationExtension
     {
+        public static Configuration UseDbContext<TDbContext>(this Configuration configuration, Action<DbContextOptionsBuilder> optionsAction)
+            where TDbContext : DbContext
+        {
+            var services = new ServiceCollection();
+            services.AddDbContext<TDbContext>(optionsAction);
+            ObjectProviderFactory.Instance.Populate(services);
+            return configuration;
+        }
         public static Configuration UseDbContextPool<TDbContext>(this Configuration configuration, Action<DbContextOptionsBuilder> optionsAction, int poolSize = 128)
             where TDbContext : DbContext
         {

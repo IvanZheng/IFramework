@@ -60,6 +60,18 @@ namespace IFramework.Repositories
             return GetRepository<TAggregateRoot>().GetByKeyAsync(keyValues);
         }
 
+        public virtual long Count<TAggregateRoot>()
+            where TAggregateRoot : class
+        {
+            return GetRepository<TAggregateRoot>().Count();
+        }
+
+        public virtual Task<long> CountAsync<TAggregateRoot>()
+            where TAggregateRoot : class
+        {
+            return GetRepository<TAggregateRoot>().CountAsync();
+        }
+
         public virtual long Count<TAggregateRoot>(ISpecification<TAggregateRoot> specification)
             where TAggregateRoot : class
         {

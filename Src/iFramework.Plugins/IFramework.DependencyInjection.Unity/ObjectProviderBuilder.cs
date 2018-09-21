@@ -40,6 +40,7 @@ namespace IFramework.DependencyInjection.Unity
 
                 return new ObjectProvider(provider.UnityContainer);
             }, ServiceLifetime.Scoped);
+         
             var objectProvider = new ObjectProvider(_container);
             return objectProvider;
         }

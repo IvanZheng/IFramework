@@ -52,8 +52,9 @@ namespace Sample.CommandServiceCore.Controllers
         [LogInterceptor(Order = 2)]
         public virtual async Task<object> DoApi()
         {
+            var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
             await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
-            return $"{DateTime.Now} DoApi Done!";
+            return $"{DateTime.Now} DoApi Done! sameProvider:{sameProvider}";
         }
 
         public IActionResult Test()

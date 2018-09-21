@@ -49,7 +49,7 @@ namespace Sample.CommandHandler.Community
         /// <param name="command"></param>
         public virtual async Task Handle(Login command)
         {
-            _logger.LogDebug($"Handle Login command enter.");
+            //_logger.LogDebug($"Handle Login command enter.");
             var account = await _domainRepository.FindAsync<Account>(a => a.UserName.Equals(command.UserName)
                                                                           && a.Password.Equals(command.Password))
                                                  .ConfigureAwait(false);

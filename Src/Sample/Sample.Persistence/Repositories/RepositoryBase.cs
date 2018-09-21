@@ -8,7 +8,7 @@ namespace Sample.Persistence.Repositories
     {
         public RepositoryBase(SampleModelContext dbContext, IUnitOfWork unitOfWork, ILoggerFactory loggerFactory) : base(dbContext, unitOfWork)
         {
-            loggerFactory.CreateLogger($"Sample.Persistence.Repositories.RepositoryBase<{typeof(TEntity).Name}>").LogDebug($"AssetDbContext hash code {dbContext.GetHashCode()}");
+            //loggerFactory.CreateLogger($"Sample.Persistence.Repositories.RepositoryBase<{typeof(TEntity).Name}>").LogDebug($"AssetDbContext hash code {dbContext.GetHashCode()}");
 
         }
     }

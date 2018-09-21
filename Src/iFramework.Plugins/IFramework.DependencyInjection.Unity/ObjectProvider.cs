@@ -55,7 +55,7 @@ namespace IFramework.DependencyInjection.Unity
             var objectProvider = new ObjectProvider(this);
             var childScope = UnityContainer.CreateChildContainer();
             childScope.RegisterInstance<IObjectProvider>(objectProvider);
-            childScope.BuildServiceProvider(serviceCollection);
+            childScope.RegisterInstance(childScope.BuildServiceProvider(serviceCollection));
             objectProvider.SetComponentContext(childScope as UnityContainer);
             return objectProvider;
         }
@@ -73,7 +73,7 @@ namespace IFramework.DependencyInjection.Unity
             childScope.RegisterInstance<IObjectProvider>(objectProvider);
             var providerBuilder = new ObjectProviderBuilder(childScope);
             buildAction(providerBuilder);
-            childScope.BuildServiceProvider(new ServiceCollection());
+            childScope.RegisterInstance(childScope.BuildServiceProvider(new ServiceCollection()));
             objectProvider.SetComponentContext(childScope);
             return objectProvider;
         }
