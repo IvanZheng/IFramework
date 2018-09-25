@@ -35,7 +35,9 @@ namespace IFramework.Test.EntityFramework
                                                     .AddJsonFile("appsettings.json");
             var configuratoin = builder.Build();
             var optionsBuilder = new DbContextOptionsBuilder<DemoDbContext>();
-            optionsBuilder.UseMySql(configuratoin.GetConnectionString(ConnectionStringName));
+            //optionsBuilder.UseMySql(configuratoin.GetConnectionString(ConnectionStringName));
+            optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
+
             return new DemoDbContext(optionsBuilder.Options);
         }
     }

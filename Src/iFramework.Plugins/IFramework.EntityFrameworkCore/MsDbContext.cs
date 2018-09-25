@@ -134,7 +134,8 @@ namespace IFramework.EntityFrameworkCore
             }
         }
 
-        public virtual async Task DoInTransactionAsync(Func<Task> func, IsolationLevel level, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task DoInTransactionAsync(Func<Task> func, IsolationLevel level, 
+                                                       CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var scope = await Database.BeginTransactionAsync(level,
                                                                      cancellationToken))
