@@ -191,16 +191,16 @@ namespace IFramework.MessageStores.Relational
             modelBuilder.Entity<Command>()
                         .OwnsOne(m => m.SagaInfo);
 
-            modelBuilder.Entity<Command>()
-                        .Property(c => c.MessageBody)
-                        .HasColumnType("ntext");
+            //modelBuilder.Entity<Command>()
+            //            .Property(c => c.MessageBody)
+            //            .HasColumnType("ntext");
 
-            modelBuilder.Entity<UnSentCommand>()
-                        .Property(c => c.MessageBody)
-                        .HasColumnType("ntext");
-            modelBuilder.Entity<UnPublishedEvent>()
-                        .Property(c => c.MessageBody)
-                        .HasColumnType("ntext");
+            //modelBuilder.Entity<UnSentCommand>()
+            //            .Property(c => c.MessageBody)
+            //            .HasColumnType("ntext");
+            //modelBuilder.Entity<UnPublishedEvent>()
+            //            .Property(c => c.MessageBody)
+            //            .HasColumnType("ntext");
 
             modelBuilder.Entity<HandledEvent>()
                         .HasKey(e => new {e.Id, e.SubscriptionName});

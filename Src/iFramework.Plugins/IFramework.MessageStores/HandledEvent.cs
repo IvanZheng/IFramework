@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace IFramework.MessageStores.Relational
 {
@@ -13,6 +14,7 @@ namespace IFramework.MessageStores.Relational
             HandledTime = handledTime;
         }
 
+        [MaxLength(50)]
         public string Id { get; set; }
         public string SubscriptionName { get; set; }
         public DateTime HandledTime { get; set; }

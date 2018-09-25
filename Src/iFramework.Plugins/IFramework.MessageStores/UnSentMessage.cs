@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -25,6 +26,7 @@ namespace IFramework.MessageStores.Relational
             Topic = messageContext.Topic;
         }
 
+        [MaxLength(50)]
         public string Id { get; set; }
         public string ReplyToEndPoint { get; set; }
         public SagaInfo SagaInfo { get; set; }
