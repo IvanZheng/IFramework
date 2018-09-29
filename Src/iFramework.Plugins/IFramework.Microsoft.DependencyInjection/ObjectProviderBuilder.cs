@@ -21,6 +21,8 @@ namespace IFramework.DependencyInjection.Microsoft
             {
                 _serviceCollection.Add(serviceCollection);
             }
+
+            _serviceCollection.AddScoped<IObjectProvider>(provider => new ObjectProvider(provider));
             return new ObjectProvider(_serviceCollection);
         }
 
