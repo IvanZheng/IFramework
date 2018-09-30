@@ -20,10 +20,12 @@
 
   <ItemGroup>
     <Compile Remove="ConfluentKafkaClient.cs" />
+    <Compile Remove="MessageFormat\KafkaMessageDeserializer.cs" />
+    <Compile Remove="MessageFormat\KafkaMessageSerializer.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="0.11.5" />
+    <PackageReference Include="Confluent.Kafka" Version="1.0.0-beta" />
   </ItemGroup>
 
   <ItemGroup>

@@ -13,36 +13,36 @@ namespace IFramework.KafkaTools.Controllers
     [ApiController]
     public class KafkaController : ControllerBase
     {
-        private static readonly ConcurrentDictionary<string, Consumer> Consumers = new ConcurrentDictionary<string, Consumer>();
+        private static readonly ConcurrentDictionary<string, Consumer<string, string>> Consumers = new ConcurrentDictionary<string, Consumer<string, string>>();
 
         [HttpPost]
-        public async Task<object> CommitOffset(CommitOffsetRequest request)
+        public void CommitOffset(CommitOffsetRequest request)
         {
-            Consumer consumer = GetConsumer(request.Broker, request.Group);
+            var consumer = GetConsumer(request.Broker, request.Group);
             var offsets = request.Offsets
                                  .Select(offset => new TopicPartitionOffset(new TopicPartition(offset.Topic,
                                                                                                offset.Partition),
                                                                             offset.Offset))
                                  .ToArray();
-            return await consumer.CommitAsync(offsets).ConfigureAwait(false);
+             consumer.Commit(offsets);
         }
 
-        private Consumer GetConsumer(string broker, string group)
+        private Consumer<string, string> GetConsumer(string broker, string group)
         {
             return Consumers.GetOrAdd($"{broker}.{group}", key =>
             {
-                var consumerConfiguration = new Dictionary<string, object>
+                var consumerConfiguration = new Dictionary<string, string>
                 {
                     {"group.id", group},
                     {"client.id", $"KafkaTools.{group}"},
-                    {"enable.auto.commit", false},
+                    {"enable.auto.commit", false.ToString().ToLower()},
                     //{"socket.blocking.max.ms", ConsumerConfig["socket.blocking.max.ms"] ?? 50},
                     //{"fetch.error.backoff.ms", ConsumerConfig["fetch.error.backoff.ms"] ?? 50},
-                    {"socket.nagle.disable", true},
+                    {"socket.nagle.disable", true.ToString().ToLower()},
                     //{"statistics.interval.ms", 60000},
                     {"bootstrap.servers", broker}
                 };
-                return new Consumer(consumerConfiguration);
+                return new Consumer<string, string>(consumerConfiguration);
             });
         }
     }

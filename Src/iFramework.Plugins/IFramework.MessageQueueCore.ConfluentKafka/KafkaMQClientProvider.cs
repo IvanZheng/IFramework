@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Confluent.Kafka.Serialization;
+using Confluent.Kafka;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -20,12 +20,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
-            return new KafkaProducer(queue, _brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer(), config);
+            return new KafkaProducer(queue, _brokerList, config);
         }
 
         public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
         {
-            return new KafkaProducer(topic, _brokerList, new StringSerializer(Encoding.UTF8), new KafkaMessageSerializer(), config);
+            return new KafkaProducer(topic, _brokerList, config);
         }
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null, string producer = null)
@@ -67,8 +67,6 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, new []{queue}, $"{queue}.consumer", consumerId,
                                                                    BuildOnKafkaMessageReceived(onMessagesReceived),
-                                                                   new StringDeserializer(Encoding.UTF8),
-                                                                   new KafkaMessageDeserializer(),
                                                                    consumerConfig);
             if (start)
             {
@@ -86,8 +84,6 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, topics, subscriptionName, consumerId,
                                                                    BuildOnKafkaMessageReceived(onMessagesReceived),
-                                                                   new StringDeserializer(Encoding.UTF8),
-                                                                   new KafkaMessageDeserializer(),
                                                                    consumerConfig);
             if (start)
             {
@@ -100,8 +96,8 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             return (consumer, message) =>
             {
-                var kafkaMessage = message.Value;
-                var messageContext = new MessageContext(kafkaMessage, message.Topic, message.Partition, message.Offset);
+                var kafkaMessage = message.Message;
+                var messageContext = new MessageContext(kafkaMessage.Value, message.Topic, message.Partition, message.Offset);
                 onMessagesReceived(messageContext);
             };
         }

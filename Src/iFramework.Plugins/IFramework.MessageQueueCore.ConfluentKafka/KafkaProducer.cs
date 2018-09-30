@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
@@ -18,10 +17,8 @@ namespace IFramework.MessageQueue.ConfluentKafka
     {
         public KafkaProducer(string topic,
                              string brokerList,
-                             ISerializer<string> keySerializer,
-                             ISerializer<KafkaMessage> valueSerializer,
                              ProducerConfig config = null)
-            : base(topic, brokerList, keySerializer, valueSerializer, config) { }
+            : base(topic, brokerList, config) { }
 
         public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
@@ -37,29 +34,24 @@ namespace IFramework.MessageQueue.ConfluentKafka
         private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>).Name);
         private readonly Producer<TKey, TValue> _producer;
         private readonly string _topic;
-        private readonly ISerializer<TValue> _valueSerializer;
 
         public KafkaProducer(string topic,
                              string brokerList,
-                             ISerializer<TKey> keySerializer,
-                             ISerializer<TValue> valueSerializer,
                              ProducerConfig config = null)
         {
             Config = config ??  new ProducerConfig();
-
-            var keySerializer1 = keySerializer ?? throw new ArgumentNullException(nameof(keySerializer));
-            _valueSerializer = valueSerializer ?? throw new ArgumentNullException(nameof(valueSerializer));
+            
             _topic = topic;
-            var producerConfiguration = new Dictionary<string, object>
+            var producerConfiguration = new Dictionary<string, string>
             {
                 {"bootstrap.servers", brokerList},
-                {"request.required.acks", Config["request.required.acks"] ?? 1},
-                {"socket.nagle.disable", true},
+                {"request.required.acks", Config["request.required.acks"]?.ToString() ?? "1"},
+                {"socket.nagle.disable", true.ToString().ToLower()},
                 //{"socket.blocking.max.ms", Config["socket.blocking.max.ms"] ?? 50},
                 //{"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
             };
 
-            _producer = new Producer<TKey, TValue>(producerConfiguration, keySerializer1, valueSerializer);
+            _producer = new Producer<TKey, TValue>(producerConfiguration);
             _producer.OnError += _producer_OnError;
         }
 
@@ -80,7 +72,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        public async Task<Message<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
+        public async Task<DeliveryReport<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
         {
             var retryTimes = 0;
             while (true)
@@ -93,8 +85,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 try
                 {
                     var result = await _producer.ProduceAsync(topic,
-                                                              key,
-                                                              message)
+                                                              new Message<TKey, TValue>{
+                                                                  Key = key,
+                                                                  Value = message},
+                                                              cancellationToken)
                                                 .ConfigureAwait(false);
                     return result;
                 }

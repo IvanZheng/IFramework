@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using IFramework.Infrastructure;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
@@ -12,12 +11,10 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, Message<TKey, TValue> message);
+    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumeResult<TKey, TValue> message);
 
     public class KafkaConsumer<TKey, TValue> : MessageConsumer
     {
-        private readonly IDeserializer<TKey> _keyDeserializer;
-        private readonly IDeserializer<TValue> _valueDeserializer;
         private Consumer<TKey, TValue> _consumer;
         protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
         protected readonly string BrokerList;
@@ -26,13 +23,9 @@ namespace IFramework.MessageQueue.ConfluentKafka
                              string groupId,
                              string consumerId,
                              OnKafkaMessageReceived<TKey, TValue> onMessageReceived,
-                             IDeserializer<TKey> keyDeserializer,
-                             IDeserializer<TValue> valueDeserializer,
                              ConsumerConfig consumerConfig = null)
             : base(topics, groupId, consumerId, consumerConfig)
         {
-            _keyDeserializer = keyDeserializer ?? throw new ArgumentNullException(nameof(keyDeserializer));
-            _valueDeserializer = valueDeserializer ?? throw new ArgumentNullException(nameof(valueDeserializer));
             BrokerList = brokerList;
             if (string.IsNullOrWhiteSpace(brokerList))
             {
@@ -44,45 +37,44 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
             OnMessageReceived = onMessageReceived;
 
-            ConsumerConfiguration = new Dictionary<string, object>
+            ConsumerConfiguration = new Dictionary<string, string>
             {
                 {"group.id", GroupId},
                 {"client.id", consumerId},
-                {"enable.auto.commit", false},
+                {"enable.auto.commit", false.ToString().ToLower()},
                 //{"socket.blocking.max.ms", ConsumerConfig["socket.blocking.max.ms"] ?? 50},
                 //{"fetch.error.backoff.ms", ConsumerConfig["fetch.error.backoff.ms"] ?? 50},
-                {"socket.nagle.disable", true},
+                {"socket.nagle.disable", true.ToString().ToLower()},
                 //{"statistics.interval.ms", 60000},
-                {"retry.backoff.ms", ConsumerConfig.BackOffIncrement},
+                {"retry.backoff.ms", ConsumerConfig.BackOffIncrement.ToString()},
                 {"bootstrap.servers", BrokerList},
                 {"auto.offset.reset", ConsumerConfig.AutoOffsetReset}
             };
         }
 
-        public Dictionary<string, object> ConsumerConfiguration { get; protected set; }
+        public Dictionary<string, string> ConsumerConfiguration { get; protected set; }
         
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         protected override void PollMessages()
         {
-            _consumer.Poll(TimeSpan.FromMilliseconds(1000));
-            //var consumeResult = _consumer.Consume(_cancellationTokenSource.Token);
-            //if (consumeResult != null)
-            //{
-            //    _consumer_OnMessage(consumeResult);
-            //}
+            //_consumer.Poll(TimeSpan.FromMilliseconds(1000));
+            var consumeResult = _consumer.Consume(_cancellationTokenSource.Token);
+            if (consumeResult != null)
+            {
+                _consumer_OnMessage(_consumer, consumeResult);
+            }
         }
 
         public override void Start()
         {
-            _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration, _keyDeserializer, _valueDeserializer);
+            _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration);
             _consumer.Subscribe(Topics);
-            _consumer.OnMessage += _consumer_OnMessage;
             _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
             base.Start();
         }
 
 
-        private void _consumer_OnMessage(object sender, Message<TKey, TValue> message)
+        private void _consumer_OnMessage(object sender, ConsumeResult<TKey, TValue> message)
         {
             try
             {
@@ -106,7 +98,8 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);
-            return _consumer.CommitAsync(new[] {topicPartitionOffset});
+             _consumer.Commit(new[] {topicPartitionOffset});
+            return Task.CompletedTask;
         }
 
         public override void Stop()
