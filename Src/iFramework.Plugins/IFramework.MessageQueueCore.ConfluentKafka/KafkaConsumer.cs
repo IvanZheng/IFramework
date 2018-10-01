@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using IFramework.Infrastructure;
-using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
+using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
@@ -15,9 +14,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
     public class KafkaConsumer<TKey, TValue> : MessageConsumer
     {
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        protected readonly string BrokerList;
         private Consumer<TKey, TValue> _consumer;
         protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
-        protected readonly string BrokerList;
+
         public KafkaConsumer(string brokerList,
                              string[] topics,
                              string groupId,
@@ -31,10 +32,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(brokerList));
             }
+
             if (string.IsNullOrWhiteSpace(groupId))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(groupId));
             }
+
             OnMessageReceived = onMessageReceived;
 
             ConsumerConfiguration = new Dictionary<string, string>
@@ -53,8 +56,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         }
 
         public Dictionary<string, string> ConsumerConfiguration { get; protected set; }
-        
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
         protected override void PollMessages()
         {
             //_consumer.Poll(TimeSpan.FromMilliseconds(1000));
@@ -67,7 +69,8 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public override void Start()
         {
-            _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration);
+            _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration,
+                                                   valueDeserializer: KafkaMessageDeserializer<TValue>.DeserializeValue);
             _consumer.Subscribe(Topics);
             _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
             base.Start();
@@ -98,7 +101,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);
-             _consumer.Commit(new[] {topicPartitionOffset});
+            _consumer.Commit(new[] {topicPartitionOffset});
             return Task.CompletedTask;
         }
 

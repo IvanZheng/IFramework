@@ -51,7 +51,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 //{"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
             };
 
-            _producer = new Producer<TKey, TValue>(producerConfiguration);
+            _producer = new Producer<TKey, TValue>(producerConfiguration,valueSerializer:KafkaMessageSerializer<TValue>.SerializeValue);
             _producer.OnError += _producer_OnError;
         }
 

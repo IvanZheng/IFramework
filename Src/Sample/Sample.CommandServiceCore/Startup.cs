@@ -36,7 +36,8 @@ using Sample.Domain;
 using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
-
+using System.Net;
+using IFramework.Infrastructure;
 
 namespace Sample.CommandServiceCore
 {
@@ -55,8 +56,8 @@ namespace Sample.CommandServiceCore
         {
             var kafkaBrokerList = new[]
             {
-                //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
-                "10.100.7.46:9092"
+                new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
+                //"10.100.7.46:9092"
             };
             var rabbitMQHostName = "10.100.7.46";
             var rabbitMQPort = 9012;

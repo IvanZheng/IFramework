@@ -1,28 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Confluent.Kafka.Serialization;
+﻿using System.Text;
+using Confluent.Kafka;
 using IFramework.Infrastructure;
 
 namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
-    public class KafkaMessageDeserializer : IDeserializer<KafkaMessage>
+    public class KafkaMessageDeserializer<TValue>
     {
-        public IEnumerable<KeyValuePair<string, object>> Configure(IEnumerable<KeyValuePair<string, object>> config, bool isKey)
-        {
-            return config;
-        }
-
-        public KafkaMessage Deserialize(string topic, byte[] data)
-        {
-            return Encoding.UTF8.GetString(data).ToJsonObject<KafkaMessage>();
-        }
-
-        public void Dispose()
-        {
-            
-        }
+        public static Deserializer<TValue> DeserializeValue =>
+            (topic, data, isNull) => Encoding.UTF8.GetString(data.ToArray()).ToJsonObject<TValue>();
     }
 }

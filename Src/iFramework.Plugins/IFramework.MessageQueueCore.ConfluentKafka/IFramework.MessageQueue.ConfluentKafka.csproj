@@ -3,9 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-prelease-0011</Version>
+    <Version>2.0.0-prelease-0012</Version>
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
+    <PackageReleaseNotes>update confluent kakfa to 1.0.0-beta</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -20,8 +21,6 @@
 
   <ItemGroup>
     <Compile Remove="ConfluentKafkaClient.cs" />
-    <Compile Remove="MessageFormat\KafkaMessageDeserializer.cs" />
-    <Compile Remove="MessageFormat\KafkaMessageSerializer.cs" />
   </ItemGroup>
 
   <ItemGroup>
