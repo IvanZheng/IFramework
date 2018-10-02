@@ -24,7 +24,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             var message = ((MessageContext) messageContext).KafkaMessage;
             var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
-            return SendAsync(topic, messageContext.Key, message, cancellationToken);
+            return SendAsync(topic, messageContext.Key ?? messageContext.MessageId, message, cancellationToken);
         }
     }
 

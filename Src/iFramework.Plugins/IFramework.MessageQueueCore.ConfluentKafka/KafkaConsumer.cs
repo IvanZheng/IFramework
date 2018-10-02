@@ -101,7 +101,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);
-            _consumer.Commit(new[] {topicPartitionOffset});
+            _consumer.Commit(new[] {topicPartitionOffset}, _cancellationTokenSource.Token);
             return Task.CompletedTask;
         }
 

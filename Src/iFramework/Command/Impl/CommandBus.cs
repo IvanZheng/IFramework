@@ -162,9 +162,9 @@ namespace IFramework.Command.Impl
                 throw noMessageIdException;
             }
             string commandKey = null;
-            if (command is ILinearCommand)
+            if (command is ILinearCommand linearCommand)
             {
-                var linearKey = _linearCommandManager.GetLinearKey(command as ILinearCommand);
+                var linearKey = _linearCommandManager.GetLinearKey(linearCommand);
                 if (linearKey != null)
                 {
                     commandKey = linearKey.ToString();
