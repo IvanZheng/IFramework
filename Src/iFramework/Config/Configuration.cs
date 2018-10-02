@@ -74,6 +74,14 @@ namespace IFramework.Config
             RegisterConcurrencyProcessor<ConcurrencyProcessor>();
             this.UseMessageQueue(app);
             this.MessageQueueUseMachineNameFormat();
+            UseMessageTypeProvider<MessageTypeProvider>();
+            return this;
+        }
+
+        public Configuration UseMessageTypeProvider<TMessageTypeProvider>()
+        where TMessageTypeProvider :class, IMessageTypeProvider
+        {
+            ObjectProviderFactory.Instance.RegisterType<IMessageTypeProvider, TMessageTypeProvider>(ServiceLifetime.Singleton);
             return this;
         }
 

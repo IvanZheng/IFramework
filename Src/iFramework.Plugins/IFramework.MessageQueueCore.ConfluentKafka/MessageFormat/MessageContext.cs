@@ -120,26 +120,14 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 
         public object Message
         {
-            get
-            {
-                if (_message != null)
-                {
-                    return _message; 
-                }
-                if (Headers.TryGetValue("MessageType", out var messageType) && messageType != null)
-                {
-                    var jsonValue = KafkaMessage.Payload;
-                    _message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
-                }
-                return _message;
-            }
+            get => _message ?? (_message = this.GetMessage(KafkaMessage.Payload));
             protected set
             {
                 _message = value;
                 KafkaMessage.Payload = value.ToJson();
                 if (value != null)
                 {
-                    Headers["MessageType"] = value.GetType().GetFullNameWithAssembly();
+                    Headers["MessageType"] = this.GetMessageCode(value.GetType());;
                 }
             }
         }

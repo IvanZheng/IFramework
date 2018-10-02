@@ -100,27 +100,14 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
 
         public object Message
         {
-            get
-            {
-                if (_message != null)
-                {
-                    return _message;
-                }
-
-                if (Headers.TryGetValue("MessageType", out var messageType) && messageType != null)
-                {
-                    var jsonValue = Encoding.UTF8.GetString(EqueueMessage.Payload);
-                    _message = jsonValue.ToJsonObject(Type.GetType(messageType.ToString()));
-                }
-                return _message;
-            }
+            get => _message ?? (_message = this.GetMessage(Encoding.UTF8.GetString(EqueueMessage.Payload)));
             protected set
             {
                 _message = value;
                 EqueueMessage.Payload = Encoding.UTF8.GetBytes(value.ToJson());
                 if (value != null)
                 {
-                    Headers["MessageType"] = value.GetType().GetFullNameWithAssembly();
+                    Headers["MessageType"] = this.GetMessageCode(value.GetType());
                 }
             }
         }

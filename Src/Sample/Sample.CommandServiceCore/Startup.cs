@@ -38,6 +38,7 @@ using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 using System.Net;
 using IFramework.Infrastructure;
+using System.Collections.Generic;
 
 namespace Sample.CommandServiceCore
 {
@@ -80,7 +81,7 @@ namespace Sample.CommandServiceCore
                              options.EnableSensitiveDataLogging();
                              options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseInMemoryDatabase(nameof(SampleModelContext));
-                         }) ;
+                         });
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
@@ -117,15 +118,23 @@ namespace Sample.CommandServiceCore
             providerBuilder.Register<ICommunityService, CommunityService>(lifetime,
                                                                           new InterfaceInterceptorInjection(),
                                                                           new InterceptionBehaviorInjection());
-                                                                                                                                                                           providerBuilder.Register<HomeController, HomeController>(lifetime,
-                                                                     new VirtualMethodInterceptorInjection(),
-                                                                     new InterceptionBehaviorInjection());
+            providerBuilder.Register<HomeController, HomeController>(lifetime,
+new VirtualMethodInterceptorInjection(),
+new InterceptionBehaviorInjection());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app,
+                              IHostingEnvironment env,
+                              ILoggerFactory loggerFactory,
+                              IMessageTypeProvider messageTypeProvider)
         {
-            loggerFactory.UseLog4Net(new Log4NetProviderOptions {EnableScope = true});
+            messageTypeProvider.Register(new Dictionary<string, string>
+                               {
+                                   ["Login"] = "Sample.Command.Login, Sample.Command"
+                               })
+                               .Register("Modify", typeof(Modify));
+            loggerFactory.UseLog4Net(new Log4NetProviderOptions { EnableScope = true });
             StartMessageQueueComponents();
 
             if (env.IsDevelopment())
@@ -177,15 +186,15 @@ namespace Sample.CommandServiceCore
 
             var commandQueueName = "commandqueue";
             _commandConsumer1 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] {"CommandHandlers"});
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
             _commandConsumer1.Start();
 
             _commandConsumer2 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] {"CommandHandlers"});
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
             _commandConsumer2.Start();
 
             _commandConsumer3 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] {"CommandHandlers"});
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
             _commandConsumer3.Start();
 
             #endregion
@@ -199,7 +208,7 @@ namespace Sample.CommandServiceCore
                                                                               },
                                                                               "DomainEventSubscriber",
                                                                               Environment.MachineName,
-                                                                              new[] {"DomainEventSubscriber"});
+                                                                              new[] { "DomainEventSubscriber" });
             _domainEventProcessor.Start();
 
             #endregion
@@ -209,7 +218,7 @@ namespace Sample.CommandServiceCore
             _applicationEventProcessor = MessageQueueFactory.CreateEventSubscriber("AppEvent",
                                                                                    "AppEventSubscriber",
                                                                                    Environment.MachineName,
-                                                                                   new[] {"ApplicationEventSubscriber"});
+                                                                                   new[] { "ApplicationEventSubscriber" });
             _applicationEventProcessor.Start();
 
             #endregion
