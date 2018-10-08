@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Logging
             }
             else
             {
-                message = o is string ? o.ToString() : o.ToJson();
+                message = o is string s ? s : o.ToJson();
             }
 
             return message;
