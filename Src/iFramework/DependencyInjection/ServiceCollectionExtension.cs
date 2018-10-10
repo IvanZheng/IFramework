@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace IFramework.DependencyInjection
 {
@@ -90,6 +92,32 @@ namespace IFramework.DependencyInjection
                 throw new InvalidEnumArgumentException(nameof(lifetime));
             }
             return serviceCollection;
+        }
+
+
+        public static IServiceCollection AddCustomOptions<TOptions>(this IServiceCollection services, Action<TOptions> optionAction = null, string sectionName = null)
+            where TOptions: class, new()
+        {
+            if (optionAction != null)
+            {
+                services.Configure(optionAction);
+            }
+            else
+            {
+                services.AddSingleton<IOptions<TOptions>>(provider =>
+                {
+                    var configuration = provider.GetService<IConfiguration>().GetSection(sectionName ?? typeof(TOptions).Name);
+                    if (!configuration.Exists())
+                    {
+                        throw new ArgumentNullException($"{nameof(TOptions)}");
+                    }
+
+                    var options = new TOptions();
+                    configuration.Bind(options);
+                    return new OptionsWrapper<TOptions>(options);
+                });
+            }
+            return services;
         }
     }
 }

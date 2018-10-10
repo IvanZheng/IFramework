@@ -39,6 +39,7 @@ using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAt
 using System.Net;
 using IFramework.Infrastructure;
 using System.Collections.Generic;
+using Microsoft.Extensions.Options;
 
 namespace Sample.CommandServiceCore
 {
@@ -70,9 +71,9 @@ namespace Sample.CommandServiceCore
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseRelationalMessageStore<SampleModelContext>()
-                         //.UseInMemoryMessageQueue()
+                         .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitMQHostName, rabbitMQPort)
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                        // .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
@@ -86,6 +87,7 @@ namespace Sample.CommandServiceCore
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            services.AddCustomOptions<FrameworkConfiguration>();
             services.AddMvc(options =>
                     {
                         options.InputFormatters.Insert(0, new CommandInputFormatter());
@@ -127,7 +129,8 @@ new InterceptionBehaviorInjection());
         public void Configure(IApplicationBuilder app,
                               IHostingEnvironment env,
                               ILoggerFactory loggerFactory,
-                              IMessageTypeProvider messageTypeProvider)
+                              IMessageTypeProvider messageTypeProvider,
+                              IOptions<FrameworkConfiguration> frameworkConfigOptions)
         {
             messageTypeProvider.Register(new Dictionary<string, string>
                                {
