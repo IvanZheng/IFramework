@@ -53,6 +53,9 @@ namespace Sample.CommandServiceCore.Controllers
         public virtual async Task<object> DoApi()
         {
             var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
+            var userId = new Guid("4ED7460E-C914-45A6-B1C9-4DC97C5D52D0");
+            await _communityService.ModifyUserEmailAsync(userId, $"{DateTime.Now.Ticks}");
+
             await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
             return $"{DateTime.Now} DoApi Done! sameProvider:{sameProvider}";
         }

@@ -9,6 +9,6 @@ namespace IFramework.Infrastructure.Mailboxes
     {
         void Start();
         void Stop();
-        void Process(IMessageContext messageContext, Func<IMessageContext, Task> process);
+        void Process(TMessage messageContext, Func<TMessage, Task> process);
     }
 }

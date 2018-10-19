@@ -10,4 +10,10 @@ namespace IFramework.Infrastructure.Mailboxes
         Task ScheduleMailbox(ProcessingMailbox<TMessage> mailbox);
         Task SchedulProcessing(Func<Task> processing);
     }
+
+    public interface IProcessingMessageScheduler
+    {
+        Task ScheduleMailbox(Mailbox mailbox);
+        Task SchedulProcessing(Func<Task> processing);
+    }
 }
