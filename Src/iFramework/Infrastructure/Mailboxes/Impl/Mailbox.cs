@@ -7,6 +7,8 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 {
     public class Mailbox
     {
+        public delegate void MessageEmptyHandler(Mailbox mailbox);
+
         private readonly int _batchCount;
         private readonly IProcessingMessageScheduler _scheduler;
         private volatile int _isHandlingMessage;
@@ -23,6 +25,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         internal ConcurrentQueue<Func<Task>> MessageQueue { get; }
         public string Key { get; }
+        public event MessageEmptyHandler OnMessageEmpty;
 
 
         public void EnqueueMessage(Func<Task> processing)
@@ -72,7 +75,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
             else
             {
-                //_handleMailboxEmpty?.Invoke(this);
+                OnMessageEmpty?.Invoke(this);
             }
         }
 
