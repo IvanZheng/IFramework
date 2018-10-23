@@ -20,17 +20,17 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             _batchCount = batchCount;
             _scheduler = scheduler;
             Key = key;
-            MessageQueue = new ConcurrentQueue<Func<Task>>();
+            MessageQueue = new ConcurrentQueue<MailboxMessage>();
         }
 
-        internal ConcurrentQueue<Func<Task>> MessageQueue { get; }
+        internal ConcurrentQueue<MailboxMessage> MessageQueue { get; }
         public string Key { get; }
         public event MessageEmptyHandler OnMessageEmpty;
 
 
-        public void EnqueueMessage(Func<Task> processing)
+        public void EnqueueMessage(MailboxMessage message)
         {
-            MessageQueue.Enqueue(processing);
+            MessageQueue.Enqueue(message);
         }
 
 
@@ -43,7 +43,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 {
                     if (MessageQueue.TryDequeue(out var processingMessage))
                     {
-                        await processingMessage().ConfigureAwait(false);
+                        await processingMessage.Task().ConfigureAwait(false);
                     }
                     else
                     {

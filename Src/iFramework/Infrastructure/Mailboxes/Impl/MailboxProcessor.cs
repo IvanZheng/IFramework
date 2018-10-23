@@ -1,25 +1,111 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using IFramework.Message;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
     public class MailboxProcessor: IMailboxProcessor
     {
+        private readonly IProcessingMessageScheduler _scheduler;
+        private readonly int _batchCount;
+        private Task _processComandTask;
+        private readonly CancellationTokenSource _cancellationSource;
+        private readonly ConcurrentDictionary<string, Mailbox> _mailboxDictionary;
+
+        private readonly BlockingCollection<IMailboxProcessorCommand> _mailboxProcessorCommands;
+
+        public MailboxProcessor(IProcessingMessageScheduler scheduler, int batchCount = 100)
+        {
+            _scheduler = scheduler;
+            _batchCount = batchCount;
+            _mailboxProcessorCommands = new BlockingCollection<IMailboxProcessorCommand>();
+            _mailboxDictionary = new ConcurrentDictionary<string, Mailbox>();
+            _cancellationSource = new CancellationTokenSource();
+        }
+
         public void Start()
         {
-            throw new NotImplementedException();
+            _processComandTask = Task.Factory.StartNew(
+                                                       cs => ProcessMailboxProcessorCommands(cs as CancellationTokenSource),
+                                                       _cancellationSource,
+                                                       _cancellationSource.Token,
+                                                       TaskCreationOptions.LongRunning,
+                                                       TaskScheduler.Default);
+        }
+
+        private void ExecuteProcessCommand(ProcessMessageCommand command)
+        {
+            var key = command.Message.Key;
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                var mailbox = _mailboxDictionary.GetOrAdd(key, x => new Mailbox(key, _scheduler, _batchCount));
+                mailbox.EnqueueMessage(command.Message);
+                _scheduler.ScheduleMailbox(mailbox);
+            }
+            else
+            {
+                _scheduler.SchedulProcessing(command.Message.Task);
+            }
+        }
+
+        private void ProcessMailboxProcessorCommands(CancellationTokenSource cancellationSource)
+        {
+            while (!cancellationSource.IsCancellationRequested)
+            {
+                try
+                {
+                    var command = _mailboxProcessorCommands.Take(cancellationSource.Token);
+                    if (command is ProcessMessageCommand messageCommand)
+                    {
+                        ExecuteProcessCommand(messageCommand);
+                    }
+                    else if (command is CompleteMessageCommand completeMessageCommand)
+                    {
+                        CompleteProcessMessage(completeMessageCommand);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    //_logger.LogError(ex, $"Message processor ProcessMailboxProcessorCommands failed");
+                }
+            }
+        }
+
+        private void CompleteProcessMessage(CompleteMessageCommand command)
+        {
+            var mailbox = command.Mailbox;
+            if (mailbox.MessageQueue.Count == 0)
+            {
+                _mailboxDictionary.TryRemove(mailbox.Key);
+            }
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            if (_processComandTask != null)
+            {
+                _cancellationSource.Cancel(true);
+                Task.WaitAll(_processComandTask);
+            }
         }
 
         public Task Process(string key, Func<Task> process)
         {
-            throw new NotImplementedException();
+            var mailboxMessage = new MailboxMessage(key, process);
+            _mailboxProcessorCommands.Add(new ProcessMessageCommand(mailboxMessage));
+            return mailboxMessage.TaskCompletionSource.Task;
         }
     }
 }

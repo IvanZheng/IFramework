@@ -18,6 +18,26 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         public Func<TMessage, Task> ProcessingMessageFunc { get; }
     }
 
+    internal class ProcessMessageCommand : IMailboxProcessorCommand
+    {
+        public MailboxMessage Message { get; private set; }
+
+        public ProcessMessageCommand(MailboxMessage message)
+        {
+            Message = message;
+        }
+    }
+
+    internal class CompleteMessageCommand : IMailboxProcessorCommand
+    {
+        public CompleteMessageCommand(Mailbox mailbox)
+        {
+            Mailbox = mailbox;
+        }
+
+        public Mailbox Mailbox { get; set; }
+    }
+
     internal class CompleteMessageCommand<TMessage> : IMailboxProcessorCommand
         where TMessage : class
     {
