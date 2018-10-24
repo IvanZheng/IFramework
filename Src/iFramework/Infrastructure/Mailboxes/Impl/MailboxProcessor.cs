@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Message;
+using Microsoft.Extensions.Options;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
@@ -18,10 +19,10 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         private readonly BlockingCollection<IMailboxProcessorCommand> _mailboxProcessorCommands;
 
-        public MailboxProcessor(IProcessingMessageScheduler scheduler, int batchCount = 100)
+        public MailboxProcessor(IProcessingMessageScheduler scheduler, IOptions<MailboxOption> options)
         {
             _scheduler = scheduler;
-            _batchCount = batchCount;
+            _batchCount = options.Value.BatchCount;
             _mailboxProcessorCommands = new BlockingCollection<IMailboxProcessorCommand>();
             _mailboxDictionary = new ConcurrentDictionary<string, Mailbox>();
             _cancellationSource = new CancellationTokenSource();

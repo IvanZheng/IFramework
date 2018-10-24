@@ -70,6 +70,15 @@
 
         $(function () {
 
+            $("#btnMailboxProcess").click(function () {
+                var batchCount = parseInt($("#batchCount").val());
+                for (var i = 0; i < batchCount; i++) {
+                    $.post("@Url.Content("~/home/MailboxTest")", {id: 1, number:1}, function (result) {
+                        showResult(JSON.stringify(result));
+                    })
+                }
+            });
+
             $("#pressureBtn").click(function() {
                 $.ajax(
                     {
@@ -192,7 +201,7 @@
     </div>
     <br />
     <input type="button" value="CloseMessageQueue" id="closeMqBtn" />
-    <input type="text" value="1000" id="batchCount" />
+    <input type="text" value="100" id="batchCount" />
     <input type="text" value="ivan" id="username" />
     <input type="password" value="123456" id="password" />
 
@@ -217,6 +226,9 @@
         <input type="text" placeholder="productId" id="productId" />
         <input type="text" placeholder="reduceCount" id="reduceCount" />
         <input id="btnReduceProduct" type="button" value="ReduceProduct" />
+        <input id="btnMailboxProcess" type="button" value="MailboxProcess" />
+        MailboxValue:<span>@ViewBag.MailboxValue</span>
+
     </div>
     @using (Html.BeginForm("PostAddRequest", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
     {
@@ -225,6 +237,7 @@
         <input type="file" name="file1"/>
         <button type="submit">submit</button>
     }
+    
     <div id="result">
 
     </div>

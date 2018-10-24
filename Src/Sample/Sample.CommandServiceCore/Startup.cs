@@ -39,6 +39,9 @@ using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAt
 using System.Net;
 using IFramework.Infrastructure;
 using System.Collections.Generic;
+using IFramework.Infrastructure.Mailboxes;
+using IFramework.Infrastructure.Mailboxes.Impl;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Sample.CommandServiceCore
@@ -64,16 +67,16 @@ namespace Sample.CommandServiceCore
             var rabbitMQHostName = "10.100.7.46";
             var rabbitMQPort = 9012;
             Configuration.Instance
-                         .UseUnityContainer()
-                         //.UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+                         //.UseUnityContainer()
+                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                          .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseRelationalMessageStore<SampleModelContext>()
-                         //.UseInMemoryMessageQueue()
+                         .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitMQHostName, rabbitMQPort)
-                        .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
@@ -87,6 +90,7 @@ namespace Sample.CommandServiceCore
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
             services.AddCustomOptions<FrameworkConfiguration>();
             services.AddMvc(options =>
                     {
@@ -130,8 +134,10 @@ new InterceptionBehaviorInjection());
                               IHostingEnvironment env,
                               ILoggerFactory loggerFactory,
                               IMessageTypeProvider messageTypeProvider,
-                              IOptions<FrameworkConfiguration> frameworkConfigOptions)
+                              IOptions<FrameworkConfiguration> frameworkConfigOptions,
+                              IMailboxProcessor mailboxProcessor)
         {
+            mailboxProcessor.Start();
             messageTypeProvider.Register(new Dictionary<string, string>
                                {
                                    ["Login"] = "Sample.Command.Login, Sample.Command"
@@ -158,6 +164,12 @@ new InterceptionBehaviorInjection());
                 return next(context);
             });
 
+            app.Use(next => context =>
+            {
+                context.Request.EnableRewind();
+                context.Response.EnableRewind();
+                return next(context);
+            });
             //app.Use(async (context, next) =>
             //{
             //    await next();

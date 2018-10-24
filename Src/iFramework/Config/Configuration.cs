@@ -7,6 +7,8 @@ using IFramework.Event.Impl;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Caching;
 using IFramework.Infrastructure.Caching.Impl;
+using IFramework.Infrastructure.Mailboxes;
+using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using Microsoft.Extensions.Configuration;
@@ -75,6 +77,16 @@ namespace IFramework.Config
             this.UseMessageQueue(app);
             this.MessageQueueUseMachineNameFormat();
             UseMessageTypeProvider<MessageTypeProvider>();
+            UseMailbox<MailboxProcessor, DefaultProcessingMessageScheduler>();
+            return this;
+        }
+
+        private Configuration UseMailbox<TMailboxProcessor, TProcessingMessageScheduler>() 
+            where TMailboxProcessor : class, IMailboxProcessor
+            where TProcessingMessageScheduler: class, IProcessingMessageScheduler
+        {
+            ObjectProviderFactory.Instance.RegisterType<IProcessingMessageScheduler, TProcessingMessageScheduler>(ServiceLifetime.Singleton);
+            ObjectProviderFactory.Instance.RegisterType<IMailboxProcessor, TMailboxProcessor>(ServiceLifetime.Singleton);
             return this;
         }
 

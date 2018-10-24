@@ -44,6 +44,8 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                     if (MessageQueue.TryDequeue(out var processingMessage))
                     {
                         await processingMessage.Task().ConfigureAwait(false);
+                        processingMessage.TaskCompletionSource
+                                         .TrySetResult(null);
                     }
                     else
                     {

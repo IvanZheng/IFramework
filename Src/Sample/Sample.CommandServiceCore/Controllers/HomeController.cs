@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using IFramework.AspNet;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
@@ -62,9 +63,20 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Test()
         {
+            ViewBag.MailboxValue = MailboxValue;
             return View();
         }
 
+        public static volatile int MailboxValue = 0;
+        [MailboxProcessing("request", "Id")]
+        [ApiResultWrap]
+        public async Task<int> MailboxTest([FromBody] MailboxRequest request)
+        {
+            await Task.Delay(20);
+            MailboxValue += request.Number;
+            //throw new Exception("Test Exception");
+            return MailboxValue;
+        }
 
         public ApiResult PostAddRequest([FromBody] AddRequest request)
         {
