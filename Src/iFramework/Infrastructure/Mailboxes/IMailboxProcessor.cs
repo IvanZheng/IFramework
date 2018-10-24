@@ -10,5 +10,6 @@ namespace IFramework.Infrastructure.Mailboxes
         void Start();
         void Stop();
         Task Process(string key, Func<Task> process);
+        string Status { get; }
     }
 }

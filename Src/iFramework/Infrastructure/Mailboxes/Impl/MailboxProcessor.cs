@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         private readonly ConcurrentDictionary<string, Mailbox> _mailboxDictionary;
 
         private readonly BlockingCollection<IMailboxProcessorCommand> _mailboxProcessorCommands;
+
+        public string Status => string.Join(", ", _mailboxDictionary.Select(e => $"[{e.Key}: {e.Value.MessageQueue.Count}]"));
 
         public MailboxProcessor(IProcessingMessageScheduler scheduler, IOptions<MailboxOption> options)
         {
@@ -44,6 +47,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             if (!string.IsNullOrWhiteSpace(key))
             {
                 var mailbox = _mailboxDictionary.GetOrAdd(key, x => new Mailbox(key, _scheduler, _batchCount));
+                mailbox.OnMessageEmpty += Mailbox_OnMessageEmpty;
                 mailbox.EnqueueMessage(command.Message);
                 _scheduler.ScheduleMailbox(mailbox);
             }
@@ -51,6 +55,11 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             {
                 _scheduler.SchedulProcessing(command.Message.Task);
             }
+        }
+
+        private void Mailbox_OnMessageEmpty(Mailbox mailbox)
+        {
+            _mailboxProcessorCommands.Add(new CompleteMessageCommand(mailbox));
         }
 
         private void ProcessMailboxProcessorCommands(CancellationTokenSource cancellationSource)

@@ -228,6 +228,7 @@
         <input id="btnReduceProduct" type="button" value="ReduceProduct" />
         <input id="btnMailboxProcess" type="button" value="MailboxProcess" />
         MailboxValue:<span>@ViewBag.MailboxValue</span>
+        MailboxStatus:<span>@ViewBag.MailboxStatus</span>
 
     </div>
     @using (Html.BeginForm("PostAddRequest", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))

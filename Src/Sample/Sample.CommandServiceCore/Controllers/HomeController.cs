@@ -8,6 +8,7 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.Mailboxes;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ namespace Sample.CommandServiceCore.Controllers
         private readonly IConcurrencyProcessor _concurrencyProcessor;
         private readonly SampleModelContext _dbContext;
         private readonly ICommunityService _communityService;
+        private readonly IMailboxProcessor _mailboxProcessor;
         private readonly ICommunityRepository _domainRepository;
         private readonly ILogger _logger;
         private readonly IObjectProvider _objectProvider;
@@ -35,7 +37,8 @@ namespace Sample.CommandServiceCore.Controllers
                               IUnitOfWork unitOfWork,
                               ICommunityRepository domainRepository,
                               SampleModelContext dbContext,
-                              ICommunityService communityService)
+                              ICommunityService communityService,
+                              IMailboxProcessor mailboxProcessor)
         {
             _concurrencyProcessor = concurrencyProcessor;
             _objectProvider = objectProvider;
@@ -43,6 +46,7 @@ namespace Sample.CommandServiceCore.Controllers
             _domainRepository = domainRepository;
             _dbContext = dbContext;
             _communityService = communityService;
+            _mailboxProcessor = mailboxProcessor;
             _logger = logger;
         }
 
@@ -64,6 +68,7 @@ namespace Sample.CommandServiceCore.Controllers
         public IActionResult Test()
         {
             ViewBag.MailboxValue = MailboxValue;
+            ViewBag.MailboxStatus = _mailboxProcessor.Status;
             return View();
         }
 
