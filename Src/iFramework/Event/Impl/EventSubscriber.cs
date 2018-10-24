@@ -13,6 +13,7 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace IFramework.Event.Impl
 {
@@ -26,7 +27,7 @@ namespace IFramework.Event.Impl
         protected IHandlerProvider HandlerProvider;
         protected IMessageConsumer InternalConsumer;
         protected ILogger Logger;
-        protected MessageProcessor MessageProcessor;
+        protected MailboxProcessor MessageProcessor;
         protected IMessagePublisher MessagePublisher;
         protected IMessageQueueClient MessageQueueClient;
         protected string SubscriptionName;
@@ -51,9 +52,14 @@ namespace IFramework.Event.Impl
             SubscriptionName = subscriptionName;
             MessagePublisher = messagePublisher;
             CommandBus = commandBus;
-            MessageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
-                                                    ConsumerConfig.MailboxProcessBatchCount);
-            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
+            MessageProcessor = new MailboxProcessor(new DefaultProcessingMessageScheduler(),
+                                                    new OptionsWrapper<MailboxOption>(new MailboxOption
+                                                    {
+                                                        BatchCount = ConsumerConfig.MailboxProcessBatchCount
+                                                    }),
+                                                    loggerFactory.CreateLogger<MailboxProcessor>());
+            Logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
         public string Producer => _producer ?? (_producer = $"{SubscriptionName}.{ConsumerId}");
@@ -295,7 +301,7 @@ namespace IFramework.Event.Impl
                 {
                     if (tagFilter(messageContext.Tags))
                     {
-                        MessageProcessor.Process(messageContext, ConsumeMessage);
+                        MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
                         MessageCount++;
                     }
                     else
@@ -305,7 +311,7 @@ namespace IFramework.Event.Impl
                 }
                 else
                 {
-                    MessageProcessor.Process(messageContext, ConsumeMessage);
+                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
                     MessageCount++;
                 }
             });

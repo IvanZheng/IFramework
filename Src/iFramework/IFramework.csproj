@@ -37,6 +37,9 @@
     <Compile Remove="DependencyInjection\IoCServiceBehavior.cs" />
     <Compile Remove="DependencyInjection\LogInterceptionAttribute.cs" />
     <Compile Remove="DependencyInjection\LogInterceptionBehavior.cs" />
+    <Compile Remove="Infrastructure\Mailboxes\IMessageProcessor.cs" />
+    <Compile Remove="Infrastructure\Mailboxes\Impl\MessageProcessor.cs" />
+    <Compile Remove="Infrastructure\Mailboxes\Impl\ProcessingMailbox.cs" />
   </ItemGroup>
   
   <ItemGroup>

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Message;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
@@ -13,6 +14,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
     public class MailboxProcessor: IMailboxProcessor
     {
         private readonly IProcessingMessageScheduler _scheduler;
+        private readonly ILogger _logger;
         private readonly int _batchCount;
         private Task _processComandTask;
         private readonly CancellationTokenSource _cancellationSource;
@@ -22,9 +24,10 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         public string Status => string.Join(", ", _mailboxDictionary.Select(e => $"[{e.Key}: {e.Value.MessageQueue.Count}]"));
 
-        public MailboxProcessor(IProcessingMessageScheduler scheduler, IOptions<MailboxOption> options)
+        public MailboxProcessor(IProcessingMessageScheduler scheduler, IOptions<MailboxOption> options, ILogger<MailboxProcessor> logger)
         {
             _scheduler = scheduler;
+            _logger = logger;
             _batchCount = options.Value.BatchCount;
             _mailboxProcessorCommands = new BlockingCollection<IMailboxProcessorCommand>();
             _mailboxDictionary = new ConcurrentDictionary<string, Mailbox>();
@@ -88,7 +91,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 }
                 catch (Exception ex)
                 {
-                    //_logger.LogError(ex, $"Message processor ProcessMailboxProcessorCommands failed");
+                    _logger.LogError(ex, $"Message processor ProcessMailboxProcessorCommands failed");
                 }
             }
         }
