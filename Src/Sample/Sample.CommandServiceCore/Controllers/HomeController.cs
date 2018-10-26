@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using IFramework.AspNet;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.Mailboxes;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -23,6 +26,7 @@ namespace Sample.CommandServiceCore.Controllers
         private readonly IConcurrencyProcessor _concurrencyProcessor;
         private readonly SampleModelContext _dbContext;
         private readonly ICommunityService _communityService;
+        private readonly IMailboxProcessor _mailboxProcessor;
         private readonly ICommunityRepository _domainRepository;
         private readonly ILogger _logger;
         private readonly IObjectProvider _objectProvider;
@@ -34,7 +38,8 @@ namespace Sample.CommandServiceCore.Controllers
                               IUnitOfWork unitOfWork,
                               ICommunityRepository domainRepository,
                               SampleModelContext dbContext,
-                              ICommunityService communityService)
+                              ICommunityService communityService,
+                              IMailboxProcessor mailboxProcessor)
         {
             _concurrencyProcessor = concurrencyProcessor;
             _objectProvider = objectProvider;
@@ -42,6 +47,7 @@ namespace Sample.CommandServiceCore.Controllers
             _domainRepository = domainRepository;
             _dbContext = dbContext;
             _communityService = communityService;
+            _mailboxProcessor = mailboxProcessor;
             _logger = logger;
         }
 
@@ -53,15 +59,32 @@ namespace Sample.CommandServiceCore.Controllers
         public virtual async Task<object> DoApi()
         {
             var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
+            var userId = new Guid("4ED7460E-C914-45A6-B1C9-4DC97C5D52D0");
+            await _communityService.ModifyUserEmailAsync(userId, $"{DateTime.Now.Ticks}");
+
             await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
             return $"{DateTime.Now} DoApi Done! sameProvider:{sameProvider}";
         }
 
         public IActionResult Test()
         {
+            ViewBag.MailboxValue = MailboxValues.ToJson();
+            ViewBag.MailboxStatus = _mailboxProcessor.Status;
             return View();
         }
 
+        public static ConcurrentDictionary<string, int> MailboxValues = new ConcurrentDictionary<string, int>();
+        [MailboxProcessing("request", "Id")]
+        [ApiResultWrap]
+        public async Task<(string, int)> MailboxTest([FromBody] MailboxRequest request)
+        {
+            await Task.Delay(20);
+            var value = MailboxValues.AddOrUpdate(request.Id, 
+                                                  key => request.Number,
+                                                  (key, curValue) => curValue + request.Number);
+            //throw new Exception("Test Exception");
+            return (request.Id, value);
+        }
 
         public ApiResult PostAddRequest([FromBody] AddRequest request)
         {

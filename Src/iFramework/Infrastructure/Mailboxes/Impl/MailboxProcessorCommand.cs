@@ -5,27 +5,23 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 {
     internal interface IMailboxProcessorCommand { }
 
-    internal class ProcessMessageCommand<TMessage> : IMailboxProcessorCommand
-        where TMessage : class
+    internal class ProcessMessageCommand : IMailboxProcessorCommand
     {
-        public ProcessMessageCommand(TMessage message, Func<TMessage, Task> processingMessageFunc)
+        public MailboxMessage Message { get; private set; }
+
+        public ProcessMessageCommand(MailboxMessage message)
         {
             Message = message;
-            ProcessingMessageFunc = processingMessageFunc;
         }
-
-        public TMessage Message { get; }
-        public Func<TMessage, Task> ProcessingMessageFunc { get; }
     }
 
-    internal class CompleteMessageCommand<TMessage> : IMailboxProcessorCommand
-        where TMessage : class
+    internal class CompleteMessageCommand : IMailboxProcessorCommand
     {
-        public CompleteMessageCommand(ProcessingMailbox<TMessage> mailbox)
+        public CompleteMessageCommand(Mailbox mailbox)
         {
             Mailbox = mailbox;
         }
 
-        public ProcessingMailbox<TMessage> Mailbox { get; }
+        public Mailbox Mailbox { get; set; }
     }
 }

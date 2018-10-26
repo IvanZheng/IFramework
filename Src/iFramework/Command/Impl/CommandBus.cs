@@ -13,6 +13,7 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace IFramework.Command.Impl
 {
@@ -30,7 +31,7 @@ namespace IFramework.Command.Impl
         //protected string[] _commandQueueNames;
         private readonly ILinearCommandManager _linearCommandManager;
 
-        private readonly MessageProcessor _messageProcessor;
+        private readonly MailboxProcessor _messageProcessor;
         private readonly string _replySubscriptionName;
         private readonly string _replyTopicName;
         private IMessageConsumer _internalConsumer;
@@ -50,8 +51,12 @@ namespace IFramework.Command.Impl
             _replyTopicName = Configuration.Instance.FormatAppName(replyTopicName);
             _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
             // _commandQueueNames = commandQueueNames;
-            _messageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
-                                                     _consumerConfig.MailboxProcessBatchCount);
+            _messageProcessor = new MailboxProcessor(new DefaultProcessingMessageScheduler(),
+                                                     new OptionsWrapper<MailboxOption>(new MailboxOption
+                                                     {
+                                                         BatchCount = _consumerConfig.MailboxProcessBatchCount
+                                                     }),
+                                                     ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger<MailboxProcessor>());
         }
 
         public override void Start()
@@ -244,7 +249,7 @@ namespace IFramework.Command.Impl
 
         protected void OnMessagesReceived(params IMessageContext[] replies)
         {
-            replies.ForEach(reply => { _messageProcessor.Process(reply, ConsumeReply); });
+            replies.ForEach(reply => { _messageProcessor.Process(reply.Key, () => ConsumeReply(reply));});
         }
 
         protected Task ConsumeReply(IMessageContext reply)

@@ -4,10 +4,9 @@ using IFramework.Infrastructure.Mailboxes.Impl;
 
 namespace IFramework.Infrastructure.Mailboxes
 {
-    public interface IProcessingMessageScheduler<TMessage>
-        where TMessage : class
+    public interface IProcessingMessageScheduler
     {
-        Task ScheduleMailbox(ProcessingMailbox<TMessage> mailbox);
+        Task ScheduleMailbox(Mailbox mailbox);
         Task SchedulProcessing(Func<Task> processing);
     }
 }

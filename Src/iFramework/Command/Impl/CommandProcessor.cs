@@ -15,6 +15,7 @@ using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace IFramework.Command.Impl
@@ -29,7 +30,7 @@ namespace IFramework.Command.Impl
         protected IHandlerProvider HandlerProvider;
         protected IMessageConsumer InternalConsumer;
         protected ILogger Logger;
-        protected MessageProcessor MessageProcessor;
+        protected MailboxProcessor MessageProcessor;
         protected IMessagePublisher MessagePublisher;
         protected IMessageQueueClient MessageQueueClient;
 
@@ -47,9 +48,14 @@ namespace IFramework.Command.Impl
             ConsumerId = consumerId;
             CancellationTokenSource = new CancellationTokenSource();
             MessageQueueClient = messageQueueClient;
-            MessageProcessor = new MessageProcessor(new DefaultProcessingMessageScheduler<IMessageContext>(),
-                                                    ConsumerConfig.MailboxProcessBatchCount);
-            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
+            MessageProcessor = new MailboxProcessor(new DefaultProcessingMessageScheduler(),
+                                                    new OptionsWrapper<MailboxOption>(new MailboxOption
+                                                    {
+                                                        BatchCount = ConsumerConfig.MailboxProcessBatchCount
+                                                    }),
+                                                    loggerFactory.CreateLogger<MailboxProcessor>());
+            Logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
         public string Producer => _producer ?? (_producer = $"{CommandQueueName}.{ConsumerId}");
@@ -90,7 +96,7 @@ namespace IFramework.Command.Impl
         {
             messageContexts.ForEach(messageContext =>
             {
-                MessageProcessor.Process(messageContext, ConsumeMessage);
+                MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
                 MessageCount++;
             });
         }

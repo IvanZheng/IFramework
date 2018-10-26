@@ -28,10 +28,15 @@ namespace Sample.Applications
  
         public async Task ModifyUserEmailAsync(Guid userId, string email)
         {
-            var account = await _repository.FindAsync<Account>(a => a.UserName == "ivan");
+
+            var account = await _repository.FindAsync<Account>(a => a.Id == userId );
             if (account == null)
             {
-                throw new DomainException(1, "UserNotExists");
+                account = await _repository.FindAsync<Account>(a => a.UserName == "ivan");
+                if (account == null)
+                {
+                    throw new DomainException(1, "UserNotExists");
+                }
             }
             account.Modify(email);
             await _unitOfWork.CommitAsync();
