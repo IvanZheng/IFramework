@@ -72,8 +72,9 @@
 
             $("#btnMailboxProcess").click(function () {
                 var batchCount = parseInt($("#batchCount").val());
+                var id = $("#Id").val();
                 for (var i = 0; i < batchCount; i++) {
-                    $.post("@Url.Content("~/home/MailboxTest")", {id: 1, number:1}, function (result) {
+                    $.post("@Url.Content("~/home/MailboxTest")", {id: id, number:1}, function (result) {
                         showResult(JSON.stringify(result));
                     })
                 }

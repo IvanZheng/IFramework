@@ -9,7 +9,7 @@ namespace IFramework.Infrastructure.Mailboxes
     {
         void Start();
         void Stop();
-        Task Process(string key, Func<Task> process);
+        Task Process(string key, Func<Task> process, TaskCompletionSource<object> taskCompletionSource = null);
         string Status { get; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -67,20 +68,22 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Test()
         {
-            ViewBag.MailboxValue = MailboxValue;
+            ViewBag.MailboxValue = MailboxValues.ToJson();
             ViewBag.MailboxStatus = _mailboxProcessor.Status;
             return View();
         }
 
-        public static volatile int MailboxValue = 0;
+        public static ConcurrentDictionary<string, int> MailboxValues = new ConcurrentDictionary<string, int>();
         [MailboxProcessing("request", "Id")]
         [ApiResultWrap]
-        public async Task<int> MailboxTest([FromBody] MailboxRequest request)
+        public async Task<(string, int)> MailboxTest([FromBody] MailboxRequest request)
         {
             await Task.Delay(20);
-            MailboxValue += request.Number;
+            var value = MailboxValues.AddOrUpdate(request.Id, 
+                                                  key => request.Number,
+                                                  (key, curValue) => curValue + request.Number);
             //throw new Exception("Test Exception");
-            return MailboxValue;
+            return (request.Id, value);
         }
 
         public ApiResult PostAddRequest([FromBody] AddRequest request)

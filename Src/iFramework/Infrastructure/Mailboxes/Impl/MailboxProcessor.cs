@@ -114,7 +114,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
         }
 
-        public Task Process(string key, Func<Task> process)
+        public Task Process(string key, Func<Task> process, TaskCompletionSource<object> taskCompletionSource = null)
         {
             var mailboxMessage = new MailboxMessage(key, process);
             _mailboxProcessorCommands.Add(new ProcessMessageCommand(mailboxMessage));
