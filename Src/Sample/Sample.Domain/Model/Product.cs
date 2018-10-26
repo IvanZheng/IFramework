@@ -4,7 +4,6 @@ using IFramework.Event;
 using IFramework.Message;
 using Sample.DomainEvents;
 using Sample.DomainEvents.Products;
-using Sample.DTO;
 
 namespace Sample.Domain.Model
 {
@@ -18,14 +17,14 @@ namespace Sample.Domain.Model
             OnEvent(new ProductCreated(id, name, count, DateTime.Now));
         }
 
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public int Count { get; set; }
-        public DateTime CreateTime { get; set; }
+        public Guid Id { get; protected set; }
+        public string Name { get; protected set; }
+        public int Count { get; protected set; }
+        public DateTime CreateTime { get; protected set; }
 
         void IMessageHandler<ProductCreated>.Handle(ProductCreated @event)
         {
-            Id = (Guid) @event.AggregateRootID;
+            Id = (Guid) @event.AggregateRootId;
             Name = @event.Name;
             Count = @event.Count;
             CreateTime = @event.CreateTime;

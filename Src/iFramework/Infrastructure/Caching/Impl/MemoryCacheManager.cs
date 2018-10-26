@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Caching;
-using System.Text.RegularExpressions;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IFramework.Infrastructure.Caching.Impl
 {
@@ -10,7 +8,7 @@ namespace IFramework.Infrastructure.Caching.Impl
     /// </summary>
     public class MemoryCacheManager : CacheManagerBase
     {
-        protected ObjectCache Cache => MemoryCache.Default;
+        protected MemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         /// <summary>
         ///     Gets or sets the value associated with the specified key.
@@ -20,9 +18,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <returns>The value associated with the specified key.</returns>
         public override CacheValue<T> Get<T>(string key)
         {
-            return Cache[key] as CacheValue<T> ?? CacheValue<T>.NoValue;
-            //var value = Cache[key];
-            //return value == null ? CacheValue<T>.NoValue : new CacheValue<T>((T)value, true);
+            return Cache.Get<CacheValue<T>>(key) ?? CacheValue<T>.NoValue;
         }
 
         /// <summary>
@@ -33,11 +29,9 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="cacheTime">Cache time</param>
         public override void Set<T>(string key, T data, int cacheTime)
         {
-            var policy = new CacheItemPolicy
-            {
-                AbsoluteExpiration = DateTime.Now + TimeSpan.FromMinutes(cacheTime)
-            };
-            Cache.Add(new CacheItem(key, new CacheValue<T>(data, true)), policy);
+            Cache.Set(key,
+                      new CacheValue<T>(data, true),
+                      DateTime.Now + TimeSpan.FromMinutes(cacheTime));
         }
 
         /// <summary>
@@ -47,7 +41,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <returns>Result</returns>
         public override bool IsSet(string key)
         {
-            return Cache.Contains(key);
+            return Cache.TryGetValue(key, out var result);
         }
 
         /// <summary>
@@ -65,21 +59,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// <param name="pattern">pattern</param>
         public override void RemoveByPattern(string pattern)
         {
-            var regex = new Regex(pattern, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            var keysToRemove = new List<string>();
-
-            foreach (var item in Cache)
-            {
-                if (regex.IsMatch(item.Key))
-                {
-                    keysToRemove.Add(item.Key);
-                }
-            }
-
-            foreach (var key in keysToRemove)
-            {
-                Remove(key);
-            }
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -87,10 +67,7 @@ namespace IFramework.Infrastructure.Caching.Impl
         /// </summary>
         public override void Clear()
         {
-            foreach (var item in Cache)
-            {
-                Remove(item.Key);
-            }
+            throw new NotImplementedException();
         }
     }
 }

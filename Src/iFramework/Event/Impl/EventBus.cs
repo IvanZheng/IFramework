@@ -2,13 +2,13 @@
 using System.Linq;
 using IFramework.Command;
 using IFramework.Infrastructure;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 
 namespace IFramework.Event.Impl
 {
     public class EventBus : IEventBus
     {
-        protected readonly IContainer Container;
+        protected readonly IObjectProvider Container;
         protected readonly IEventSubscriberProvider EventSubscriberProvider;
 
         protected List<ICommand> CommandQueue;
@@ -17,9 +17,9 @@ namespace IFramework.Event.Impl
         protected List<IEvent> ToPublishAnywayEventQueue;
 
         //protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
-        public EventBus(IContainer container, SyncEventSubscriberProvider eventSubscriberProvider)
+        public EventBus(IObjectProvider objectProvider, SyncEventSubscriberProvider eventSubscriberProvider)
         {
-            Container = container;
+            Container = objectProvider;
             EventSubscriberProvider = eventSubscriberProvider;
             EventQueue = new List<IEvent>();
             CommandQueue = new List<ICommand>();
@@ -28,7 +28,7 @@ namespace IFramework.Event.Impl
         }
 
 
-        public void Publish<TEvent>(TEvent @event) where TEvent : IEvent
+        public void Publish<TTMessage>(TTMessage @event) where TTMessage : IEvent
         {
             EventQueue.Add(@event);
             HandleEvent(@event);
@@ -41,8 +41,8 @@ namespace IFramework.Event.Impl
                 var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
                 eventSubscriberTypes.ForEach(eventSubscriberType =>
                 {
-                    var eventSubscriber = Container.Resolve(eventSubscriberType.Type);
-                    ((dynamic) eventSubscriber).Handle((dynamic) @event);
+                    var eventSubscriber = Container.GetService(eventSubscriberType.Type);
+                    ((dynamic)eventSubscriber).Handle((dynamic)@event);
                 });
             }
         }

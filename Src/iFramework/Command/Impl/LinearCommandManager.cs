@@ -8,63 +8,12 @@ using IFramework.Infrastructure;
 
 namespace IFramework.Command.Impl
 {
-    //internal class NullPropertyInfo : _MemberInfo
-    //{
-    //    public Type DeclaringType => throw new NotImplementedException();
-
-    //    public MemberTypes MemberType => throw new NotImplementedException();
-
-    //    public string Name => throw new NotImplementedException();
-
-    //    public Type ReflectedType => throw new NotImplementedException();
-
-    //    public object[] GetCustomAttributes(bool inherit)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public object[] GetCustomAttributes(Type attributeType, bool inherit)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public void GetIDsOfNames(ref Guid riid, IntPtr rgszNames, uint cNames, uint lcid, IntPtr rgDispId)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public void GetTypeInfo(uint iTInfo, uint lcid, IntPtr ppTInfo)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public void GetTypeInfoCount(out uint pcTInfo)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public void Invoke(uint dispIdMember,
-    //                       ref Guid riid,
-    //                       uint lcid,
-    //                       short wFlags,
-    //                       IntPtr pDispParams,
-    //                       IntPtr pVarResult,
-    //                       IntPtr pExcepInfo,
-    //                       IntPtr puArgErr)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public bool IsDefined(Type attributeType, bool inherit)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-    //}
+  
 
     public class LinearCommandManager : ILinearCommandManager
     {
-        private readonly ConcurrentDictionary<Type, _MemberInfo> _commandLinerKeys =
-            new ConcurrentDictionary<Type, _MemberInfo>();
+        private readonly ConcurrentDictionary<Type, MemberInfo> _commandLinerKeys =
+            new ConcurrentDictionary<Type, MemberInfo>();
 
         private readonly Hashtable _linearFuncs = new Hashtable();
 
@@ -81,7 +30,7 @@ namespace IFramework.Command.Impl
 
         public object GetLinearKeyImpl<TLinearCommand>(TLinearCommand command) where TLinearCommand : ILinearCommand
         {
-            object linearKey;
+            object linearKey = null;
             if (_linearFuncs[typeof(TLinearCommand)] is Func<TLinearCommand, object> func)
             {
                 linearKey = func(command);
@@ -92,11 +41,11 @@ namespace IFramework.Command.Impl
                 {
                     var keyProperty = command.GetType()
                                              .GetProperties()
-                                             .FirstOrDefault(p => p.GetCustomAttribute<LinearKeyAttribute>() != null) as _MemberInfo;
+                                             .FirstOrDefault(p => p.GetCustomAttribute<LinearKeyAttribute>() != null) as MemberInfo;
                     return keyProperty;
                 });
 
-                linearKey = propertyWithKeyAttribute == null ? typeof(TLinearCommand).Name : command.GetValueByKey(propertyWithKeyAttribute.Name);
+                linearKey = propertyWithKeyAttribute == null ? typeof(TLinearCommand).Name : command.GetPropertyValue(propertyWithKeyAttribute.Name);
             }
             return linearKey;
         }

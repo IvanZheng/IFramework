@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace IFramework.Event
 {
-    public interface IDomainExceptionEvent: IEvent
-    { }
+    public interface IDomainExceptionEvent : IEvent
+    {
+        object ErrorCode { get; set; }
+    }
 }

@@ -5,22 +5,24 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
-using IFramework.IoC;
+using Microsoft.Extensions.Configuration;
 
 namespace IFramework.Message.Impl
 {
     public abstract class HandlerProvider : IHandlerProvider
     {
-        private readonly ConcurrentDictionary<Type, List<HandlerTypeInfo>> _HandlerTypes;
-        private readonly HashSet<Type> discardKeyTypes;
+        public const string FrameworkConfigurationSectionName = nameof(FrameworkConfiguration);
+        private readonly ConcurrentDictionary<Type, byte> _discardKeyTypes;
+        private readonly ConcurrentDictionary<Type, List<HandlerTypeInfo>> _handlerTypes;
 
-        public HandlerProvider(params string[] assemblies)
+        protected HandlerProvider(params string[] assemblies)
         {
             Assemblies = assemblies;
-            _HandlerTypes = new ConcurrentDictionary<Type, List<HandlerTypeInfo>>();
+            _handlerTypes = new ConcurrentDictionary<Type, List<HandlerTypeInfo>>();
             // _HandlerConstuctParametersInfo = new Dictionary<Type, ParameterInfo[]>();
-            discardKeyTypes = new HashSet<Type>();
+            _discardKeyTypes = new ConcurrentDictionary<Type, byte>();
 
             RegisterHandlers();
         }
@@ -34,21 +36,21 @@ namespace IFramework.Message.Impl
         public IList<HandlerTypeInfo> GetHandlerTypes(Type messageType)
         {
             var avaliableHandlerTypes = new List<HandlerTypeInfo>();
-            if (_HandlerTypes.ContainsKey(messageType))
+            if (_handlerTypes.ContainsKey(messageType))
             {
-                var handlerTypes = _HandlerTypes[messageType];
+                var handlerTypes = _handlerTypes[messageType];
                 if (handlerTypes != null && handlerTypes.Count > 0)
                 {
                     avaliableHandlerTypes = handlerTypes;
                 }
             }
-            else if (!discardKeyTypes.Contains(messageType))
+            else if (!_discardKeyTypes.ContainsKey(messageType))
             {
-                foreach (var handlerTypes in _HandlerTypes)
+                foreach (var handlerTypes in _handlerTypes)
                 {
                     if (messageType.IsSubclassOf(handlerTypes.Key))
                     {
-                        var messageDispatcherHandlerTypes = _HandlerTypes[handlerTypes.Key];
+                        var messageDispatcherHandlerTypes = _handlerTypes[handlerTypes.Key];
                         if (messageDispatcherHandlerTypes != null && messageDispatcherHandlerTypes.Count > 0)
                         {
                             avaliableHandlerTypes = avaliableHandlerTypes.Union(messageDispatcherHandlerTypes).ToList();
@@ -57,11 +59,11 @@ namespace IFramework.Message.Impl
                 }
                 if (avaliableHandlerTypes.Count == 0)
                 {
-                    discardKeyTypes.Add(messageType);
+                    _discardKeyTypes.TryAdd(messageType, 0);
                 }
                 else
                 {
-                    _HandlerTypes.TryAdd(messageType, avaliableHandlerTypes);
+                    _handlerTypes.TryAdd(messageType, avaliableHandlerTypes);
                 }
             }
             return avaliableHandlerTypes;
@@ -74,43 +76,39 @@ namespace IFramework.Message.Impl
             var handlerType = GetHandlerType(messageType);
             if (handlerType != null)
             {
-                handler = IoCFactory.Resolve(handlerType.Type);
+                handler = ObjectProviderFactory.GetService(handlerType.Type);
             }
             return handler;
         }
 
         public void ClearRegistration()
         {
-            _HandlerTypes.Clear();
+            _handlerTypes.Clear();
         }
 
         private void RegisterHandlers()
         {
-            var handlerElements = ConfigurationReader.Instance
-                                                     .GetConfigurationSection<FrameworkConfigurationSection>()
-                                                     ?
-                                                     .Handlers;
-            if (handlerElements != null)
+            var handlers = Configuration.Instance
+                                               .GetSection(FrameworkConfigurationSectionName)
+                                               ?.Get<FrameworkConfiguration>()
+                                               ?.Handlers;
+            if (handlers != null)
             {
-                foreach (HandlerElement handlerElement in handlerElements)
+                foreach (var handlerElement in handlers)
                 {
                     if (Assemblies == null || Assemblies.Contains(handlerElement.Name))
                     {
-                        try
+                        switch (handlerElement.SourceType)
                         {
-                            switch (handlerElement.SourceType)
-                            {
-                                case HandlerSourceType.Type:
-                                    var type = Type.GetType(handlerElement.Source);
-                                    RegisterHandlerFromType(type);
-                                    break;
-                                case HandlerSourceType.Assembly:
-                                    var assembly = Assembly.Load(handlerElement.Source);
-                                    RegisterHandlerFromAssembly(assembly);
-                                    break;
-                            }
+                            case HandlerSourceType.Type:
+                                var type = Type.GetType(handlerElement.Source);
+                                RegisterHandlerFromType(type);
+                                break;
+                            case HandlerSourceType.Assembly:
+                                var assembly = Assembly.Load(handlerElement.Source);
+                                RegisterHandlerFromAssembly(assembly);
+                                break;
                         }
-                        catch { }
                     }
                 }
             }
@@ -120,14 +118,14 @@ namespace IFramework.Message.Impl
 
         private void RegisterInheritedMessageHandlers()
         {
-            _HandlerTypes.Keys.ForEach(messageType =>
-                                           _HandlerTypes.Keys.Where(type => type.IsSubclassOf(messageType))
+            _handlerTypes.Keys.ForEach(messageType =>
+                                           _handlerTypes.Keys.Where(type => type.IsSubclassOf(messageType))
                                                         .ForEach(type =>
                                                                  {
                                                                      var list =
-                                                                         _HandlerTypes[type].Union(_HandlerTypes[messageType]).ToList();
-                                                                     _HandlerTypes[type].Clear();
-                                                                     _HandlerTypes[type].AddRange(list);
+                                                                         _handlerTypes[type].Union(_handlerTypes[messageType]).ToList();
+                                                                     _handlerTypes[type].Clear();
+                                                                     _handlerTypes[type].AddRange(list);
                                                                  }
                                                                 ));
         }
@@ -136,12 +134,15 @@ namespace IFramework.Message.Impl
         {
             var isAsync = false;
             var handleMethod = handlerType.GetMethods()
-                                          .Where(m => m.GetParameters().Any(p => p.ParameterType == messageType))
-                                          .FirstOrDefault();
-            isAsync = typeof(Task).IsAssignableFrom(handleMethod.ReturnType);
-            if (_HandlerTypes.ContainsKey(messageType))
+                                          .FirstOrDefault(m => m.GetParameters()
+                                                                .Any(p => p.ParameterType == messageType));
+            if (handleMethod != null)
             {
-                var registeredDispatcherHandlerTypes = _HandlerTypes[messageType];
+                isAsync = typeof(Task).IsAssignableFrom(handleMethod.ReturnType);
+            }
+            if (_handlerTypes.ContainsKey(messageType))
+            {
+                var registeredDispatcherHandlerTypes = _handlerTypes[messageType];
                 if (registeredDispatcherHandlerTypes != null)
                 {
                     if (!registeredDispatcherHandlerTypes.Exists(ht => ht.Type == handlerType && ht.IsAsync == isAsync))
@@ -152,7 +153,7 @@ namespace IFramework.Message.Impl
                 else
                 {
                     registeredDispatcherHandlerTypes = new List<HandlerTypeInfo>();
-                    _HandlerTypes[messageType] = registeredDispatcherHandlerTypes;
+                    _handlerTypes[messageType] = registeredDispatcherHandlerTypes;
                     registeredDispatcherHandlerTypes.Add(new HandlerTypeInfo(handlerType, isAsync));
                 }
             }
@@ -160,7 +161,7 @@ namespace IFramework.Message.Impl
             {
                 var registeredDispatcherHandlerTypes = new List<HandlerTypeInfo>();
                 registeredDispatcherHandlerTypes.Add(new HandlerTypeInfo(handlerType, isAsync));
-                _HandlerTypes.TryAdd(messageType, registeredDispatcherHandlerTypes);
+                _handlerTypes.TryAdd(messageType, registeredDispatcherHandlerTypes);
             }
             //var parameterInfoes = handlerType.GetConstructors()
             //                                   .OrderByDescending(c => c.GetParameters().Length)

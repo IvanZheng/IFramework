@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using IFramework.MessageQueue;
 
 namespace IFramework.Message.Impl
 {
     public class EmptyMessageContext : IMessageContext
     {
-        public EmptyMessageContext() { }
+        public EmptyMessageContext()
+        {
+            MessageOffset = new MessageOffset();
+        }
 
         public EmptyMessageContext(IMessage message)
         {
             SentTime = DateTime.Now;
             Message = message;
-            MessageID = message.ID;
+            MessageId = message.Id;
+            MessageOffset = new MessageOffset();
         }
 
         public string FromEndPoint { get; set; }
@@ -19,15 +24,14 @@ namespace IFramework.Message.Impl
 
         public List<IMessageContext> ToBeSentMessageContexts => null;
 
-        public long Offset { get; set; }
-
         public IDictionary<string, object> Headers => null;
 
         public string Key => null;
+        public string[] Tags => null;
 
         public SagaInfo SagaInfo => null;
 
-        public string MessageID { get; set; }
+        public string MessageId { get; set; }
 
         public string ReplyToEndPoint => null;
 
@@ -38,13 +42,14 @@ namespace IFramework.Message.Impl
         public DateTime SentTime { get; set; }
 
 
-        public string CorrelationID { get; set; }
+        public string CorrelationId { get; set; }
 
 
         public string Topic { get; set; }
 
-        public string IP { get; set; }
+        public string Ip { get; set; }
 
         public string Producer { get; set; }
+        public MessageOffset MessageOffset { get; }
     }
 }

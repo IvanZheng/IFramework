@@ -71,10 +71,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj">
-      <Project>{0B36292C-8849-441D-8FB8-A053D43A8E72}</Project>
-      <Name>IFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\IFramework.FoundatioLock\IFramework.FoundatioLock.csproj">
       <Project>{ed7dc1bf-939f-43c8-aedf-89589ae3701d}</Project>
       <Name>IFramework.FoundatioLock</Name>

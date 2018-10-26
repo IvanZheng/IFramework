@@ -38,7 +38,8 @@ namespace IFramework.Autofac
             }
             finally
             {
-                if (invocation.ReturnValue is Task taskResult)
+                var taskResult = invocation.ReturnValue as Task;
+                if (taskResult != null)
                 {
                     taskResult.ContinueWith(t =>
                     {

@@ -4,7 +4,8 @@ namespace Sample.ApplicationEvent
 {
     public class AccountLogined : ApplicationEvent
     {
-        public Guid AccountID { get; set; }
+        public Guid AccountId { get; set; }
         public DateTime LoginTime { get; set; }
+        public string UserName { get; set; }
     }
 }

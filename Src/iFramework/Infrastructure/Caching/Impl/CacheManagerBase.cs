@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure.Caching.Impl
 {
-    public abstract class CacheManagerBase: ICacheManager
+    public abstract class CacheManagerBase : ICacheManager
     {
         public abstract void Clear();
         public abstract void RemoveByPattern(string pattern);

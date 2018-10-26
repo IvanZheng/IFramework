@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  sample.commandservicecore:
+    image: ${DOCKER_REGISTRY}samplecommandservicecore
+    build:
+      context: .
+      dockerfile: Sample/Sample.CommandServiceCore/Dockerfile

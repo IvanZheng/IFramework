@@ -10,6 +10,6 @@ namespace IFramework.Domain
 #else
         public byte[] Version
 #endif
-        { get; private set; }
+        { get; protected set; }
     }
 }

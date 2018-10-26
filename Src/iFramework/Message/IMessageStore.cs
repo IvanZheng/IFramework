@@ -6,6 +6,8 @@ namespace IFramework.Message
 {
     public interface IMessageStore : IDisposable
     {
+        bool InMemoryStore { get;}
+
         CommandHandledInfo GetCommandHandledInfo(string commandId);
         bool HasEventHandled(string eventId, string subscriptionName);
 
@@ -23,15 +25,13 @@ namespace IFramework.Message
         ///     return event IMessageContext
         /// </summary>
         /// <param name="commandContext"></param>
+        /// <param name="result"></param>
         /// <param name="eventContexts"></param>
         void SaveCommand(IMessageContext commandContext, object result = null, params IMessageContext[] eventContexts);
 
         void SaveFailedCommand(IMessageContext commandContext,
                                Exception ex = null,
                                params IMessageContext[] eventContexts);
-
-        void RemoveSentCommand(string commandId);
-        void RemovePublishedEvent(string eventId);
 
         IEnumerable<IMessageContext> GetAllUnSentCommands(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage);

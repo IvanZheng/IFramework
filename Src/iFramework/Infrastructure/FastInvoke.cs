@@ -55,7 +55,14 @@ namespace IFramework.Infrastructure
                 }
                 for (var i = 0; i < paramTypes.Length; i++)
                 {
-                    il.Emit(ps[i].ParameterType.IsByRef ? OpCodes.Ldloca_S : OpCodes.Ldloc, locals[i]);
+                    if (ps[i].ParameterType.IsByRef)
+                    {
+                        il.Emit(OpCodes.Ldloca_S, locals[i]);
+                    }
+                    else
+                    {
+                        il.Emit(OpCodes.Ldloc, locals[i]);
+                    }
                 }
                 il.EmitCall(methodInfo.IsStatic ? OpCodes.Call : OpCodes.Callvirt, methodInfo, null);
                 if (methodInfo.ReturnType == typeof(void))
@@ -74,7 +81,7 @@ namespace IFramework.Infrastructure
                         il.Emit(OpCodes.Ldarg_1);
                         EmitFastInt(il, i);
                         il.Emit(OpCodes.Ldloc, locals[i]);
-                        if (locals[i].LocalType?.IsValueType ?? false)
+                        if (locals[i].LocalType.IsValueType)
                         {
                             il.Emit(OpCodes.Box, locals[i].LocalType);
                         }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure
 {
@@ -20,23 +20,21 @@ namespace IFramework.Infrastructure
         public delegate void WorkDelegate();
 
         private readonly ILogger _logger;
+        private readonly WorkDelegate _workDelegate;
 
-        protected volatile bool _canceled;
-        protected CancellationTokenSource _cancellationTokenSource;
-        protected object _mutex = new object();
-        protected Semaphore _semaphore = new Semaphore(0, 1);
-        protected volatile bool _suspend;
-        protected Task _task;
+        protected volatile bool Canceled;
+        protected CancellationTokenSource CancellationTokenSource;
+        protected object Mutex = new object();
+        protected Semaphore Semaphore = new Semaphore(0, 1);
+        protected volatile bool Suspended;
+        protected Task Task;
 
-        protected volatile bool _toExit;
-        protected WorkDelegate _workDelegate;
-
-        protected int _workInterval;
+        protected volatile bool ToExit;
 
         public TaskWorker(string id = null)
         {
             Id = id;
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType()) : null;
+            _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
         }
 
         public TaskWorker(WorkDelegate run, string id = null)
@@ -47,30 +45,26 @@ namespace IFramework.Infrastructure
 
         public string Id { get; set; }
 
-        public int WorkInterval
-        {
-            get => _workInterval;
-            set => _workInterval = value;
-        }
+        public int WorkInterval { get; set; }
 
         public WorkerStatus Status
         {
             get
             {
                 WorkerStatus status;
-                if (_canceled)
+                if (Canceled)
                 {
                     status = WorkerStatus.Canceled;
                 }
-                else if (_task == null)
+                else if (Task == null)
                 {
                     status = WorkerStatus.NotStarted;
                 }
-                else if (_suspend)
+                else if (Suspended)
                 {
                     status = WorkerStatus.Suspended;
                 }
-                else if (_task.Status == TaskStatus.RanToCompletion)
+                else if (Task.Status == TaskStatus.RanToCompletion)
                 {
                     status = WorkerStatus.Completed;
                 }
@@ -98,17 +92,17 @@ namespace IFramework.Infrastructure
             try
             {
                 RunPrepare();
-                while (!_toExit)
+                while (!ToExit)
                 {
                     try
                     {
-                        _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                        if (_suspend)
+                        CancellationTokenSource.Token.ThrowIfCancellationRequested();
+                        if (Suspended)
                         {
-                            _semaphore.WaitOne();
-                            _suspend = false;
+                            Semaphore.WaitOne();
+                            Suspended = false;
                         }
-                        _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                        CancellationTokenSource.Token.ThrowIfCancellationRequested();
                         if (_workDelegate != null)
                         {
                             _workDelegate.Invoke();
@@ -117,7 +111,7 @@ namespace IFramework.Infrastructure
                         {
                             Work();
                         }
-                        _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                        CancellationTokenSource.Token.ThrowIfCancellationRequested();
                         if (WorkInterval > 0)
                         {
                             Sleep(WorkInterval);
@@ -140,9 +134,7 @@ namespace IFramework.Infrastructure
             }
             catch (Exception ex)
             {
-                _logger?.Error(ex);
-                //System.IO.File.AppendAllText(System.AppDomain.CurrentDomain.BaseDirectory + "/log/taskError.txt",
-                //    ex.InnerException.Message + "\r\n" + ex.InnerException.StackTrace);
+                _logger.LogError(ex, $"TaskWork run failed!");
             }
         }
 
@@ -151,16 +143,16 @@ namespace IFramework.Infrastructure
 
         public virtual void Suspend()
         {
-            _suspend = true;
+            Suspended = true;
         }
 
         public virtual void Resume()
         {
-            lock (_mutex)
+            lock (Mutex)
             {
                 try
                 {
-                    _semaphore.Release();
+                    Semaphore.Release();
                 }
                 catch (Exception) { }
             }
@@ -168,18 +160,18 @@ namespace IFramework.Infrastructure
 
         public virtual TaskWorker Start()
         {
-            lock (_mutex)
+            lock (Mutex)
             {
                 if (Status == WorkerStatus.Canceled
                     || Status == WorkerStatus.Completed
                     || Status == WorkerStatus.NotStarted)
                 {
-                    _canceled = false;
-                    _suspend = false;
-                    _toExit = false;
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    _task = Task.Factory.StartNew(Run, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning,
-                                                  TaskScheduler.Default);
+                    Canceled = false;
+                    Suspended = false;
+                    ToExit = false;
+                    CancellationTokenSource = new CancellationTokenSource();
+                    Task = Task.Factory.StartNew(Run, CancellationTokenSource.Token, TaskCreationOptions.LongRunning,
+                                                 TaskScheduler.Default);
                 }
                 else
                 {
@@ -193,36 +185,36 @@ namespace IFramework.Infrastructure
         {
             if (millionSecondsTimeout > 0)
             {
-                Task.WaitAll(new[] {_task}, millionSecondsTimeout);
+                Task.WaitAll(new[] {Task}, millionSecondsTimeout);
             }
             else
             {
-                Task.WaitAll(_task);
+                Task.WaitAll(Task);
             }
         }
 
         protected virtual void Complete()
         {
-            _toExit = true;
+            ToExit = true;
         }
 
         public virtual void Stop(bool forcibly = false)
         {
-            lock (_mutex)
+            lock (Mutex)
             {
-                if (!_toExit)
+                if (!ToExit)
                 {
-                    _toExit = true;
-                    if (_suspend)
+                    ToExit = true;
+                    if (Suspended)
                     {
                         Resume();
                     }
                     if (forcibly)
                     {
-                        _cancellationTokenSource.Cancel(true);
+                        CancellationTokenSource.Cancel(true);
                     }
-                    _canceled = true;
-                    _task = null;
+                    Canceled = true;
+                    Task = null;
                 }
             }
         }

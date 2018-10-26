@@ -10,24 +10,20 @@ namespace Sample.Domain.Model
                            IEventSubscriber<AccountRegistered>,
                            IEventSubscriber<AccountModified>
     {
-        //public byte[] Version { get; protected set; }
-
-        public Account()
+        protected Account()
         {
-            ProductIds = new HashSet<ProductId>();
         }
 
         public Account(string username, string password, string email)
         {
-            ProductIds = new HashSet<ProductId>();
             OnEvent(new AccountRegistered(Guid.NewGuid(), username,
                                           password, email, DateTime.Now));
         }
 
-        public string Email { get; private set; }
-        public string Hoppy { get; set; }
+        public string Email { get; protected set; }
+        public string Hoppy { get; protected set; }
 
-        public virtual ICollection<ProductId> ProductIds { get; set; }
+        public virtual ICollection<ProductId> ProductIds { get; protected set; } = new HashSet<ProductId>();
 
         void IMessageHandler<AccountModified>.Handle(AccountModified @event)
         {
@@ -43,7 +39,7 @@ namespace Sample.Domain.Model
 
         public void Modify(string email)
         {
-            OnEvent(new AccountModified(ID, email));
+            OnEvent(new AccountModified(Id, email));
         }
     }
 

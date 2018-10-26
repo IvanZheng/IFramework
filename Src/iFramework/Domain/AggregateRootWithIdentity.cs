@@ -10,12 +10,12 @@ namespace IFramework.Domain
     public abstract class AggregateRoot<TIdentity> : AggregateRoot
         where TIdentity : Identity, new()
     {
-        public TIdentity ID { get; protected set; }
+        public TIdentity Id { get; protected set; }
 
         public string Identity
         {
-            get => ID.ToString();
-            private set => ID = Activator.CreateInstance(typeof(TIdentity), value) as TIdentity;
+            get => Id.ToString();
+            private set => Id = Activator.CreateInstance(typeof(TIdentity), value) as TIdentity;
         }
     }
 }

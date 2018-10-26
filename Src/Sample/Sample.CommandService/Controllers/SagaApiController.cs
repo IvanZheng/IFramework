@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
-using IFramework.AspNet;
 using IFramework.Command;
 using IFramework.Infrastructure;
 using Sample.DTO;

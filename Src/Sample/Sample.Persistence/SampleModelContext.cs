@@ -1,46 +1,41 @@
-﻿using System.Data.Entity;
-using IFramework.MessageStoring;
+﻿using IFramework.Config;
+using IFramework.MessageStores.Relational;
+using Microsoft.EntityFrameworkCore;
 using Sample.Domain.Model;
 
 namespace Sample.Persistence
 {
-    public class SampleModelContextCreateDatabaseIfNotExists : DropCreateDatabaseIfModelChanges<SampleModelContext>
-    {
-        protected override void Seed(SampleModelContext context)
-        {
-            base.Seed(context);
-        }
-    }
-
     public class SampleModelContext : MessageStore
     {
-        static SampleModelContext()
+        public SampleModelContext(DbContextOptions options) : base(options)
         {
-            Database.SetInitializer(new SampleModelContextCreateDatabaseIfNotExists());
+            Database.EnsureCreated();
         }
-
-        public SampleModelContext() : base("SampleModelContext") { }
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Product> Products { get; set; }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose()
         {
-            base.Dispose(disposing);
+            base.Dispose();
         }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Account>()
+                        .HasIndex(a => a.Email)
+                        .IsUnique();
+
             modelBuilder.Entity<Account>()
                         .ToTable("Accounts")
                         .HasMany(a => a.ProductIds)
-                        .WithRequired()
+                        .WithOne()
                         .HasForeignKey(pid => pid.AccountId);
 
             modelBuilder.Entity<ProductId>()
                         .HasKey(p => new {p.Value, p.AccountId});
 
-            base.OnModelCreating(modelBuilder);
         }
     }
 }

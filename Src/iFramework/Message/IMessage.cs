@@ -2,7 +2,8 @@
 {
     public interface IMessage
     {
-        string ID { get; set; }
+        string Id { get; set; }
         string Key { get; set; }
+        string[] Tags { get; set; }
     }
 }

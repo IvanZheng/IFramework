@@ -49,6 +49,8 @@ namespace IFramework.Message.Impl
 
         public void SaveEvent(IMessageContext eventContext) { }
 
+        public bool InMemoryStore => true;
+
         public CommandHandledInfo GetCommandHandledInfo(string commandId)
         {
             return null;

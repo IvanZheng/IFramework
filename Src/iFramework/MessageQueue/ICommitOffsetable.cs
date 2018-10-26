@@ -1,13 +1,10 @@
-﻿using IFramework.Message;
+﻿using System.Threading.Tasks;
+using IFramework.Message;
 
 namespace IFramework.MessageQueue
 {
     public interface ICommitOffsetable
     {
-        string Id { get; }
         void CommitOffset(IMessageContext messageContext);
-
-        void Start();
-        void Stop();
     }
 }

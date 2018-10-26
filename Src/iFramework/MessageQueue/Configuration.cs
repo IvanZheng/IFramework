@@ -1,12 +1,11 @@
 ﻿using System;
 using IFramework.Command;
 using IFramework.Command.Impl;
-using IFramework.Event;
-using IFramework.Event.Impl;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.Config
 {
@@ -43,54 +42,64 @@ namespace IFramework.Config
 
         //public static Configuration UseDefaultEventBus(this Configuration configuration)
         //{
-        //    IoCFactory.Instance.CurrentContainer.RegisterType<IEventBus, EventBus>(Lifetime.Hierarchical);
+        //    ObjectProviderFactory.Instance.CurrentContainer.RegisterType<IEventBus, EventBus>(Lifetime.Hierarchical);
         //    return configuration;
         //}
 
 
         public static Configuration UseMockMessageQueueClient(this Configuration configuration)
         {
-            IoCFactory.Instance.CurrentContainer.RegisterType<IMessageQueueClient, MockMessageQueueClient>(Lifetime
-                                                                                                               .Singleton);
+            ObjectProviderFactory.Instance.RegisterType<IMessageQueueClient, MockMessageQueueClient>(ServiceLifetime.Singleton);
             return configuration;
         }
 
         public static Configuration UseMockMessagePublisher(this Configuration configuration)
         {
-            IoCFactory.Instance.CurrentContainer.RegisterType<IMessagePublisher, MockMessagePublisher>(Lifetime
-                                                                                                           .Singleton);
+            ObjectProviderFactory.Instance.RegisterType<IMessagePublisher, MockMessagePublisher>(ServiceLifetime.Singleton);
             return configuration;
         }
 
         public static Configuration UseMessagePublisher(this Configuration configuration, string defaultTopic)
         {
-            var container = IoCFactory.Instance.CurrentContainer;
-            var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            configuration.SetDefaultTopic(defaultTopic);
-            defaultTopic = configuration.FormatAppName(defaultTopic);
-            var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);
-            container.RegisterInstance<IMessagePublisher>(messagePublisher);
+            var builder = ObjectProviderFactory.Instance.ObjectProviderBuilder;
+
+            builder.Register<IMessagePublisher>(provider =>
+            {
+                var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
+                configuration.SetDefaultTopic(defaultTopic);
+                defaultTopic = configuration.FormatAppName(defaultTopic);
+                var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);
+                return messagePublisher;
+            }, ServiceLifetime.Singleton);
             return configuration;
         }
 
         public static Configuration UseMockCommandBus(this Configuration configuration)
         {
-            IoCFactory.Instance.CurrentContainer.RegisterType<ICommandBus, MockCommandBus>(Lifetime.Singleton);
+            ObjectProviderFactory.Instance.RegisterType<ICommandBus, MockCommandBus>(ServiceLifetime.Singleton);
             return configuration;
         }
 
-        public static Configuration UseCommandBus(this Configuration configuration, string consumerId,
-                                                  string replyTopic = "replyTopic", string replySubscription = "replySubscription",
+        public static Configuration UseCommandBus(this Configuration configuration,
+                                                  string consumerId,
+                                                  string replyTopic = "replyTopic",
+                                                  string replySubscription = "replySubscription",
                                                   ILinearCommandManager linerCommandManager = null,
                                                   ConsumerConfig consumerConfig = null)
         {
-            var container = IoCFactory.Instance.CurrentContainer;
-            if (linerCommandManager == null)
-                linerCommandManager = new LinearCommandManager();
-            var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic,
-                                            replySubscription, consumerConfig);
-            container.RegisterInstance<ICommandBus>(commandBus);
+            var builder = ObjectProviderFactory.Instance.ObjectProviderBuilder;
+
+            builder.Register<ICommandBus>(provider =>
+            {
+                if (linerCommandManager == null)
+                {
+                    linerCommandManager = new LinearCommandManager();
+                }
+                var messageQueueClient = provider.GetService<IMessageQueueClient>();
+                var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic,
+                                                replySubscription, consumerConfig);
+                return commandBus;
+            }, ServiceLifetime.Singleton);
             return configuration;
         }
 
@@ -121,8 +130,8 @@ namespace IFramework.Config
         public static Configuration MessageQueueUseMachineNameFormat(this Configuration configuration,
                                                                      bool onlyInDebug = true)
         {
-            var compliationSection = Configuration.GetCompliationSection();
-            if (!onlyInDebug || compliationSection != null && compliationSection.Debug)
+            var debug = Configuration.Instance.Get<bool>("Debug");
+            if (!onlyInDebug || debug)
             {
                 configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
             }

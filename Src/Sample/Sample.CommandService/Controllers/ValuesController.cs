@@ -1,11 +1,9 @@
 ﻿using System.Threading.Tasks;
 using System.Web.Http;
-using IFramework.AspNet;
 using IFramework.Infrastructure;
 
 namespace Sample.CommandService.Controllers
 {
-    [IPFilter]
     public class ValuesController : ApiControllerBase
     {
  

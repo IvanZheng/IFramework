@@ -1,8 +1,9 @@
-﻿using IFramework.Command;
+﻿using System;
+using IFramework.Command;
 using IFramework.Command.Impl;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Event.Impl;
-using IFramework.IoC;
 using IFramework.Message;
 
 namespace IFramework.MessageQueue
@@ -11,7 +12,7 @@ namespace IFramework.MessageQueue
     {
         public static ICommandBus GetCommandBus()
         {
-            return IoCFactory.Resolve<ICommandBus>();
+            return ObjectProviderFactory.GetService<ICommandBus>();
         }
 
         /// <summary>
@@ -21,34 +22,61 @@ namespace IFramework.MessageQueue
         /// <returns></returns>
         public static IMessagePublisher GetMessagePublisher()
         {
-            return IoCFactory.Resolve<IMessagePublisher>();
+            return ObjectProviderFactory.GetService<IMessagePublisher>();
         }
 
-        public static IMessageConsumer CreateCommandConsumer(string commandQueue, string consumerId,
-                                                             string[] handlerProvierNames, 
-                                                             ConsumerConfig consumerConfig = null)
+        public static IMessageProcessor CreateCommandConsumer(string commandQueue,
+                                                              string consumerId,
+                                                              string[] handlerProvierNames,
+                                                              ConsumerConfig consumerConfig = null)
         {
-            var container = IoCFactory.Instance.CurrentContainer;
-            var messagePublisher = container.Resolve<IMessagePublisher>();
+            var container = ObjectProviderFactory.Instance.ObjectProvider;
+            var messagePublisher = container.GetService<IMessagePublisher>();
             var handlerProvider = new CommandHandlerProvider(handlerProvierNames);
-            var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
-            var commandConsumer = new CommandConsumer(messageQueueClient, messagePublisher, handlerProvider,
-                                                      commandQueue, consumerId, consumerConfig);
+            var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
+            var commandConsumer = new CommandProcessor(messageQueueClient,
+                                                       messagePublisher,
+                                                       handlerProvider,
+                                                       commandQueue,
+                                                       consumerId,
+                                                       consumerConfig);
             return commandConsumer;
         }
 
-        public static IMessageConsumer CreateEventSubscriber(string topic, string subscription, string consumerId,
-                                                             string[] handlerProviderNames,
-                                                             ConsumerConfig consumerConfig = null)
+        public static IMessageProcessor CreateEventSubscriber(string topic,
+                                                              string subscription,
+                                                              string consumerId,
+                                                              string[] handlerProviderNames,
+                                                              ConsumerConfig consumerConfig = null,
+                                                              Func<string[], bool> tagFilter = null)
+        {
+            return CreateEventSubscriber(new[] {new TopicSubscription(topic, tagFilter)},
+                                         subscription,
+                                         consumerId,
+                                         handlerProviderNames,
+                                         consumerConfig);
+        }
+
+        public static IMessageProcessor CreateEventSubscriber(TopicSubscription[] topicSubscriptions,
+                                                              string subscription,
+                                                              string consumerId,
+                                                              string[] handlerProviderNames,
+                                                              ConsumerConfig consumerConfig = null)
         {
             subscription = Configuration.Instance.FormatAppName(subscription);
             var handlerProvider = new EventSubscriberProvider(handlerProviderNames);
             var commandBus = GetCommandBus();
             var messagePublisher = GetMessagePublisher();
-            var messageQueueClient = IoCFactory.Resolve<IMessageQueueClient>();
+            var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
 
-            var eventSubscriber = new EventSubscriber(messageQueueClient, handlerProvider, commandBus, messagePublisher,
-                                                      subscription, topic, consumerId, consumerConfig);
+            var eventSubscriber = new EventSubscriber(messageQueueClient,
+                                                      handlerProvider,
+                                                      commandBus,
+                                                      messagePublisher,
+                                                      subscription,
+                                                      topicSubscriptions,
+                                                      consumerId,
+                                                      consumerConfig);
             return eventSubscriber;
         }
     }

@@ -18,7 +18,7 @@ namespace IFramework.Message
                             bool needReply)
         {
             MessageContext = messageContext;
-            MessageID = messageContext.MessageID;
+            MessageID = messageContext.MessageId;
             NeedReply = needReply;
             SendTaskCompletionSource = sendTaskCompletionSource;
             ReplyTaskCompletionSource = replyTaskCompletionSource;

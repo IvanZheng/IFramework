@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using IFramework.Infrastructure.Logging;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.Message;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
@@ -20,7 +20,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         public MessageProcessor(IProcessingMessageScheduler<IMessageContext> scheduler, int batchCount = 100)
         {
-            _logger = IoCFactory.IsInit() ? IoCFactory.Resolve<ILoggerFactory>().Create(GetType()) : null;
+            _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
             _batchCount = batchCount;
             _processingMessageScheduler = scheduler;
             MailboxDictionary = new ConcurrentDictionary<string, ProcessingMailbox<IMessageContext>>();
@@ -61,13 +61,13 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 try
                 {
                     var command = _mailboxProcessorCommands.Take(cancellationSource.Token);
-                    if (command is ProcessMessageCommand<IMessageContext>)
+                    if (command is ProcessMessageCommand<IMessageContext> messageCommand)
                     {
-                        ExecuteProcessCommand((ProcessMessageCommand<IMessageContext>) command);
+                        ExecuteProcessCommand(messageCommand);
                     }
-                    else if (command is CompleteMessageCommand<IMessageContext>)
+                    else if (command is CompleteMessageCommand<IMessageContext> completeMessageCommand)
                     {
-                        CompleteProcessMessage((CompleteMessageCommand<IMessageContext>) command);
+                        CompleteProcessMessage(completeMessageCommand);
                     }
                 }
                 catch (OperationCanceledException)
@@ -80,7 +80,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 }
                 catch (Exception ex)
                 {
-                    _logger?.Error(ex.GetBaseException().Message, ex);
+                    _logger.LogError(ex, $"Message processor ProcessMailboxProcessorCommands failed");
                 }
             }
         }
@@ -109,11 +109,8 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             if (!string.IsNullOrWhiteSpace(key))
             {
                 var mailbox = MailboxDictionary.GetOrAdd(key,
-                                                         x =>
-                                                         {
-                                                             return new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler,
-                                                                                                           processingMessageFunc, HandleMailboxEmpty, _batchCount);
-                                                         });
+                                                         x => new ProcessingMailbox<IMessageContext>(key, _processingMessageScheduler,
+                                                                                                     processingMessageFunc, HandleMailboxEmpty, _batchCount));
                 mailbox.EnqueueMessage(messageContext);
                 _processingMessageScheduler.ScheduleMailbox(mailbox);
             }

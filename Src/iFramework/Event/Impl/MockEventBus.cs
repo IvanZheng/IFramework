@@ -8,48 +8,50 @@ namespace IFramework.Event.Impl
     {
         public void Dispose() { }
 
-        public void Publish<TMessage>(TMessage @event) where TMessage : IEvent { }
+        public void Publish(IEvent @event){ }
 
-        public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent { }
+        public void Publish(IEnumerable<IEvent> events){ }
 
         public IEnumerable<IEvent> GetEvents()
         {
             return null;
         }
 
-
         public void ClearMessages() { }
-
-        public void PublishAnyway(params IEvent[] events)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<IEvent> GetToPublishAnywayMessages()
-        {
-            throw new NotImplementedException();
-        }
 
         public void SendCommand(ICommand command)
         {
-            throw new NotImplementedException();
+        }
+
+        public void PublishAnyway(params IEvent[] events)
+        {
         }
 
         public IEnumerable<ICommand> GetCommands()
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public IEnumerable<object> GetSagaResults()
         {
-            throw new NotImplementedException();
+            return null;
+        }
+
+        public IEnumerable<IEvent> GetToPublishAnywayMessages()
+        {
+            return null;
         }
 
         public void FinishSaga(object sagaResult)
         {
-            throw new NotImplementedException();
         }
 
-        public void Commit() { }
+        public void Publish<TMessage>(TMessage @event) where TMessage : IEvent
+        {
+        }
+
+        public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent
+        {
+        }
     }
 }

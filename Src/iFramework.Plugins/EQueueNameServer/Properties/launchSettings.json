@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "EQueueNameServer": {
+      "commandName": "Executable"
+    }
+  }
+}

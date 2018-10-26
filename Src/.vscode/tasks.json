@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/IFramework.Test/IFramework.Test.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish",
+            "command": "dotnet",
+            "type":"shell",
+            "args":[
+                "publish",
+                 "-o ${workspaceFolder}\\publishes",
+                 "${workspaceFolder}\\Sample\\Sample.CommandServiceCore"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
-using IFramework.AspNet;
-using IFramework.Command;
 using IFramework.Infrastructure;
-using IFramework.IoC;
-using IFramework.Message;
 using Sample.DTO;
 using Sample.Persistence;
+using IFramework.Command;
+using IFramework.DependencyInjection;
+using IFramework.Message;
 
 namespace Sample.CommandService.Controllers
 {
@@ -29,8 +28,8 @@ namespace Sample.CommandService.Controllers
     public class BatchCommandController : ApiControllerBase
     {
         private static List<ICommand> _batchCommands = new List<ICommand>();
-        private IMessagePublisher _messagePublisher = IoCFactory.Resolve<IMessagePublisher>();
-        private SampleModelContext _queryContext = IoCFactory.Resolve<SampleModelContext>();
+        private IMessagePublisher _messagePublisher = ObjectProviderFactory.GetService<IMessagePublisher>();
+        private SampleModelContext _queryContext = ObjectProviderFactory.GetService<SampleModelContext>();
 
         public BatchCommandController(ICommandBus commandBus, IExceptionManager exceptionManager)
             :base(exceptionManager)

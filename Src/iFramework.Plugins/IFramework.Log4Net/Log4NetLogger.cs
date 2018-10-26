@@ -1,283 +1,205 @@
 ﻿using System;
 using System.Collections.Generic;
-using IFramework.Infrastructure;
+using System.Linq;
 using log4net;
-using log4net.Core;
-using log4net.Repository.Hierarchy;
-using IFramework.Infrastructure.Logging;
-using ILogger = IFramework.Infrastructure.Logging.ILogger;
-using Level = log4net.Core.Level;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions.Internal;
+using Microsoft.Extensions.Logging.Internal;
 
 namespace IFramework.Log4Net
 {
-    /// <summary>
-    ///     Log4Net based logger implementation.
-    /// </summary>
     public class Log4NetLogger : ILogger
     {
         private readonly ILog _log;
-        public Dictionary<string, object> AdditionalProperties { get; protected set; }
-        public string App { get; protected set; }
-        public string Module { get; protected set; }
+        private readonly Log4NetProviderOptions _options;
 
-        /// <summary>
-        ///     Log4NetLogger constructor.
-        /// </summary>
-        /// <param name="log"></param>
-        /// <param name="level"></param>
-        /// <param name="app"></param>
-        /// <param name="module"></param>
-        /// <param name="additionalProperties"></param>
-        public Log4NetLogger(ILog log, 
-                             Infrastructure.Logging.Level level = Infrastructure.Logging.Level.Debug, 
-                             string app = null, 
-                             string module = null, 
-                             object additionalProperties = null)
+        public Log4NetLogger(string repositoryName, string name, Log4NetProviderOptions options)
         {
-            _log = log;
-            ChangeLogLevel(level);
-            App = app;
-            Module = module;
-            SetAdditionalProperties(additionalProperties);
+            _options = options;
+            _log = LogManager.GetLogger(repositoryName, name);
         }
 
-        protected void SetAdditionalProperties(object additionalProperties)
+        public IDisposable BeginScope<TState>(TState state)
         {
-            var additionalDict = additionalProperties?.ToJson().ToJsonObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
-            if (!string.IsNullOrWhiteSpace(App))
+            if (state == null)
             {
-                additionalDict[nameof(App)] = App;
+                throw new ArgumentNullException(nameof(state));
             }
-            if (!string.IsNullOrWhiteSpace(Module))
+
+            if (!_options.EnableScope)
             {
-                additionalDict[nameof(Module)] = Module;
+                return NullScope.Instance;
             }
-            if (Name.StartsWith(App))
+
+            if (_options.CaptureMessageProperties && state is IEnumerable<KeyValuePair<string, object>> messageProperties)
             {
-                additionalDict["Logger"] = Name.Substring(App.Length);
+                return ScopeProperties.CreateFromState(messageProperties);
             }
-            AdditionalProperties = additionalDict;
-        }
-        void SetAdditionalProperties()
-        {
-            LogicalThreadContext.Properties[nameof(AdditionalProperties)] = AdditionalProperties;
+            return NestedDiagnosticsLogicalContext.Push(state);
         }
 
-        #region ILogger Members
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        public void Debug(object message)
+        public bool IsEnabled(LogLevel logLevel)
         {
-            SetAdditionalProperties();
-            _log.Debug(message);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="format"></param>
-        /// <param name="args"></param>
-        public void DebugFormat(string format, params object[] args)
-        {
-            SetAdditionalProperties();
-            _log.DebugFormat(format, args);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="exception"></param>
-        public void Debug(object message, Exception exception)
-        {
-            SetAdditionalProperties();
-            _log.Debug(message, exception);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        public void Info(object message)
-        {
-            SetAdditionalProperties();
-            _log.Info(message);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="format"></param>
-        /// <param name="args"></param>
-        public void InfoFormat(string format, params object[] args)
-        {
-            SetAdditionalProperties();
-            _log.InfoFormat(format, args);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="exception"></param>
-        public void Info(object message, Exception exception)
-        {
-            SetAdditionalProperties();
-            _log.Info(message, exception);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        public void Error(object message)
-        {
-            SetAdditionalProperties();
-            _log.Error(message);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="format"></param>
-        /// <param name="args"></param>
-        public void ErrorFormat(string format, params object[] args)
-        {
-            SetAdditionalProperties();
-            _log.ErrorFormat(format, args);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="exception"></param>
-        public void Error(object message, Exception exception)
-        {
-            SetAdditionalProperties();
-            _log.Error(message, exception);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        public void Warn(object message)
-        {
-            SetAdditionalProperties();
-            _log.Warn(message);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="format"></param>
-        /// <param name="args"></param>
-        public void WarnFormat(string format, params object[] args)
-        {
-            SetAdditionalProperties();
-            _log.WarnFormat(format, args);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="exception"></param>
-        public void Warn(object message, Exception exception)
-        {
-            SetAdditionalProperties();
-            _log.Warn(message, exception);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        public void Fatal(object message)
-        {
-            SetAdditionalProperties();
-            _log.Fatal(message);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="format"></param>
-        /// <param name="args"></param>
-        public void FatalFormat(string format, params object[] args)
-        {
-            SetAdditionalProperties();
-            _log.FatalFormat(format, args);
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="exception"></param>
-        public void Fatal(object message, Exception exception)
-        {
-            SetAdditionalProperties();
-            _log.Fatal(message, exception);
-        }
-
-        public void ChangeLogLevel(Infrastructure.Logging.Level level)
-        {
-            ((Logger)_log.Logger).Level = ToLog4NetLevel(level);
-        }
-
-
-
-        public static Level ToLog4NetLevel(Infrastructure.Logging.Level level)
-        {
-            var log4NetLevel = log4net.Core.Level.Debug;
-            switch (level)
+            switch (logLevel)
             {
-                case Infrastructure.Logging.Level.All:
-                    log4NetLevel = log4net.Core.Level.All;
+                case LogLevel.Trace:
+                case LogLevel.Debug:
+                    return _log.IsDebugEnabled;
+                case LogLevel.Information:
+                    return _log.IsInfoEnabled;
+                case LogLevel.Warning:
+                    return _log.IsWarnEnabled;
+                case LogLevel.Error:
+                    return _log.IsErrorEnabled;
+                case LogLevel.Critical:
+                    return _log.IsFatalEnabled;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(logLevel));
+            }
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            if (!IsEnabled(logLevel))
+            {
+                return;
+            }
+
+            //if (formatter == null)
+            //{
+            //    throw new ArgumentNullException(nameof(formatter));
+            //}
+
+            //string str = formatter(state, exception);
+
+            if (state == null && exception == null)
+            {
+                return;
+            }
+
+            	//UnderlyingSystemType	{Microsoft.Extensions.Logging.LoggerMessage+LogValues`3[System.Type,System.String,System.Exception]}	System.Type {System.RuntimeType}
+
+            object log = state;
+            if (state != null && (state is FormattedLogValues || state.GetType().Name.StartsWith("LogValues")))
+            {
+                log = formatter(state, exception);
+                //if (logValues.Count == 1 && logValues[0].Value is string)
+                //{
+                //    log = logValues[0].Value;
+                //}
+            }
+            else if (state is Exception ex)
+            {
+                log = new {ex.GetBaseException().Message, ex.StackTrace, Class = ex.GetType().Name};
+            }
+            if (_options.EnableScope)
+            {
+                var scopeMessages = NestedDiagnosticsLogicalContext.GetAllMessages()
+                                                                   ?
+                                                                   .ToList();
+                if (scopeMessages?.Count > 0)
+                {
+                    log = new {scopeMessages, body = log};
+                }
+            }
+
+            switch (logLevel)
+            {
+                case LogLevel.Trace:
+                case LogLevel.Debug:
+                    _log.Debug(log, exception);
                     break;
-                case Infrastructure.Logging.Level.Debug:
-                    log4NetLevel = log4net.Core.Level.Debug;
+                case LogLevel.Information:
+                    _log.Info(log, exception);
                     break;
-                case Infrastructure.Logging.Level.Info:
-                    log4NetLevel = log4net.Core.Level.Info;
+                case LogLevel.Warning:
+                    _log.Warn(log, exception);
                     break;
-                case Infrastructure.Logging.Level.Warn:
-                    log4NetLevel = log4net.Core.Level.Warn;
+                case LogLevel.Error:
+                    _log.Error(log, exception);
                     break;
-                case Infrastructure.Logging.Level.Error:
-                    log4NetLevel = log4net.Core.Level.Error;
+                case LogLevel.Critical:
+                    _log.Fatal(log, exception);
                     break;
-                case Infrastructure.Logging.Level.Fatal:
-                    log4NetLevel = log4net.Core.Level.Fatal;
+                default:
+                    _log.Warn($"Encountered unknown log level {logLevel}, writing out as Info.", exception);
+                    _log.Info(log, exception);
                     break;
             }
-            return log4NetLevel;
         }
 
-        public static Infrastructure.Logging.Level ToLoggingLevel(Level level)
+        private class ScopeProperties : IDisposable
         {
-            var loggingLevel = Infrastructure.Logging.Level.Debug;
-            if (level == log4net.Core.Level.All)
+            private List<IDisposable> _properties;
+
+            /// <summary>
+            ///     Properties, never null and lazy init
+            /// </summary>
+            private List<IDisposable> Properties => _properties ?? (_properties = new List<IDisposable>());
+
+            public void Dispose()
             {
-                loggingLevel = Infrastructure.Logging.Level.All;
+                var properties = _properties;
+                if (properties != null)
+                {
+                    _properties = null;
+                    foreach (var property in properties)
+                    {
+                        try
+                        {
+                            property.Dispose();
+                        }
+                        catch (Exception)
+                        {
+                            //InternalLogger.Trace(ex, "Exception in Dispose property {0}", property);
+                        }
+                    }
+                }
             }
-            else if (level == log4net.Core.Level.Debug)
+
+
+            public static IDisposable CreateFromState(IEnumerable<KeyValuePair<string, object>> messageProperties)
             {
-                loggingLevel = Infrastructure.Logging.Level.Debug;
+                var scope = new ScopeProperties();
+                //var stateString = string.Empty;
+                foreach (var property in messageProperties.ToArray())
+                {
+                    if (string.IsNullOrEmpty(property.Key))
+                    {
+                        continue;
+                    }
+                    //stateString += $"{property.Key}:{property.Value} ";
+                    scope.AddProperty(property.Key, property.Value);
+                }
+                scope.AddDispose(NestedDiagnosticsLogicalContext.Push(messageProperties));
+                return scope;
             }
-            else if (level == log4net.Core.Level.Info)
+
+            public void AddDispose(IDisposable disposable)
             {
-                loggingLevel = Infrastructure.Logging.Level.Info;
+                Properties.Add(disposable);
             }
-            else if (level == log4net.Core.Level.Warn)
+
+            public void AddProperty(string key, object value)
             {
-                loggingLevel = Infrastructure.Logging.Level.Warn;
+                AddDispose(new ScopeProperty(key, value));
             }
-            else if (level == log4net.Core.Level.Error)
+
+            private class ScopeProperty : IDisposable
             {
-                loggingLevel = Infrastructure.Logging.Level.Error;
+                private readonly string _key;
+
+                public ScopeProperty(string key, object value)
+                {
+                    _key = key;
+                    MappedDiagnosticsLogicalContext.Set(key, value);
+                }
+
+                public void Dispose()
+                {
+                    MappedDiagnosticsLogicalContext.Remove(_key);
+                }
             }
-            else if (level == log4net.Core.Level.Fatal)
-            {
-                loggingLevel = Infrastructure.Logging.Level.Fatal;
-            }
-            return loggingLevel;
         }
-
-        public Infrastructure.Logging.Level Level => ToLoggingLevel(((Logger)_log.Logger).Level);
-
-        public string Name => ((Logger) _log.Logger).Name;
-
-        #endregion
     }
 }

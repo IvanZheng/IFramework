@@ -2,8 +2,6 @@
 
 namespace IFramework.Infrastructure.Caching
 {
-    /// Cache manager interface
-    /// </summary>
     public interface ICacheManager
     {
         /// <summary>

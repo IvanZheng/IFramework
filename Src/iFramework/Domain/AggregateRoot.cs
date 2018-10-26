@@ -5,7 +5,7 @@ using IFramework.Exceptions;
 
 namespace IFramework.Domain
 {
-    public abstract class AggregateRoot: Entity, IAggregateRoot
+    public abstract class AggregateRoot : Entity, IAggregateRoot
     {
         private string _aggreagetRootType;
         private readonly Queue<IAggregateRootEvent> _eventQueue = new Queue<IAggregateRootEvent>();
@@ -28,6 +28,11 @@ namespace IFramework.Domain
         public IEnumerable<IAggregateRootEvent> GetDomainEvents()
         {
             return _eventQueue.ToList();
+        }
+
+        public void ClearDomainEvents()
+        {
+            _eventQueue.Clear();
         }
 
         public virtual void Rollback()

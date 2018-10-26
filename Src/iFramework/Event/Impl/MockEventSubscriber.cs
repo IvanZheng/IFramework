@@ -2,7 +2,7 @@
 
 namespace IFramework.Event.Impl
 {
-    public class MockEventSubscriber : IMessageConsumer
+    public class MockEventSubscriber : IMessageProcessor
     {
         public void Start() { }
 

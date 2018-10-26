@@ -2,27 +2,21 @@
 
 namespace IFramework.Config
 {
-    public class HandlerElement : ConfigurationElement
+    public class HandlerElement
     {
-        [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
-        public string Name
-        {
-            get => (string) base["name"];
-            set => base["name"] = value;
-        }
+        /// <summary>
+        /// Handler Element Name
+        /// </summary>
+        public string Name { get; set; }
 
-        [ConfigurationProperty("sourceType", IsRequired = true)]
-        public HandlerSourceType SourceType
-        {
-            get => (HandlerSourceType) base["sourceType"];
-            set => base["sourceType"] = value;
-        }
+        /// <summary>
+        /// SourceType 
+        /// </summary>
+        public HandlerSourceType SourceType { get; set; }
 
-        [ConfigurationProperty("source", IsRequired = true)]
-        public string Source
-        {
-            get => (string) base["source"];
-            set => base["source"] = value;
-        }
+        /// <summary>
+        /// source name path
+        /// </summary>
+        public string Source { get; set; }
     }
 }

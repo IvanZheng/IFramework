@@ -40,45 +40,50 @@ namespace IFramework.Exceptions
             });
         }
     }
-
+    [Serializable]
     public class DomainException: Exception
     {
         public IDomainExceptionEvent DomainExceptionEvent { get; protected set; }
-
+        public object ErrorCode { get; protected set; }
+        internal string ErrorCodeType { get; set; }
         public DomainException()
         {
+            
         }
 
         public DomainException(IDomainExceptionEvent domainExceptionEvent)
-            : this(Exceptions.ErrorCode.UnknownError, domainExceptionEvent.ToString())
+            : this(domainExceptionEvent.ErrorCode, domainExceptionEvent.ToString())
         {
             DomainExceptionEvent = domainExceptionEvent;
-        }
-
-        protected DomainException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            ErrorCode = (int)info.GetValue("ErrorCode", typeof(int));
         }
 
         public DomainException(object errorCode, string message = null)
             : base(message ?? ErrorCodeDictionary.GetErrorMessage(errorCode))
         {
-            ErrorCode = (int)errorCode;
+            ErrorCode = errorCode;
         }
 
         public DomainException(object errorCode, object[] args)
             : base(ErrorCodeDictionary.GetErrorMessage(errorCode, args))
         {
-            ErrorCode = (int)errorCode;
+            ErrorCode = errorCode;
         }
 
-        public int ErrorCode { get; set; }
+
+        protected DomainException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            ErrorCodeType = (string)info.GetValue(nameof(ErrorCodeType), typeof(string));
+            if (ErrorCodeType != null)
+            {
+                ErrorCode = info.GetValue(nameof(ErrorCode), Type.GetType(ErrorCodeType));
+            }
+        }
 
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue("ErrorCode", ErrorCode);
-            info.AddValue("DomainExceptionEvent", DomainExceptionEvent);
+            info.AddValue(nameof(ErrorCode), ErrorCode);
+            info.AddValue(nameof(ErrorCodeType), ErrorCode?.GetType().GetFullNameWithAssembly());
             base.GetObjectData(info, context);
         }
     }

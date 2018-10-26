@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using IFramework.IoC;
+using IFramework.DependencyInjection;
 using IFramework.MessageQueue;
 
 namespace IFramework.Message.Impl
@@ -20,14 +20,13 @@ namespace IFramework.Message.Impl
 
         protected override IEnumerable<IMessageContext> GetAllUnSentMessages()
         {
-            using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-            using (var messageStore = scope.Resolve<IMessageStore>())
+            using (var scope = ObjectProviderFactory.Instance.ObjectProvider.CreateScope())
+            using (var messageStore = scope.GetService<IMessageStore>())
             {
-                return messageStore.GetAllUnPublishedEvents(
-                                                            (messageId, message, topic, correlationID, replyEndPoint, sagaInfo, producer) =>
-                                                                _messageQueueClient.WrapMessage(message, key: message.Key,
+                return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationId, replyEndPoint, sagaInfo, producer) =>
+                                                                MessageQueueClient.WrapMessage(message, key: message.Key,
                                                                                                 topic: topic, messageId: messageId,
-                                                                                                correlationId: correlationID,
+                                                                                                correlationId: correlationId,
                                                                                                 replyEndPoint: replyEndPoint,
                                                                                                 sagaInfo: sagaInfo, producer: producer));
             }
@@ -36,7 +35,7 @@ namespace IFramework.Message.Impl
         protected override async Task SendMessageStateAsync(MessageState messageState, CancellationToken cancellationToken)
         {
             var messageContext = messageState.MessageContext;
-            await _messageQueueClient.PublishAsync(messageContext, messageContext.Topic ?? _defaultTopic, cancellationToken);
+            await MessageQueueClient.PublishAsync(messageContext, messageContext.Topic ?? DefaultTopic, cancellationToken);
             CompleteSendingMessage(messageState);
         }
 
@@ -46,16 +45,12 @@ namespace IFramework.Message.Impl
                 .TrySetResult(new MessageResponse(messageState.MessageContext,
                                                   null,
                                                   false));
-            if (_needMessageStore)
+            if (NeedMessageStore)
             {
-                Task.Run(() =>
-                {
-                    using (var scope = IoCFactory.Instance.CurrentContainer.CreateChildContainer())
-                    using (var messageStore = scope.Resolve<IMessageStore>())
-                    {
-                        messageStore.RemovePublishedEvent(messageState.MessageID);
-                    }
-                });
+                ObjectProviderFactory.Instance
+                                     .ObjectProvider
+                                     .GetService<IMessageStoreDaemon>()
+                                     .RemovePublishedEvent(messageState.MessageID);
             }
         }
     }

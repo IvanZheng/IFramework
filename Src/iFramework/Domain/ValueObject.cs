@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using IFramework.Infrastructure;
 
 namespace IFramework.Domain
 {
-    public abstract class ValueObject<T>
+    public abstract class ValueObject<T> where T: class
     {
-        public T Clone(object newValues = null)
+        public static T Empty => Activator.CreateInstance<T>();
+
+        public virtual T Clone(object newValues = null, bool deSerializeNonPublic = true)
         {
             //var cloned = default(T);
             //using (var ms = new MemoryStream())
@@ -20,7 +21,7 @@ namespace IFramework.Domain
             //    ms.Position = 0;
             //    cloned = (T) formatter.Deserialize(ms);
             //}
-            var cloned = this.ToJson().ToJsonObject<T>();
+            var cloned = this.ToJson().ToJsonObject<T>(deSerializeNonPublic);
             newValues?.GetType().GetProperties().ForEach(p => { cloned.SetValueByKey(p.Name, p.GetValue(newValues)); });
             return cloned;
         }
@@ -69,8 +70,7 @@ namespace IFramework.Domain
         /// <returns>Collection of atomic values.</returns>
         protected virtual IEnumerable<object> GetAtomicValues()
         {
-            return GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                            .Select(p => p.GetValue(this, null));
+            return GetType().GetProperties().Select(p => p.GetValue(this, null));
         }
 
         /// <summary>

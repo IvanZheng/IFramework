@@ -4,36 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
 using IFramework.Message;
-using IFramework.IoC;
 
 namespace Sample.CommandHandler
 {
     public class CommandHandlerBase
     {
-        protected IMessagePublisher EventPublisher
-        {
-            get
-            {
-                return IoCFactory.Resolve<IMessagePublisher>();
-            }
-        }
+        protected IMessagePublisher EventPublisher => ObjectProviderFactory.GetService<IMessagePublisher>();
 
-        protected IDomainRepository DomainRepository
-        {
-            get
-            {
-                return IoCFactory.Resolve<IDomainRepository>();
-            }
-        }
+        protected IDomainRepository DomainRepository => ObjectProviderFactory.GetService<IDomainRepository>();
 
-        public IMessageContext CommandContext
-        {
-            get
-            {
-                return IoCFactory.Resolve<IMessageContext>();
-            }
-        }
+        public IMessageContext CommandContext => ObjectProviderFactory.GetService<IMessageContext>();
     }
 }

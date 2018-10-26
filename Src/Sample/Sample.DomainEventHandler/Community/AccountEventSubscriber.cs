@@ -20,7 +20,7 @@ namespace Sample.DomainEventHandler.Community
             // here is application event, not domain event
             //_EventBus.Publish(new ApplicationEvent.AccountRegistered
             //                  {
-            //                      AccountID = (Guid)@event.AggregateRootID,
+            //                      AccountID = (Guid)@event.AggregateRootId,
             //                      UserName = @event.UserName
             //                  });
         }

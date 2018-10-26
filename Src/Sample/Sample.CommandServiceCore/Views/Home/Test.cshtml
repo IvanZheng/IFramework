@@ -1,0 +1,233 @@
+﻿@using IFramework.Infrastructure
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Test</title>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        var showResult = function(result) {
+            $("#result").prepend(result + "<br>");
+        }
+        var doSaga = function(commandName, command) {
+            $.ajax({
+                cache: false,
+                contentType: "application/json",
+                type: "POST",
+                url: '@Url.Content("~/api/SagaApi/")' + commandName + '?t=' + new Date().getTime().toString(),
+                data: JSON.stringify(command),
+                success: function(data) {
+                    if (data.errorCode == 0) {
+                        showResult(JSON.stringify(data));
+                    } else {
+                        showResult(data.errorCode + " " + data.message);
+                    }
+                }
+            });
+        };
+
+
+
+        var doCommand = function(commandName, command) {
+            $.ajax({
+                cache: false,
+                //contentType: "application/json",
+                type: "POST",
+                url: '@Url.Content("~/api/Command/")' + commandName + '?t=' + new Date().getTime().toString(),
+                data: command,//JSON.stringify(command),
+                success: function(data) {
+                    if (data.errorCode === 0) {
+                        showResult(JSON.stringify(data));
+                    } else {
+                        showResult(data.errorCode + " " + data.message);
+                    }
+                }
+            });
+        };
+
+        var batchCommandTest = function(commandName, command, batchCount) {
+            $.cookie("batchCount", batchCount, { path: "/" });
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: '@Url.Content("~/api/BatchCommand/")' + commandName,
+                data: command,
+                success: function(data) {
+                    if (data.errorCode == 0) {
+                        showResult(data);
+                    } else {
+                        showResult(data.message);
+                    }
+                }
+
+            });
+        };
+
+        $(function () {
+
+            $("#pressureBtn").click(function() {
+                $.ajax(
+                    {
+                        cache: false,
+                        type: "POST",
+                        url: '@Url.Content("~/api/values")',
+                        data: {},
+                        success: function(data) {
+                            if (data.errorCode == 0) {
+                                showResult(data);
+                            } else {
+                                showResult(data.message);
+                            }
+                        }
+
+                    }
+                );
+            });
+
+            $("#loginCommandSaga").click(function() {
+                var username = $("#username").val();
+                var password = $("#password").val();
+
+                var loginCommand = {
+                    UserName: username,
+                    Password: password
+                };
+                doSaga("Login", loginCommand);
+            });
+
+            $("#batchRegisterCommand").click(function() {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
+                batchCommandTest("Register", registerCommand, $("#batchCount").val());
+            });
+
+            $("#batchLoginCommand").click(function() {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var loginCommand = { UserName: username, Password: password };
+                batchCommandTest("Login", loginCommand, $("#batchCount").val());
+            });
+
+
+            $("#modifyCommand").click(function() {
+                var username = $("#username").val();
+                var email = $("#email").val();
+
+                var modifyCommand = {
+                    UserName: username,
+                    Email: email
+                };
+                doCommand("Modify", modifyCommand);
+            });
+
+            $("#registerCommand").click(function() {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var registerCommand = {
+                    UserName: username, Password: password, Email: "ivan@r-soft.cn", Tags: [{ Id: "id1", Name: "Name1" }, { Id: "id2", Name: "Name2"}] };
+                doCommand("Register", registerCommand);
+            });
+
+
+            $("#loginCommand").click(function() {
+                var username = $("#username").val();
+                var password = $("#password").val();
+
+                var loginCommand = {
+                    UserName: username,
+                    Password: password
+                };
+                doCommand("Login", loginCommand);
+            });
+
+            $("#btnRefreshCommandDistributorStatus").click(function() {
+                refreshCommandDistributorStatus();
+            });
+               
+
+            $("#closeMqBtn").click(function() {
+                $.get("@Url.Content("~/api/mq/CloseMessageQueue")", null, function(data) {
+                    if (data.errorCode === 0) {
+                        showResult(data);
+                    } else {
+                        showResult(data.message);
+                    }
+                });
+            });
+
+            $("#btnReduceProduct").click(function () {
+                var productId = $("#productId").val();
+                var reduceCount = $("#reduceCount").val();
+
+                var reduceProduct = {
+                    productId: productId,
+                    reduceCount: reduceCount
+                };
+                doCommand("ReduceProduct", reduceProduct);
+            });
+        });
+        var refreshCommandDistributorStatus = function() {
+            $.get("@Url.Content("~/Test/CommandDistributorStatus")",
+                null,
+                function(result) {
+                    $("#commandDistributorStatus").html(result);
+                });
+        };
+
+    </script>
+</head>
+<body>
+    <mini-profiler />
+    <a href="@Url.Action("SignOut")">logoff</a>
+    <input type="button" value="RefreshCommandDistributorStatus" id="btnRefreshCommandDistributorStatus" />
+    @(Guid.NewGuid().ToString().GetUniqueCode())
+    <div id="commandDistributorStatus">
+
+    </div>
+    <br />
+    <input type="button" value="CloseMessageQueue" id="closeMqBtn" />
+    <input type="text" value="1000" id="batchCount" />
+    <input type="text" value="ivan" id="username" />
+    <input type="password" value="123456" id="password" />
+
+    <input id="registerCommand" type="button" value="RegisterCommand" />
+    <input id="loginCommand" type="button" value="LoginCommand" />
+    <input id="loginCommandSaga" type="button" value="LoginCommandSaga" />
+
+
+    <div>
+        <input id="batchRegisterCommand" type="button" value="BatchRegisterCommand" />
+        <input id="batchLoginCommand" type="button" value="BatchLoginCommand" />
+    </div>
+
+    <div>
+        <input type="text" value="email" id="email" />
+        <input id="modifyCommand" type="button" value="ModifyCommand" />
+    </div>
+    <div>
+        <input type="button" value="Api pressure test" id="pressureBtn" />
+    </div>
+    <div>
+        <input type="text" placeholder="productId" id="productId" />
+        <input type="text" placeholder="reduceCount" id="reduceCount" />
+        <input id="btnReduceProduct" type="button" value="ReduceProduct" />
+    </div>
+    @using (Html.BeginForm("PostAddRequest", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.TextBox("Id", "id");
+        @Html.TextBox("Name", "name");
+        <input type="file" name="file1"/>
+        <button type="submit">submit</button>
+    }
+    <div id="result">
+
+    </div>
+</body>
+</html>
+

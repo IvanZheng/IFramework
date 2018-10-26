@@ -2,7 +2,7 @@
 {
     public interface IAggregateRootEvent : IEvent
     {
-        object AggregateRootID { get; }
+        object AggregateRootId { get; }
         string AggregateRootName { get; set; }
         int Version { get; set; }
     }

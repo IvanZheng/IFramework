@@ -17,23 +17,26 @@ namespace IFramework.EntityFramework.Repositories
     public class Repository<TEntity>: BaseRepository<TEntity>, IMergeOptionChangable
         where TEntity : class
     {
-        internal DbContext Container;
+        internal DbContext _Container;
         private DbSet<TEntity> _objectSet;
+        private readonly UnitOfWork _UnitOfWork;
 
         public Repository(MSDbContext dbContext, IUnitOfWork unitOfWork)
         {
+            _UnitOfWork = unitOfWork as UnitOfWork;
             if (dbContext == null)
                 throw new Exception("repository could not work without dbContext");
-
-            (unitOfWork as UnitOfWork)?.RegisterDbContext(dbContext);
-            Container = dbContext;
+            // dbContext.Configuration.AutoDetectChangesEnabled = false;
+            if (_UnitOfWork != null)
+                _UnitOfWork.RegisterDbContext(dbContext);
+            _Container = dbContext;
         }
 
-        private DbSet<TEntity> DbSet => _objectSet ?? (_objectSet = Container.Set<TEntity>());
+        private DbSet<TEntity> DbSet => _objectSet ?? (_objectSet = _Container.Set<TEntity>());
 
         public void ChangeMergeOption<TMergeOptionEntity>(MergeOption mergeOption) where TMergeOptionEntity : class
         {
-            var objectContext = ((IObjectContextAdapter)Container).ObjectContext;
+            var objectContext = ((IObjectContextAdapter)_Container).ObjectContext;
             var set = objectContext.CreateObjectSet<TMergeOptionEntity>();
             set.MergeOption = mergeOption;
         }
@@ -81,7 +84,7 @@ namespace IFramework.EntityFramework.Repositories
 
         protected override void DoUpdate(TEntity entity)
         {
-            Container.Entry(entity).State = EntityState.Modified;
+            _Container.Entry(entity).State = EntityState.Modified;
         }
 
         protected override IQueryable<TEntity> DoFindAll(ISpecification<TEntity> specification,
@@ -161,13 +164,13 @@ namespace IFramework.EntityFramework.Repositories
 
         protected override void DoReload(TEntity entity)
         {
-            Container.Entry(entity).Reload();
+            _Container.Entry(entity).Reload();
             (entity as AggregateRoot)?.Rollback();
         }
 
         protected override async Task DoReloadAsync(TEntity entity)
         {
-            await Container.Entry(entity)
+            await _Container.Entry(entity)
                             .ReloadAsync()
                             .ConfigureAwait(false);
 

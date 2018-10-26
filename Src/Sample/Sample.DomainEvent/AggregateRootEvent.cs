@@ -9,24 +9,26 @@ namespace Sample.DomainEvents
     {
         public AggregateRootEvent()
         {
-            ID = ObjectId.GenerateNewId().ToString();
+            Id = ObjectId.GenerateNewId().ToString();
         }
 
-        public AggregateRootEvent(object aggregateRootID)
+        public AggregateRootEvent(object aggregateRootId)
             : this()
         {
-            AggregateRootID = aggregateRootID;
-            Key = aggregateRootID.ToString();
+            AggregateRootId = aggregateRootId;
+            Key = aggregateRootId.ToString();
         }
 
         public int Version { get; set; }
 
-        public object AggregateRootID { get; }
+        public object AggregateRootId { get; }
 
         public string AggregateRootName { get; set; }
 
-        public string ID { get; set; }
+        public string Id { get; set; }
 
         public virtual string Key { get; set; }
+
+        public  virtual string[] Tags { get; set; }
     }
 }

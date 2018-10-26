@@ -9,11 +9,11 @@ namespace Sample.AsyncDomainEventSubscriber.Community
     public class AccountEventSubscriber :
         IEventSubscriber<AccountRegistered>
     {
-        private readonly IEventBus _EventBus;
+        private readonly IEventBus _eventBus;
 
         public AccountEventSubscriber(IEventBus eventBus)
         {
-            _EventBus = eventBus;
+            _eventBus = eventBus;
         }
 
         public void Handle(AccountRegistered @event)
@@ -22,10 +22,10 @@ namespace Sample.AsyncDomainEventSubscriber.Community
 
             var applicationEvent = new ApplicationEvent.AccountRegistered
             {
-                AccountID = new Guid(@event.AggregateRootID.ToString()),
+                AccountID = new Guid(@event.AggregateRootId.ToString()),
                 UserName = @event.UserName
             };
-            _EventBus.Publish(applicationEvent);
+            _eventBus.Publish(applicationEvent);
         }
     }
 

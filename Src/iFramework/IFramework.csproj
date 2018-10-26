@@ -1,253 +1,55 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0B36292C-8849-441D-8FB8-A053D43A8E72}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>IFramework</RootNamespace>
-    <AssemblyName>IFramework</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>2.0.0-prelease-0038</Version>
+    <Description>Since dotnetcore2.0.0 released, IFramework supports to netcore standard2.0</Description>
+    <Authors>Ivan</Authors>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
+    <PackageReleaseNotes>fix _discardKeyTypes concurrent procssing  error</PackageReleaseNotes>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <NoWarn>1591</NoWarn>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;1591</NoWarn>
+    <DocumentationFile>bin\Release\netstandard2.0\IFramework.xml</DocumentationFile>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <DocumentationFile>bin\Release\IFramework.xml</DocumentationFile>
-    <NoWarn>1591</NoWarn>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.Entity" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Compile Remove="Infrastructure\Logging\**" />
+    <EmbeddedResource Remove="Infrastructure\Logging\**" />
+    <None Remove="Infrastructure\Logging\**" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Bus\IBus.cs" />
-    <Compile Include="Command\CommandBusExtension.cs" />
-    <Compile Include="Command\ICommandAsyncHandler.cs" />
-    <Compile Include="Event\IAggregateRootExceptionEvent.cs" />
-    <Compile Include="Event\IDomainExceptionEvent.cs" />
-    <Compile Include="Event\IEventAsyncSubscriber.cs" />
-    <Compile Include="Event\Impl\SyncEventSubscriberProvider.cs" />
-    <Compile Include="Infrastructure\Caching\CacheValue.cs" />
-    <Compile Include="Infrastructure\Caching\Impl\CacheManagerBase.cs" />
-    <Compile Include="Infrastructure\DataContractJsonConvert.cs" />
-    <Compile Include="Infrastructure\IExceptionManager.cs" />
-    <Compile Include="Infrastructure\IJsonConvert.cs" />
-    <Compile Include="Infrastructure\ILock.cs" />
-    <Compile Include="Infrastructure\ILockProvider.cs" />
-    <Compile Include="Infrastructure\Logging\AopEnteringLog.cs" />
-    <Compile Include="Infrastructure\Logging\AopExceptionLog.cs" />
-    <Compile Include="Infrastructure\Logging\AopLeavingLog.cs" />
-    <Compile Include="Infrastructure\Logging\ILoggerLevelController.cs" />
-    <Compile Include="Infrastructure\Logging\JsonLogBase.cs" />
-    <Compile Include="Infrastructure\Logging\Level.cs" />
-    <Compile Include="Infrastructure\Logging\MockLogger.cs" />
-    <Compile Include="Infrastructure\Logging\MockLoggerFactory.cs" />
-    <Compile Include="Infrastructure\Logging\LoggerLevelController.cs" />
-    <Compile Include="Infrastructure\QueryExtension.cs" />
-    <Compile Include="IoC\AopInjection.cs" />
-    <Compile Include="IoC\ILogInterceptionBehavior.cs" />
-    <Compile Include="IoC\IContainer.cs" />
-    <Compile Include="IoC\Injection.cs" />
-    <Compile Include="IoC\Lifetime.cs" />
-    <Compile Include="IoC\LogInterceptionBehavior.cs" />
-    <Compile Include="IoC\LogInterceptionAttribute.cs" />
-    <Compile Include="IoC\Parameter.cs" />
-    <Compile Include="MessageQueue\AutoOffsetReset.cs" />
-    <Compile Include="MessageQueue\Configuration.cs" />
-    <Compile Include="MessageQueue\ConsumerConfig.cs" />
-    <Compile Include="MessageQueue\ICommitOffsetable.cs" />
-    <Compile Include="MessageQueue\ISlidingDoor.cs" />
-    <Compile Include="MessageQueue\MessageQueueFactory.cs" />
-    <Compile Include="MessageQueue\MockMessageQueueClient.cs" />
-    <Compile Include="Message\IMessageAsyncHandler.cs" />
-    <Compile Include="Message\Impl\CommandHandledInfo.cs" />
-    <Compile Include="Message\Impl\HandlerTypeInfo.cs" />
-    <Compile Include="MessageQueue\SlidingDoor.cs" />
-    <Compile Include="Message\Impl\MessageExtension.cs" />
-    <Compile Include="Message\Impl\SagaInfo.cs" />
-    <Compile Include="Message\MessageResponse.cs" />
-    <Compile Include="Command\ILinearCommandManager.cs" />
-    <Compile Include="Command\Impl\CommandBus.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Command\Impl\CommandConsumer.cs" />
-    <Compile Include="Command\Impl\LinearCommandManager.cs" />
-    <Compile Include="Command\Impl\LinerKeyAttribute.cs" />
-    <Compile Include="Command\Impl\MockCommandBus.cs" />
-    <Compile Include="Domain\AggregateRoot.cs" />
-    <Compile Include="Domain\AggregateRootWithIdentity.cs" />
-    <Compile Include="Domain\TimestampedAggregateRoot.cs" />
-    <Compile Include="Domain\ValueObject.cs" />
-    <Compile Include="Domain\VersionedAggregateRoot.cs" />
-    <Compile Include="Event\IApplicationEvent.cs" />
-    <Compile Include="Event\IEvent.cs" />
-    <Compile Include="Infrastructure\RadixEncoding.cs" />
-    <Compile Include="Infrastructure\DictionaryExtension.cs" />
-    <Compile Include="Infrastructure\DisposeObjectHttpModule.cs" />
-    <Compile Include="Infrastructure\ExceptionManager.cs" />
-    <Compile Include="Infrastructure\Mailboxes\Impl\DefaultProcessingMessageScheduler.cs" />
-    <Compile Include="Infrastructure\Mailboxes\Impl\MailboxProcessorCommand.cs" />
-    <Compile Include="Infrastructure\Mailboxes\Impl\ProcessingMailbox.cs" />
-    <Compile Include="Infrastructure\Mailboxes\IProcessingMessageScheduler.cs" />
-    <Compile Include="Infrastructure\Mailboxes\IMessageProcessor.cs" />
-    <Compile Include="Infrastructure\Parser.cs" />
-    <Compile Include="Message\IMessagePublisher.cs" />
-    <Compile Include="Event\Impl\EventBus.cs" />
-    <Compile Include="Message\IMessageSender.cs" />
-    <Compile Include="Infrastructure\Mailboxes\Impl\MessageProcessor.cs" />
-    <Compile Include="Message\Impl\EmptyMessageContext.cs" />
-    <Compile Include="Message\Impl\MessagePublisher.cs" />
-    <Compile Include="Event\Impl\EventSubscriber.cs" />
-    <Compile Include="Event\Impl\MockEventSubscriber.cs" />
-    <Compile Include="Event\Impl\MockEventBus.cs" />
-    <Compile Include="Message\Impl\MessageSender.cs" />
-    <Compile Include="Message\Impl\MockMessagePublisher.cs" />
-    <Compile Include="Infrastructure\Caching\CacheExtensions.cs" />
-    <Compile Include="Infrastructure\Caching\ICacheManager.cs" />
-    <Compile Include="Infrastructure\Caching\Impl\MemoryCacheManager.cs" />
-    <Compile Include="Infrastructure\Caching\Impl\NullCacheManager.cs" />
-    <Compile Include="Infrastructure\Caching\Impl\PerHttpRequestCacheManager.cs" />
-    <Compile Include="Infrastructure\FastInvoke.cs" />
-    <Compile Include="Infrastructure\JsonHelper.cs" />
-    <Compile Include="Infrastructure\ObjectId.cs" />
-    <Compile Include="Infrastructure\TimerTaskFactory.cs" />
-    <Compile Include="Infrastructure\Logging\ILogger.cs" />
-    <Compile Include="Infrastructure\Logging\ILoggerFactory.cs" />
-    <Compile Include="MessageQueue\IMessageQueueClient.cs" />
-    <Compile Include="Message\IMessage.cs" />
-    <Compile Include="Message\IMessageConsumer.cs" />
-    <Compile Include="Message\IMessageContext.cs" />
-    <Compile Include="Message\IMessageDistributor.cs" />
-    <Compile Include="Message\IMessageHandler.cs" />
-    <Compile Include="Message\IMessageStore.cs" />
-    <Compile Include="Message\Impl\MockMessageConsumer.cs" />
-    <Compile Include="Command\ICommand.cs" />
-    <Compile Include="Command\ICommandHandlerProvider.cs" />
-    <Compile Include="Command\ICommandHandler.cs" />
-    <Compile Include="Command\ICommandBus.cs" />
-    <Compile Include="Command\Impl\CommandHandlerProvider.cs" />
-    <Compile Include="Config\BaseConfigurationCollection.cs" />
-    <Compile Include="Config\Configuration.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Config\ConfigurationReader.cs" />
-    <Compile Include="Config\ConfigurationSectionNameAttribute.cs" />
-    <Compile Include="Config\Constants.cs" />
-    <Compile Include="Config\EndpointElement.cs" />
-    <Compile Include="Config\FrameworkConfigurationSection.cs" />
-    <Compile Include="Config\HandlerElement.cs" />
-    <Compile Include="Config\HandlerElementCollection.cs" />
-    <Compile Include="Config\HandlerSourceType.cs" />
-    <Compile Include="Config\MessageEndpointElementCollection.cs" />
-    <Compile Include="Domain\Entity.cs" />
-    <Compile Include="Domain\IAggregateRoot.cs" />
-    <Compile Include="Domain\IEntity.cs" />
-    <Compile Include="Event\IAggregateRootEvent.cs" />
-    <Compile Include="Event\IEventBus.cs" />
-    <Compile Include="Event\IEventSubscriber.cs" />
-    <Compile Include="Event\IEventSubscriberProvider.cs" />
-    <Compile Include="Event\Impl\EventSubscriberProvider.cs" />
-    <Compile Include="Message\Impl\MockMessageStore.cs" />
-    <Compile Include="Message\MessageCode.cs" />
-    <Compile Include="Message\MessageFormatHelper.cs" />
-    <Compile Include="Message\MessageState.cs" />
-    <Compile Include="Message\TopicAttribute.cs" />
-    <Compile Include="Repositories\DomainRepository.cs" />
-    <Compile Include="Exceptions\CurrentMessageContextIsNull.cs" />
-    <Compile Include="Exceptions\ErrorCode.cs" />
-    <Compile Include="Exceptions\MessageDuplicatelyHandled.cs" />
-    <Compile Include="Exceptions\NoCommandHandlerExists.cs" />
-    <Compile Include="Infrastructure\CookieHelper.cs" />
-    <Compile Include="Infrastructure\GuidUtil.cs" />
-    <Compile Include="IoC\IocFactory.cs" />
-    <Compile Include="IoC\IoCInstanceProvider.cs" />
-    <Compile Include="IoC\IoCServiceBehavior.cs" />
-    <Compile Include="Infrastructure\LockUtility.cs" />
-    <Compile Include="Infrastructure\SBase64Utility.cs" />
-    <Compile Include="Infrastructure\TaskWorker.cs" />
-    <Compile Include="Infrastructure\Utility.cs" />
-    <Compile Include="Message\IHandlerProvider.cs" />
-    <Compile Include="Message\Impl\HandlerProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repositories\BaseRepository.cs" />
-    <Compile Include="Repositories\IDbContext.cs" />
-    <Compile Include="Repositories\IDomainRepository.cs" />
-    <Compile Include="Repositories\IRepository.cs" />
-    <Compile Include="Repositories\OrderExpression.cs" />
-    <Compile Include="Repositories\OrderExpressionUtility.cs" />
-    <Compile Include="Repositories\SortOrder.cs" />
-    <Compile Include="Specifications\AllSpecification.cs" />
-    <Compile Include="Specifications\AndNotSpecification.cs" />
-    <Compile Include="Specifications\AndSpecification.cs" />
-    <Compile Include="Specifications\CompositeSpecification.cs" />
-    <Compile Include="Specifications\ExpressionSpecification.cs" />
-    <Compile Include="Specifications\ICompositeSpecification.cs" />
-    <Compile Include="Specifications\ISpecification.cs" />
-    <Compile Include="Specifications\ISpecificationParser.cs" />
-    <Compile Include="Specifications\NoneSpecification.cs" />
-    <Compile Include="Specifications\NotSpecification.cs" />
-    <Compile Include="Specifications\OrSpecification.cs" />
-    <Compile Include="Specifications\Semantics.cs" />
-    <Compile Include="Specifications\SemanticsAttribute.cs" />
-    <Compile Include="Specifications\Specification.cs" />
-    <Compile Include="Specifications\SpecificationUtility.cs" />
-    <Compile Include="Exceptions\NoCommandTopic.cs" />
-    <Compile Include="Exceptions\NoHandlerExists.cs" />
-    <Compile Include="Exceptions\NoMessageId.cs" />
-    <Compile Include="Exceptions\DomainException.cs" />
-    <Compile Include="UnitOfWork\BaseUnitOfWork.cs" />
-    <Compile Include="UnitOfWork\IAppUnitOfWork.cs" />
-    <Compile Include="UnitOfWork\IUnitOfWork.cs" />
-    <Compile Include="UnitOfWork\MockUnitOfWork.cs" />
+    <Compile Remove="Config\Constants.cs" />
+    <Compile Remove="Config\EndpointElement.cs" />
+    <Compile Remove="Config\HandlerElementCollection.cs" />
+    <Compile Remove="Config\MessageEndpointElementCollection.cs" />
+    <Compile Remove="DependencyInjection\ILogInterceptionBehavior.cs" />
+    <Compile Remove="DependencyInjection\IoCInstanceProvider.cs" />
+    <Compile Remove="DependencyInjection\IoCServiceBehavior.cs" />
+    <Compile Remove="DependencyInjection\LogInterceptionAttribute.cs" />
+    <Compile Remove="DependencyInjection\LogInterceptionBehavior.cs" />
   </ItemGroup>
+  
   <ItemGroup>
-    <None Include="IFramework.1.0.0.nupkg" />
-    <None Include="IFramework.nuspec" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

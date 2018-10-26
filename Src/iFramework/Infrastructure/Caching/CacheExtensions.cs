@@ -6,7 +6,7 @@ namespace IFramework.Infrastructure.Caching
     public static class CacheExtensions
     {
         /// <summary>
-        ///    Default cache timeout is 60 minutes.
+        ///     Default cache timeout is 60 minutes.
         /// </summary>
         /// <summary>
         ///     Get a cached item. If it's not in the cache yet, then load and cache it
@@ -57,9 +57,9 @@ namespace IFramework.Infrastructure.Caching
         /// <param name="continueOnCapturedContext"></param>
         /// <returns>Cached item</returns>
         public static Task<CacheValue<T>> GetAsync<T>(this ICacheManager cacheManager,
-                                                string key,
-                                                Func<Task<T>> acquire,
-                                                bool continueOnCapturedContext = false)
+                                                      string key,
+                                                      Func<Task<T>> acquire,
+                                                      bool continueOnCapturedContext = false)
         {
             return cacheManager.GetAsync(key, 60, acquire, continueOnCapturedContext);
         }
@@ -76,10 +76,10 @@ namespace IFramework.Infrastructure.Caching
         /// <param name="continueOnCapturedContext"></param>
         /// <returns>Cached item</returns>
         public static async Task<CacheValue<T>> GetAsync<T>(this ICacheManager cacheManager,
-                                          string key,
-                                          int cacheTime,
-                                          Func<Task<T>> acquire,
-                                          bool continueOnCapturedContext = false)
+                                                            string key,
+                                                            int cacheTime,
+                                                            Func<Task<T>> acquire,
+                                                            bool continueOnCapturedContext = false)
         {
             if (cacheTime <= 0)
             {
@@ -87,12 +87,12 @@ namespace IFramework.Infrastructure.Caching
             }
 
             var cacheValue = await cacheManager.GetAsync<T>(key)
-                                           .ConfigureAwait(continueOnCapturedContext);
+                                               .ConfigureAwait(continueOnCapturedContext);
             if (!cacheValue.HasValue)
             {
                 cacheValue = new CacheValue<T>(await acquire().ConfigureAwait(continueOnCapturedContext), true);
                 await cacheManager.SetAsync(key, cacheValue.Value, cacheTime)
-                                      .ConfigureAwait(continueOnCapturedContext);
+                                  .ConfigureAwait(continueOnCapturedContext);
                 return cacheValue;
             }
             return cacheValue;
@@ -100,8 +100,8 @@ namespace IFramework.Infrastructure.Caching
 
 
         /// <summary>
-        ///  Get a cached item. If it's not in the cache yet, then load and cache it
-        ///  Default cache timeout is 60 minutes.
+        ///     Get a cached item. If it's not in the cache yet, then load and cache it
+        ///     Default cache timeout is 60 minutes.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="cacheManager"></param>
@@ -110,15 +110,15 @@ namespace IFramework.Infrastructure.Caching
         /// <param name="continueOnCapturedContext"></param>
         /// <returns></returns>
         public static Task<CacheValue<T>> GetAsync<T>(this ICacheManager cacheManager,
-                                          string key,
-                                          Func<T> acquire,
-                                          bool continueOnCapturedContext = false)
+                                                      string key,
+                                                      Func<T> acquire,
+                                                      bool continueOnCapturedContext = false)
         {
             return cacheManager.GetAsync(key, 60, acquire, continueOnCapturedContext);
         }
 
         /// <summary>
-        ///  Get a cached item. If it's not in the cache yet, then load and cache it
+        ///     Get a cached item. If it's not in the cache yet, then load and cache it
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="cacheManager"></param>
@@ -128,10 +128,10 @@ namespace IFramework.Infrastructure.Caching
         /// <param name="continueOnCapturedContext"></param>
         /// <returns></returns>
         public static async Task<CacheValue<T>> GetAsync<T>(this ICacheManager cacheManager,
-                                                string key,
-                                                int cacheTime,
-                                                Func<T> acquire,
-                                                bool continueOnCapturedContext = false)
+                                                            string key,
+                                                            int cacheTime,
+                                                            Func<T> acquire,
+                                                            bool continueOnCapturedContext = false)
         {
             if (cacheTime <= 0)
             {
@@ -139,7 +139,7 @@ namespace IFramework.Infrastructure.Caching
             }
 
             var cacheValue = await cacheManager.GetAsync<T>(key)
-                                           .ConfigureAwait(continueOnCapturedContext);
+                                               .ConfigureAwait(continueOnCapturedContext);
             if (!cacheValue.HasValue)
             {
                 cacheValue = new CacheValue<T>(acquire(), true);

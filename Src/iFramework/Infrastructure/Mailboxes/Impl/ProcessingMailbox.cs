@@ -86,10 +86,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
             else
             {
-                if (_handleMailboxEmpty != null)
-                {
-                    _handleMailboxEmpty(this);
-                }
+                _handleMailboxEmpty?.Invoke(this);
             }
         }
 
