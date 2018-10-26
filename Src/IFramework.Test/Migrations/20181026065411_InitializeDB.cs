@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace IFramework.Test.Migrations
 {
-    public partial class InitializeDb : Migration
+    public partial class InitializeDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,8 +11,10 @@ namespace IFramework.Test.Migrations
                 name: "Persons",
                 columns: table => new
                 {
-                    Id = table.Column<long>(nullable: false),
-                    Name = table.Column<string>(nullable: true)
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("MySQL:AutoIncrement", true),
+                    Name = table.Column<string>(nullable: true),
+                    Status = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {

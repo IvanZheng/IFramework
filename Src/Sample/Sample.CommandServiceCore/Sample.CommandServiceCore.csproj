@@ -57,6 +57,7 @@
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.119" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.0.133" />
+    <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.13" />
   </ItemGroup>
 
   <ItemGroup>

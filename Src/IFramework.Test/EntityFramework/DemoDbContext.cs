@@ -8,6 +8,7 @@ using IFramework.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using MySql.Data.EntityFrameworkCore.Extensions;
 
 namespace IFramework.Test.EntityFramework
 {
@@ -36,9 +37,10 @@ namespace IFramework.Test.EntityFramework
             //modelBuilder.HasSequence<long>("ids")
             //            .StartsAt(1000)
             //            .IncrementsBy(1);
+
             modelBuilder.Entity<Person>()
                         .Property(e => e.Id)
-                        .HasDefaultValue();
+                        .UseMySQLAutoIncrementColumn(nameof(Person));
         }
     }
 }

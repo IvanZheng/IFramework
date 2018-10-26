@@ -9,14 +9,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IFramework.Test.Migrations
 {
     [DbContext(typeof(DemoDbContext))]
-    [Migration("20180916090742_InitializeDb")]
-    partial class InitializeDb
+    [Migration("20181026065411_InitializeDB")]
+    partial class InitializeDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.2-rtm-30932");
+                .HasAnnotation("ProductVersion", "2.1.3-rtm-32065");
 
             modelBuilder.Entity("IFramework.Test.EntityFramework.Card", b =>
                 {
@@ -37,10 +37,11 @@ namespace IFramework.Test.Migrations
             modelBuilder.Entity("IFramework.Test.EntityFramework.Person", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(null);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Name");
+
+                    b.Property<int>("Status");
 
                     b.HasKey("Id");
 

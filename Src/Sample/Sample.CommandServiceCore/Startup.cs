@@ -73,14 +73,15 @@ namespace Sample.CommandServiceCore
                          .UseRelationalMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitMQHostName, rabbitMQPort)
-                        // .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
                          .UseDbContextPool<SampleModelContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                             options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
+                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
         }

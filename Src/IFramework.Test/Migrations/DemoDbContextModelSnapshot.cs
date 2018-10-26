@@ -14,7 +14,7 @@ namespace IFramework.Test.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.2-rtm-30932");
+                .HasAnnotation("ProductVersion", "2.1.3-rtm-32065");
 
             modelBuilder.Entity("IFramework.Test.EntityFramework.Card", b =>
                 {
@@ -35,8 +35,7 @@ namespace IFramework.Test.Migrations
             modelBuilder.Entity("IFramework.Test.EntityFramework.Person", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(null);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Name");
 
