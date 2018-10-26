@@ -3,8 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.0-prelease-0003</Version>
-    <PackageReleaseNotes>add MessageTypeProvider</PackageReleaseNotes>
+    <Version>2.0.0</Version>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <Authors>Ivan</Authors>
+    <Description>Supports netcore standard2.0</Description>
   </PropertyGroup>
 
   <ItemGroup>

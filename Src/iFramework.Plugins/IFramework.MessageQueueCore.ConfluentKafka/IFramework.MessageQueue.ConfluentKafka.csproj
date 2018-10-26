@@ -3,10 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-prelease-0014</Version>
+    <Version>2.0.0-prelease-0015</Version>
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>add MessageTypeProvider</PackageReleaseNotes>
+    <Description>Supports netcore standard2.0</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

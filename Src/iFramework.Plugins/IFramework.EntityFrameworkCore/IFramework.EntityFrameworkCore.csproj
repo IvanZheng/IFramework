@@ -5,10 +5,11 @@
     <AssemblyName>IFramework.EntityFrameworkCore</AssemblyName>
     <RootNamespace>IFramework.EntityFrameworkCore</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-prelease-0021</Version>
+    <Version>2.0.0</Version>
     <Company>Ivan</Company>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes></PackageReleaseNotes>
+    <Description>Supports netcore standard2.0</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
