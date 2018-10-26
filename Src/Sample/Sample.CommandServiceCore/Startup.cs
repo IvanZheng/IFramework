@@ -84,8 +84,8 @@ namespace Sample.CommandServiceCore
                          {
                              options.EnableSensitiveDataLogging();
                              //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                             options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
-                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                             //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
+                             options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
         }
 
