@@ -1,4 +1,5 @@
 ﻿using IFramework.DependencyInjection;
+using Sample.Command.Community;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +12,11 @@ namespace Sample.Applications
         [ConcurrentProcess]
         [Transaction]
         Task ModifyUserEmailAsync(Guid userId, string email);
+
+        [MailboxProcessing("request", "Id")]
+        Task<(string, int)> MailboxTestAsync(MailboxRequest request);
+
+        object GetMailboxValues();
 
     }
 }

@@ -14,6 +14,7 @@ using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Sample.Applications;
+using Sample.Command.Community;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
@@ -68,30 +69,14 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Test()
         {
-            ViewBag.MailboxValue = MailboxValues.ToJson();
+            ViewBag.MailboxValue = _communityService.GetMailboxValues().ToJson();
             ViewBag.MailboxStatus = _mailboxProcessor.Status;
             return View();
         }
-
-        public static ConcurrentDictionary<string, int> MailboxValues = new ConcurrentDictionary<string, int>();
-        [MailboxProcessing("request", "Id")]
         [ApiResultWrap]
-        public (string, int) MailboxTest([FromBody] MailboxRequest request)
+        public Task<(string, int)> MailboxTest([FromBody] MailboxRequest request)
         {
-            Task.Delay(20).Wait();
-
-            if (MailboxValues.TryGetValue(request.Id, out var value))
-            {
-                value = value + request.Number;
-                MailboxValues[request.Id] = value;
-            }
-            else
-            {
-                value = request.Number;
-                MailboxValues.TryAdd(request.Id, value);
-            }
-            //throw new Exception("Test Exception");
-            return (request.Id, value);
+            return _communityService.MailboxTestAsync(request);
         }
 
         public ApiResult PostAddRequest([FromBody] AddRequest request)
