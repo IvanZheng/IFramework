@@ -44,6 +44,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 {
                     if (MessageQueue.TryDequeue(out processingMessage))
                     {
+                        processedCount++;
                         await processingMessage.Task().ConfigureAwait(false);
                         processingMessage.TaskCompletionSource
                                          .TrySetResult(null);
@@ -57,10 +58,6 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 {
                     processingMessage?.TaskCompletionSource
                                      .TrySetException(ex);
-                }
-                finally
-                {
-                    processedCount++;
                 }
             }
 

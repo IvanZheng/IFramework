@@ -85,12 +85,9 @@ namespace IFramework.DependencyInjection.Unity
 
         public virtual IMethodReturn InterceptAsync<T>(IMethodInvocation invocation, GetNextInterceptionBehaviorDelegate getNext, InterceptorAttribute[] interceptorAttributes)
         {
-            IMethodReturn methodReturn = null;
-            Func<Task<T>> processAsyncFunc = () =>
-            {
-                methodReturn = getNext()(invocation, getNext);
-                return methodReturn.ReturnValue as Task<T>;
-            };
+            IMethodReturn methodReturn = getNext()(invocation, getNext);
+
+            Func<Task<T>> processAsyncFunc = () => methodReturn.ReturnValue as Task<T>;
             foreach (var interceptor in interceptorAttributes)
             {
                 var func = processAsyncFunc;

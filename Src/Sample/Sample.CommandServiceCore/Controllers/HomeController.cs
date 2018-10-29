@@ -76,12 +76,20 @@ namespace Sample.CommandServiceCore.Controllers
         public static ConcurrentDictionary<string, int> MailboxValues = new ConcurrentDictionary<string, int>();
         [MailboxProcessing("request", "Id")]
         [ApiResultWrap]
-        public async Task<(string, int)> MailboxTest([FromBody] MailboxRequest request)
+        public (string, int) MailboxTest([FromBody] MailboxRequest request)
         {
-            await Task.Delay(20);
-            var value = MailboxValues.AddOrUpdate(request.Id, 
-                                                  key => request.Number,
-                                                  (key, curValue) => curValue + request.Number);
+            Task.Delay(20).Wait();
+
+            if (MailboxValues.TryGetValue(request.Id, out var value))
+            {
+                value = value + request.Number;
+                MailboxValues[request.Id] = value;
+            }
+            else
+            {
+                value = request.Number;
+                MailboxValues.TryAdd(request.Id, value);
+            }
             //throw new Exception("Test Exception");
             return (request.Id, value);
         }
