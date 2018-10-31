@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.AspNet;
 using IFramework.Config;
@@ -76,9 +77,9 @@ namespace Sample.CommandServiceCore.Controllers
         public static ConcurrentDictionary<string, int> MailboxValues = new ConcurrentDictionary<string, int>();
         [MailboxProcessing("request", "Id")]
         [ApiResultWrap]
-        public (string, int) MailboxTest([FromBody] MailboxRequest request)
+        public async Task<(string, int, int, int)> MailboxTest([FromBody] MailboxRequest request)
         {
-            Task.Delay(20).Wait();
+            await Task.Delay(20);
 
             if (MailboxValues.TryGetValue(request.Id, out var value))
             {
@@ -91,7 +92,8 @@ namespace Sample.CommandServiceCore.Controllers
                 MailboxValues.TryAdd(request.Id, value);
             }
             //throw new Exception("Test Exception");
-            return (request.Id, value);
+            ThreadPool.GetAvailableThreads(out var workerThreads, out var completionPortThreads);
+            return (request.Id, value, workerThreads, completionPortThreads);
         }
 
         public ApiResult PostAddRequest([FromBody] AddRequest request)
