@@ -7,6 +7,5 @@ namespace IFramework.Infrastructure.Mailboxes
     public interface IProcessingMessageScheduler
     {
         Task ScheduleMailbox(Mailbox mailbox);
-        Task SchedulProcessing(Func<Task> processing);
     }
 }
