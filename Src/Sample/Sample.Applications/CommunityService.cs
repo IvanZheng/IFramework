@@ -32,25 +32,21 @@ namespace Sample.Applications
 
         public async Task<(string, int)> MailboxTestAsync(MailboxRequest request)
         {
-            (string, int) result = (null, 0);
-            await _mailboxProcessor.Process(request.Id, async () =>
+            await Task.Delay(20).ConfigureAwait(false);
+
+            if (MailboxValues.TryGetValue(request.Id, out var value))
             {
-                await Task.Delay(20).ConfigureAwait(false);
+                value = value + request.Number;
+                MailboxValues[request.Id] = value;
+            }
+            else
+            {
+                value = request.Number;
+                MailboxValues.TryAdd(request.Id, value);
+            }
 
-                if (MailboxValues.TryGetValue(request.Id, out var value))
-                {
-                    value = value + request.Number;
-                    MailboxValues[request.Id] = value;
-                }
-                else
-                {
-                    value = request.Number;
-                    MailboxValues.TryAdd(request.Id, value);
-                }
-
-                //throw new Exception("Test Exception");
-                result = (request.Id, value);
-            });
+            //throw new Exception("Test Exception");
+            var result = (request.Id, value);
             return result;
         }
 
