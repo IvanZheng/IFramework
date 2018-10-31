@@ -83,11 +83,15 @@ namespace IFramework.DependencyInjection.Unity
         public DefaultInterceptor(IObjectProvider objectProvider) : base(objectProvider) { }
 
 
-        public virtual IMethodReturn InterceptAsync<T>(IMethodInvocation invocation, GetNextInterceptionBehaviorDelegate getNext, InterceptorAttribute[] interceptorAttributes)
+        public virtual IMethodReturn InterceptAsync<T>(IMethodInvocation invocation, 
+                                                       GetNextInterceptionBehaviorDelegate getNext,
+                                                       InterceptorAttribute[] interceptorAttributes)
         {
-            IMethodReturn methodReturn = getNext()(invocation, getNext);
-
-            Func<Task<T>> processAsyncFunc = () => methodReturn.ReturnValue as Task<T>;
+            Func<Task<T>> processAsyncFunc = () =>
+            {
+                var methodReturn = getNext()(invocation, getNext);
+                return methodReturn.ReturnValue as Task<T>;
+            };
             foreach (var interceptor in interceptorAttributes)
             {
                 var func = processAsyncFunc;
@@ -99,14 +103,16 @@ namespace IFramework.DependencyInjection.Unity
                                                                   invocation.Arguments.Cast<object>().ToArray());
             }
             var returnValue = processAsyncFunc();
-            methodReturn.ReturnValue = returnValue;
-            return methodReturn;
+            return invocation.CreateMethodReturn(returnValue);
         }
 
         public virtual IMethodReturn InterceptAsync(IMethodInvocation invocation, GetNextInterceptionBehaviorDelegate getNext, InterceptorAttribute[] interceptorAttributes)
         {
-            IMethodReturn  methodReturn = getNext()(invocation, getNext);
-            Func<Task> processAsyncFunc = () => methodReturn.ReturnValue as Task;
+            Func<Task> processAsyncFunc = () =>
+            {
+                IMethodReturn  methodReturn = getNext()(invocation, getNext);
+                return methodReturn.ReturnValue as Task;
+            };
 
             foreach (var interceptor in interceptorAttributes)
             {
@@ -119,8 +125,7 @@ namespace IFramework.DependencyInjection.Unity
                                                                   invocation.Arguments.Cast<object>().ToArray());
             }
             var returnValue = processAsyncFunc();
-            methodReturn.ReturnValue = returnValue;
-            return methodReturn;
+            return invocation.CreateMethodReturn(returnValue);
         }
 
         public override IMethodReturn Invoke(IMethodInvocation invocation, GetNextInterceptionBehaviorDelegate getNext)
