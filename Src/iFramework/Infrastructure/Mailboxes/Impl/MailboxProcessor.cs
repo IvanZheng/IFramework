@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace IFramework.Infrastructure.Mailboxes.Impl
 {
-    public class MailboxProcessor: IMailboxProcessor
+    public class MailboxProcessor : IMailboxProcessor
     {
         private readonly IProcessingMessageScheduler _scheduler;
         private readonly ILogger _logger;
@@ -36,8 +36,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 
         public void Start()
         {
-            _processComandTask = Task.Factory.StartNew(
-                                                       cs => ProcessMailboxProcessorCommands(cs as CancellationTokenSource),
+            _processComandTask = Task.Factory.StartNew(cs => ProcessMailboxProcessorCommands(cs as CancellationTokenSource),
                                                        _cancellationSource,
                                                        _cancellationSource.Token,
                                                        TaskCreationOptions.LongRunning,
@@ -47,17 +46,19 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         private void ExecuteProcessCommand(ProcessMessageCommand command)
         {
             var key = command.Message.Key;
-            if (!string.IsNullOrWhiteSpace(key))
+            if (string.IsNullOrWhiteSpace(key))
             {
-                var mailbox = _mailboxDictionary.GetOrAdd(key, x => new Mailbox(key, _scheduler, _batchCount));
-                mailbox.OnMessageEmpty += Mailbox_OnMessageEmpty;
-                mailbox.EnqueueMessage(command.Message);
-                _scheduler.ScheduleMailbox(mailbox);
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(key));
             }
-            else
+            var mailbox = _mailboxDictionary.GetOrAdd(key, x =>
             {
-                _scheduler.SchedulProcessing(command.Message.Task);
-            }
+                var box = new Mailbox(key, _scheduler, _batchCount);
+                box.OnMessageEmpty += Mailbox_OnMessageEmpty;
+                return box;
+            });
+           
+            mailbox.EnqueueMessage(command.Message);
+            _scheduler.ScheduleMailbox(mailbox);
         }
 
         private void Mailbox_OnMessageEmpty(Mailbox mailbox)
@@ -118,11 +119,11 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
         {
             if (string.IsNullOrWhiteSpace(key))
             {
-                return _scheduler.SchedulProcessing(process);
+                return process();
             }
             else
             {
-                var mailboxMessage = new MailboxMessage(key, process);
+                var mailboxMessage = new MailboxMessage(key, process, taskCompletionSource);
                 _mailboxProcessorCommands.Add(new ProcessMessageCommand(mailboxMessage));
                 return mailboxMessage.TaskCompletionSource.Task;
             }

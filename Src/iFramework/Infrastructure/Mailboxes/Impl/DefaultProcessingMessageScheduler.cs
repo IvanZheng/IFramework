@@ -12,10 +12,5 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                 await mailbox.Run().ConfigureAwait(false);
             }
         }
-
-        public Task SchedulProcessing(Func<Task> processing)
-        {
-            return processing();
-        }
     }
 }
