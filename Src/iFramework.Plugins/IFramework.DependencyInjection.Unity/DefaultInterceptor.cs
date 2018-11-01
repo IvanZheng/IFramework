@@ -156,14 +156,10 @@ namespace IFramework.DependencyInjection.Unity
                 }
                 else
                 {
-                    IMethodReturn methodReturn = null;
                     if (method.ReturnType != typeof(void))
                     {
-                        Func<dynamic> processFunc = () =>
-                        {
-                            methodReturn = Process(invocation, getNext);
-                            return methodReturn.ReturnValue;
-                        };
+                        Func<dynamic> processFunc = () => Process(invocation, getNext).ReturnValue;
+
                         foreach (var interceptor in interceptorAttributes)
                         {
                             var func = processFunc;
@@ -175,11 +171,11 @@ namespace IFramework.DependencyInjection.Unity
                                                                     invocation.Arguments.Cast<object>().ToArray());
                         }
                         var returnValue = processFunc();
-                        methodReturn.ReturnValue = returnValue;
-                        return methodReturn;
+                        return invocation.CreateMethodReturn(returnValue);
                     }
                     else
                     {
+                        IMethodReturn methodReturn = null;
                         Action processFunc = () =>
                         {
                             methodReturn = Process(invocation, getNext);
@@ -195,7 +191,7 @@ namespace IFramework.DependencyInjection.Unity
                                                                     invocation.Arguments.Cast<object>().ToArray());
                         }
                         processFunc();
-                        return methodReturn;
+                        return methodReturn ?? invocation.CreateMethodReturn(null);
                     }
                 }
             }
