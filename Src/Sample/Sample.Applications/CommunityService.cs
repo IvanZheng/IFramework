@@ -32,7 +32,7 @@ namespace Sample.Applications
 
         public async Task<(string, int)> MailboxTestAsync(MailboxRequest request)
         {
-            await Task.Delay(20).ConfigureAwait(false);
+            await Task.Delay(5).ConfigureAwait(false);
 
             if (MailboxValues.TryGetValue(request.Id, out var value))
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using IFramework.Infrastructure;
@@ -62,11 +63,11 @@ namespace IFramework.DependencyInjection.Autofac
         protected static InterceptorAttribute[] GetInterceptorAttributes(IInvocation invocation)
         {
             return GetInterceptorAttributes(invocation.Method)
-                .Union(GetInterceptorAttributes(invocation.Method.DeclaringType))
-                .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget))
-                .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget?.DeclaringType))
-                .OrderBy(i => i.Order)
-                .ToArray();
+                   .Union(GetInterceptorAttributes(invocation.Method.DeclaringType))
+                   .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget))
+                   .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget?.DeclaringType))
+                   .OrderBy(i => i.Order)
+                   .ToArray();
         }
     }
 
@@ -77,42 +78,64 @@ namespace IFramework.DependencyInjection.Autofac
 
         public virtual void InterceptAsync<T>(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
         {
-            Func<Task<T>> processAsyncFunc = () =>
+            using (var semaphore = new Semaphore(1, 1))
             {
-                invocation.Proceed();
-                return invocation.ReturnValue as Task<T>;
-            };
-            foreach (var interceptor in interceptorAttributes)
-            {
-                var func = processAsyncFunc;
-                processAsyncFunc = () => interceptor.ProcessAsync(func,
-                                                                  ObjectProvider,
-                                                                  invocation.TargetType,
-                                                                  invocation.InvocationTarget,
-                                                                  invocation.Method,
-                                                                  invocation.Arguments);
+                semaphore.WaitOne();
+                Func<Task<T>> processAsyncFunc = () =>
+                {
+                    invocation.Proceed();
+                    var task = invocation.ReturnValue as Task<T>;
+                    semaphore.Release();
+                    return task;
+                };
+
+                foreach (var interceptor in interceptorAttributes)
+                {
+                    var func = processAsyncFunc;
+                    processAsyncFunc = () => interceptor.ProcessAsync(func,
+                                                                      ObjectProvider,
+                                                                      invocation.TargetType,
+                                                                      invocation.InvocationTarget,
+                                                                      invocation.Method,
+                                                                      invocation.Arguments);
+                }
+
+                var returnValue = processAsyncFunc();
+
+                semaphore.WaitOne();
+                invocation.ReturnValue = returnValue;
+                semaphore.Release();
             }
-            invocation.ReturnValue = processAsyncFunc();
         }
 
         public virtual void InterceptAsync(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
         {
-            Func<Task> processAsyncFunc = () =>
+            using (var semaphore = new Semaphore(1, 1))
             {
-                invocation.Proceed();
-                return invocation.ReturnValue as Task;
-            };
-            foreach (var interceptor in interceptorAttributes)
-            {
-                var func = processAsyncFunc;
-                processAsyncFunc = () => interceptor.ProcessAsync(func,
-                                                                  ObjectProvider,
-                                                                  invocation.TargetType,
-                                                                  invocation.InvocationTarget,
-                                                                  invocation.Method,
-                                                                  invocation.Arguments);
+                semaphore.WaitOne();
+                Func<Task> processAsyncFunc = () =>
+                {
+                    invocation.Proceed();
+                    var task = invocation.ReturnValue as Task;
+                    semaphore.Release();
+                    return task;
+                };
+                foreach (var interceptor in interceptorAttributes)
+                {
+                    var func = processAsyncFunc;
+                    processAsyncFunc = () => interceptor.ProcessAsync(func,
+                                                                      ObjectProvider,
+                                                                      invocation.TargetType,
+                                                                      invocation.InvocationTarget,
+                                                                      invocation.Method,
+                                                                      invocation.Arguments);
+                }
+
+                var returnValue = processAsyncFunc();
+                semaphore.WaitOne();
+                invocation.ReturnValue = returnValue;
+                semaphore.Release();
             }
-            invocation.ReturnValue = processAsyncFunc();
         }
 
         public override void Intercept(IInvocation invocation)
@@ -151,6 +174,7 @@ namespace IFramework.DependencyInjection.Autofac
                                                                     invocation.Method,
                                                                     invocation.Arguments);
                         }
+
                         invocation.ReturnValue = processFunc();
                     }
                     else
@@ -166,7 +190,8 @@ namespace IFramework.DependencyInjection.Autofac
                                                                     invocation.Method,
                                                                     invocation.Arguments);
                         }
-                        processFunc(); 
+
+                        processFunc();
                     }
                 }
             }
