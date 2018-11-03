@@ -78,14 +78,17 @@ namespace IFramework.DependencyInjection.Autofac
 
         public virtual void InterceptAsync<T>(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
         {
-            using (var semohpore = new Semaphore(1, 1))
+            using (var semaphore = new Semaphore(1, 1))
             {
-                semohpore.WaitOne();
+                semaphore.WaitOne();
                 Func<Task<T>> processAsyncFunc = () =>
                 {
                     invocation.Proceed();
                     var task = invocation.ReturnValue as Task<T>;
-                    semohpore.Release();
+                    if (!semaphore.GetSafeWaitHandle().IsClosed)
+                    {
+                        semaphore.Release();
+                    }
                     return task;
                 };
 
@@ -101,9 +104,9 @@ namespace IFramework.DependencyInjection.Autofac
                 }
 
                 var returnValue = processAsyncFunc();
-                semohpore.WaitOne();
+                semaphore.WaitOne();
                 invocation.ReturnValue = returnValue;
-                semohpore.Release();
+                semaphore.Release();
             }
         }
 
@@ -116,7 +119,10 @@ namespace IFramework.DependencyInjection.Autofac
                 {
                     invocation.Proceed();
                     var task = invocation.ReturnValue as Task;
-                    semaphore.Release();
+                    if (!semaphore.GetSafeWaitHandle().IsClosed)
+                    {
+                        semaphore.Release();
+                    }
                     return task;
                 };
                 foreach (var interceptor in interceptorAttributes)
