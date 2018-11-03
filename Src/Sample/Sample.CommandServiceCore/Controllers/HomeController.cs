@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.AspNet;
 using IFramework.Config;
@@ -74,9 +75,11 @@ namespace Sample.CommandServiceCore.Controllers
             return View();
         }
         [ApiResultWrap]
-        public Task<(string, int)> MailboxTest([FromBody] MailboxRequest request)
+        public async Task<object> MailboxTest([FromBody] MailboxRequest request)
         {
-            return _communityService.MailboxTestAsync(request);
+            var result = await _communityService.MailboxTestAsync(request);
+            ThreadPool.GetAvailableThreads(out var workerThreads, out var completionPortThreads);
+            return new {result, workerThreads, completionPortThreads};
         }
 
         public ApiResult PostAddRequest([FromBody] AddRequest request)

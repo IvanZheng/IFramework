@@ -51,21 +51,15 @@ namespace IFramework.DependencyInjection
             return mailboxProcessor.Process(key, funcAsync);
         }
 
-        public override async Task<T> ProcessAsync<T>(Func<Task<T>> funcAsync, IObjectProvider objectProvider, Type targetType, object invocationTarget, MethodInfo method, object[] arguments)
+        public override  Task<T> ProcessAsync<T>(Func<Task<T>> funcAsync, IObjectProvider objectProvider, Type targetType, object invocationTarget, MethodInfo method, object[] arguments)
         {
             var key = GetKey(method, arguments);
             if (string.IsNullOrWhiteSpace(key))
             {
-                return await funcAsync().ConfigureAwait(false);
+                return  funcAsync();
             }
-
             var mailboxProcessor = objectProvider.GetService<IMailboxProcessor>();
-            T result = default;
-            await mailboxProcessor.Process(key, async () =>
-            {
-                result = await funcAsync().ConfigureAwait(false); 
-            });
-            return result;
+            return mailboxProcessor.Process(key, funcAsync);
         }
 
         public override object Process(Func<dynamic> func, IObjectProvider objectProvider, Type targetType, object invocationTarget, MethodInfo method, object[] arguments)

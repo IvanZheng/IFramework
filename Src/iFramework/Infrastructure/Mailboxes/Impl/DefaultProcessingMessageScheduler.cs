@@ -5,12 +5,13 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
 {
     public class DefaultProcessingMessageScheduler : IProcessingMessageScheduler
     {
-        public async Task ScheduleMailbox(Mailbox mailbox)
+        public Task ScheduleMailbox(Mailbox mailbox)
         {
             if (mailbox.EnterHandlingMessage())
             {
-                await mailbox.Run().ConfigureAwait(false);
+                return mailbox.Run();
             }
+            return Task.CompletedTask;
         }
     }
 }

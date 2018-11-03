@@ -9,6 +9,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
     {
         public Func<Task> Task { get; set; }
         public string Key { get; set; }
+        public bool HasReturnValue { get; set; }
         public TaskCompletionSource<object> TaskCompletionSource { get;set; }
 
         public MailboxMessage(string key, Func<Task> task, TaskCompletionSource<object> taskCompletionSource = null)
@@ -19,6 +20,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
 
             Key = key;
+            HasReturnValue = task.GetType().GetGenericArguments()[0].IsGenericType;
             Task = task;
             TaskCompletionSource = taskCompletionSource ?? new TaskCompletionSource<object>();
         }

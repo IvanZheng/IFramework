@@ -115,6 +115,21 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             }
         }
 
+        public Task<T> Process<T>(string key, Func<Task<T>> process, TaskCompletionSource<object> taskCompletionSource = null)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return process();
+            }
+            else
+            {
+                var mailboxMessage = new MailboxMessage(key, process, taskCompletionSource);
+                _mailboxProcessorCommands.Add(new ProcessMessageCommand(mailboxMessage));
+                return mailboxMessage.TaskCompletionSource.Task
+                                     .ContinueWith(t => (T)t.Result);
+            }
+        }
+
         public Task Process(string key, Func<Task> process, TaskCompletionSource<object> taskCompletionSource = null)
         {
             if (string.IsNullOrWhiteSpace(key))
