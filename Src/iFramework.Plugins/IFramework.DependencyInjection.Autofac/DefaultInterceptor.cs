@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using IFramework.Infrastructure;
@@ -78,19 +77,31 @@ namespace IFramework.DependencyInjection.Autofac
 
         protected virtual Task<T> InvokeTargetMethod<T>(IInvocation invocation)
         {
-            // TODO check if the target is Castle.Proxy, it should use invocation.Proceed() !
+            // check if the target is Castle.Proxy, it should use invocation.Proceed() !
+            if (invocation.InvocationTarget.GetType() == invocation.Proxy.GetType())
+            {
+                invocation.Proceed();
+                return invocation.ReturnValue as Task<T>;
+            }
+
             MethodInfo targetMethod = invocation.GetConcreteMethodInvocationTarget();
             return targetMethod.Invoke(invocation.InvocationTarget, invocation.Arguments) as Task<T>;
         }
 
         protected virtual Task InvokeTargetMethod(IInvocation invocation)
         {
+            if (invocation.InvocationTarget.GetType() == invocation.Proxy.GetType())
+            {
+                invocation.Proceed();
+                return invocation.ReturnValue as Task;
+            }
+
             MethodInfo targetMethod = invocation.GetConcreteMethodInvocationTarget();
             return targetMethod.Invoke(invocation.InvocationTarget, invocation.Arguments) as Task;
         }
+
         public virtual void InterceptAsync<T>(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
         {
-
             Func<Task<T>> processAsyncFunc = () => InvokeTargetMethod<T>(invocation);
 
             foreach (var interceptor in interceptorAttributes)
@@ -144,7 +155,7 @@ namespace IFramework.DependencyInjection.Autofac
                     else
                     {
                         this.InvokeGenericMethod(nameof(InterceptAsync),
-                                                 new object[] { invocation, interceptorAttributes },
+                                                 new object[] {invocation, interceptorAttributes},
                                                  resultType);
                     }
                 }
