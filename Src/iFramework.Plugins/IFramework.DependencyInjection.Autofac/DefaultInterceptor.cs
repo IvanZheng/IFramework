@@ -76,71 +76,55 @@ namespace IFramework.DependencyInjection.Autofac
         public DefaultInterceptor(IObjectProvider objectProvider) : base(objectProvider) { }
 
 
+        protected virtual Task<T> InvokeTargetMethod<T>(IInvocation invocation)
+        {
+            // TODO check if the target is Castle.Proxy, it should use invocation.Proceed() !
+            MethodInfo targetMethod = invocation.GetConcreteMethodInvocationTarget();
+            return targetMethod.Invoke(invocation.InvocationTarget, invocation.Arguments) as Task<T>;
+        }
+
+        protected virtual Task InvokeTargetMethod(IInvocation invocation)
+        {
+            MethodInfo targetMethod = invocation.GetConcreteMethodInvocationTarget();
+            return targetMethod.Invoke(invocation.InvocationTarget, invocation.Arguments) as Task;
+        }
         public virtual void InterceptAsync<T>(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
         {
-            using (var semaphore = new Semaphore(1, 1))
+
+            Func<Task<T>> processAsyncFunc = () => InvokeTargetMethod<T>(invocation);
+
+            foreach (var interceptor in interceptorAttributes)
             {
-                semaphore.WaitOne();
-                Func<Task<T>> processAsyncFunc = () =>
-                {
-                    invocation.Proceed();
-                    var task = invocation.ReturnValue as Task<T>;
-                    if (!semaphore.GetSafeWaitHandle().IsClosed)
-                    {
-                        semaphore.Release();
-                    }
-                    return task;
-                };
-
-                foreach (var interceptor in interceptorAttributes)
-                {
-                    var func = processAsyncFunc;
-                    processAsyncFunc = () => interceptor.ProcessAsync(func,
-                                                                      ObjectProvider,
-                                                                      invocation.TargetType,
-                                                                      invocation.InvocationTarget,
-                                                                      invocation.Method,
-                                                                      invocation.Arguments);
-                }
-
-                var returnValue = processAsyncFunc();
-                semaphore.WaitOne();
-                invocation.ReturnValue = returnValue;
-                semaphore.Release();
+                var func = processAsyncFunc;
+                processAsyncFunc = () => interceptor.ProcessAsync(func,
+                                                                  ObjectProvider,
+                                                                  invocation.TargetType,
+                                                                  invocation.InvocationTarget,
+                                                                  invocation.Method,
+                                                                  invocation.Arguments);
             }
+
+            var returnValue = processAsyncFunc();
+            invocation.ReturnValue = returnValue;
         }
 
         public virtual void InterceptAsync(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
         {
-            using (var semaphore = new Semaphore(1, 1))
-            {
-                semaphore.WaitOne();
-                Func<Task> processAsyncFunc = () =>
-                {
-                    invocation.Proceed();
-                    var task = invocation.ReturnValue as Task;
-                    if (!semaphore.GetSafeWaitHandle().IsClosed)
-                    {
-                        semaphore.Release();
-                    }
-                    return task;
-                };
-                foreach (var interceptor in interceptorAttributes)
-                {
-                    var func = processAsyncFunc;
-                    processAsyncFunc = () => interceptor.ProcessAsync(func,
-                                                                      ObjectProvider,
-                                                                      invocation.TargetType,
-                                                                      invocation.InvocationTarget,
-                                                                      invocation.Method,
-                                                                      invocation.Arguments);
-                }
+            Func<Task> processAsyncFunc = () => InvokeTargetMethod(invocation);
 
-                var returnValue = processAsyncFunc();
-                semaphore.WaitOne();
-                invocation.ReturnValue = returnValue;
-                semaphore.Release();
+            foreach (var interceptor in interceptorAttributes)
+            {
+                var func = processAsyncFunc;
+                processAsyncFunc = () => interceptor.ProcessAsync(func,
+                                                                  ObjectProvider,
+                                                                  invocation.TargetType,
+                                                                  invocation.InvocationTarget,
+                                                                  invocation.Method,
+                                                                  invocation.Arguments);
             }
+
+            var returnValue = processAsyncFunc();
+            invocation.ReturnValue = returnValue;
         }
 
         public override void Intercept(IInvocation invocation)
@@ -160,7 +144,7 @@ namespace IFramework.DependencyInjection.Autofac
                     else
                     {
                         this.InvokeGenericMethod(nameof(InterceptAsync),
-                                                 new object[] {invocation, interceptorAttributes},
+                                                 new object[] { invocation, interceptorAttributes },
                                                  resultType);
                     }
                 }

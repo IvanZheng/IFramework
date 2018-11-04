@@ -32,7 +32,7 @@ namespace Sample.Applications
 
         public async Task<(string, int)> MailboxTestAsync(MailboxRequest request)
         {
-            await Task.Delay(5).ConfigureAwait(false);
+            //await Task.Delay(100).ConfigureAwait(false);
 
             if (MailboxValues.TryGetValue(request.Id, out var value))
             {
@@ -55,8 +55,9 @@ namespace Sample.Applications
             return MailboxValues;
         }
 
-        public async Task ModifyUserEmailAsync(Guid userId, string email)
+        public async Task<string> ModifyUserEmailAsync(Guid userId, string email)
         {
+            
             var account = await _repository.FindAsync<Account>(a => a.Id == userId);
             if (account == null)
             {
@@ -69,6 +70,7 @@ namespace Sample.Applications
 
             account.Modify(email);
             await _unitOfWork.CommitAsync();
+            return account.Version.ToString();
         }
     }
 }
