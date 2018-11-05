@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Sample.Applications;
+using Sample.Command.Community;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
@@ -59,41 +61,27 @@ namespace Sample.CommandServiceCore.Controllers
         [LogInterceptor(Order = 2)]
         public virtual async Task<object> DoApi()
         {
-            var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
-            var userId = new Guid("4ED7460E-C914-45A6-B1C9-4DC97C5D52D0");
-            await _communityService.ModifyUserEmailAsync(userId, $"{DateTime.Now.Ticks}");
+            //var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
+            //var userId = new Guid("4ED7460E-C914-45A6-B1C9-4DC97C5D52D0");
+            //await _communityService.ModifyUserEmailAsync(userId, $"{DateTime.Now.Ticks}");
 
-            await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
-            return $"{DateTime.Now} DoApi Done! sameProvider:{sameProvider}";
+            var version = await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
+            return $"{DateTime.Now} version:{version} DoApi Done! ";
         }
 
         public IActionResult Test()
         {
-            ViewBag.MailboxValue = MailboxValues.ToJson();
+            ViewBag.MailboxValue = _communityService.GetMailboxValues().ToJson();
             ViewBag.MailboxStatus = _mailboxProcessor.Status;
             return View();
         }
-
-        public static ConcurrentDictionary<string, int> MailboxValues = new ConcurrentDictionary<string, int>();
-        [MailboxProcessing("request", "Id")]
         [ApiResultWrap]
-        public async Task<(string, int, int, int)> MailboxTest([FromBody] MailboxRequest request)
+        public async Task<object> MailboxTest([FromBody] MailboxRequest request)
         {
-            await Task.Delay(20);
-
-            if (MailboxValues.TryGetValue(request.Id, out var value))
-            {
-                value = value + request.Number;
-                MailboxValues[request.Id] = value;
-            }
-            else
-            {
-                value = request.Number;
-                MailboxValues.TryAdd(request.Id, value);
-            }
-            //throw new Exception("Test Exception");
+            var result = await _communityService.MailboxTestAsync(request);
+            //var result = await _communityService.ModifyUserEmailAsync(Guid.Empty, DateTime.Now.ToString(CultureInfo.InvariantCulture));
             ThreadPool.GetAvailableThreads(out var workerThreads, out var completionPortThreads);
-            return (request.Id, value, workerThreads, completionPortThreads);
+            return new {result, workerThreads, completionPortThreads};
         }
 
         public ApiResult PostAddRequest([FromBody] AddRequest request)

@@ -62,11 +62,11 @@ namespace IFramework.DependencyInjection.Autofac
         protected static InterceptorAttribute[] GetInterceptorAttributes(IInvocation invocation)
         {
             return GetInterceptorAttributes(invocation.Method)
-                .Union(GetInterceptorAttributes(invocation.Method.DeclaringType))
-                .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget))
-                .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget?.DeclaringType))
-                .OrderBy(i => i.Order)
-                .ToArray();
+                   .Union(GetInterceptorAttributes(invocation.Method.DeclaringType))
+                   .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget))
+                   .Union(GetInterceptorAttributes(invocation.MethodInvocationTarget?.DeclaringType))
+                   .OrderBy(i => i.Order)
+                   .ToArray();
         }
     }
 
@@ -75,13 +75,35 @@ namespace IFramework.DependencyInjection.Autofac
         public DefaultInterceptor(IObjectProvider objectProvider) : base(objectProvider) { }
 
 
-        public virtual void InterceptAsync<T>(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
+        protected virtual Task<T> InvokeTargetMethod<T>(IInvocation invocation)
         {
-            Func<Task<T>> processAsyncFunc = () =>
+            // check if the target is Castle.Proxy, it should use invocation.Proceed() !
+            if (invocation.InvocationTarget.GetType() == invocation.Proxy.GetType())
             {
                 invocation.Proceed();
                 return invocation.ReturnValue as Task<T>;
-            };
+            }
+
+            MethodInfo targetMethod = invocation.GetConcreteMethodInvocationTarget();
+            return targetMethod.Invoke(invocation.InvocationTarget, invocation.Arguments) as Task<T>;
+        }
+
+        protected virtual Task InvokeTargetMethod(IInvocation invocation)
+        {
+            if (invocation.InvocationTarget.GetType() == invocation.Proxy.GetType())
+            {
+                invocation.Proceed();
+                return invocation.ReturnValue as Task;
+            }
+
+            MethodInfo targetMethod = invocation.GetConcreteMethodInvocationTarget();
+            return targetMethod.Invoke(invocation.InvocationTarget, invocation.Arguments) as Task;
+        }
+
+        public virtual void InterceptAsync<T>(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
+        {
+            Func<Task<T>> processAsyncFunc = () => InvokeTargetMethod<T>(invocation);
+
             foreach (var interceptor in interceptorAttributes)
             {
                 var func = processAsyncFunc;
@@ -92,16 +114,14 @@ namespace IFramework.DependencyInjection.Autofac
                                                                   invocation.Method,
                                                                   invocation.Arguments);
             }
+            
             invocation.ReturnValue = processAsyncFunc();
         }
 
         public virtual void InterceptAsync(IInvocation invocation, InterceptorAttribute[] interceptorAttributes)
         {
-            Func<Task> processAsyncFunc = () =>
-            {
-                invocation.Proceed();
-                return invocation.ReturnValue as Task;
-            };
+            Func<Task> processAsyncFunc = () => InvokeTargetMethod(invocation);
+
             foreach (var interceptor in interceptorAttributes)
             {
                 var func = processAsyncFunc;
@@ -112,6 +132,7 @@ namespace IFramework.DependencyInjection.Autofac
                                                                   invocation.Method,
                                                                   invocation.Arguments);
             }
+            
             invocation.ReturnValue = processAsyncFunc();
         }
 
@@ -151,6 +172,7 @@ namespace IFramework.DependencyInjection.Autofac
                                                                     invocation.Method,
                                                                     invocation.Arguments);
                         }
+
                         invocation.ReturnValue = processFunc();
                     }
                     else
@@ -166,7 +188,8 @@ namespace IFramework.DependencyInjection.Autofac
                                                                     invocation.Method,
                                                                     invocation.Arguments);
                         }
-                        processFunc(); 
+
+                        processFunc();
                     }
                 }
             }

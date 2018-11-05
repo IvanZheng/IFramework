@@ -45,9 +45,15 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                     if (MessageQueue.TryDequeue(out processingMessage))
                     {
                         processedCount++;
-                        await processingMessage.Task().ConfigureAwait(false);
+                        var task = processingMessage.Task();
+                        await task.ConfigureAwait(false);
+                        object returnValue = null;
+                        if (processingMessage.HasReturnValue)
+                        {
+                            returnValue = ((dynamic) task).Result;
+                        }
                         processingMessage.TaskCompletionSource
-                                         .TrySetResult(null);
+                                         .TrySetResult(returnValue);
                     }
                     else
                     {

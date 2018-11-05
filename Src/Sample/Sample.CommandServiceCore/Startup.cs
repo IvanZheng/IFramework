@@ -126,8 +126,8 @@ namespace Sample.CommandServiceCore
                                                                           new InterfaceInterceptorInjection(),
                                                                           new InterceptionBehaviorInjection());
             providerBuilder.Register<HomeController, HomeController>(lifetime,
-new VirtualMethodInterceptorInjection(),
-new InterceptionBehaviorInjection());
+                                                                     new VirtualMethodInterceptorInjection(),
+                                                                     new InterceptionBehaviorInjection());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -136,8 +136,20 @@ new InterceptionBehaviorInjection());
                               ILoggerFactory loggerFactory,
                               IMessageTypeProvider messageTypeProvider,
                               IOptions<FrameworkConfiguration> frameworkConfigOptions,
-                              IMailboxProcessor mailboxProcessor)
+                              IMailboxProcessor mailboxProcessor,
+                              IApplicationLifetime applicationLifetime)
         {
+            applicationLifetime.ApplicationStopping.Register(() =>
+            {
+                _commandConsumer1?.Stop();
+                _commandConsumer2?.Stop();
+                _commandConsumer3?.Stop();
+                _domainEventProcessor?.Stop();
+                _applicationEventProcessor?.Stop();
+                _messagePublisher?.Stop();
+                _commandBus?.Stop();
+                mailboxProcessor.Stop();
+            });
             mailboxProcessor.Start();
             messageTypeProvider.Register(new Dictionary<string, string>
                                {
