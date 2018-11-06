@@ -2,32 +2,32 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using IFramework.Event;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
-using IFramework.UnitOfWork;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.EntityFrameworkCore.UnitOfWorks
 {
     public class UnitOfWork : UnitOfWorkBase
     {
+        private readonly IMessageContext _messageContext;
         protected List<MessageState> AnywayPublishEventMessageStates;
         protected List<MessageState> EventMessageStates;
         protected IMessagePublisher MessagePublisher;
         protected IMessageQueueClient MessageQueueClient;
         protected IMessageStore MessageStore;
-        private readonly IMessageContext _messageContext;
 
         public UnitOfWork(IEventBus eventBus,
-                             ILoggerFactory loggerFactory,
-                             IMessagePublisher eventPublisher,
-                             IMessageQueueClient messageQueueClient,
-                             IMessageStore messageStore,
-                             IMessageContext messageContext)
+                          ILoggerFactory loggerFactory,
+                          IMessagePublisher eventPublisher,
+                          IMessageQueueClient messageQueueClient,
+                          IMessageStore messageStore,
+                          IMessageContext messageContext)
             : base(eventBus, loggerFactory)
         {
             MessageStore = messageStore;
@@ -40,13 +40,14 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
 
         protected bool HasMessageContext => !(_messageContext is EmptyMessageContext);
 
-        protected override void BeforeCommit()
+        protected override async Task BeforeCommitAsync()
         {
-            base.BeforeCommit();
+            await base.BeforeCommitAsync().ConfigureAwait(false);
             if (HasMessageContext)
             {
                 return;
             }
+
             EventMessageStates.Clear();
             EventBus.GetEvents()
                     .ForEach(@event =>
@@ -67,17 +68,20 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                                      .ToList();
             if (allMessageStates.Count > 0)
             {
-                MessageStore.SaveCommand(null, null, allMessageStates.Select(s => s.MessageContext).ToArray());
+                await MessageStore.SaveCommandAsync(null, null, allMessageStates.Select(s => s.MessageContext).ToArray())
+                                  .ConfigureAwait(false);
             }
         }
 
-        protected override void AfterCommit()
+        protected override async Task AfterCommitAsync()
         {
-            base.AfterCommit();
+            await base.AfterCommitAsync()
+                      .ConfigureAwait(false);
             if (HasMessageContext)
             {
                 return;
             }
+
             if (Exception == null)
             {
                 try
@@ -87,7 +91,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
 
                     if (allMessageStates.Count > 0)
                     {
-                        MessagePublisher.SendAsync(CancellationToken.None, EventMessageStates.ToArray());
+                        var sendTask = MessagePublisher.SendAsync(CancellationToken.None, EventMessageStates.ToArray());
                     }
                 }
                 catch (Exception ex)
@@ -116,12 +120,13 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                 {
                     if (AnywayPublishEventMessageStates.Count > 0)
                     {
-                        MessageStore.SaveFailedCommand(null,
-                                                       Exception,
-                                                       AnywayPublishEventMessageStates.Select(s => s.MessageContext)
-                                                                                      .ToArray());
-                        MessagePublisher.SendAsync(CancellationToken.None,
-                                                   AnywayPublishEventMessageStates.ToArray());
+                        await MessageStore.SaveFailedCommandAsync(null,
+                                                                  Exception,
+                                                                  AnywayPublishEventMessageStates.Select(s => s.MessageContext)
+                                                                                                 .ToArray())
+                                          .ConfigureAwait(false);
+                        var sendTask = MessagePublisher.SendAsync(CancellationToken.None,
+                                                                  AnywayPublishEventMessageStates.ToArray());
                     }
                 }
                 catch (Exception ex)
@@ -129,6 +134,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                     Logger.LogError(ex, $"_messagePublisher SendAsync error");
                 }
             }
+
             Exception = null;
             EventBus.ClearMessages();
         }

@@ -3,12 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.2</Version>
+    <Version>2.0.3</Version>
     <Description>Supports netcore standard2.0</Description>
     <Authors>Ivan</Authors>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
-    <PackageReleaseNotes>add Aop MailboxProcessingAttribute</PackageReleaseNotes>
+    <PackageReleaseNotes>use async method in IMessageStore</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -40,6 +40,7 @@
     <Compile Remove="Infrastructure\Mailboxes\IMessageProcessor.cs" />
     <Compile Remove="Infrastructure\Mailboxes\Impl\MessageProcessor.cs" />
     <Compile Remove="Infrastructure\Mailboxes\Impl\ProcessingMailbox.cs" />
+    <Compile Remove="UnitOfWork\BaseUnitOfWork.cs" />
   </ItemGroup>
   
   <ItemGroup>

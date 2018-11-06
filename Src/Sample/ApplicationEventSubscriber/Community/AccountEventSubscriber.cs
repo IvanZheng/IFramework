@@ -30,7 +30,7 @@ namespace Sample.ApplicationEventSubscriber.Community
             _concurrencyProcessor = concurrencyProcessor;
         }
 
-        public async Task Handle(AccountLogined @event)
+        public Task Handle(AccountLogined @event)
         {
             //await _concurrencyProcessor.ProcessAsync(async () =>
             //{
@@ -61,6 +61,7 @@ namespace Sample.ApplicationEventSubscriber.Community
                 Count = 20000
             };
             _eventBus.SendCommand(createProduct);
+            return Task.CompletedTask;
         }
 
         public void Handle(AccountRegistered @event)

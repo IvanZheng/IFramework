@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IFramework.Message.Impl
 {
     public class MockMessageStore : IMessageStore
     {
-        public bool HasEventHandled(string eventId, string subscriptionName)
+        public Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         public void RemoveSentCommand(string commandId) { }
@@ -18,12 +19,14 @@ namespace IFramework.Message.Impl
         public void Dispose() { }
 
 
-        public void HandleEvent(IMessageContext eventContext,
-                                string subscriptionName,
-                                IEnumerable<IMessageContext> commandContexts,
-                                IEnumerable<IMessageContext> messageContexts) { }
-
-
+        public Task HandleEventAsync(IMessageContext eventContext,
+                                     string subscriptionName,
+                                     IEnumerable<IMessageContext> commandContexts,
+                                     IEnumerable<IMessageContext> messageContexts)
+        {
+            return Task.CompletedTask;
+        }
+        
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
         {
@@ -38,26 +41,35 @@ namespace IFramework.Message.Impl
 
         public void Rollback() { }
 
-        public void SaveFailedCommand(IMessageContext commandContext,
-                                      Exception ex = null,
-                                      params IMessageContext[] eventContexts) { }
+      
 
-        public void SaveFailHandledEvent(IMessageContext eventContext,
-                                         string subscriptionName,
-                                         Exception e,
-                                         params IMessageContext[] messageContexts) { }
-
-        public void SaveEvent(IMessageContext eventContext) { }
-
-        public bool InMemoryStore => true;
-
-        public CommandHandledInfo GetCommandHandledInfo(string commandId)
+        public Task SaveFailedCommandAsync(IMessageContext commandContext,
+                                           Exception ex = null,
+                                           params IMessageContext[] eventContexts)
         {
-            return null;
+            return Task.CompletedTask;
         }
 
-        public void SaveCommand(IMessageContext commandContext,
-                                object result = null,
-                                params IMessageContext[] eventContexts) { }
+        public Task SaveFailHandledEventAsync(IMessageContext eventContext,
+                                              string subscriptionName,
+                                              Exception e,
+                                              params IMessageContext[] messageContexts)
+        {
+            return Task.CompletedTask;
+        }
+        
+        public bool InMemoryStore => true;
+
+        public Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
+        {
+            return Task.FromResult((CommandHandledInfo)null);
+        }
+
+        public Task SaveCommandAsync(IMessageContext commandContext,
+                                     object result = null,
+                                     params IMessageContext[] eventContexts)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

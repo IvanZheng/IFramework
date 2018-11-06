@@ -42,9 +42,15 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
 
         #region IUnitOfWork Members
 
-        protected virtual void BeforeCommit() { }
+        protected virtual Task BeforeCommitAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-        protected virtual void AfterCommit() { }
+        protected virtual Task AfterCommitAsync()
+        {
+            return Task.CompletedTask;
+        }
 
         public virtual void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
                                    TransactionScopeOption scopOption = TransactionScopeOption.Required)
@@ -66,7 +72,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                      }
                                  });
                     });
-                    BeforeCommit();
+                    BeforeCommitAsync().Wait();
                 }
 
                 if (InTransaction)
@@ -99,7 +105,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             }
             finally
             {
-                AfterCommit();
+                AfterCommitAsync().Wait();
             }
         }
 
@@ -130,7 +136,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                      }
                                  });
                     }
-                    BeforeCommit();
+                    await BeforeCommitAsync().ConfigureAwait(false);
                 }
 
                 if (InTransaction)
@@ -164,7 +170,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             }
             finally
             {
-                AfterCommit();
+                await AfterCommitAsync().ConfigureAwait(false);
             }
         }
 
