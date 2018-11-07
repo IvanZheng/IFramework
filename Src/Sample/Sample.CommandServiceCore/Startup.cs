@@ -43,6 +43,7 @@ using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 
 namespace Sample.CommandServiceCore
 {
@@ -64,8 +65,10 @@ namespace Sample.CommandServiceCore
                 //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
                 "10.100.7.46:9092"
             };
-            var rabbitMQHostName = "10.100.7.46";
-            var rabbitMQPort = 9012;
+            var rabbitConnectionFactory = new ConnectionFactory
+            {
+                Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
+            };
             Configuration.Instance
                          //.UseUnityContainer()
                          .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
@@ -75,7 +78,7 @@ namespace Sample.CommandServiceCore
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseRelationalMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
-                         //.UseRabbitMQ(rabbitMQHostName, rabbitMQPort)
+                         //.UseRabbitMQ(rabbitConnectionFactory)
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Message;
@@ -13,12 +14,14 @@ namespace IFramework.MessageQueue.RabbitMQ
     {
         private readonly IConnection _connection;
 
-        public RabbitMQClientProvider(string hostName, int port)
+        public RabbitMQClientProvider(ConnectionFactory connectionFactory)
         {
-            _connection = new ConnectionFactory
+            if (connectionFactory == null)
             {
-                Endpoint = new AmqpTcpEndpoint(hostName, port)
-            }.CreateConnection();
+                throw new ArgumentNullException(nameof(connectionFactory));
+            }
+
+            _connection = connectionFactory.CreateConnection();
         }
 
         public void Dispose()
