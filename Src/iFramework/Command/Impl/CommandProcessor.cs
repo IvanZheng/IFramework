@@ -153,7 +153,8 @@ namespace IFramework.Command.Impl
                     {
                         var messageStore = scope.GetService<IMessageStore>();
                         var eventMessageStates = new List<MessageState>();
-                        var commandHandledInfo = messageStore.GetCommandHandledInfo(commandContext.MessageId);
+                        var commandHandledInfo = await messageStore.GetCommandHandledInfoAsync(commandContext.MessageId)
+                                                                   .ConfigureAwait(false);
                         IMessageContext messageReply = null;
                         if (commandHandledInfo != null)
                         {
@@ -247,8 +248,9 @@ namespace IFramework.Command.Impl
 
                                             eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
-                                            messageStore.SaveCommand(commandContext, commandContext.Reply,
-                                                                     eventMessageStates.Select(s => s.MessageContext).ToArray());
+                                            await messageStore.SaveCommandAsync(commandContext, commandContext.Reply,
+                                                                     eventMessageStates.Select(s => s.MessageContext).ToArray())
+                                                              .ConfigureAwait(false);
                                             transactionScope.Complete();
                                         }
 
@@ -314,9 +316,10 @@ namespace IFramework.Command.Impl
                                             }
 
                                             eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
-                                            messageStore.SaveFailedCommand(commandContext, e,
+                                            await messageStore.SaveFailedCommandAsync(commandContext, e,
                                                                            eventMessageStates.Select(s => s.MessageContext)
-                                                                                             .ToArray());
+                                                                                             .ToArray())
+                                                              .ConfigureAwait(false);
                                             needRetry = false;
                                         }
                                     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IFramework.Message.Impl;
 
 namespace IFramework.Message
@@ -8,28 +9,23 @@ namespace IFramework.Message
     {
         bool InMemoryStore { get;}
 
-        CommandHandledInfo GetCommandHandledInfo(string commandId);
-        bool HasEventHandled(string eventId, string subscriptionName);
+        Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId);
 
-        void HandleEvent(IMessageContext eventContext,
+        Task<bool> HasEventHandledAsync(string eventId, string subscriptionName);
+
+        Task HandleEventAsync(IMessageContext eventContext,
                          string subscriptionName,
                          IEnumerable<IMessageContext> commandContexts,
                          IEnumerable<IMessageContext> messageContexts);
 
-        void SaveFailHandledEvent(IMessageContext eventContext,
+        Task SaveFailHandledEventAsync(IMessageContext eventContext,
                                   string subscriptionName,
                                   Exception e,
                                   params IMessageContext[] messageContexts);
 
-        /// <summary>
-        ///     return event IMessageContext
-        /// </summary>
-        /// <param name="commandContext"></param>
-        /// <param name="result"></param>
-        /// <param name="eventContexts"></param>
-        void SaveCommand(IMessageContext commandContext, object result = null, params IMessageContext[] eventContexts);
+        Task SaveCommandAsync(IMessageContext commandContext, object result = null, params IMessageContext[] eventContexts);
 
-        void SaveFailedCommand(IMessageContext commandContext,
+        Task SaveFailedCommandAsync(IMessageContext commandContext,
                                Exception ex = null,
                                params IMessageContext[] eventContexts);
 

@@ -135,7 +135,9 @@ namespace IFramework.Event.Impl
                             subscriptionName
                         }))
                         {
-                            if (!messageStore.HasEventHandled(eventContext.MessageId, subscriptionName))
+                            if (!await messageStore.HasEventHandledAsync(eventContext.MessageId, 
+                                                                         subscriptionName)
+                                                   .ConfigureAwait(false))
                             {
                                 var eventMessageStates = new List<MessageState>();
                                 var commandMessageStates = new List<MessageState>();
@@ -188,10 +190,11 @@ namespace IFramework.Event.Impl
 
                                         eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
-                                        messageStore.HandleEvent(eventContext,
+                                        await messageStore.HandleEventAsync(eventContext,
                                                                  subscriptionName,
                                                                  commandMessageStates.Select(s => s.MessageContext),
-                                                                 eventMessageStates.Select(s => s.MessageContext));
+                                                                 eventMessageStates.Select(s => s.MessageContext))
+                                                          .ConfigureAwait(false);
 
                                         transactionScope.Complete();
                                     }
@@ -247,11 +250,12 @@ namespace IFramework.Event.Impl
 
                                     eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
-                                    messageStore.SaveFailHandledEvent(eventContext, subscriptionName, e,
-                                                                      eventMessageStates.Select(s => s.MessageContext).ToArray());
+                                    await messageStore.SaveFailHandledEventAsync(eventContext, subscriptionName, e,
+                                                                      eventMessageStates.Select(s => s.MessageContext).ToArray())
+                                                      .ConfigureAwait(false);
                                     if (eventMessageStates.Count > 0)
                                     {
-                                        MessagePublisher?.SendAsync(CancellationToken.None, eventMessageStates.ToArray());
+                                        var sendTask = MessagePublisher.SendAsync(CancellationToken.None, eventMessageStates.ToArray());
                                     }
                                 }
                             }

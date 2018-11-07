@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using IFramework.DependencyInjection;
 using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
@@ -15,7 +16,7 @@ namespace IFramework.MessageStores.Relational
     public abstract class MessageStore : MsDbContext, IMessageStore
     {
         protected readonly ILogger Logger;
-        public bool InMemoryStore { get; private set;}
+        public bool InMemoryStore { get; private set; }
         protected MessageStore(DbContextOptions options)
             : base(options)
         {
@@ -30,7 +31,7 @@ namespace IFramework.MessageStores.Relational
         public DbSet<UnSentCommand> UnSentCommands { get; set; }
         public DbSet<UnPublishedEvent> UnPublishedEvents { get; set; }
 
-        public void SaveCommand(IMessageContext commandContext,
+        public Task SaveCommandAsync(IMessageContext commandContext,
                                 object result = null,
                                 params IMessageContext[] messageContexts)
         {
@@ -46,12 +47,12 @@ namespace IFramework.MessageStores.Relational
                 Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
-            SaveChanges();
+            return SaveChangesAsync();
         }
 
-        public void SaveFailedCommand(IMessageContext commandContext,
-                                      Exception ex = null,
-                                      params IMessageContext[] eventContexts)
+        public Task SaveFailedCommandAsync(IMessageContext commandContext,
+                                           Exception ex = null,
+                                           params IMessageContext[] eventContexts)
         {
             if (commandContext != null)
             {
@@ -66,9 +67,8 @@ namespace IFramework.MessageStores.Relational
                 Events.Add(BuildEvent(eventContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
             });
-            SaveChanges();
+            return SaveChangesAsync();
         }
-
 
         //internal Event InternalSaveEvent(IMessageContext eventContext)
         //{
@@ -112,7 +112,7 @@ namespace IFramework.MessageStores.Relational
 
         // if not subscribe the same event message by topic's mulitple subscriptions
         // we don't need EventLock to assure Events.Add(@event) having no conflict.
-        public void HandleEvent(IMessageContext eventContext,
+        public Task HandleEventAsync(IMessageContext eventContext,
                                 string subscriptionName,
                                 IEnumerable<IMessageContext> commandContexts,
                                 IEnumerable<IMessageContext> messageContexts)
@@ -130,10 +130,12 @@ namespace IFramework.MessageStores.Relational
                 Events.Add(BuildEvent(messageContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
             });
-            SaveChanges();
+            return SaveChangesAsync();
         }
 
-        public void SaveFailHandledEvent(IMessageContext eventContext,
+        
+
+        public Task SaveFailHandledEventAsync(IMessageContext eventContext,
                                          string subscriptionName,
                                          Exception e,
                                          params IMessageContext[] messageContexts)
@@ -146,13 +148,14 @@ namespace IFramework.MessageStores.Relational
                 Events.Add(BuildEvent(messageContext));
                 UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
             });
-            SaveChanges();
+            return SaveChangesAsync();
         }
 
-        public CommandHandledInfo GetCommandHandledInfo(string commandId)
+        public async Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
         {
             CommandHandledInfo commandHandledInfo = null;
-            var command = Commands.FirstOrDefault(c => c.Id == commandId);
+            var command = await Commands.FirstOrDefaultAsync(c => c.Id == commandId)
+                                        .ConfigureAwait(false);
             if (command != null)
             {
                 commandHandledInfo = new CommandHandledInfo
@@ -165,10 +168,11 @@ namespace IFramework.MessageStores.Relational
             return commandHandledInfo;
         }
 
-        public bool HasEventHandled(string eventId, string subscriptionName)
+        public async Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
-            return HandledEvents.Count(@event => @event.Id == eventId
-                                                 && @event.SubscriptionName == subscriptionName) > 0;
+            return await HandledEvents.CountAsync(@event => @event.Id == eventId
+                                                 && @event.SubscriptionName == subscriptionName)
+                                      .ConfigureAwait(false) > 0;
         }
 
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
@@ -203,7 +207,7 @@ namespace IFramework.MessageStores.Relational
             //            .HasColumnType("ntext");
 
             modelBuilder.Entity<HandledEvent>()
-                        .HasKey(e => new {e.Id, e.SubscriptionName});
+                        .HasKey(e => new { e.Id, e.SubscriptionName });
 
             modelBuilder.Entity<HandledEvent>()
                         .Property(handledEvent => handledEvent.SubscriptionName)
