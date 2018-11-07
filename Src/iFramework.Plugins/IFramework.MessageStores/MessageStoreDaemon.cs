@@ -61,6 +61,18 @@ namespace IFramework.MessageStores.Relational
             }
         }
 
+        protected virtual void RemoveUnSentCommands(MessageStore messageStore, string[] toRemoveCommands)
+        {
+            var deleteCommandsSql = $"delete from msgs_UnSentCommands where Id in ({string.Join(",", toRemoveCommands.Select(rm => $"'{rm}'"))})";
+            messageStore.Database.ExecuteSqlCommand(deleteCommandsSql);
+        }
+
+        protected virtual void RemoveUnPublishedEvents(MessageStore messageStore, string[] toRemoveEvents)
+        {
+            var deleteEventsSql = $"delete from msgs_UnPublishedEvents where Id in ({string.Join(",", toRemoveEvents.Select(rm => $"'{rm}'"))})";
+            messageStore.Database.ExecuteSqlCommand(deleteEventsSql);
+        }
+
         private void RemoveMessages(CancellationTokenSource cancellationTokenSource)
         {
             while (!cancellationTokenSource.IsCancellationRequested)
@@ -121,8 +133,7 @@ namespace IFramework.MessageStores.Relational
                                                                        .ToArray();
                                 if (toRemoveCommands.Length > 0)
                                 {
-                                    var deleteCommandsSql = $"delete from msgs_UnSentCommands where Id in ({string.Join(",", toRemoveCommands.Select(rm => $"'{rm}'"))})";
-                                    messageStore.Database.ExecuteSqlCommand(deleteCommandsSql);
+                                    RemoveUnSentCommands(messageStore, toRemoveCommands);
                                 }
 
                                 var toRemoveEvents = toRemoveMessages.Where(rm => rm.Type == MessageType.Event)
@@ -130,8 +141,7 @@ namespace IFramework.MessageStores.Relational
                                                                      .ToArray();
                                 if (toRemoveEvents.Length > 0)
                                 {
-                                    var deleteEventsSql = $"delete from msgs_UnPublishedEvents where Id in ({string.Join(",", toRemoveEvents.Select(rm => $"'{rm}'"))})";
-                                    messageStore.Database.ExecuteSqlCommand(deleteEventsSql);
+                                    RemoveUnPublishedEvents(messageStore, toRemoveEvents);
                                 }
                             }
                         }
