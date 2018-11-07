@@ -80,6 +80,16 @@
                 }
             });
 
+            $("#doApi").click(function () { 
+                var batchCount = parseInt($("#batchCount").val());
+                for (var i = 0; i < batchCount; i++) {
+                    $.post("@Url.Content("~/home/doapi")", null, function (result) {
+                        showResult(JSON.stringify(result));
+                    })
+                }
+            });
+
+
             $("#pressureBtn").click(function() {
                 $.ajax(
                     {
@@ -159,7 +169,7 @@
             $("#btnRefreshCommandDistributorStatus").click(function() {
                 refreshCommandDistributorStatus();
             });
-               
+
 
             $("#closeMqBtn").click(function() {
                 $.get("@Url.Content("~/api/mq/CloseMessageQueue")", null, function(data) {
@@ -202,7 +212,7 @@
     </div>
     <br />
     <input type="button" value="CloseMessageQueue" id="closeMqBtn" />
-    <input type="text" value="100" id="batchCount" />
+    <input type="text" value="10" id="batchCount" />
     <input type="text" value="ivan" id="username" />
     <input type="password" value="123456" id="password" />
 
@@ -219,7 +229,9 @@
     <div>
         <input type="text" value="email" id="email" />
         <input id="modifyCommand" type="button" value="ModifyCommand" />
+        <input id="doApi" type="button" value="doApi" />
     </div>
+
     <div>
         <input type="button" value="Api pressure test" id="pressureBtn" />
     </div>
@@ -236,10 +248,10 @@
     {
         @Html.TextBox("Id", "id");
         @Html.TextBox("Name", "name");
-        <input type="file" name="file1"/>
+        <input type="file" name="file1" />
         <button type="submit">submit</button>
     }
-    
+
     <div id="result">
 
     </div>
