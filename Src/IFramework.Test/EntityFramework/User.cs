@@ -13,7 +13,6 @@ namespace IFramework.Test.EntityFramework
         public string Name { get; protected set; }
         public string Gender { get; protected set; }
 
-        [BsonElement]
         public virtual ICollection<Card> Cards { get; set; } = new HashSet<Card>();
 
         protected User()
