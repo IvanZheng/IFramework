@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using IFramework.Domain;
 using IFramework.Infrastructure;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace IFramework.Test.EntityFramework
 {
@@ -11,7 +12,9 @@ namespace IFramework.Test.EntityFramework
         public string Id { get; protected set; }
         public string Name { get; protected set; }
         public string Gender { get; protected set; }
-        public virtual ICollection<Card> Cards { get; } = new HashSet<Card>();
+
+        [BsonElement]
+        public virtual ICollection<Card> Cards { get; set; } = new HashSet<Card>();
 
         protected User()
         {
@@ -33,7 +36,7 @@ namespace IFramework.Test.EntityFramework
 
         public void AddCard(string cardName)
         {
-            Cards.Add(new Card(cardName));
+            Cards.Add(new Card(Id, cardName));
         }
     }
 }

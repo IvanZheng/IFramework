@@ -134,24 +134,24 @@ namespace IFramework.EntityFrameworkCore
             }
         }
 
-        public virtual async Task DoInTransactionAsync(Func<Task> func, IsolationLevel level, 
-                                                       CancellationToken cancellationToken = default(CancellationToken))
-        {
-            using (var scope = await Database.BeginTransactionAsync(level,
-                                                                     cancellationToken))
-            {
-                await func().ConfigureAwait(false);
-                scope.Commit();
-            }
-        }
+        //public virtual async Task DoInTransactionAsync(Func<Task> func, IsolationLevel level, 
+        //                                               CancellationToken cancellationToken = default(CancellationToken))
+        //{
+        //    using (var scope = await Database.BeginTransactionAsync(level,
+        //                                                             cancellationToken))
+        //    {
+        //        await func().ConfigureAwait(false);
+        //        scope.Commit();
+        //    }
+        //}
 
-        public virtual void DoInTransaction(Action action, IsolationLevel level)
-        {
-            using (var scope = Database.BeginTransaction(level))
-            {
-                action();
-                scope.Commit();
-            }
-        }
+        //public virtual void DoInTransaction(Action action, IsolationLevel level)
+        //{
+        //    using (var scope = Database.BeginTransaction(level))
+        //    {
+        //        action();
+        //        scope.Commit();
+        //    }
+        //}
     }
 }

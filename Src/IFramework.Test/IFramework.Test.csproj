@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blueshift.EntityFrameworkCore.MongoDB" Version="2.1.0-preview2-t006f54f83" />
     <PackageReference Include="Devart.Data.MySql.EFCore.Design" Version="8.12.1216" />
     <PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.3" />

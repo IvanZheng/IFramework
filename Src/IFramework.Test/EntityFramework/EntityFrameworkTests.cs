@@ -29,15 +29,16 @@ namespace IFramework.Test.EntityFramework
     {
         public static string MySqlConnectionStringName = "DemoDbContext.MySql";
         public static string ConnectionStringName = "DemoDbContext";
+        public static string MongoDbConnectionStringName = "DemoDbContext.MongoDb";
         public DemoDbContext CreateDbContext(string[] args)
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
             var configuratoin = builder.Build();
             var optionsBuilder = new DbContextOptionsBuilder<DemoDbContext>();
-            optionsBuilder.UseMySQL(configuratoin.GetConnectionString(MySqlConnectionStringName));
+            //optionsBuilder.UseMySQL(configuratoin.GetConnectionString(MySqlConnectionStringName));
             //optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
-
+            optionsBuilder.UseMongoDb(configuratoin.GetConnectionString(MongoDbConnectionStringName));
             return new DemoDbContext(optionsBuilder.Options);
         }
     }
@@ -57,20 +58,21 @@ namespace IFramework.Test.EntityFramework
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseLog4Net()
-                         .UseDbContextPool<DemoDbContext>(options =>
+                         .UseDbContext<DemoDbContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
-                             options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
+                             options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
+                             //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
                              //options.UseInMemoryDatabase(nameof(DemoDbContext));
                              //options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
-                         }, 1000);
+                         });
 
             ObjectProviderFactory.Instance.Build();
-            using (var serviceScope = ObjectProviderFactory.CreateScope())
-            {
-                var dbContext = serviceScope.GetService<DemoDbContext>();
-                dbContext.Database.Migrate();
-            }
+            //using (var serviceScope = ObjectProviderFactory.CreateScope())
+            //{
+            //    var dbContext = serviceScope.GetService<DemoDbContext>();
+            //    dbContext.Database.Migrate();
+            //}
         }
 
         public class DbTest : IDisposable
@@ -249,13 +251,14 @@ namespace IFramework.Test.EntityFramework
                 var dbContext = scope.GetService<DemoDbContext>();
                 var users = await dbContext.Users
                                            //.Include(u => u.Cards)
-                                           .FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
+                                           //.FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
                                            .Take(10)
                                            .ToArrayAsync();
                 foreach (var u in users)
                 {
                     await u.LoadCollectionAsync(u1 => u1.Cards);
-                    Assert.Equal(u.GetDbContext<DemoDbContext>().GetHashCode(), dbContext.GetHashCode());
+                    Assert.True(u.Cards.Count > 0);
+                    //Assert.Equal(u.GetDbContext<DemoDbContext>().GetHashCode(), dbContext.GetHashCode());
                 }
             }
         }
