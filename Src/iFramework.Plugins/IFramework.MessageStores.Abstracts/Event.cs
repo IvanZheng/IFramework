@@ -2,7 +2,7 @@
 using IFramework.Event;
 using IFramework.Message;
 
-namespace IFramework.MessageStores.Relational
+namespace IFramework.MessageStores.Abstracts
 {
     public class Event : Message
     {

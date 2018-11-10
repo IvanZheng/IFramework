@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace IFramework.MessageStores.Relational
+namespace IFramework.MessageStores.Abstracts
 {
     public class HandledEvent
     {

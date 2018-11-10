@@ -1,4 +1,4 @@
-﻿namespace IFramework.MessageStores.Relational
+﻿namespace IFramework.MessageStores.Abstracts
 {
     public enum MessageStatus
     {

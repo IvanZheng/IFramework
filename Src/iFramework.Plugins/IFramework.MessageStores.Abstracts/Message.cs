@@ -4,7 +4,7 @@ using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 
-namespace IFramework.MessageStores.Relational
+namespace IFramework.MessageStores.Abstracts
 {
     public abstract class Message
     {

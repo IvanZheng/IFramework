@@ -3,7 +3,7 @@ using System;
 using IFramework.Infrastructure;
 using IFramework.Message;
 
-namespace IFramework.MessageStores.Relational
+namespace IFramework.MessageStores.Abstracts
 {
     public class Command : Message
     {
