@@ -5,7 +5,7 @@ using Sample.Domain.Model;
 
 namespace Sample.Persistence
 {
-    public class SampleModelContext : MessageStore
+    public class SampleModelContext :IFramework.MessageStores.MongoDb.MessageStore
     {
         public SampleModelContext(DbContextOptions options) : base(options)
         {
@@ -28,7 +28,7 @@ namespace Sample.Persistence
                         .IsUnique();
 
             modelBuilder.Entity<Account>()
-                        .ToTable("Accounts")
+                        //.ToTable("Accounts")
                         .HasMany(a => a.ProductIds)
                         .WithOne()
                         .HasForeignKey(pid => pid.AccountId);

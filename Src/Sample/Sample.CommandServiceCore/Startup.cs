@@ -41,6 +41,7 @@ using IFramework.Infrastructure;
 using System.Collections.Generic;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
+using IFramework.MessageStores.MongoDb;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -76,7 +77,8 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()
+                         //.UseRelationalMessageStore<SampleModelContext>()
+                         .UseMongoDbMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitConnectionFactory)
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
@@ -88,7 +90,8 @@ namespace Sample.CommandServiceCore
                              options.EnableSensitiveDataLogging();
                              //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
-                             options.UseInMemoryDatabase(nameof(SampleModelContext));
+                             options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
+                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
         }
 

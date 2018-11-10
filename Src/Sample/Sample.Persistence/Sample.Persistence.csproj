@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStores.MongoDb\IFramework.MessageStores.MongoDb.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageStores\IFramework.MessageStores.Relational.csproj" />
     <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj" />
     <ProjectReference Include="..\Sample.DTO\Sample.DTO.csproj" />
