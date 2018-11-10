@@ -37,6 +37,7 @@
     <ProjectReference Include="..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj" />
+    <ProjectReference Include="..\iFramework.Plugins\IFramework.MessageStores.MongoDb\IFramework.MessageStores.MongoDb.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.Microsoft.DependencyInjection\IFramework.DependencyInjection.Microsoft.csproj" />
     <ProjectReference Include="..\iFramework\IFramework.csproj" />
   </ItemGroup>

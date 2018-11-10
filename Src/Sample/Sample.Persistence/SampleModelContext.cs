@@ -9,7 +9,7 @@ namespace Sample.Persistence
     {
         public SampleModelContext(DbContextOptions options) : base(options)
         {
-            Database.EnsureCreated();
+            //Database.EnsureCreated();
         }
 
         public DbSet<Account> Accounts { get; set; }
@@ -23,9 +23,13 @@ namespace Sample.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Ignore<People>();
+
             modelBuilder.Entity<Account>()
                         .HasIndex(a => a.Email)
                         .IsUnique();
+            modelBuilder.Entity<Account>()
+                        .HasKey(a => a.Id); 
 
             modelBuilder.Entity<Account>()
                         //.ToTable("Accounts")

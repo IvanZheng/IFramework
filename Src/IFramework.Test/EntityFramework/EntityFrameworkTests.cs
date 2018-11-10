@@ -14,6 +14,7 @@ using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
+using IFramework.MessageStores.MongoDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -223,6 +224,9 @@ namespace IFramework.Test.EntityFramework
                     dbContext.Users.Add(user);
                     await dbContext.SaveChangesAsync();
                     scope.Complete();
+                    var client = dbContext.GetMongoDbClient();
+                    var database = dbContext.GetMongoDbDatabase();
+                    var conn = dbContext.GetMongoDbConnection();
 
                 }
                 catch (Exception e)

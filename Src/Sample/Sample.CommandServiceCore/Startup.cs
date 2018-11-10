@@ -85,7 +85,7 @@ namespace Sample.CommandServiceCore
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
-                         .UseDbContextPool<SampleModelContext>(options =>
+                         .UseDbContext<SampleModelContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
                              //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
