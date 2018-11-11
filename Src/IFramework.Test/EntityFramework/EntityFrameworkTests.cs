@@ -86,7 +86,7 @@ namespace IFramework.Test.EntityFramework
             }
             public void Dispose()
             {
-               Console.Write("dispose");
+                Console.Write("dispose");
             }
         }
 
@@ -135,10 +135,10 @@ namespace IFramework.Test.EntityFramework
                 Console.WriteLine(e);
                 throw;
             }
-       
+
         }
 
-        
+
 
 
         [Fact]
@@ -173,9 +173,9 @@ namespace IFramework.Test.EntityFramework
 
             try
             {
-                await AddUserTest();
+                //await AddUserTest();
                 var tasks = new List<Task>();
-                for (int i = 0; i < 2000; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     tasks.Add(GetUsersTest());
                 }
@@ -215,7 +215,7 @@ namespace IFramework.Test.EntityFramework
                         logger.LogError((serviceScope as ObjectProvider)?.UnityContainer.Registrations.ToJson());
                         Assert.NotNull(dbContext);
                     }
-                    
+
                     var user = new User("ivan", "male");
                     user.AddCard("ICBC");
                     user.AddCard("CCB");
@@ -236,7 +236,7 @@ namespace IFramework.Test.EntityFramework
                 }
 
 
-               
+
             }
         }
 
@@ -252,17 +252,33 @@ namespace IFramework.Test.EntityFramework
                     logger.LogError((scope as ObjectProvider)?.UnityContainer.Registrations.ToJson());
                     Assert.NotNull(serviceProvider);
                 }
-                var dbContext = scope.GetService<DemoDbContext>();
-                var users = await dbContext.Users
-                                           //.Include(u => u.Cards)
-                                           //.FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
-                                           .Take(10)
-                                           .ToArrayAsync();
-                foreach (var u in users)
+
+                var options = new DbContextOptionsBuilder<DemoDbContext>();
+                options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
+
+                using (var dbContext = new DemoDbContext(options.Options)) //scope.GetService<DemoDbContext>();
                 {
-                    await u.LoadCollectionAsync(u1 => u1.Cards);
-                    Assert.True(u.Cards.Count > 0);
-                    //Assert.Equal(u.GetDbContext<DemoDbContext>().GetHashCode(), dbContext.GetHashCode());
+                    try
+                    {
+                        var connection = dbContext.GetMongoDbDatabase();
+                        var users = await dbContext.Users
+                                                   //.Include(u => u.Cards)
+                                                   //.FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
+                                                   .Take(10)
+                                                   .ToListAsync()
+                                                   .ConfigureAwait(false);
+                        foreach (var u in users)
+                        {
+                            await u.LoadCollectionAsync(u1 => u1.Cards);
+                            Assert.True(u.Cards.Count > 0);
+                            //Assert.Equal(u.GetDbContext<DemoDbContext>().GetHashCode(), dbContext.GetHashCode());
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
                 }
             }
         }

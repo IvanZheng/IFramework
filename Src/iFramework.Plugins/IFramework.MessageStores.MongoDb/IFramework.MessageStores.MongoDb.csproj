@@ -5,10 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blueshift.EntityFrameworkCore.MongoDB" Version="2.1.0-preview2-t006f54f83" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\Blueshift.EntityFrameworkCore.MongoDB\Blueshift.EntityFrameworkCore.MongoDB.csproj" />
     <ProjectReference Include="..\IFramework.MessageStores.Abstracts\IFramework.MessageStores.Abstracts.csproj" />
   </ItemGroup>
 
