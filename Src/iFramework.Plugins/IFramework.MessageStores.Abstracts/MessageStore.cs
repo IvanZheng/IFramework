@@ -26,8 +26,7 @@ namespace IFramework.MessageStores.Abstracts
 
         public DbSet<Command> Commands { get; set; }
         public DbSet<Event> Events { get; set; }
-        public DbSet<HandledEvent> HandledEvents { get; set; }
-        public DbSet<FailHandledEvent> FailHandledEvents { get; set; }
+       
         public DbSet<UnSentCommand> UnSentCommands { get; set; }
         public DbSet<UnPublishedEvent> UnPublishedEvents { get; set; }
 
@@ -70,45 +69,18 @@ namespace IFramework.MessageStores.Abstracts
             return SaveChangesAsync();
         }
 
-     
-        public Task HandleEventAsync(IMessageContext eventContext,
-                                string subscriptionName,
-                                IEnumerable<IMessageContext> commandContexts,
-                                IEnumerable<IMessageContext> messageContexts)
-        {
-            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now));
-            commandContexts.ForEach(commandContext =>
-            {
-                commandContext.CorrelationId = eventContext.MessageId;
-                // don't save command here like event that would be published to other bounded context
-                UnSentCommands.Add(new UnSentCommand(commandContext));
-            });
-            messageContexts.ForEach(messageContext =>
-            {
-                messageContext.CorrelationId = eventContext.MessageId;
-                Events.Add(BuildEvent(messageContext));
-                UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
-            });
-            return SaveChangesAsync();
-        }
 
-        
+        public abstract Task HandleEventAsync(IMessageContext eventContext,
+                                             string subscriptionName,
+                                             IEnumerable<IMessageContext> commandContexts,
+                                             IEnumerable<IMessageContext> messageContexts);
 
-        public Task SaveFailHandledEventAsync(IMessageContext eventContext,
-                                         string subscriptionName,
-                                         Exception e,
-                                         params IMessageContext[] messageContexts)
-        {
-            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now, e));
+        public abstract Task<bool> HasEventHandledAsync(string eventId, string subscriptionName);
 
-            messageContexts.ForEach(messageContext =>
-            {
-                messageContext.CorrelationId = eventContext.MessageId;
-                Events.Add(BuildEvent(messageContext));
-                UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
-            });
-            return SaveChangesAsync();
-        }
+        public abstract Task SaveFailHandledEventAsync(IMessageContext eventContext,
+                                                      string subscriptionName,
+                                                      Exception e,
+                                                      params IMessageContext[] messageContexts);
 
         public async Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
         {
@@ -127,12 +99,7 @@ namespace IFramework.MessageStores.Abstracts
             return commandHandledInfo;
         }
 
-        public async Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
-        {
-            return await HandledEvents.CountAsync(@event => @event.Id == eventId
-                                                 && @event.SubscriptionName == subscriptionName)
-                                      .ConfigureAwait(false) > 0;
-        }
+      
 
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
