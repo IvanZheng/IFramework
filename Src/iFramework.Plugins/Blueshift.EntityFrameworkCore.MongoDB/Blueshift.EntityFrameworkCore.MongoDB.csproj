@@ -6,6 +6,11 @@
     <Description>Blueshift Software MongoDb Provider for Microsoft EntityFramework Core</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>7.2</LangVersion>
+    <PackageId>IFramework.EntityFrameworkCore.Blueshift.MongoDB</PackageId>
+    <Company>Ivan</Company>
+    <Authors>Ivan</Authors>
+    <Version>2.1.0-prerelease</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

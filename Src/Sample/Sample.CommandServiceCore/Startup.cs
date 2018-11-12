@@ -77,8 +77,8 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         //.UseRelationalMessageStore<SampleModelContext>()
-                         .UseMongoDbMessageStore<SampleModelContext>()
+                         .UseRelationalMessageStore<SampleModelContext>()
+                         //.UseMongoDbMessageStore<SampleModelContext>()
                          .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitConnectionFactory)
                          //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
@@ -90,8 +90,8 @@ namespace Sample.CommandServiceCore
                              options.EnableSensitiveDataLogging();
                              //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
-                             options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                             //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
+                             options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
         }
 
