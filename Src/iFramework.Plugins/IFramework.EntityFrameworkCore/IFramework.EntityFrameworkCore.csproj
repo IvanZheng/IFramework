@@ -5,10 +5,10 @@
     <AssemblyName>IFramework.EntityFrameworkCore</AssemblyName>
     <RootNamespace>IFramework.EntityFrameworkCore</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.2</Version>
+    <Version>2.0.3</Version>
     <Company>Ivan</Company>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
-    <PackageReleaseNotes>use async method in UnitOfWork</PackageReleaseNotes>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <Description>Supports netcore standard2.0</Description>
   </PropertyGroup>
 

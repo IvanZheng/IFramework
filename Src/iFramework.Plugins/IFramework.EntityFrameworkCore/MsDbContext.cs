@@ -9,6 +9,7 @@ using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace IFramework.EntityFrameworkCore
@@ -76,12 +77,13 @@ namespace IFramework.EntityFrameworkCore
 
         public virtual void Rollback()
         {
-            do
-            {
-                ChangeTracker.Entries()
-                             .ToArray()
-                             .ForEach(e => { e.State = EntityState.Detached; });
-            } while (ChangeTracker.Entries().Any());
+            (this as IDbContextDependencies).StateManager.ResetState();
+            //do
+            //{
+            //    ChangeTracker.Entries()
+            //                 .ToArray()
+            //                 .ForEach(e => { e.State = EntityState.Detached; });
+            //} while (ChangeTracker.Entries().Any());
         }
 
         protected virtual void OnException(Exception ex)

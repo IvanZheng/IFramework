@@ -5,6 +5,7 @@ using Blueshift.EntityFrameworkCore.MongoDB.Metadata;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MongoDB.Driver;
 
@@ -13,7 +14,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Storage
     /// <summary>
     ///     A service that can be used to interact with a MongoDB instance.
     /// </summary>
-    public class MongoDbConnection : IMongoDbConnection
+    public class MongoDbConnection : IMongoDbConnection, IDbContextTransactionManager
     {
         private readonly IMongoClient _mongoClient;
         private readonly IMongoDatabase _mongoDatabase;
@@ -90,5 +91,35 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Storage
         /// <returns>An <see cref="IQueryable{TEntity}"/> that can query <typeparamref name="TEntity"/> values from the MongoDB instance.</returns>
         public virtual IQueryable<TEntity> Query<TEntity>()
             => GetCollection<TEntity>().AsQueryable();
+
+        public void ResetState()
+        {
+            
+        }
+
+        public IDbContextTransaction BeginTransaction()
+        {
+            CurrentTransaction = new MongoDbContextTransaction(_mongoClient.StartSession());
+            return CurrentTransaction;
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            var session = await _mongoClient.StartSessionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            CurrentTransaction = new MongoDbContextTransaction(session);
+            return CurrentTransaction;
+        }
+
+        public void CommitTransaction()
+        {
+            CurrentTransaction?.Commit();
+        }
+
+        public void RollbackTransaction()
+        {
+            CurrentTransaction?.Rollback();   
+        }
+
+        public IDbContextTransaction CurrentTransaction { get; protected set; }
     }
 }

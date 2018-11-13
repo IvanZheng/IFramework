@@ -82,6 +82,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Infrastructure
             TryAdd<IMemberAccessBindingExpressionVisitorFactory, MongoDbMemberAccessBindingExpressionVisitorFactory>();
             TryAdd<INavigationRewritingExpressionVisitorFactory, MongoDbNavigationRewritingExpressionVisitorFactory>();
             TryAdd<IStateManager, MongoDbStateManager>();
+            TryAdd<IDbContextTransactionManager, MongoDbConnection>();
             TryAddProviderSpecificServices(serviceCollectionMap =>
             {
                 serviceCollectionMap.TryAddScoped<IMongoDbConnection, MongoDbConnection>();
