@@ -108,6 +108,12 @@ namespace IFramework.Event.Impl
                 Logger.LogDebug($"start handle event {ConsumerId} {eventContext.Message.ToJson()}");
 
                 var message = eventContext.Message;
+                if (message == null)
+                {
+                    Logger.LogDebug($"message is null, body: {message.ToJson()}");
+                    InternalConsumer.CommitOffset(eventContext);
+                    return;
+                }
                 var sagaInfo = eventContext.SagaInfo;
                 var messageHandlerTypes = HandlerProvider.GetHandlerTypes(message.GetType());
 
