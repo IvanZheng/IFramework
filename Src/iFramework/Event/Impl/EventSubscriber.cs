@@ -110,7 +110,7 @@ namespace IFramework.Event.Impl
                 var message = eventContext.Message;
                 if (message == null)
                 {
-                    Logger.LogDebug($"message is null, body: {message.ToJson()}");
+                    Logger.LogDebug($"message is null! messageContext: {eventContext.ToJson()}");
                     InternalConsumer.CommitOffset(eventContext);
                     return;
                 }
