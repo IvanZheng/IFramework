@@ -251,6 +251,7 @@ namespace IFramework.Test.EntityFramework
 
                 try
                 {
+                    var user = await dbContext.Users.FindAsync("5BEE29960CCE411C20215A17").ConfigureAwait(false);
                    // var connection = dbContext.GetMongoDbDatabase();
                     var users = await dbContext.Users
                                                //.Include(u => u.Cards)

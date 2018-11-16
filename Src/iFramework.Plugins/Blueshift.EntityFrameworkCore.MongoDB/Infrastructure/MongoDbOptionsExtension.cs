@@ -40,7 +40,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             get => MongoUrl?.ToString();
             [param: NotNull] set
             {
-                MongoUrl = MongoUrl.Create(Check.NotEmpty(value, nameof(ConnectionString)));
+                MongoUrl = new MongoUrl(Check.NotEmpty(value, nameof(ConnectionString)));
             }
         }
 
@@ -70,18 +70,24 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             }
         }
 
+        private MongoUrl _mongoUrl;
         /// <summary>
         /// This API supports the Entity Framework Core infrastructure and is not intended to be used
         /// directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual MongoUrl MongoUrl
         {
-            get => _mongoClient == null
-                ? null
-                : MongoUrl.Create($"mongodb://{string.Join(",", _mongoClient.Settings.Servers.Select(server => $"{server.Host}:{server.Port}"))}");
+            get => _mongoUrl != null
+                ? _mongoUrl
+                : new MongoUrl($"mongodb://{string.Join(",", _mongoClient.Settings.Servers.Select(server => $"{server.Host}:{server.Port}"))}");
             [param: NotNull] set
             {
                 MongoClientSettings = MongoClientSettings.FromUrl(Check.NotNull(value, nameof(MongoUrl)));
+                _mongoUrl = value;
+                if (!string.IsNullOrWhiteSpace(value.DatabaseName))
+                {
+                    _databaseName = value.DatabaseName;
+                }
             }
         }
 

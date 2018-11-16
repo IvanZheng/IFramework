@@ -14,7 +14,6 @@ using MySql.Data.EntityFrameworkCore.Extensions;
 
 namespace IFramework.Test.EntityFramework
 {
-    [MongoDatabase("AssetsExpenses")]
     public class DemoDbContext : MsDbContext
     {
         public static int Total;

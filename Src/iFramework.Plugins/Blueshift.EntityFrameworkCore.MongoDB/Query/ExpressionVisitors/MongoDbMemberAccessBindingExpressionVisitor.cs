@@ -75,7 +75,9 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Query.ExpressionVisitors
 
                 newExpression = Expression.Convert(
                     Expression.MakeMemberAccess(targetExpression, propertyInfo),
-                    typeof(Nullable<>).MakeGenericType(propertyInfo.PropertyType));
+                    propertyInfo.PropertyType.IsNullableType() ? 
+                        propertyInfo.PropertyType:
+                        typeof(Nullable<>).MakeGenericType(propertyInfo.PropertyType));
             }
 
             return newExpression ?? base.VisitMethodCall(methodCallExpression);
