@@ -94,12 +94,20 @@ namespace IFramework.Test.EntityFramework
         {
             try
             {
+                var id = DateTime.Now.Ticks;
                 using (var serviceScope = ObjectProviderFactory.CreateScope())
                 {
                     var dbContext = serviceScope.GetService<DemoDbContext>();
-                    var person = new Person("ivan");
+                    var person = new Person(id, "ivan");
                     dbContext.Persons.Add(person);
                     await dbContext.SaveChangesAsync();
+                }
+
+                using (var serviceScope = ObjectProviderFactory.CreateScope())
+                {
+                    var dbContext = serviceScope.GetService<DemoDbContext>();
+                    var person =  await dbContext.Persons.FindAsync(id).ConfigureAwait(false);
+                    Assert.NotNull(person);
                 }
             }
             catch (Exception e)

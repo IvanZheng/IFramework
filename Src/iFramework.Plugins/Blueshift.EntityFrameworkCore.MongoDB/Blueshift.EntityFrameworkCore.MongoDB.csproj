@@ -9,7 +9,7 @@
     <PackageId>IFramework.EntityFrameworkCore.Blueshift.MongoDB</PackageId>
     <Company>Ivan</Company>
     <Authors>Ivan</Authors>
-    <Version>2.1.0-prerelease-0002</Version>
+    <Version>2.1.0-prerelease-0003</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageReleaseNotes>Support dbcontextpool</PackageReleaseNotes>
   </PropertyGroup>
