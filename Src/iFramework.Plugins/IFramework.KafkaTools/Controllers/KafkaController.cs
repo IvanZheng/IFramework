@@ -14,26 +14,25 @@ namespace IFramework.KafkaTools.Controllers
     [ApiController]
     public class KafkaController : ControllerBase
     {
-        private static readonly ConcurrentDictionary<string, Consumer<string, string>> Consumers = new ConcurrentDictionary<string, Consumer<string, string>>();
         private static readonly ConcurrentDictionary<string, Producer<string, string>> Producers = new ConcurrentDictionary<string, Producer<string, string>>();
 
         [HttpPost("offset")]
         public void CommitOffset([FromBody]CommitOffsetRequest request)
         {
-            var consumer = GetConsumer(request.Broker, request.Group);
-            var offsets = request.Offsets
-                                 .Select(offset => new TopicPartitionOffset(new TopicPartition(offset.Topic,
-                                                                                               offset.Partition),
-                                                                            offset.Offset))
-                                 .ToArray();
-            consumer.Commit(offsets);
+            using (var consumer = GetConsumer(request.Broker, request.Group))
+            {
+                var offsets = request.Offsets
+                                     .Select(offset => new TopicPartitionOffset(new TopicPartition(offset.Topic,
+                                                                                                   offset.Partition),
+                                                                                offset.Offset))
+                                     .ToArray();
+                consumer.Commit(offsets);
+            }
         }
 
         private Consumer<string, string> GetConsumer(string broker, string group)
         {
-            return Consumers.GetOrAdd($"{broker}.{group}", key =>
-            {
-                var consumerConfiguration = new Dictionary<string, string>
+            var consumerConfiguration = new Dictionary<string, string>
                 {
                     {"group.id", group},
                     {"client.id", $"KafkaTools.{group}"},
@@ -44,8 +43,7 @@ namespace IFramework.KafkaTools.Controllers
                     //{"statistics.interval.ms", 60000},
                     {"bootstrap.servers", broker}
                 };
-                return new Consumer<string, string>(consumerConfiguration);
-            });
+            return new Consumer<string, string>(consumerConfiguration);
         }
 
 
