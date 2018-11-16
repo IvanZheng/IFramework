@@ -1,8 +1,8 @@
-FROM microsoft/aspnetcore AS base
+FROM microsoft/dotnet:2.1.0-aspnetcore-runtime  AS base
 WORKDIR /app
 EXPOSE 80
 
-FROM microsoft/aspnetcore AS build
+FROM microsoft/dotnet:2.1.300-sdk AS build
 COPY ./ /src
 
 WORKDIR /src/iFramework.Plugins/IFramework.KafkaTools
