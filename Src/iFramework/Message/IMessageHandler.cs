@@ -5,7 +5,7 @@
         void Handle(object message);
     }
 
-    public interface IMessageHandler<in TMessage> where TMessage : class
+    public interface IMessageHandler<in TMessage>
     {
         void Handle(TMessage message);
     }

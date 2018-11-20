@@ -7,7 +7,7 @@ namespace IFramework.Message
         Task Handle(object message);
     }
 
-    public interface IMessageAsyncHandler<in TMessage> where TMessage : class
+    public interface IMessageAsyncHandler<in TMessage>
     {
         Task Handle(TMessage message);
     }

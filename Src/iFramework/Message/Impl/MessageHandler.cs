@@ -7,7 +7,7 @@ namespace IFramework.Message.Impl
 {
     class MessageHandler<TMessage> : IMessageHandler where TMessage : class
     {
-        IMessageHandler<TMessage> _messageHandler;
+        readonly IMessageHandler<TMessage> _messageHandler;
 
         public MessageHandler(IMessageHandler<TMessage> messageHandler)
         {
