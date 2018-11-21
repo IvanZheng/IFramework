@@ -1,9 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
+using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -35,6 +37,10 @@ namespace IFramework.MessageQueue.InMemory
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null, string producer = null)
         {
+            if (message is Exception ex && !(ex is DomainException))
+            {
+                message = new Exception(ex.GetBaseException().Message);
+            }
             var messageContext = new MessageContext(message, messageId)
             {
                 Producer = producer,

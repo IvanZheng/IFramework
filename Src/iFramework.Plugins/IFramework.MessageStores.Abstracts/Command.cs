@@ -1,5 +1,6 @@
 ﻿
 using System;
+using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Message;
 
@@ -14,6 +15,10 @@ namespace IFramework.MessageStores.Abstracts
         {
             if (result != null)
             {
+                if (result is Exception ex && !(ex is DomainException))
+                {
+                    result = new Exception(ex.GetBaseException().Message);
+                }
                 Result = result.ToJson();
                 ResultType = result.GetType().GetFullNameWithAssembly();
             }

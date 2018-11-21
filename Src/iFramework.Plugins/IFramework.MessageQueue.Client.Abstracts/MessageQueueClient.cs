@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.DependencyInjection;
+using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -105,6 +107,10 @@ namespace IFramework.MessageQueue.Client.Abstracts
                                            SagaInfo sagaInfo = null,
                                            string producer = null)
         {
+            if (message is Exception ex && !(ex is DomainException))
+            {
+                message = new Exception(ex.GetBaseException().Message);
+            }
             return _clientProvider.WrapMessage(message,
                                                correlationId,
                                                topic,
