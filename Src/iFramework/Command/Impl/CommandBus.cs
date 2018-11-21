@@ -166,13 +166,14 @@ namespace IFramework.Command.Impl
                 Logger.LogError(noMessageIdException, $"{command.ToJson()}");
                 throw noMessageIdException;
             }
-            string commandKey = null;
+            string commandKey = command.Key;
             if (command is ILinearCommand linearCommand)
             {
                 var linearKey = _linearCommandManager.GetLinearKey(linearCommand);
                 if (linearKey != null)
                 {
                     commandKey = linearKey.ToString();
+                    command.Key = commandKey;
                 }
             }
             IMessageContext commandContext = null;
