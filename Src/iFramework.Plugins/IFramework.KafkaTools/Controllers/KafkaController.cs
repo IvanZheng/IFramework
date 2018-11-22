@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using IFramework.Infrastructure;
 using IFramework.KafkaTools.Models;
 using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.AspNetCore.Mvc;
@@ -68,7 +69,11 @@ namespace IFramework.KafkaTools.Controllers
             var result = await producer.ProduceAsync(produceMessage.Topic, new Message<string, string>
             {
                 Key = produceMessage.Key,
-                Value = produceMessage.Message
+                Value = new
+                {
+                    Headers = produceMessage.MessageHeaders,
+                    Payload = produceMessage.MessagePayload.ToJson()
+                }.ToJson()
             });
             return result;
         }

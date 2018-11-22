@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Unity;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
@@ -33,7 +34,7 @@ namespace IFramework.KafkaTools
         
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -48,6 +49,9 @@ namespace IFramework.KafkaTools
             {
                 c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
             });
+            return ObjectProviderFactory.Instance
+                                        .Populate(services)
+                                        .Build();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

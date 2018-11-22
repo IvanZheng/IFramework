@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace IFramework.KafkaTools.Models
 {
@@ -10,6 +11,7 @@ namespace IFramework.KafkaTools.Models
         public string Broker { get;set; }
         public string Topic { get; set; }
         public string Key { get; set; }
-        public string Message { get;set; }
+        public JObject MessageHeaders { get;set; }
+        public JObject MessagePayload { get;set; }
     }
 }
