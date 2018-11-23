@@ -34,7 +34,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             TopicClients = new ConcurrentDictionary<string, IMessageProducer>();
             Subscribers = new List<IMessageConsumer>();
             QueueConsumers = new List<IMessageConsumer>();
-            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
         }
 
 

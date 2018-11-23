@@ -26,7 +26,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
         {
             DbContexts = new List<MsDbContext>();
             EventBus = eventBus;
-            Logger = loggerFactory.CreateLogger(GetType().Name);
+            Logger = loggerFactory.CreateLogger(GetType());
         }
 
         public void Dispose()

@@ -31,7 +31,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
     public class KafkaProducer<TKey, TValue>
     {
         public ProducerConfig Config { get; private set; }
-        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>).Name);
+        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>));
         private readonly Producer<TKey, TValue> _producer;
         private readonly string _topic;
 

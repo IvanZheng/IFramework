@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using IFramework.Infrastructure;
 
 namespace Microsoft.Extensions.Logging
@@ -108,6 +111,109 @@ namespace Microsoft.Extensions.Logging
         public static void LogCritical(this ILogger logger, object state, Func<object, Exception, string> formatter = null)
         {
             logger.Log(LogLevel.Critical, new EventId(), state, null, formatter ?? MessageFormatter);
+        }
+
+        public static ILogger[] GetLoggers(this ILoggerFactory loggerFactory)
+        {
+            dynamic loggerSet = loggerFactory.GetType()
+                                           .GetField("_loggers", BindingFlags.Instance | BindingFlags.NonPublic)
+                                           ?.GetValue(loggerFactory);
+          
+            dynamic loggersArray =  loggerSet?.GetType().GetProperty("Values")?.GetValue(loggerSet);
+            object[] loggers = loggersArray != null ? Enumerable.ToArray(loggersArray) : null;
+            return loggers?.Cast<ILogger>().ToArray();
+        }
+
+        public static ILogger GetInternalLogger(this ILogger logger)
+        {
+            if (logger.GetType().IsGenericType)
+            {
+                logger = logger.GetType()
+                               .GetField("_logger", 
+                                         BindingFlags.Instance | BindingFlags.NonPublic)
+                               ?.GetValue(logger) as ILogger;
+            }
+           
+            if (logger == null)
+            {
+                throw new Exception("Can't get internal logger!");
+            }
+
+            return logger;
+        }
+
+        public static LoggerInfo GetInfo(this ILogger logger)
+        {
+            logger = logger.GetInternalLogger();
+            var loggers = logger.GetType()
+                                .GetProperty("Loggers")
+                                ?.GetValue(logger) as Array;
+            if (loggers == null)
+            {
+                throw new Exception("Can't get loggerInformations");
+            }
+
+            LoggerInfo loggerInfo = new LoggerInfo();
+            for (int i = 0;  i < loggers.Length; i ++)
+            {
+                var loggerInformation = loggers.GetValue(i);
+                if (loggerInformation != null)
+                {
+                    var value = loggerInformation.GetType()
+                                     .GetProperty("MinLevel")
+                                     ?.GetValue(loggerInformation) ?? LogLevel.None;
+                    var currentLevel = (LogLevel)value;
+                    if (currentLevel < loggerInfo.MinLevel)
+                    {
+                        loggerInfo = new LoggerInfo(loggerInformation.GetType()
+                                                                     .GetProperty("Category")
+                                                                     ?.GetValue(loggerInformation)
+                                                                     ?.ToString(),
+                                                    currentLevel);
+                    }
+                }
+            }
+
+            return loggerInfo;
+        }
+
+        public static void SetMinLevel(this ILogger logger, LogLevel minLevel)
+        {
+            logger = logger.GetInternalLogger();
+            var loggers = logger.GetType()
+                                .GetProperty("Loggers")
+                                ?.GetValue(logger) as Array;
+            if (loggers == null)
+            {
+                throw new Exception("Can't get loggerInformations");
+            }
+            for (int i = 0;  i < loggers.Length; i ++)
+            {
+                var loggerInformation = loggers.GetValue(i);
+                if (loggerInformation != null)
+                {
+                    loggerInformation.GetType()
+                                     .GetProperty("MinLevel")
+                                     ?.SetValue(loggerInformation, minLevel);
+                    loggers.SetValue(loggerInformation, i);
+                }
+            }
+        }
+    }
+
+    public class LoggerInfo
+    {
+        public string Name { get; set; }
+        public LogLevel MinLevel { get; set; }
+
+        public LoggerInfo()
+        {
+            MinLevel = LogLevel.None;
+        }
+        public LoggerInfo(string name, LogLevel minLevel)
+        {
+            Name = name;
+            MinLevel = minLevel;
         }
     }
 }

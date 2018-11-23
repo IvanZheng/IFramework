@@ -11,7 +11,7 @@ namespace IFramework.MessageQueue.InMemory
 {
     public class QueueClient : IMessageConsumer
     {
-        protected static ILogger Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(nameof(SubscriptionClient));
+        protected static ILogger Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger<QueueClient>();
         private readonly BlockingCollection<IMessageContext> _messageQueue;
         private readonly OnMessagesReceived _onMessagesReceived;
         private CancellationTokenSource _cancellationTokenSource;

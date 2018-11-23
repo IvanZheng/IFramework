@@ -20,7 +20,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         private readonly string _exchange;
         private readonly string _topic;
         private readonly IBasicProperties _properties;
-        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(RabbitMQProducer).Name);
+        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger<RabbitMQProducer>();
 
         public RabbitMQProducer(IModel channel, string exchange, string topic, ProducerConfig config = null)
         {

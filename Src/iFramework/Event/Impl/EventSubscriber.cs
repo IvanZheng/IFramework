@@ -59,7 +59,7 @@ namespace IFramework.Event.Impl
                                                         BatchCount = ConsumerConfig.MailboxProcessBatchCount
                                                     }),
                                                     loggerFactory.CreateLogger<MailboxProcessor>());
-            Logger = loggerFactory.CreateLogger(GetType().Name);
+            Logger = loggerFactory.CreateLogger(GetType());
         }
 
         public string Producer => _producer ?? (_producer = $"{SubscriptionName}.{ConsumerId}");

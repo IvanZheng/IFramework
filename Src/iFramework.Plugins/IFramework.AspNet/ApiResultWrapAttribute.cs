@@ -28,8 +28,7 @@ namespace IFramework.AspNet
                                     .RequestServices
                                     .GetService<ILoggerFactory>()
                                     .CreateLogger(context.Controller
-                                                         .GetType()
-                                                         .Name);
+                                                         .GetType());
                 ApiResult exceptionResult;
                 var ex = OnException(context.Exception);
                 if (ex is DomainException domainException)

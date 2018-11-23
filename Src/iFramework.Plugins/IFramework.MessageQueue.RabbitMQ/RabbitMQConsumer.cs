@@ -17,7 +17,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         private readonly string[] _topics;
         private readonly string _groupId;
         private readonly OnRabbitMQMessageReceived _onMessageReceived;
-        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(RabbitMQConsumer).Name);
+        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger<RabbitMQConsumer>();
 
         public RabbitMQConsumer(IModel channel, 
                                 string[] topics,

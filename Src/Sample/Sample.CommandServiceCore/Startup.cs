@@ -210,7 +210,10 @@ namespace Sample.CommandServiceCore
                 routes.MapRoute("default",
                                 "{controller=Home}/{action=Index}/{id?}");
             });
-            var logger = loggerFactory.CreateLogger<Startup>();
+
+            app.UseLogLevelController();
+            var logger = loggerFactory.CreateLogger<Startup>(); 
+            logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
         }
 

@@ -34,7 +34,7 @@ namespace IFramework.Message.Impl
             MessageQueueClient = messageQueueClient;
             DefaultTopic = defaultTopic;
             MessageStateQueue = new BlockingCollection<MessageState>();
-            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType().Name);
+            Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
         }
 
         protected BlockingCollection<MessageState> MessageStateQueue { get; set; }
