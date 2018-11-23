@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.AspNet;
@@ -97,6 +98,19 @@ namespace Sample.CommandServiceCore.Controllers
             {
                 var profile = Configuration.Get("Debug");
                 var member = Configuration.Get("Member:A");
+
+                dynamic logger = typeof(Microsoft.Extensions.Logging.Logger<Sample.CommandServiceCore.Controllers.HomeController>).GetField("_logger", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(_logger);
+
+                var loggers = logger.GetType().GetProperty("Loggers").GetValue(logger) as Array;
+              
+                for (int i = 0;  i < loggers.Length; i ++)
+                {
+                    var loggerInformation = loggers.GetValue(i);
+                    loggerInformation.GetType().GetProperty("MinLevel").SetValue(loggerInformation, (LogLevel?)LogLevel.Debug);
+                    loggers.SetValue(loggerInformation, i);
+                }
+                
+
                 _logger.LogDebug(new {profile, member});
                 _logger.LogDebug("index test");
                 return View();
