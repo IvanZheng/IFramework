@@ -25,6 +25,7 @@ namespace IFramework.AspNet
         /// <summary>Creates a new instance of the StaticFileMiddleware.</summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="hostingEnv">The <see cref="T:Microsoft.AspNetCore.Hosting.IHostingEnvironment" /> used by this middleware.</param>
+        /// <param name="loggerFactory"></param>
         public LogLevelControllerMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, ILoggerFactory loggerFactory)
         {
             if (hostingEnv == null)
@@ -65,6 +66,10 @@ namespace IFramework.AspNet
 
                     var logger = _loggerFactory.CreateLogger(request.Name);
                     logger.SetMinLevel(request.MinLevel);
+                }
+                else
+                {
+                    await _next(context);
                 }
             }
             catch (Exception e)
