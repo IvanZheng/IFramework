@@ -150,10 +150,10 @@ namespace IFramework.MessageStores.Abstracts
            
             eventEntityBuilder.Property(e => e.Name)
                               .HasMaxLength(200);
-            
             eventEntityBuilder.Property(e => e.AggregateRootId)
                               .HasMaxLength(200);
-           
+            eventEntityBuilder.Property(e => e.CorrelationId)
+                              .HasMaxLength(200);
             eventEntityBuilder.Property(e => e.Topic)
                               .HasMaxLength(200);
            
