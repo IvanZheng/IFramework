@@ -8,7 +8,9 @@ namespace IFramework.Domain
     public abstract class AggregateRoot : Entity, IAggregateRoot
     {
         private string _aggreagetRootType;
-        private readonly Queue<IAggregateRootEvent> _eventQueue = new Queue<IAggregateRootEvent>();
+
+        private Queue<IAggregateRootEvent> _eventQueue;
+        private Queue<IAggregateRootEvent> EventQueue => _eventQueue ?? (_eventQueue = new Queue<IAggregateRootEvent>());
 
         private string AggregateRootName
         {
@@ -17,8 +19,10 @@ namespace IFramework.Domain
                 if (string.IsNullOrWhiteSpace(_aggreagetRootType))
                 {
                     var aggreagetRootType = GetType();
-                    if ("EntityProxyModule" == GetType().Module.ToString())
+                    if ("EntityProxyModule" == GetType().Module.ToString() && aggreagetRootType.BaseType != null)
+                    {
                         aggreagetRootType = aggreagetRootType.BaseType;
+                    }
                     _aggreagetRootType = aggreagetRootType.FullName;
                 }
                 return _aggreagetRootType;
@@ -27,24 +31,24 @@ namespace IFramework.Domain
 
         public IEnumerable<IAggregateRootEvent> GetDomainEvents()
         {
-            return _eventQueue.ToList();
+            return EventQueue.ToList();
         }
 
         public void ClearDomainEvents()
         {
-            _eventQueue.Clear();
+            EventQueue.Clear();
         }
 
         public virtual void Rollback()
         {
-            _eventQueue.Clear();
+            EventQueue.Clear();
         }
 
         protected virtual void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IAggregateRootEvent
         {
             HandleEvent(@event);
             @event.AggregateRootName = AggregateRootName;
-            _eventQueue.Enqueue(@event);
+            EventQueue.Enqueue(@event);
         }
 
         protected virtual void OnException<TDomainException>(TDomainException exception) where TDomainException : IAggregateRootExceptionEvent
