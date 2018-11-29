@@ -112,9 +112,9 @@ namespace IFramework.AspNet
             return string.IsNullOrWhiteSpace(s);
         }
 
-        public static IApplicationBuilder UseLogLevelController(this IApplicationBuilder app)
+        public static IApplicationBuilder UseLogLevelController(this IApplicationBuilder app, string path = "/api/logLevels")
         {
-            app.Map(PathString.FromUriComponent("/logLevel"), 
+            app.Map(PathString.FromUriComponent(path), 
                     configuration => { configuration.UseMiddleware<LogLevelControllerMiddleware>(); });
             return app;
         }
