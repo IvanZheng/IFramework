@@ -112,6 +112,13 @@ namespace IFramework.AspNet
             return string.IsNullOrWhiteSpace(s);
         }
 
+        public static IApplicationBuilder UseMessageProcessorDashboardMiddleware(this IApplicationBuilder app, string path = "/api/messageProcessors")
+        {
+            app.Map(PathString.FromUriComponent(path),
+                    configuration => { configuration.UseMiddleware<MessageProcessorDashboardMiddleware>(); });
+            return app;
+        }
+
         public static IApplicationBuilder UseLogLevelController(this IApplicationBuilder app, string path = "/api/logLevels")
         {
             app.Map(PathString.FromUriComponent(path), 

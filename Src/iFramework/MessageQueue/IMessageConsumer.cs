@@ -7,7 +7,7 @@ namespace IFramework.MessageQueue
     public interface IMessageConsumer : ICommitOffsetable
     {
         string Id { get; }
-
+        string Status { get; }
         void Start();
         void Stop();
     }

@@ -41,6 +41,8 @@ namespace IFramework.MessageQueue.InMemory
         {
         }
 
+        public string Status => $"{Id}: messageCount: {_messageQueue.Count}";
+
         public void Start()
         {
             _cancellationTokenSource = new CancellationTokenSource();
@@ -61,6 +63,7 @@ namespace IFramework.MessageQueue.InMemory
         }
 
         public string Id { get; set; }
+
 
 
         private void ReceiveMessages(CancellationTokenSource cancellationTokenSource)

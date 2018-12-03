@@ -66,7 +66,8 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(CommandQueueName))
                 {
-                    InternalConsumer = MessageQueueClient.StartQueueClient(CommandQueueName, ConsumerId,
+                    InternalConsumer = MessageQueueClient.StartQueueClient(CommandQueueName, 
+                                                                           ConsumerId,
                                                                            OnMessageReceived,
                                                                            ConsumerConfig);
                 }
@@ -87,7 +88,7 @@ namespace IFramework.Command.Impl
 
         public string GetStatus()
         {
-            return ToString();
+            return $"{Producer}: {InternalConsumer?.Status}";
         }
 
         public decimal MessageCount { get; set; }

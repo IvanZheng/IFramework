@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using IFramework.Command;
 using IFramework.Command.Impl;
 using IFramework.Config;
@@ -10,6 +11,7 @@ namespace IFramework.MessageQueue
 {
     public static class MessageQueueFactory
     {
+        public static ConcurrentBag<IMessageProcessor> MessageProcessors = new ConcurrentBag<IMessageProcessor>(); 
         public static ICommandBus GetCommandBus()
         {
             return ObjectProviderFactory.GetService<ICommandBus>();
@@ -40,6 +42,7 @@ namespace IFramework.MessageQueue
                                                        commandQueue,
                                                        consumerId,
                                                        consumerConfig);
+            MessageProcessors.Add(commandConsumer);
             return commandConsumer;
         }
 
@@ -50,11 +53,13 @@ namespace IFramework.MessageQueue
                                                               ConsumerConfig consumerConfig = null,
                                                               Func<string[], bool> tagFilter = null)
         {
-            return CreateEventSubscriber(new[] {new TopicSubscription(topic, tagFilter)},
+            var eventSubscriber = CreateEventSubscriber(new[] {new TopicSubscription(topic, tagFilter)},
                                          subscription,
                                          consumerId,
                                          handlerProviderNames,
                                          consumerConfig);
+            MessageProcessors.Add(eventSubscriber);
+            return eventSubscriber;
         }
 
         public static IMessageProcessor CreateEventSubscriber(TopicSubscription[] topicSubscriptions,
@@ -77,6 +82,7 @@ namespace IFramework.MessageQueue
                                                       topicSubscriptions,
                                                       consumerId,
                                                       consumerConfig);
+            MessageProcessors.Add(eventSubscriber);
             return eventSubscriber;
         }
     }

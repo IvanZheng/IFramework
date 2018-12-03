@@ -96,7 +96,7 @@ namespace IFramework.Event.Impl
 
         public string GetStatus()
         {
-            return $"Handled message count {MessageCount}";
+            return $"{Producer}: {InternalConsumer?.Status}";
         }
 
         public decimal MessageCount { get; set; }
@@ -165,8 +165,7 @@ namespace IFramework.Event.Impl
                                         }
                                         else
                                         {
-                                            await Task.Run(() => { ((dynamic) messageHandler).Handle((dynamic) message); })
-                                                      .ConfigureAwait(false);
+                                             ((dynamic) messageHandler).Handle((dynamic) message);
                                         }
 
                                         //get commands to be sent

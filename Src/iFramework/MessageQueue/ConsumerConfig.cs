@@ -12,7 +12,7 @@ namespace IFramework.MessageQueue
         public int BackOffIncrement { get; set; } = 30;
         public int FullLoadThreshold { get; set; } = 1000;
         public int WaitInterval { get; set; } = 1000;
-        public int MailboxProcessBatchCount { get; set; } = 100;
+        public int MailboxProcessBatchCount { get; set; } = 20;
         public string AutoOffsetReset { get; set; } = MessageQueue.AutoOffsetReset.Smallest;
         public Dictionary<string, object> Extensions { get; set; } = new Dictionary<string, object>();
 

@@ -67,7 +67,7 @@ namespace Sample.ApplicationEventSubscriber.Community
         public void Handle(AccountRegistered @event)
         {
             Console.Write("account({0}) registered at {1}", @event.AccountID, @event.UserName);
-            _eventBus.SendCommand(new Login {UserName = "ivan", Password = "123456"});
+           // _eventBus.SendCommand(new Login {UserName = @event.UserName, Password = @event.Password});
         }
     }
 }

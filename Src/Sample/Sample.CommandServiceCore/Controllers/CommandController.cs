@@ -25,5 +25,13 @@ namespace Sample.CommandServiceCore.Controllers
 
         [HttpPost("{commandName}")]
         public Task<object> Post([FromBody] ICommand command) => _commandBus.ExecuteAsync(command);
+
+        [HttpPost("send/{commandName}")]
+        public async Task<object> Send([FromBody] ICommand command)
+        {
+            var sendResponse = await _commandBus.SendAsync(command)
+                                                .ConfigureAwait(false);
+            return sendResponse.MessageContext;
+        }
     }
 }
