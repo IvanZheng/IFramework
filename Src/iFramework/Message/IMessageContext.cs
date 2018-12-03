@@ -8,7 +8,7 @@ namespace IFramework.Message
     public interface IMessageContext
     {
         IDictionary<string, object> Headers { get; }
-        string Key { get; }
+        string Key { get; set; }
         string[] Tags { get; }
         string MessageId { get; }
         string CorrelationId { get; set; }

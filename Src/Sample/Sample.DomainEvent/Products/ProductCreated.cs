@@ -6,8 +6,8 @@ namespace Sample.DomainEvents.Products
     [Topic("ProductDomainEvent")]
     public class ProductCreated : AggregateRootEvent
     {
-        public ProductCreated(Guid productId, string name, int count, DateTime createTime)
-            : base(productId)
+        public ProductCreated(Guid aggregateRootId, string name, int count, DateTime createTime)
+            : base(aggregateRootId)
         {
             Name = name;
             Count = count;

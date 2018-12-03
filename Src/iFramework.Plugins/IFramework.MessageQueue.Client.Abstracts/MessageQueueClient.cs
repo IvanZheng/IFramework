@@ -111,7 +111,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             {
                 message = new Exception(ex.GetBaseException().Message);
             }
-            return _clientProvider.WrapMessage(message,
+            var messageContext = _clientProvider.WrapMessage(message,
                                                correlationId,
                                                topic,
                                                key,
@@ -119,6 +119,12 @@ namespace IFramework.MessageQueue.Client.Abstracts
                                                messageId,
                                                sagaInfo,
                                                producer);
+            if (string.IsNullOrWhiteSpace(messageContext.Key))
+            {
+                messageContext.Key = messageContext.MessageId;
+            }
+
+            return messageContext;
         }
 
         public void Dispose()

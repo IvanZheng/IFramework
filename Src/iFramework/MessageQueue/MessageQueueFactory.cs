@@ -58,7 +58,6 @@ namespace IFramework.MessageQueue
                                          consumerId,
                                          handlerProviderNames,
                                          consumerConfig);
-            MessageProcessors.Add(eventSubscriber);
             return eventSubscriber;
         }
 

@@ -77,7 +77,7 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()
+                         //.UseRelationalMessageStore<SampleModelContext>()
                          .UseMongoDbMessageStore<SampleModelContext>()
                          //.UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitConnectionFactory)
@@ -92,7 +92,7 @@ namespace Sample.CommandServiceCore
                              //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
                              options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                              //options.UseInMemoryDatabase(nameof(SampleModelContext));
-                         },2000);
+                         });
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)

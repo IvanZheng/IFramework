@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue
 {
@@ -17,7 +19,7 @@ namespace IFramework.MessageQueue
         protected SortedSet<long> Offsets;
         protected SortedList<long, MessageOffset> RemovedMessageOffsets;
         protected int Partition;
-
+        protected ILogger _logger;
         public static string GetSlidingDoorKey(string topic, int partition)
         {
             return $"{topic}.{partition}";
@@ -33,6 +35,8 @@ namespace IFramework.MessageQueue
             Offsets = new SortedSet<long>();
             RemovedMessageOffsets = new SortedList<long, MessageOffset>();
             CommitPerMessage = commitPerMessage;
+            _logger = ObjectProviderFactory.GetService<ILoggerFactory>()
+                                           .CreateLogger(GetType());
         }
 
         public int MessageCount => Offsets.Count;
@@ -51,6 +55,7 @@ namespace IFramework.MessageQueue
 
         public void RemoveOffset(MessageOffset messageOffset)
         {
+            _logger.LogDebug($"{messageOffset.Broker}.{messageOffset.Topic}.{messageOffset.Partition} remove offset {messageOffset.Offset} remain:{Offsets.Count}");
             if (CommitPerMessage)
             {
                 CommitOffset(messageOffset);

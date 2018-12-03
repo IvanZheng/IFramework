@@ -26,7 +26,7 @@ namespace IFramework.Message.Impl
 
         public IDictionary<string, object> Headers => null;
 
-        public string Key => null;
+        public string Key { get; set; }
         public string[] Tags => null;
 
         public SagaInfo SagaInfo => null;
