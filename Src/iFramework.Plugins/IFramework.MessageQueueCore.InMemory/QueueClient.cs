@@ -57,6 +57,8 @@ namespace IFramework.MessageQueue.InMemory
 
         public string Id { get; set; }
 
+        public string Status => $"{Id}: messageCount: {_messageQueue.Count}";
+
         private void ReceiveMessages(CancellationTokenSource cancellationTokenSource)
         {
             #region peek messages that not been consumed since last time

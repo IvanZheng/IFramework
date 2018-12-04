@@ -4,14 +4,14 @@ namespace Sample.DomainEvents.Community
 {
     public class ItemRegisted : AggregateRootEvent
     {
-        public ItemRegisted(Guid id)
-            : base(id) { }
+        public ItemRegisted(Guid aggregateRootId)
+            : base(aggregateRootId) { }
     }
 
     public class PeopleRegisted : ItemRegisted
     {
-        public PeopleRegisted(Guid accountId, string username, string password, DateTime registerTime)
-            : base(accountId)
+        public PeopleRegisted(Guid aggregateRootId, string username, string password, DateTime registerTime)
+            : base(aggregateRootId)
         {
             UserName = username;
             Password = password;
@@ -25,12 +25,12 @@ namespace Sample.DomainEvents.Community
 
     public class AccountRegistered : PeopleRegisted
     {
-        public AccountRegistered(Guid accountId,
+        public AccountRegistered(Guid aggregateRootId,
                                  string username,
                                  string password,
                                  string email,
                                  DateTime registerTime)
-            : base(accountId, username, password, registerTime)
+            : base(aggregateRootId, username, password, registerTime)
         {
             Email = email;
         }
@@ -40,8 +40,8 @@ namespace Sample.DomainEvents.Community
 
     public class AccountModified : AggregateRootEvent
     {
-        public AccountModified(Guid accountId, string email)
-            : base(accountId)
+        public AccountModified(Guid aggregateRootId, string email)
+            : base(aggregateRootId)
         {
             Email = email;
         }

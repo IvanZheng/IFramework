@@ -80,7 +80,7 @@
                 }
             });
 
-            $("#doApi").click(function () { 
+            $("#doApi").click(function () {
                 var batchCount = parseInt($("#batchCount").val());
                 for (var i = 0; i < batchCount; i++) {
                     $.post("@Url.Content("~/home/doapi")", null, function (result) {
@@ -123,8 +123,16 @@
             $("#batchRegisterCommand").click(function() {
                 var username = $("#username").val();
                 var password = $("#password").val();
-                var registerCommand = { UserName: username, Password: password, Email: "ivan@r-soft.cn" };
-                batchCommandTest("Register", registerCommand, $("#batchCount").val());
+                var batchCount = $("#batchCount").val();
+                for (var i = 0;  i < batchCount; i ++)
+                {
+                    var registerCommand = {
+                        UserName: username + "_" + i + "_" + new Date().getTime(), 
+                        Password: password, 
+                        Email: "ivan@r-soft.cn"
+                    };
+                    doCommand("send/Register", registerCommand);
+                }
             });
 
             $("#batchLoginCommand").click(function() {

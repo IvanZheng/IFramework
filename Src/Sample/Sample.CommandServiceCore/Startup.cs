@@ -77,21 +77,21 @@ namespace Sample.CommandServiceCore
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()
-                         //.UseMongoDbMessageStore<SampleModelContext>()
-                         .UseInMemoryMessageQueue()
+                         //.UseRelationalMessageStore<SampleModelContext>()
+                         .UseMongoDbMessageStore<SampleModelContext>()
+                         //.UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitConnectionFactory)
-                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
                          .UseDbContextPool<SampleModelContext>(options =>
                          {
-                             options.EnableSensitiveDataLogging();
+                             //options.EnableSensitiveDataLogging();
                              //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
-                             //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             options.UseInMemoryDatabase(nameof(SampleModelContext));
+                             options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
+                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
         }
 
@@ -212,6 +212,8 @@ namespace Sample.CommandServiceCore
             });
 
             app.UseLogLevelController();
+            app.UseMessageProcessorDashboardMiddleware();
+
             var logger = loggerFactory.CreateLogger<Startup>(); 
             logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
@@ -226,13 +228,13 @@ namespace Sample.CommandServiceCore
                 MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
             _commandConsumer1.Start();
 
-            _commandConsumer2 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
-            _commandConsumer2.Start();
+            //_commandConsumer2 =
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
+            //_commandConsumer2.Start();
 
-            _commandConsumer3 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
-            _commandConsumer3.Start();
+            //_commandConsumer3 =
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
+            //_commandConsumer3.Start();
 
             #endregion
 

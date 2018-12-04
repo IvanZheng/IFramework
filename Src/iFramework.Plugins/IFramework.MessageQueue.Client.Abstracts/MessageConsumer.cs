@@ -17,7 +17,6 @@ namespace IFramework.MessageQueue.Client.Abstracts
         protected ConsumerConfig ConsumerConfig;
         protected Task ConsumerTask;
         protected ILogger Logger;
-
         protected MessageConsumer(string[] topics,
                                   string groupId,
                                   string consumerId,
@@ -37,6 +36,15 @@ namespace IFramework.MessageQueue.Client.Abstracts
         public string ConsumerId { get; protected set; }
         public string Id => $"{GroupId}.{ConsumerId}";
 
+        public string Status
+        {
+            get
+            {
+                var pendingMessageCount = SlidingDoors.Sum(d => d.Value.MessageCount);
+                var slidingDoors = SlidingDoors.Select(d => new { d.Key, d.Value.MessageCount }).ToArray();
+                return new {pendingMessageCount, slidingDoors}.ToJson();
+            }
+        }
         public virtual void Start()
         {
             CancellationTokenSource = new CancellationTokenSource();
@@ -100,10 +108,11 @@ namespace IFramework.MessageQueue.Client.Abstracts
 
         protected void BlockIfFullLoad()
         {
-            while (SlidingDoors.Sum(d => d.Value.MessageCount) > ConsumerConfig.FullLoadThreshold)
+            var remainMessageCount = 0;
+            while ((remainMessageCount = SlidingDoors.Sum(d => d.Value.MessageCount)) > ConsumerConfig.FullLoadThreshold)
             {
                 Task.Delay(ConsumerConfig.WaitInterval).Wait();
-                Logger.LogWarning($"{Id} is full load sleep 1000 ms");
+                Logger.LogWarning($"{Id} is full load sleep {ConsumerConfig.WaitInterval} ms, remain message count:{remainMessageCount} threshold:{ConsumerConfig.FullLoadThreshold}");
             }
         }
 

@@ -60,7 +60,10 @@ namespace IFramework.MessageQueue.InMemory
             {
                 messageContext.Key = key;
             }
-
+            if (string.IsNullOrWhiteSpace(messageContext.Key))
+            {
+                messageContext.Key = messageContext.MessageId;
+            }
             if (!string.IsNullOrEmpty(replyEndPoint))
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;

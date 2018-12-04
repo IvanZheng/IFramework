@@ -66,7 +66,8 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(CommandQueueName))
                 {
-                    InternalConsumer = MessageQueueClient.StartQueueClient(CommandQueueName, ConsumerId,
+                    InternalConsumer = MessageQueueClient.StartQueueClient(CommandQueueName, 
+                                                                           ConsumerId,
                                                                            OnMessageReceived,
                                                                            ConsumerConfig);
                 }
@@ -87,7 +88,7 @@ namespace IFramework.Command.Impl
 
         public string GetStatus()
         {
-            return ToString();
+            return $"{Producer}: {InternalConsumer?.Status}";
         }
 
         public decimal MessageCount { get; set; }
@@ -134,7 +135,6 @@ namespace IFramework.Command.Impl
                 var sagaInfo = commandContext.SagaInfo;
                 if (command == null)
                 {
-                    InternalConsumer.CommitOffset(commandContext);
                     return;
                 }
 
@@ -344,9 +344,8 @@ namespace IFramework.Command.Impl
             {
                 watch.Stop();
                 Logger.LogDebug($"{commandContext.ToJson()} consumed cost:{watch.ElapsedMilliseconds}ms");
+                InternalConsumer.CommitOffset(commandContext);
             }
-
-            InternalConsumer.CommitOffset(commandContext);
         }
     }
 }

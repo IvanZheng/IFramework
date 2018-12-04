@@ -40,20 +40,23 @@ namespace IFramework.MessageQueue.RabbitMQ
         }
 
         public string Id { get; }
+        protected EventingBasicConsumer _consumer;
         public void Start()
         {
-            var consumer = new EventingBasicConsumer(_channel);
+            _consumer = new EventingBasicConsumer(_channel);
             
-            consumer.Received += (model, ea) =>
+            _consumer.Received += (model, ea) =>
             {
                 _logger.LogDebug($"consumer({Id}) receive message, routingKey: {ea.RoutingKey} deliveryTag: {ea.DeliveryTag}");
                 _onMessageReceived(this, ea);
             };
             _channel.BasicConsume(queue: _groupId,
                                   autoAck: false,
-                                  consumer: consumer);
+                                  consumer: _consumer);
 
         }
+
+        public string Status => $"{Id}:{_consumer}";
 
         public void Stop()
         {
