@@ -5,11 +5,11 @@ using Sample.Domain.Model;
 
 namespace Sample.Persistence
 {
-    public class SampleModelContext : MessageStore
+    public class SampleModelContext : IFramework.MessageStores.MongoDb.MessageStore
     {
         public SampleModelContext(DbContextOptions options) : base(options)
         {
-            Database.EnsureCreated();
+            //Database.EnsureCreated();
         }
 
         public DbSet<Account> Accounts { get; set; }
