@@ -5,7 +5,7 @@ using Sample.Domain.Model;
 
 namespace Sample.Persistence
 {
-    public class SampleModelContext : IFramework.MessageStores.MongoDb.MessageStore
+    public class SampleModelContext : MessageStore
     {
         public SampleModelContext(DbContextOptions options) : base(options)
         {

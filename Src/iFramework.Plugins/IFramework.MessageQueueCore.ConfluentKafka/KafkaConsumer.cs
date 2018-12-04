@@ -81,6 +81,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             try
             {
+                Logger.LogDebug($"consume message: {message.Topic}.{message.Partition}.{message.Offset}");
                 AddMessageOffset(message.Topic, message.Partition, message.Offset);
                 OnMessageReceived(this, message);
             }

@@ -135,7 +135,6 @@ namespace IFramework.Command.Impl
                 var sagaInfo = commandContext.SagaInfo;
                 if (command == null)
                 {
-                    InternalConsumer.CommitOffset(commandContext);
                     return;
                 }
 
@@ -345,9 +344,8 @@ namespace IFramework.Command.Impl
             {
                 watch.Stop();
                 Logger.LogDebug($"{commandContext.ToJson()} consumed cost:{watch.ElapsedMilliseconds}ms");
+                InternalConsumer.CommitOffset(commandContext);
             }
-
-            InternalConsumer.CommitOffset(commandContext);
         }
     }
 }

@@ -111,16 +111,15 @@ namespace IFramework.Event.Impl
                 if (message == null)
                 {
                     Logger.LogDebug($"message is null! messageContext: {eventContext.ToJson()}");
-                    InternalConsumer.CommitOffset(eventContext);
                     return;
                 }
+
                 var sagaInfo = eventContext.SagaInfo;
                 var messageHandlerTypes = HandlerProvider.GetHandlerTypes(message.GetType());
 
                 if (messageHandlerTypes.Count == 0)
                 {
                     Logger.LogDebug($"event has no handlerTypes, messageType:{message.GetType()} message:{message.ToJson()}");
-                    InternalConsumer.CommitOffset(eventContext);
                     return;
                 }
 
@@ -141,7 +140,7 @@ namespace IFramework.Event.Impl
                             subscriptionName
                         }))
                         {
-                            if (!await messageStore.HasEventHandledAsync(eventContext.MessageId, 
+                            if (!await messageStore.HasEventHandledAsync(eventContext.MessageId,
                                                                          subscriptionName)
                                                    .ConfigureAwait(false))
                             {
@@ -165,7 +164,7 @@ namespace IFramework.Event.Impl
                                         }
                                         else
                                         {
-                                             ((dynamic) messageHandler).Handle((dynamic) message);
+                                            ((dynamic) messageHandler).Handle((dynamic) message);
                                         }
 
                                         //get commands to be sent
@@ -196,9 +195,9 @@ namespace IFramework.Event.Impl
                                         eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
                                         await messageStore.HandleEventAsync(eventContext,
-                                                                 subscriptionName,
-                                                                 commandMessageStates.Select(s => s.MessageContext),
-                                                                 eventMessageStates.Select(s => s.MessageContext))
+                                                                            subscriptionName,
+                                                                            commandMessageStates.Select(s => s.MessageContext),
+                                                                            eventMessageStates.Select(s => s.MessageContext))
                                                           .ConfigureAwait(false);
 
                                         transactionScope.Complete();
@@ -256,7 +255,7 @@ namespace IFramework.Event.Impl
                                     eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
                                     await messageStore.SaveFailHandledEventAsync(eventContext, subscriptionName, e,
-                                                                      eventMessageStates.Select(s => s.MessageContext).ToArray())
+                                                                                 eventMessageStates.Select(s => s.MessageContext).ToArray())
                                                       .ConfigureAwait(false);
                                     if (eventMessageStates.Count > 0)
                                     {
@@ -272,8 +271,10 @@ namespace IFramework.Event.Impl
             {
                 Logger.LogCritical(e, $"Handle event failed event: {eventContext.ToJson()}");
             }
-
-            InternalConsumer.CommitOffset(eventContext);
+            finally
+            {
+                InternalConsumer.CommitOffset(eventContext);
+            }
         }
 
 

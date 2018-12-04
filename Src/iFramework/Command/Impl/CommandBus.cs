@@ -255,24 +255,33 @@ namespace IFramework.Command.Impl
 
         protected Task ConsumeReply(IMessageContext reply)
         {
-
-            Logger.LogInformation("Handle reply:{0} content:{1}", reply.MessageId, reply.ToJson());
-            var sagaInfo = reply.SagaInfo;
-            var correlationId = sagaInfo?.SagaId ?? reply.CorrelationId;
-            var messageState = _commandStateQueues.TryGetValue(correlationId);
-            if (messageState != null)
+            try
             {
-                _commandStateQueues.TryRemove(correlationId);
-                if (reply.Message is Exception exception)
+                Logger.LogInformation("Handle reply:{0} content:{1}", reply.MessageId, reply.ToJson());
+                var sagaInfo = reply.SagaInfo;
+                var correlationId = sagaInfo?.SagaId ?? reply.CorrelationId;
+                var messageState = _commandStateQueues.TryGetValue(correlationId);
+                if (messageState != null)
                 {
-                    messageState.ReplyTaskCompletionSource.TrySetException(exception);
-                }
-                else
-                {
-                    messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
+                    _commandStateQueues.TryRemove(correlationId);
+                    if (reply.Message is Exception exception)
+                    {
+                        messageState.ReplyTaskCompletionSource.TrySetException(exception);
+                    }
+                    else
+                    {
+                        messageState.ReplyTaskCompletionSource.TrySetResult(reply.Message);
+                    }
                 }
             }
-            _internalConsumer.CommitOffset(reply);
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+            finally
+            {
+                _internalConsumer.CommitOffset(reply);
+            }
             return Task.CompletedTask;
         }
 
