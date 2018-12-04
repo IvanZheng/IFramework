@@ -88,10 +88,10 @@ namespace Sample.CommandServiceCore
                          .UseDbContextPool<SampleModelContext>(options =>
                          {
                              //options.EnableSensitiveDataLogging();
-                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
                              //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             options.UseInMemoryDatabase(nameof(SampleModelContext));
+                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
         }
 
