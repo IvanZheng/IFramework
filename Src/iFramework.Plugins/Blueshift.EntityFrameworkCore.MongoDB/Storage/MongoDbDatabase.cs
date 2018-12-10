@@ -98,16 +98,17 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Storage
         public override async Task<int> SaveChangesAsync(IReadOnlyList<IUpdateEntry> entries,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            IEnumerable<Task<int>> tasks = Check.NotNull(entries, nameof(entries))
+            var tasks = Check.NotNull(entries, nameof(entries))
                 .ToLookup(entry => GetCollectionEntityType(entry.EntityType))
-                .Select(grouping => InvokeSaveChangesAsync(grouping, cancellationToken));
-            return await Task.WhenAll()
-                .ContinueWith(allTask => tasks.Sum(task => task.Result), cancellationToken);
+                .Select(grouping => InvokeSaveChangesAsync(grouping, cancellationToken))
+                                                .ToArray();
+            await Task.WhenAll(tasks);
+            return tasks.Sum(task => task.Result);
         }
 
         private async Task<int> InvokeSaveChangesAsync(IGrouping<IEntityType, IUpdateEntry> entryGrouping, CancellationToken cancellationToken)
             => await (Task<int>)GenericSaveChangesAsync.MakeGenericMethod(entryGrouping.Key.ClrType)
-                .Invoke(this, new object[] {entryGrouping, cancellationToken});
+                .Invoke(this, new object[] { entryGrouping, cancellationToken });
 
         private async Task<int> SaveChangesAsync<TEntity>(IEnumerable<IUpdateEntry> entries, CancellationToken cancellationToken)
         {
