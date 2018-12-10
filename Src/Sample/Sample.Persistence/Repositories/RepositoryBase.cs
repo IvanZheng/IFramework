@@ -58,5 +58,21 @@ namespace Sample.Persistence.Repositories
                             .FindAll((ISpecification<TEntity>) null, orderExpressions);
             //return base.DoFindAll(orderExpressions);
         }
+
+        protected override bool DoExists(ISpecification<TEntity> specification)
+        {
+            return Container.GetMongoDbConnection()
+                            .GetCollection<TEntity>()
+                            .AsQueryable()
+                            .Any(specification.GetExpression());
+        }
+
+        protected override Task<bool> DoExistsAsync(ISpecification<TEntity> specification)
+        {
+            return Container.GetMongoDbConnection()
+                            .GetCollection<TEntity>()
+                            .AsQueryable()
+                            .AnyAsync(specification.GetExpression());
+        }
     }
 }
