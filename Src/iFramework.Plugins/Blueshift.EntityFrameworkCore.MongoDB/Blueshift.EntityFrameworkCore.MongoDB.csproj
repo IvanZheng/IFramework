@@ -9,7 +9,7 @@
     <PackageId>IFramework.EntityFrameworkCore.Blueshift.MongoDB</PackageId>
     <Company>Ivan</Company>
     <Authors>Ivan</Authors>
-    <Version>2.1.0-prerelease-0004</Version>
+    <Version>2.1.0-prerelease-0005</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageReleaseNotes>Support dbcontextpool</PackageReleaseNotes>
   </PropertyGroup>
@@ -17,6 +17,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
   </ItemGroup>
 
 </Project>

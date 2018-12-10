@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Blueshift.EntityFrameworkCore.MongoDB;
 using IFramework.MessageStores.Abstracts;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;

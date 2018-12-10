@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Blueshift.EntityFrameworkCore.MongoDB;
 using IFramework.EntityFrameworkCore.Repositories;
 using IFramework.Infrastructure;
 using IFramework.MessageStores.MongoDb;

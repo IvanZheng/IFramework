@@ -8,6 +8,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Blueshift.EntityFrameworkCore.MongoDB;
 
 namespace IFramework.MessageStores.MongoDb
 {
@@ -60,10 +61,12 @@ namespace IFramework.MessageStores.MongoDb
             return commandHandledInfo;
         }
 
-        public override async Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
+        public override Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
             var handledEventId = $"{eventId}_{subscriptionName}";
-            return await this.GetCollection<HandledEventBase>().CountDocumentsAsync(e => e.Id == handledEventId) > 0;
+            return this.GetCollection<HandledEventBase>()
+                       .AsQueryable()
+                       .AnyAsync(e => e.Id == handledEventId);
 
             //return await HandledEvents.CountAsync(@event => @event.Id == handledEventId)
             //                          .ConfigureAwait(false) > 0;

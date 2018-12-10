@@ -1,20 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Blueshift.EntityFrameworkCore.MongoDB.Storage;
-using IFramework.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using IFramework.Infrastructure;
 
-namespace IFramework.MessageStores.MongoDb
+namespace Blueshift.EntityFrameworkCore.MongoDB
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class MongoDbExtension
     {
+        /// <summary>
+        /// GetMongoDbConnection
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <returns></returns>
         public static MongoDbConnection GetMongoDbConnection(this DbContext dbContext)
         {
             var creator = dbContext.Database.GetPropertyValue<MongoDbDatabaseCreator>("DatabaseCreator");
@@ -24,6 +29,11 @@ namespace IFramework.MessageStores.MongoDb
             return connection;
         }
 
+        /// <summary>
+        /// GetMongoDbClient
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <returns></returns>
         public static MongoClient GetMongoDbClient(this DbContext dbContext)
         {
             var connection = dbContext.GetMongoDbConnection();
@@ -32,6 +42,11 @@ namespace IFramework.MessageStores.MongoDb
                              ?.GetValue(connection) as MongoClient;
         }
 
+        /// <summary>
+        /// GetMongoDbDatabase
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <returns></returns>
         public static IMongoDatabase GetMongoDbDatabase(this DbContext dbContext)
         {
             var connection = dbContext.GetMongoDbConnection();
@@ -41,12 +56,26 @@ namespace IFramework.MessageStores.MongoDb
                              ?.GetValue(connection) as IMongoDatabase;
         }
 
+        /// <summary>
+        /// GetCollection
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="dbContext"></param>
+        /// <param name="collectionName"></param>
+        /// <returns></returns>
         public static IMongoCollection<TEntity> GetCollection<TEntity>(this DbContext dbContext, string collectionName = null)
         {
             return string.IsNullOrWhiteSpace(collectionName) ? dbContext.GetMongoDbConnection().GetCollection<TEntity>() :
                 dbContext.GetMongoDbDatabase().GetCollection<TEntity>(collectionName);
         }
 
+
+        /// <summary>
+        /// ToListAsync
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="queryable"></param>
+        /// <returns></returns>
         public static async Task<List<TEntity>> ToListAsync<TEntity>(this IQueryable<TEntity> queryable)
             where TEntity : class
         {
@@ -54,10 +83,28 @@ namespace IFramework.MessageStores.MongoDb
             return await cursor.ToListAsync();
         }
 
+        /// <summary>
+        /// ToArrayAsync
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="queryable"></param>
+        /// <returns></returns>
         public static async Task<TEntity[]> ToArrayAsync<TEntity>(this IQueryable<TEntity> queryable)
             where TEntity : class
         {
             return (await queryable.ToListAsync()).ToArray();
+        }
+
+        /// <summary>
+        /// CountAsync
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="queryable"></param>
+        /// <returns></returns>
+        public static Task<int> CountAsync<TEntity>(this IQueryable<TEntity> queryable)
+            where TEntity : class
+        {
+            return MongoQueryable.CountAsync((IMongoQueryable<TEntity>) queryable);
         }
     }
 }
