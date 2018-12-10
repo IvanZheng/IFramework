@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Blueshift.EntityFrameworkCore.MongoDB;
+using MongoDB.Driver.Linq;
 
 namespace IFramework.MessageStores.MongoDb
 {
@@ -45,11 +46,11 @@ namespace IFramework.MessageStores.MongoDb
             //var command = await Commands.FirstOrDefaultAsync(c => c.Id == commandId)
             //                            .ConfigureAwait(false);
 
-            var query = await this.GetCollection<Abstracts.Command>()
-                                    .FindAsync(c => c.Id == commandId)
-                                  .ConfigureAwait(false);
-            var command = await query.FirstOrDefaultAsync()
-                                     .ConfigureAwait(false);
+            var command = await this.GetCollection<Abstracts.Command>()
+                                    .AsQueryable()
+                                    .Where(c => c.Id == commandId)
+                                    .FirstOrDefaultAsync()
+                                    .ConfigureAwait(false);
             if (command != null)
             {
                 commandHandledInfo = new CommandHandledInfo
