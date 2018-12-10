@@ -6,12 +6,14 @@ using IFramework.Event;
 using IFramework.Exceptions;
 using IFramework.Message;
 using IFramework.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sample.ApplicationEvent;
 using Sample.Command;
 using Sample.Domain;
 using Account = Sample.Domain.Model.Account;
 using ErrorCode = Sample.DTO.ErrorCode;
+using IFramework.MessageStores.MongoDb;
 
 namespace Sample.CommandHandler.Community
 {
@@ -49,7 +51,11 @@ namespace Sample.CommandHandler.Community
         /// <param name="command"></param>
         public virtual async Task Handle(Login command)
         {
-            //_logger.LogDebug($"Handle Login command enter.");
+            //var accounts = await _domainRepository.FindAll<Account>(a => a.UserName.Equals(command.UserName)
+            //                                                              && a.Password.Equals(command.Password))
+            //                                      .ToListAsync()
+            //                                      .ConfigureAwait(false);
+            _logger.LogDebug($"Handle Login command enter.");
             var account = await _domainRepository.FindAsync<Account>(a => a.UserName.Equals(command.UserName)
                                                                           && a.Password.Equals(command.Password))
                                                  .ConfigureAwait(false);

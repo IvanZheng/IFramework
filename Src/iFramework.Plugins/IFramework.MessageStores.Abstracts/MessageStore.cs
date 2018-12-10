@@ -82,7 +82,7 @@ namespace IFramework.MessageStores.Abstracts
                                                       Exception e,
                                                       params IMessageContext[] messageContexts);
 
-        public async Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
+        public virtual async Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
         {
             CommandHandledInfo commandHandledInfo = null;
             var command = await Commands.FirstOrDefaultAsync(c => c.Id == commandId)

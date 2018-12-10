@@ -17,10 +17,10 @@ namespace IFramework.MessageStores.MongoDb
 
         protected MessageStore(DbContextOptions options) : base(options) { }
 
-         public override Task HandleEventAsync(IMessageContext eventContext,
-                                              string subscriptionName,
-                                              IEnumerable<IMessageContext> commandContexts,
-                                              IEnumerable<IMessageContext> messageContexts)
+        public override Task HandleEventAsync(IMessageContext eventContext,
+                                             string subscriptionName,
+                                             IEnumerable<IMessageContext> commandContexts,
+                                             IEnumerable<IMessageContext> messageContexts)
         {
             HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now));
             commandContexts.ForEach(commandContext =>
@@ -38,11 +38,35 @@ namespace IFramework.MessageStores.MongoDb
             return SaveChangesAsync();
         }
 
+        public override async Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
+        {
+            CommandHandledInfo commandHandledInfo = null;
+            //var command = await Commands.FirstOrDefaultAsync(c => c.Id == commandId)
+            //                            .ConfigureAwait(false);
+
+            var query = await this.GetCollection<Abstracts.Command>()
+                                    .FindAsync(c => c.Id == commandId)
+                                  .ConfigureAwait(false);
+            var command = await query.FirstOrDefaultAsync()
+                                     .ConfigureAwait(false);
+            if (command != null)
+            {
+                commandHandledInfo = new CommandHandledInfo
+                {
+                    Result = command.Reply,
+                    Id = command.Id
+                };
+            }
+            return commandHandledInfo;
+        }
+
         public override async Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
             var handledEventId = $"{eventId}_{subscriptionName}";
-            return await HandledEvents.CountAsync(@event => @event.Id == handledEventId)
-                                      .ConfigureAwait(false) > 0;
+            return await this.GetCollection<HandledEventBase>().CountDocumentsAsync(e => e.Id == handledEventId) > 0;
+
+            //return await HandledEvents.CountAsync(@event => @event.Id == handledEventId)
+            //                          .ConfigureAwait(false) > 0;
         }
 
         public override Task SaveFailHandledEventAsync(IMessageContext eventContext,

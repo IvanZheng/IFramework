@@ -224,9 +224,9 @@ namespace Sample.CommandServiceCore
             #region Command Consuemrs init
 
             var commandQueueName = "commandqueue";
-            _commandConsumer1 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
-            _commandConsumer1.Start();
+            //_commandConsumer1 =
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
+            //_commandConsumer1.Start();
 
             //_commandConsumer2 =
             //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
