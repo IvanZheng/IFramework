@@ -39,6 +39,7 @@ using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAt
 using System.Net;
 using IFramework.Infrastructure;
 using System.Collections.Generic;
+using System.Reflection;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.MessageStores.MongoDb;
@@ -216,7 +217,7 @@ namespace Sample.CommandServiceCore
 
             var logger = loggerFactory.CreateLogger<Startup>(); 
             logger.SetMinLevel(LogLevel.Information); 
-            logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
+            logger.LogInformation($"Startup configured env: {env.EnvironmentName} {Assembly.GetAssembly(GetType()).GetCustomAttribute<AssemblyFileVersionAttribute>().Version}");
         }
 
         private void StartMessageQueueComponents()
