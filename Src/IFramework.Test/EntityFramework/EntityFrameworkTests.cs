@@ -171,7 +171,7 @@ namespace IFramework.Test.EntityFramework
             {
                 //await AddUserTest();
                 var tasks = new List<Task>();
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     tasks.Add(GetUsersTest());
                 }
@@ -245,13 +245,13 @@ namespace IFramework.Test.EntityFramework
         {
             using (var scope = ObjectProviderFactory.CreateScope())
             {
-                var serviceProvider = scope.GetService<IServiceProvider>();
-                if (serviceProvider == null)
-                {
-                    var logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
-                    logger.LogError((scope as ObjectProvider)?.UnityContainer.Registrations.ToJson());
-                    Assert.NotNull(serviceProvider);
-                }
+                //var serviceProvider = scope.GetService<IServiceProvider>();
+                //if (serviceProvider == null)
+                //{
+                //    var logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+                //    logger.LogError((scope as ObjectProvider)?.UnityContainer.Registrations.ToJson());
+                //    Assert.NotNull(serviceProvider);
+                //}
 
                 //var options = new DbContextOptionsBuilder<DemoDbContext>();
                 //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
@@ -260,14 +260,18 @@ namespace IFramework.Test.EntityFramework
 
                 try
                 {
-                    var user = await dbContext.Users.FindAsync("5BEE29960CCE411C20215A17").ConfigureAwait(false);
+                    var name = $"{DateTime.Now.Ticks}";
+                    var user = await dbContext.Users
+                                              .Where(u => u.Name == name)
+                                              .ToArrayAsync()
+                                              .ConfigureAwait(false);
                    // var connection = dbContext.GetMongoDbDatabase();
-                    var users = await dbContext.Users
-                                               //.Include(u => u.Cards)
-                                               //.FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
-                                               .Take(10)
-                                               .ToListAsync()
-                                               .ConfigureAwait(false);
+                    //var users = await dbContext.Users
+                    //                           //.Include(u => u.Cards)
+                    //                           //.FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
+                    //                           .Take(10)
+                    //                           .ToListAsync()
+                    //                           .ConfigureAwait(false);
                     //foreach (var u in users)
                     //{
                     //    await u.LoadCollectionAsync(u1 => u1.Cards);

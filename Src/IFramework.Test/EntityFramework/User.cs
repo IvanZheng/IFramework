@@ -7,11 +7,18 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace IFramework.Test.EntityFramework
 {
+    public class Profile
+    {
+        public int Age { get; set; }
+        public string Brief { get; set; }
+    }
+
     public class User: TimestampedAggregateRoot
     {
         public string Id { get; protected set; }
         public string Name { get; protected set; }
         public string Gender { get; protected set; }
+        public Profile Profile { get; protected set; }
 
         public virtual ICollection<Card> Cards { get; set; } = new HashSet<Card>();
 

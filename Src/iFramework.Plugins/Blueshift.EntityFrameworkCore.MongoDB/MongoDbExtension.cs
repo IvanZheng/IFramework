@@ -79,8 +79,18 @@ namespace Blueshift.EntityFrameworkCore.MongoDB
         public static async Task<List<TEntity>> ToListAsync<TEntity>(this IQueryable<TEntity> queryable)
             where TEntity : class
         {
-            var cursor = await ((IMongoQueryable<TEntity>)queryable).ToCursorAsync();
-            return await cursor.ToListAsync();
+            if (queryable is IMongoQueryable<TEntity>)
+            {
+                var cursor = await ((IMongoQueryable<TEntity>)queryable).ToCursorAsync()
+                                                                        .ConfigureAwait(false);
+                return await cursor.ToListAsync()
+                                   .ConfigureAwait(false);
+            }
+            else
+            {
+                return await EntityFrameworkQueryableExtensions.ToListAsync(queryable)
+                                                               .ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -92,7 +102,16 @@ namespace Blueshift.EntityFrameworkCore.MongoDB
         public static async Task<TEntity[]> ToArrayAsync<TEntity>(this IQueryable<TEntity> queryable)
             where TEntity : class
         {
-            return (await queryable.ToListAsync()).ToArray();
+            if (queryable is IMongoQueryable<TEntity>)
+            {
+                return (await queryable.ToListAsync()
+                                       .ConfigureAwait(false)).ToArray();
+            }
+            else
+            {
+                return await EntityFrameworkQueryableExtensions.ToArrayAsync(queryable)
+                                                               .ConfigureAwait(false);
+            }
         }
 
         /// <summary>

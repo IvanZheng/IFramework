@@ -103,49 +103,49 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Query
         //}
 
 
-        public override Expression ReplaceClauseReferences(
-            [NotNull] Expression expression,
-            [CanBeNull] IQuerySource querySource = null,
-            bool inProjection = false)
-        {
-            Check.NotNull(expression, nameof(expression));
+        //public override Expression ReplaceClauseReferences(
+        //    [NotNull] Expression expression,
+        //    [CanBeNull] IQuerySource querySource = null,
+        //    bool inProjection = false)
+        //{
+        //    Check.NotNull(expression, nameof(expression));
 
-            expression
-                = _entityQueryModelVisitorDependencies.EntityQueryableExpressionVisitorFactory
-                  .Create(this, querySource)
-                  .Visit(expression);
+        //    expression
+        //        = _entityQueryModelVisitorDependencies.EntityQueryableExpressionVisitorFactory
+        //          .Create(this, querySource)
+        //          .Visit(expression);
 
-            expression
-                = _entityQueryModelVisitorDependencies.MemberAccessBindingExpressionVisitorFactory
-                  .Create(QueryCompilationContext.QuerySourceMapping, this, inProjection)
-                  .Visit(expression);
+        //    expression
+        //        = _entityQueryModelVisitorDependencies.MemberAccessBindingExpressionVisitorFactory
+        //          .Create(QueryCompilationContext.QuerySourceMapping, this, inProjection)
+        //          .Visit(expression);
 
-            if (!inProjection
-                && (expression.Type != typeof(string)
-                    && expression.Type != typeof(byte[])
-                    && Expression?.Type.TryGetElementType(typeof(IAsyncEnumerable<>)) != null
-                    || Expression == null
-                    && expression.Type.IsGenericType
-                    //&& expression.Type.GetGenericTypeDefinition() == typeof(IGrouping<,>)
-                    ))
-            {
-                var elementType = expression.Type.TryGetElementType(typeof(IEnumerable<>));
+        //    if (!inProjection
+        //        && (expression.Type != typeof(string)
+        //            && expression.Type != typeof(byte[])
+        //            && Expression?.Type.TryGetElementType(typeof(IAsyncEnumerable<>)) != null
+        //            || Expression == null
+        //            && expression.Type.IsGenericType
+        //            //&& expression.Type.GetGenericTypeDefinition() == typeof(IGrouping<,>)
+        //            ))
+        //    {
+        //        var elementType = expression.Type.TryGetElementType(typeof(IEnumerable<>));
 
-                if (elementType != null)
-                {
-                    if (LinqOperatorProvider is AsyncLinqOperatorProvider asyncLinqOperatorProvider)
-                    {
-                        return
-                            Expression.Call(
-                                            asyncLinqOperatorProvider
-                                                .ToAsyncEnumerable
-                                                .MakeGenericMethod(elementType),
-                                            expression);
-                    }
-                }
-            }
+        //        if (elementType != null)
+        //        {
+        //            if (LinqOperatorProvider is AsyncLinqOperatorProvider asyncLinqOperatorProvider)
+        //            {
+        //                return
+        //                    Expression.Call(
+        //                                    asyncLinqOperatorProvider
+        //                                        .ToAsyncEnumerable
+        //                                        .MakeGenericMethod(elementType),
+        //                                    expression);
+        //            }
+        //        }
+        //    }
 
-            return expression;
-        }
+        //    return expression;
+        //}
     }
 }
