@@ -3,20 +3,19 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Blueshift.EntityFrameworkCore.MongoDB.Storage;
+using IFramework.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using IFramework.Infrastructure;
 
 namespace Blueshift.EntityFrameworkCore.MongoDB
 {
     /// <summary>
-    /// 
     /// </summary>
     public static class MongoDbExtension
     {
         /// <summary>
-        /// GetMongoDbConnection
+        ///     GetMongoDbConnection
         /// </summary>
         /// <param name="dbContext"></param>
         /// <returns></returns>
@@ -30,7 +29,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB
         }
 
         /// <summary>
-        /// GetMongoDbClient
+        ///     GetMongoDbClient
         /// </summary>
         /// <param name="dbContext"></param>
         /// <returns></returns>
@@ -43,7 +42,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB
         }
 
         /// <summary>
-        /// GetMongoDbDatabase
+        ///     GetMongoDbDatabase
         /// </summary>
         /// <param name="dbContext"></param>
         /// <returns></returns>
@@ -57,7 +56,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB
         }
 
         /// <summary>
-        /// GetCollection
+        ///     GetCollection
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="dbContext"></param>
@@ -65,13 +64,12 @@ namespace Blueshift.EntityFrameworkCore.MongoDB
         /// <returns></returns>
         public static IMongoCollection<TEntity> GetCollection<TEntity>(this DbContext dbContext, string collectionName = null)
         {
-            return string.IsNullOrWhiteSpace(collectionName) ? dbContext.GetMongoDbConnection().GetCollection<TEntity>() :
-                dbContext.GetMongoDbDatabase().GetCollection<TEntity>(collectionName);
+            return string.IsNullOrWhiteSpace(collectionName) ? dbContext.GetMongoDbConnection().GetCollection<TEntity>() : dbContext.GetMongoDbDatabase().GetCollection<TEntity>(collectionName);
         }
 
 
         /// <summary>
-        /// ToListAsync
+        ///     ToListAsync
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="queryable"></param>
@@ -79,22 +77,20 @@ namespace Blueshift.EntityFrameworkCore.MongoDB
         public static async Task<List<TEntity>> ToListAsync<TEntity>(this IQueryable<TEntity> queryable)
             where TEntity : class
         {
-            if (queryable is IMongoQueryable<TEntity>)
+            if (queryable is IMongoQueryable<TEntity> mongoQueryable)
             {
-                var cursor = await ((IMongoQueryable<TEntity>)queryable).ToCursorAsync()
-                                                                        .ConfigureAwait(false);
+                var cursor = await mongoQueryable.ToCursorAsync()
+                                                 .ConfigureAwait(false);
                 return await cursor.ToListAsync()
                                    .ConfigureAwait(false);
             }
-            else
-            {
-                return await EntityFrameworkQueryableExtensions.ToListAsync(queryable)
-                                                               .ConfigureAwait(false);
-            }
+
+            return await EntityFrameworkQueryableExtensions.ToListAsync(queryable)
+                                                           .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// ToArrayAsync
+        ///     ToArrayAsync
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="queryable"></param>
@@ -107,15 +103,13 @@ namespace Blueshift.EntityFrameworkCore.MongoDB
                 return (await queryable.ToListAsync()
                                        .ConfigureAwait(false)).ToArray();
             }
-            else
-            {
-                return await EntityFrameworkQueryableExtensions.ToArrayAsync(queryable)
-                                                               .ConfigureAwait(false);
-            }
+
+            return await EntityFrameworkQueryableExtensions.ToArrayAsync(queryable)
+                                                           .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// CountAsync
+        ///     CountAsync
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="queryable"></param>
