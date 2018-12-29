@@ -82,7 +82,7 @@ namespace IFramework.Log4Net
             object log = null;
             if (state is Exception ex)
             {
-                log = new {ex.GetBaseException().Message, ex.StackTrace, Class = ex.GetType().Name};
+                log = formatter(default, ex);//new {ex.GetBaseException().Message, ex.StackTrace, Class = ex.GetType().Name};
             }
             else //(state != null && (state is FormattedLogValues || state.GetType().Name.StartsWith("LogValues")))
             {
