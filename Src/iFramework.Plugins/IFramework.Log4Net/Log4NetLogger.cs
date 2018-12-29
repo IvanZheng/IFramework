@@ -4,7 +4,6 @@ using System.Linq;
 using log4net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions.Internal;
-using Microsoft.Extensions.Logging.Internal;
 
 namespace IFramework.Log4Net
 {
@@ -35,6 +34,7 @@ namespace IFramework.Log4Net
             {
                 return ScopeProperties.CreateFromState(messageProperties);
             }
+
             return NestedDiagnosticsLogicalContext.Push(state);
         }
 
@@ -77,10 +77,14 @@ namespace IFramework.Log4Net
                 return;
             }
 
-            	//UnderlyingSystemType	{Microsoft.Extensions.Logging.LoggerMessage+LogValues`3[System.Type,System.String,System.Exception]}	System.Type {System.RuntimeType}
+            //UnderlyingSystemType	{Microsoft.Extensions.Logging.LoggerMessage+LogValues`3[System.Type,System.String,System.Exception]}	System.Type {System.RuntimeType}
 
-            object log = state;
-            if (state != null && (state is FormattedLogValues || state.GetType().Name.StartsWith("LogValues")))
+            object log = null;
+            if (state is Exception ex)
+            {
+                log = new {ex.GetBaseException().Message, ex.StackTrace, Class = ex.GetType().Name};
+            }
+            else //(state != null && (state is FormattedLogValues || state.GetType().Name.StartsWith("LogValues")))
             {
                 log = formatter(state, exception);
                 //if (logValues.Count == 1 && logValues[0].Value is string)
@@ -88,10 +92,7 @@ namespace IFramework.Log4Net
                 //    log = logValues[0].Value;
                 //}
             }
-            else if (state is Exception ex)
-            {
-                log = new {ex.GetBaseException().Message, ex.StackTrace, Class = ex.GetType().Name};
-            }
+
             if (_options.EnableScope)
             {
                 var scopeMessages = NestedDiagnosticsLogicalContext.GetAllMessages()
@@ -106,6 +107,8 @@ namespace IFramework.Log4Net
             switch (logLevel)
             {
                 case LogLevel.Trace:
+                    _log.Trace(log, exception);
+                    break;
                 case LogLevel.Debug:
                     _log.Debug(log, exception);
                     break;
@@ -119,10 +122,17 @@ namespace IFramework.Log4Net
                     _log.Error(log, exception);
                     break;
                 case LogLevel.Critical:
+                    string criticalLevelWith = _options.OverrideCriticalLevelWith;
+                    if (!string.IsNullOrEmpty(criticalLevelWith) && criticalLevelWith.Equals(LogLevel.Critical.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        _log.Critical(log, exception);
+                        break;
+                    }
+
                     _log.Fatal(log, exception);
                     break;
                 default:
-                    _log.Warn($"Encountered unknown log level {logLevel}, writing out as Info.", exception);
+                    _log.Warn($"Encountered unknown log level {logLevel}, writing out as Info.");
                     _log.Info(log, exception);
                     break;
             }
@@ -168,9 +178,11 @@ namespace IFramework.Log4Net
                     {
                         continue;
                     }
+
                     //stateString += $"{property.Key}:{property.Value} ";
                     scope.AddProperty(property.Key, property.Value);
                 }
+
                 scope.AddDispose(NestedDiagnosticsLogicalContext.Push(messageProperties));
                 return scope;
             }
