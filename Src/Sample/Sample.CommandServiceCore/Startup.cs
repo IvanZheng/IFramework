@@ -97,6 +97,7 @@ namespace Sample.CommandServiceCore
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            services.AddLog4Net(new Log4NetProviderOptions { EnableScope = true });
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
             services.AddCustomOptions<FrameworkConfiguration>();
             services.AddMvc(options =>
@@ -162,7 +163,7 @@ namespace Sample.CommandServiceCore
                                    ["Login"] = "Sample.Command.Login, Sample.Command"
                                })
                                .Register("Modify", typeof(Modify));
-            loggerFactory.UseLog4Net(new Log4NetProviderOptions { EnableScope = true });
+           
             StartMessageQueueComponents();
 
             if (env.IsDevelopment())

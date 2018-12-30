@@ -13,7 +13,7 @@ namespace IFramework.Log4Net
         public static Configuration UseLog4Net(this Configuration configuration,
                                                Log4NetProviderOptions options = null)
         {
-            ObjectProviderFactory.Instance.Populate(UseLog4Net(new ServiceCollection(),
+            ObjectProviderFactory.Instance.Populate(AddLog4Net(new ServiceCollection(),
                                                                options));
             return configuration;
         }
@@ -22,13 +22,13 @@ namespace IFramework.Log4Net
                                                LogLevel logLevel,
                                                Log4NetProviderOptions options = null)
         {
-            ObjectProviderFactory.Instance.Populate(UseLog4Net(new ServiceCollection(),
+            ObjectProviderFactory.Instance.Populate(AddLog4Net(new ServiceCollection(),
                                                     logLevel,
                                                     options));
             return configuration;
         }
 
-        public static IServiceCollection UseLog4Net(this IServiceCollection services,
+        public static IServiceCollection AddLog4Net(this IServiceCollection services,
                                                     LogLevel logLevel,
                                                     Log4NetProviderOptions options = null)
         {
@@ -44,7 +44,7 @@ namespace IFramework.Log4Net
             });
             return services;
         }
-        public static IServiceCollection UseLog4Net(this IServiceCollection services,
+        public static IServiceCollection AddLog4Net(this IServiceCollection services,
                                                     Log4NetProviderOptions options = null)
         {
             services.AddLogging(config =>
@@ -63,7 +63,7 @@ namespace IFramework.Log4Net
             return services;
         }
 
-        public static void UseLog4Net(this ILoggerFactory loggerFactory, Log4NetProviderOptions options = null)
+        public static void AddLog4Net(this ILoggerFactory loggerFactory, Log4NetProviderOptions options = null)
         {
             loggerFactory.AddProvider(new Log4NetProvider(options));
         }
