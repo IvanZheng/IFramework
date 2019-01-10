@@ -40,7 +40,7 @@ namespace IFramework.Log4Net
                     config.AddConfiguration(loggerConfiguration);
                 }
                 config.SetMinimumLevel(logLevel);
-                config.AddProvider(new Log4NetProvider(options));
+                config.AddProvider(new Log4NetProvider(options ?? Log4NetProviderOptions.Default));
             });
             return services;
         }
@@ -58,14 +58,14 @@ namespace IFramework.Log4Net
                         config.SetMinimumLevel(logLevel);
                     }
                 }
-                config.AddProvider(new Log4NetProvider(options));
+                config.AddProvider(new Log4NetProvider(options ?? Log4NetProviderOptions.Default));
             });
             return services;
         }
 
         public static void AddLog4Net(this ILoggerFactory loggerFactory, Log4NetProviderOptions options = null)
         {
-            loggerFactory.AddProvider(new Log4NetProvider(options));
+            loggerFactory.AddProvider(new Log4NetProvider(options ?? Log4NetProviderOptions.Default));
         }
     }
 }

@@ -25,10 +25,8 @@ namespace IFramework.Log4Net
 
         public Log4NetProvider(Log4NetProviderOptions options)
         {
-            Log4NetProviderOptions netProviderOptions = options;
-
-            _options = netProviderOptions ?? throw new ArgumentNullException(nameof(options));
-            if (options.Watch && options.PropertyOverrides.Any())
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            if (_options.Watch && _options.PropertyOverrides.Any())
             {
                 throw new NotSupportedException("Watch cannot be true when you are overwriting config file values with values from configuration section.");
             }
@@ -41,17 +39,17 @@ namespace IFramework.Log4Net
             }
             else
             {
-                _loggerRepository = LogManager.CreateRepository(options.LoggerRepository, typeof(Hierarchy));
+                _loggerRepository = LogManager.CreateRepository(_options.LoggerRepository, typeof(Hierarchy));
             }
 
-            string str = options.ConfigFile;
+            string str = _options.ConfigFile;
             if (!Path.IsPathRooted(str))
             {
                 str = Path.Combine(AppContext.BaseDirectory, str);
             }
 
             string fullPath = Path.GetFullPath(str);
-            if (options.Watch)
+            if (_options.Watch)
             {
                 XmlConfigurator.ConfigureAndWatch(_loggerRepository, new FileInfo(fullPath));
             }
@@ -73,9 +71,9 @@ namespace IFramework.Log4Net
             {
                 throw new NotSupportedException("Wach cannot be true if you are overwriting config file values with values from configuration section.");
             }
-
+            _options = Log4NetProviderOptions.Default;
             Assembly repositoryAssembly = Assembly.GetExecutingAssembly();
-            if ((object) repositoryAssembly == null)
+            if (repositoryAssembly == null)
             {
                 repositoryAssembly = GetCallingAssemblyFromStartup();
             }
