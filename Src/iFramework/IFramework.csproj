@@ -3,12 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.10</Version>
+    <Version>2.0.11-prerelease-0001</Version>
     <Description>Supports netcore standard2.0</Description>
     <Authors>Ivan</Authors>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
-    <PackageReleaseNotes>Improve mailbox processing</PackageReleaseNotes>
+    <PackageReleaseNotes>1. Add IRepository.AddAsync method
+2. Add Aop featuer for MessageHandler
+3. Support ConcurrentProcess for unique constrain validation.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
