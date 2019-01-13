@@ -28,8 +28,9 @@ namespace IFramework.Repositories
         /// </summary>
         /// <param name="entities"></param>
         protected abstract void DoAdd(IEnumerable<TAggregateRoot> entities);
-
         protected abstract void DoAdd(TAggregateRoot entity);
+        protected abstract Task DoAddAsync(IEnumerable<TAggregateRoot> entities);
+        protected abstract Task DoAddAsync(TAggregateRoot entity);
 
         /// <summary>
         ///     Gets the entity instance from repository by a given key.
@@ -127,7 +128,15 @@ namespace IFramework.Repositories
         {
             DoAdd(entity);
         }
+        public Task AddAsync(IEnumerable<TAggregateRoot> entities)
+        {
+            return DoAddAsync(entities);
+        }
 
+        public Task AddAsync(TAggregateRoot entity)
+        {
+            return DoAddAsync(entity);
+        }
         /// <summary>
         ///     Gets the entity instance from repository by a given key.
         /// </summary>

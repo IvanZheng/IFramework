@@ -36,7 +36,10 @@ namespace IFramework.EntityFrameworkCore.Repositories
         {
             DbSet.Add(entity);
         }
-
+        protected override Task DoAddAsync(TEntity entity)
+        {
+            return DbSet.AddAsync(entity);
+        }
         protected override bool DoExists(ISpecification<TEntity> specification)
         {
             return DbSet.Any(specification.GetExpression());
@@ -140,6 +143,11 @@ namespace IFramework.EntityFrameworkCore.Repositories
 
             var query = DoFindAll(specification, orderExpressions);
             return (query.GetPageElements(pageIndex, pageSize), await query.CountAsync());
+        }
+
+        protected override Task DoAddAsync(IEnumerable<TEntity> entities)
+        {
+            return DbSet.AddRangeAsync(entities);
         }
 
         protected override void DoAdd(IEnumerable<TEntity> entities)

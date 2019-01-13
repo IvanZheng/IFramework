@@ -22,8 +22,57 @@ namespace IFramework.Repositories
         /// <param name="entities">The entity object to be added.</param>
         void Add(IEnumerable<TAggregateRoot> entities);
 
+        /// <summary>
+        ///     Adds an entity to the repository.
+        /// </summary>
+        /// <param name="entity">The entity object to be added.</param>
         void Add(TAggregateRoot entity);
 
+        /// <summary>
+        ///     <para>
+        ///         Begins tracking the given entity, and any other reachable entities that are
+        ///         not already being tracked, in the <see cref="F:Microsoft.EntityFrameworkCore.EntityState.Added" /> state such that they will
+        ///         be inserted into the database when <see cref="M:Microsoft.EntityFrameworkCore.DbContext.SaveChanges" /> is called.
+        ///     </para>
+        ///     <para>
+        ///         This method is async only to allow special value generators, such as the one used by
+        ///         'Microsoft.EntityFrameworkCore.Metadata.SqlServerValueGenerationStrategy.SequenceHiLo',
+        ///         to access the database asynchronously. For all other cases the non async method should be used.
+        ///     </para>
+        ///     <para>
+        ///         Use <see cref="P:Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry.State" /> to set the state of only a single entity.
+        ///     </para>
+        /// </summary>
+        /// <param name="entities"> The entities to add. </param>
+        /// <returns>
+        ///     A task that represents the asynchronous Add operation. The task result contains the
+        ///     <see cref="T:Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry`1" /> for the entity. The entry provides access to change tracking
+        ///     information and operations for the entity.
+        /// </returns>
+        Task AddAsync(IEnumerable<TAggregateRoot> entities);
+
+        /// <summary>
+        ///     <para>
+        ///         Begins tracking the given entity, and any other reachable entities that are
+        ///         not already being tracked, in the <see cref="F:Microsoft.EntityFrameworkCore.EntityState.Added" /> state such that they will
+        ///         be inserted into the database when <see cref="M:Microsoft.EntityFrameworkCore.DbContext.SaveChanges" /> is called.
+        ///     </para>
+        ///     <para>
+        ///         This method is async only to allow special value generators, such as the one used by
+        ///         'Microsoft.EntityFrameworkCore.Metadata.SqlServerValueGenerationStrategy.SequenceHiLo',
+        ///         to access the database asynchronously. For all other cases the non async method should be used.
+        ///     </para>
+        ///     <para>
+        ///         Use <see cref="P:Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry.State" /> to set the state of only a single entity.
+        ///     </para>
+        /// </summary>
+        /// <param name="entity"> The entity to add. </param>
+        /// <returns>
+        ///     A task that represents the asynchronous Add operation. The task result contains the
+        ///     <see cref="T:Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry`1" /> for the entity. The entry provides access to change tracking
+        ///     information and operations for the entity.
+        /// </returns>
+        Task AddAsync(TAggregateRoot entity);
         /// <summary>
         ///     Gets the entity instance from repository by a given key.
         /// </summary>
