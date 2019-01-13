@@ -94,6 +94,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             {
                 if (ex is DbUpdateConcurrencyException)
                 {
+                    EventBus.ClearMessages();
                     Exception = new DBConcurrencyException(ex.Message, ex);
                     throw Exception;
                 }
@@ -159,6 +160,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             {
                 if (ex is DbUpdateConcurrencyException)
                 {
+                    EventBus.ClearMessages();
                     Exception = new DBConcurrencyException(ex.Message, ex);
                     throw Exception;
                 }

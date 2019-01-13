@@ -88,10 +88,10 @@ namespace Sample.CommandServiceCore
                          .UseDbContextPool<SampleModelContext>(options =>
                          {
                              //options.EnableSensitiveDataLogging();
-                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
                              //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             options.UseInMemoryDatabase(nameof(SampleModelContext));
+                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
         }
 
@@ -135,6 +135,7 @@ namespace Sample.CommandServiceCore
             providerBuilder.Register<HomeController, HomeController>(lifetime,
                                                                      new VirtualMethodInterceptorInjection(),
                                                                      new InterceptionBehaviorInjection());
+            providerBuilder.RegisterMessageHandlers(new []{"CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber"}, lifetime);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

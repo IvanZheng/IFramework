@@ -7,14 +7,10 @@ namespace Sample.Command
     [Topic("commandqueue")]
     public abstract class CommandBase : ICommand
     {
-        public CommandBase()
+        protected CommandBase()
         {
-            NeedRetry = false;
             Id = ObjectId.GenerateNewId().ToString();
         }
-
-        public bool NeedRetry { get; set; }
-
         public string Id { get; set; }
 
         public string Key { get; set; }

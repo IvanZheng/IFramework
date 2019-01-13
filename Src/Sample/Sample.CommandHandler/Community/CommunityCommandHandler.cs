@@ -68,6 +68,7 @@ namespace Sample.CommandHandler.Community
             _commandContext.Reply = account.Id;
         }
 
+        [ConcurrentProcess]
         public virtual void Handle(Modify command)
         {
             var account = _domainRepository.Find<Account>(a => a.UserName == command.UserName);
