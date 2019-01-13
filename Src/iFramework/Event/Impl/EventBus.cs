@@ -31,21 +31,21 @@ namespace IFramework.Event.Impl
         public void Publish<TTMessage>(TTMessage @event) where TTMessage : IEvent
         {
             EventQueue.Add(@event);
-            HandleEvent(@event);
+            //HandleEvent(@event);
         }
 
-        private void HandleEvent<TEvent>(TEvent @event) where TEvent : IEvent
-        {
-            if (EventSubscriberProvider != null)
-            {
-                var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
-                eventSubscriberTypes.ForEach(eventSubscriberType =>
-                {
-                    var eventSubscriber = Container.GetService(eventSubscriberType.Type);
-                    ((dynamic)eventSubscriber).Handle((dynamic)@event);
-                });
-            }
-        }
+        //private void HandleEvent<TEvent>(TEvent @event) where TEvent : IEvent
+        //{
+        //    if (EventSubscriberProvider != null)
+        //    {
+        //        var eventSubscriberTypes = EventSubscriberProvider.GetHandlerTypes(@event.GetType());
+        //        eventSubscriberTypes.ForEach(eventSubscriberType =>
+        //        {
+        //            var eventSubscriber = Container.GetService(eventSubscriberType.Type);
+        //            ((dynamic)eventSubscriber).Handle((dynamic)@event);
+        //        });
+        //    }
+        //}
 
         public void Publish<TEvent>(IEnumerable<TEvent> events) where TEvent : IEvent
         {
@@ -64,18 +64,21 @@ namespace IFramework.Event.Impl
             return SagaResultQueue;
         }
 
-        public void ClearMessages()
+        public void ClearMessages(bool clearPublishAnywayMessages = true)
         {
             SagaResultQueue.Clear();
             EventQueue.Clear();
             CommandQueue.Clear();
-            ToPublishAnywayEventQueue.Clear();
+            if (clearPublishAnywayMessages)
+            {
+                ToPublishAnywayEventQueue.Clear();
+            }
         }
 
         public void PublishAnyway(params IEvent[] events)
         {
             ToPublishAnywayEventQueue.AddRange(events);
-            events.ForEach(HandleEvent);
+            //events.ForEach(HandleEvent);
         }
 
         public IEnumerable<IEvent> GetToPublishAnywayMessages()

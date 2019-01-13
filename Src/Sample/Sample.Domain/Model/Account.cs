@@ -14,9 +14,9 @@ namespace Sample.Domain.Model
         {
         }
 
-        public Account(string username, string password, string email)
+        public Account(string username, string password, string email, Guid? id = null)
         {
-            OnEvent(new AccountRegistered(Guid.NewGuid(), username,
+            OnEvent(new AccountRegistered(id ?? Guid.NewGuid(), username,
                                           password, email, DateTime.Now));
         }
 

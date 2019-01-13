@@ -17,7 +17,7 @@ namespace Sample.CommandHandler.Community
 {
     public class CommunityCommandHandler : ICommandAsyncHandler<Login>,
                                            ICommandHandler<Register>,
-                                           ICommandHandler<Modify>
+                                           ICommandAsyncHandler<Modify>
     {
         private readonly IMessageContext _commandContext;
         private readonly ILogger<CommunityCommandHandler> _logger;
@@ -68,19 +68,22 @@ namespace Sample.CommandHandler.Community
             _commandContext.Reply = account.Id;
         }
 
-        [ConcurrentProcess]
-        public virtual void Handle(Modify command)
+        [ConcurrentProcess(new []{"IX_Accounts_Email"})]
+        public virtual async Task Handle(Modify command)
         {
-            var account = _domainRepository.Find<Account>(a => a.UserName == command.UserName);
+            var account = await _domainRepository.FindAsync<Account>(a => a.UserName == command.UserName);
             if (account == null)
             {
                 throw new DomainException(ErrorCode.UserNotExists);
             }
-            account.Modify(command.Email);
-            _unitOfWork.Commit();
+
+            var emailExists = await _domainRepository.ExistsAsync<Account>(a => a.Email == command.Email && a.Id != account.Id);
+
+            account.Modify(emailExists ? $"{command.Email}.{DateTime.Now.Ticks}" : command.Email);
+            await _unitOfWork.CommitAsync();
             //_DomainRepository.Update(account);
         }
-
+        
         public virtual void Handle(Register command)
         {
             if (_domainRepository.Find<Account>(a => a.UserName == command.UserName) != null)

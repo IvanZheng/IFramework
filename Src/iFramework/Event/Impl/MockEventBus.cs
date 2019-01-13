@@ -17,7 +17,7 @@ namespace IFramework.Event.Impl
             return null;
         }
 
-        public void ClearMessages() { }
+        public void ClearMessages(bool clearPublishAnywayMessages = true) { }
 
         public void SendCommand(ICommand command)
         {
@@ -44,14 +44,17 @@ namespace IFramework.Event.Impl
 
         public void FinishSaga(object sagaResult)
         {
+
         }
 
         public void Publish<TMessage>(TMessage @event) where TMessage : IEvent
         {
+
         }
 
         public void Publish<TMessage>(IEnumerable<TMessage> events) where TMessage : IEvent
         {
+
         }
     }
 }

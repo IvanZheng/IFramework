@@ -13,6 +13,6 @@ namespace IFramework.Event
         IEnumerable<object> GetSagaResults();
         IEnumerable<IEvent> GetToPublishAnywayMessages();
         void FinishSaga(object sagaResult);
-        void ClearMessages();
+        void ClearMessages(bool clearPublishAnywayMessages = true);
     }
 }
