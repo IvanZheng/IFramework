@@ -14,7 +14,7 @@ namespace IFramework.JsonNet
     {
         private static readonly ConcurrentDictionary<string, JsonSerializerSettings> SettingDictionary = new ConcurrentDictionary<string, JsonSerializerSettings>();
 
-        internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPulibc,
+        internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPublic,
                                                                                        bool loopSerialize,
                                                                                        bool useCamelCase,
                                                                                        bool useStringEnumConvert,
@@ -24,7 +24,7 @@ namespace IFramework.JsonNet
         {
             var customSettings = new JsonSerializerSettings
             {
-                ContractResolver = new CustomContractResolver(serializeNonPulibc, lowerCase)
+                ContractResolver = new CustomContractResolver(serializeNonPublic, lowerCase)
             };
 
             if (loopSerialize)
@@ -61,7 +61,7 @@ namespace IFramework.JsonNet
             return customSettings;
         }
 
-        public static JsonSerializerSettings GetCustomJsonSerializerSettings(bool serializeNonPulibc,
+        public static JsonSerializerSettings GetCustomJsonSerializerSettings(bool serializeNonPublic,
                                                                              bool loopSerialize,
                                                                              bool useCamelCase,
                                                                              bool useStringEnumConvert = true,
@@ -74,10 +74,10 @@ namespace IFramework.JsonNet
             JsonSerializerSettings settings = null;
             if (useCached)
             {
-                var key = $"{Convert.ToInt16(serializeNonPulibc)}{Convert.ToInt16(loopSerialize)}{Convert.ToInt16(useCamelCase)}{Convert.ToInt16(useStringEnumConvert)}";
+                var key = $"{Convert.ToInt16(serializeNonPublic)}{Convert.ToInt16(loopSerialize)}{Convert.ToInt16(useCamelCase)}{Convert.ToInt16(useStringEnumConvert)}";
                 key += $"{Convert.ToInt16(ignoreSerializableAttribute)}{Convert.ToInt16(ignoreNullValue)}{Convert.ToInt16(lowerCase)}";
                 settings = SettingDictionary.GetOrAdd(key,
-                                                      k => InternalGetCustomJsonSerializerSettings(serializeNonPulibc,
+                                                      k => InternalGetCustomJsonSerializerSettings(serializeNonPublic,
                                                                                                    loopSerialize,
                                                                                                    useCamelCase,
                                                                                                    useStringEnumConvert,
@@ -87,7 +87,7 @@ namespace IFramework.JsonNet
             }
             else
             {
-                settings = InternalGetCustomJsonSerializerSettings(serializeNonPulibc,
+                settings = InternalGetCustomJsonSerializerSettings(serializeNonPublic,
                                                                    loopSerialize,
                                                                    useCamelCase,
                                                                    useStringEnumConvert,
@@ -96,6 +96,12 @@ namespace IFramework.JsonNet
                                                                    lowerCase);
             }
             return settings;
+        }
+
+        public static string ToJson(this object obj,
+                                    JsonSerializerSettings settings)
+        {
+            return JsonConvert.SerializeObject(obj, settings);
         }
 
         internal static string ToJson(this object obj,
