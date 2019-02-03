@@ -7,8 +7,11 @@ namespace IFramework.DependencyInjection
 {
     public class ConcurrentProcessAttribute : InterceptorAttribute
     {
-        public ConcurrentProcessAttribute(int retryTimes = 50)
+        public readonly string[] UniqueConstrainNames;
+
+        public ConcurrentProcessAttribute(string[] uniqueConstrainNames = null, int retryTimes = 50)
         {
+            UniqueConstrainNames = uniqueConstrainNames;
             RetryTimes = retryTimes;
         }
 
@@ -22,7 +25,7 @@ namespace IFramework.DependencyInjection
                                                 object[] arguments)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
-            return concurrencyProcessor.ProcessAsync(funcAsync, RetryTimes);
+            return concurrencyProcessor.ProcessAsync(funcAsync, UniqueConstrainNames, RetryTimes);
         }
 
         public override Task ProcessAsync(Func<Task> funcAsync,
@@ -33,7 +36,7 @@ namespace IFramework.DependencyInjection
                                           object[] arguments)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
-            return concurrencyProcessor.ProcessAsync(funcAsync, RetryTimes);
+            return concurrencyProcessor.ProcessAsync(funcAsync, UniqueConstrainNames, RetryTimes);
         }
 
         public override object Process(Func<dynamic> func,
@@ -44,7 +47,7 @@ namespace IFramework.DependencyInjection
                                        object[] arguments)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
-            return concurrencyProcessor.Process(func, RetryTimes);
+            return concurrencyProcessor.Process(func, UniqueConstrainNames, RetryTimes);
         }
 
         public override void Process(Action func,
@@ -55,7 +58,7 @@ namespace IFramework.DependencyInjection
                                        object[] arguments)
         {
             var concurrencyProcessor = objectProvider.GetService<IConcurrencyProcessor>();
-            concurrencyProcessor.Process(func, RetryTimes);
+            concurrencyProcessor.Process(func, UniqueConstrainNames, RetryTimes);
         }
     }
 }

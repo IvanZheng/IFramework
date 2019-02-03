@@ -88,10 +88,6 @@ namespace IFramework.EntityFrameworkCore
 
         protected virtual void OnException(Exception ex)
         {
-            if (ex is DbUpdateConcurrencyException)
-            {
-                Rollback();
-            }
         }
 
         public override int SaveChanges()

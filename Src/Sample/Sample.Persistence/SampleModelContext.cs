@@ -9,7 +9,7 @@ namespace Sample.Persistence
     {
         public SampleModelContext(DbContextOptions options) : base(options)
         {
-            //Database.EnsureCreated();
+            Database.EnsureCreated();
         }
 
         public DbSet<Account> Accounts { get; set; }

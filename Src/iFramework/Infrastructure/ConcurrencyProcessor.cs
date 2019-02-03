@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Exceptions;
 
@@ -10,18 +12,19 @@ namespace IFramework.Infrastructure
         protected virtual string UnKnownMessage { get; set; } = ErrorCode.UnknownError.ToString();
 
         public virtual async Task<T> ProcessAsync<T>(Func<Task<T>> func,
-                                                     int retryCount = 50,
-                                                     bool continueOnCapturedContext = false)
+                                                     string[] uniqueConstrainNames = null,
+                                                     int retryCount = 50)
         {
             do
             {
                 try
                 {
-                    return await func().ConfigureAwait(continueOnCapturedContext);
+                    return await func().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is DBConcurrencyException) || retryCount-- <= 0)
+                    if (!(ex is DBConcurrencyException || NeedRetryDueToUniqueConstrainException(ex, uniqueConstrainNames))
+                        || retryCount-- <= 0)
                     {
                         throw;
                     }
@@ -30,19 +33,19 @@ namespace IFramework.Infrastructure
         }
 
         public virtual async Task ProcessAsync(Func<Task> func,
-                                               int retryCount = 50,
-                                               bool continueOnCapturedContext = false)
+                                               string[] uniqueConstrainNames = null,
+                                               int retryCount = 50)
         {
             do
             {
                 try
                 {
-                    await func().ConfigureAwait(continueOnCapturedContext);
+                    await func().ConfigureAwait(false);
                     return;
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is DBConcurrencyException) || retryCount-- <= 0)
+                    if (!(ex is DBConcurrencyException || NeedRetryDueToUniqueConstrainException(ex, uniqueConstrainNames)) || retryCount-- <= 0)
                     {
                         throw;
                     }
@@ -51,6 +54,7 @@ namespace IFramework.Infrastructure
         }
 
         public virtual void Process(Action action,
+                                    string[] uniqueConstrainNames = null,
                                     int retryCount = 50)
         {
             do
@@ -62,7 +66,7 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is DBConcurrencyException) || retryCount-- <= 0)
+                    if (!(ex is DBConcurrencyException || NeedRetryDueToUniqueConstrainException(ex, uniqueConstrainNames)) || retryCount-- <= 0)
                     {
                         throw;
                     }
@@ -71,6 +75,7 @@ namespace IFramework.Infrastructure
         }
 
         public virtual T Process<T>(Func<T> func,
+                                    string[] uniqueConstrainNames = null,
                                     int retryCount = 50)
         {
             do
@@ -81,12 +86,27 @@ namespace IFramework.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    if (!(ex is DBConcurrencyException) || retryCount-- <= 0)
+                    if (!(ex is DBConcurrencyException || NeedRetryDueToUniqueConstrainException(ex, uniqueConstrainNames)) || retryCount-- <= 0)
                     {
                         throw;
                     }
                 }
             } while (true);
+        }
+
+        private bool NeedRetryDueToUniqueConstrainException(Exception exception, string[] uniqueConstrainNames)
+        {
+            var needRetry = false;
+            if (uniqueConstrainNames?.Length > 0 && exception.GetBaseException() is DbException dbException)
+            {
+                var number = dbException.GetPropertyValue<int>("Number");
+                needRetry = (dbException.Source.Contains("MySql") && number == 1062 ||
+                             dbException.Source.Contains("SqlClient") && (number == 2601 || number == 2627 || number == 547) ||
+                             dbException.Source.Contains("Npgsql") && number == 23505) &&
+                            uniqueConstrainNames.Any(dbException.Message.Contains);
+            }
+
+            return needRetry;
         }
     }
 }

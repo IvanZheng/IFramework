@@ -5,10 +5,11 @@
     <AssemblyName>IFramework.EntityFrameworkCore</AssemblyName>
     <RootNamespace>IFramework.EntityFrameworkCore</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.3</Version>
+    <Version>2.0.4-prerelease-0001</Version>
     <Company>Ivan</Company>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
-    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageReleaseNotes>1. Add IRepository.AddAsync method
+2. Support ConcurrentProcess for unique constrain validation.</PackageReleaseNotes>
     <Description>Supports netcore standard2.0</Description>
   </PropertyGroup>
 

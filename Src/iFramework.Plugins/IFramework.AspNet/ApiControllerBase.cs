@@ -29,11 +29,12 @@ namespace IFramework.AspNet
 
         protected virtual T Process<T>(Func<T> func,
                                        bool needRetry = true,
-                                       Func<ModelStateDictionary, string> getModelErrorMessage = null)
+                                       Func<ModelStateDictionary, string> getModelErrorMessage = null,
+                                       string[] uniqueConstrainNames = null)
         {
             if (ModelState.IsValid)
             {
-                var apiResult = needRetry ? ConcurrencyProcessor.Process(func) : func();
+                var apiResult = needRetry ? ConcurrencyProcessor.Process(func, uniqueConstrainNames) : func();
                 return apiResult;
             }
             getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
@@ -42,13 +43,14 @@ namespace IFramework.AspNet
 
         protected virtual void Process(Action action,
                                        bool needRetry = true,
-                                       Func<ModelStateDictionary, string> getModelErrorMessage = null)
+                                       Func<ModelStateDictionary, string> getModelErrorMessage = null,
+                                       string[] uniqueConstrainNames = null)
         {
             if (ModelState.IsValid)
             {
                 if (needRetry)
                 {
-                    ConcurrencyProcessor.Process(action);
+                    ConcurrencyProcessor.Process(action, uniqueConstrainNames);
                 }
                 else
                 {
@@ -62,20 +64,19 @@ namespace IFramework.AspNet
 
         protected virtual async Task ProcessAsync(Func<Task> func,
                                                   bool needRetry = true,
-                                                  bool continueOnCapturedContext = false,
-                                                  Func<ModelStateDictionary, string> getModelErrorMessage = null)
+                                                  Func<ModelStateDictionary, string> getModelErrorMessage = null,
+                                                  string[] uniqueConstrainNames = null)
         {
             if (ModelState.IsValid)
             {
                 if (needRetry)
                 {
-                    await ConcurrencyProcessor.ProcessAsync(func,
-                                                            continueOnCapturedContext: continueOnCapturedContext)
-                                              .ConfigureAwait(continueOnCapturedContext);
+                    await ConcurrencyProcessor.ProcessAsync(func, uniqueConstrainNames)
+                                              .ConfigureAwait(false);
                 }
                 else
                 {
-                    await func().ConfigureAwait(continueOnCapturedContext);
+                    await func().ConfigureAwait(false);
                 }
                 return;
             }
@@ -85,16 +86,15 @@ namespace IFramework.AspNet
 
         protected virtual async Task<T> ProcessAsync<T>(Func<Task<T>> func,
                                                         bool needRetry = true,
-                                                        bool continueOnCapturedContext = false,
-                                                        Func<ModelStateDictionary, string> getModelErrorMessage = null)
+                                                        Func<ModelStateDictionary, string> getModelErrorMessage = null,
+                                                        string[] uniqueConstrainNames = null)
         {
             if (ModelState.IsValid)
             {
                 return needRetry
-                           ? await ConcurrencyProcessor.ProcessAsync(func,
-                                                                     continueOnCapturedContext: continueOnCapturedContext)
-                                                       .ConfigureAwait(continueOnCapturedContext)
-                           : await func().ConfigureAwait(continueOnCapturedContext);
+                           ? await ConcurrencyProcessor.ProcessAsync(func, uniqueConstrainNames)
+                                                       .ConfigureAwait(false)
+                           : await func().ConfigureAwait(false);
             }
             getModelErrorMessage = getModelErrorMessage ?? GetModelErrorMessage;
             throw new DomainException(ErrorCode.InvalidParameters, getModelErrorMessage(ModelState));

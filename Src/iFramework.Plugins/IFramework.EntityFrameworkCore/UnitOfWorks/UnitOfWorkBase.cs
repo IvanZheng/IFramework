@@ -34,10 +34,10 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             DbContexts.ForEach(dbCtx => dbCtx.Dispose());
         }
 
-        public void Rollback()
+        public virtual void Rollback()
         {
             DbContexts.ForEach(dbCtx => { dbCtx.Rollback(); });
-            EventBus.ClearMessages();
+            EventBus.ClearMessages(false);
         }
 
         #region IUnitOfWork Members
@@ -92,6 +92,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             }
             catch (Exception ex)
             {
+                Rollback();
                 if (ex is DbUpdateConcurrencyException)
                 {
                     Exception = new DBConcurrencyException(ex.Message, ex);
@@ -157,6 +158,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             }
             catch (Exception ex)
             {
+                Rollback();
                 if (ex is DbUpdateConcurrencyException)
                 {
                     Exception = new DBConcurrencyException(ex.Message, ex);

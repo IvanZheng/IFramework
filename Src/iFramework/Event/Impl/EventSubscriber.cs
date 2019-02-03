@@ -249,7 +249,10 @@ namespace IFramework.Event.Impl
                                             {
                                                 var topic = msg.GetFormatTopic();
                                                 eventMessageStates.Add(new MessageState(MessageQueueClient.WrapMessage(msg,
-                                                                                                                       topic: topic, key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
+                                                                                                                       topic: topic,
+                                                                                                                       key: msg.Key, 
+                                                                                                                       sagaInfo: sagaInfo, 
+                                                                                                                       producer: Producer)));
                                             });
 
                                     eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));

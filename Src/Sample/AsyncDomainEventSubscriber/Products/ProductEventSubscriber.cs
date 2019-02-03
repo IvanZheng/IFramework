@@ -9,18 +9,18 @@ namespace Sample.AsyncDomainEventSubscriber.Products
         IEventSubscriber<ProductCreated>,
         IEventSubscriber<ProductCountNotEnough>
     {
-        private readonly IEventBus _EventBus;
+        private readonly IEventBus _eventBus;
 
         public ProductEventSubscriber(IEventBus eventBus)
         {
-            _EventBus = eventBus;
+            _eventBus = eventBus;
         }
 
         public void Handle(ProductCreated @event)
         {
             Console.Write("subscriber1: {0} has registered.", @event.ToJson());
 
-            _EventBus.FinishSaga(@event);
+            _eventBus.FinishSaga(@event);
         }
 
         public void Handle(ProductCountNotEnough @event)
