@@ -9,6 +9,12 @@ namespace IFramework.DependencyInjection
     {
         public readonly string[] UniqueConstrainNames;
 
+        public ConcurrentProcessAttribute(params string[] uniqueConstrainNames)
+        : this(uniqueConstrainNames, 50)
+        {
+
+        }
+
         public ConcurrentProcessAttribute(string[] uniqueConstrainNames = null, int retryTimes = 50)
         {
             UniqueConstrainNames = uniqueConstrainNames;

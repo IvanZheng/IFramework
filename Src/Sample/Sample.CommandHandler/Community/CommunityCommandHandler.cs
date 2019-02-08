@@ -19,6 +19,7 @@ namespace Sample.CommandHandler.Community
                                            ICommandHandler<Register>,
                                            ICommandAsyncHandler<Modify>
     {
+        private const string IxAccountsEmail = "IX_Accounts_Email";
         private readonly IMessageContext _commandContext;
         private readonly ILogger<CommunityCommandHandler> _logger;
         private readonly ICommunityRepository _domainRepository;
@@ -68,7 +69,7 @@ namespace Sample.CommandHandler.Community
             _commandContext.Reply = account.Id;
         }
 
-        [ConcurrentProcess(new []{"IX_Accounts_Email"})]
+        [ConcurrentProcess(IxAccountsEmail)]
         public virtual async Task Handle(Modify command)
         {
             var account = await _domainRepository.FindAsync<Account>(a => a.UserName == command.UserName);
