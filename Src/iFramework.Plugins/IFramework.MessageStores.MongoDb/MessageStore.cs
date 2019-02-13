@@ -8,6 +8,8 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Blueshift.EntityFrameworkCore.MongoDB;
+using MongoDB.Driver.Linq;
 
 namespace IFramework.MessageStores.MongoDb
 {
@@ -17,10 +19,10 @@ namespace IFramework.MessageStores.MongoDb
 
         protected MessageStore(DbContextOptions options) : base(options) { }
 
-         public override Task HandleEventAsync(IMessageContext eventContext,
-                                              string subscriptionName,
-                                              IEnumerable<IMessageContext> commandContexts,
-                                              IEnumerable<IMessageContext> messageContexts)
+        public override Task HandleEventAsync(IMessageContext eventContext,
+                                             string subscriptionName,
+                                             IEnumerable<IMessageContext> commandContexts,
+                                             IEnumerable<IMessageContext> messageContexts)
         {
             HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now));
             commandContexts.ForEach(commandContext =>
@@ -38,11 +40,37 @@ namespace IFramework.MessageStores.MongoDb
             return SaveChangesAsync();
         }
 
-        public override async Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
+        public override async Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
+        {
+            CommandHandledInfo commandHandledInfo = null;
+            //var command = await Commands.FirstOrDefaultAsync(c => c.Id == commandId)
+            //                            .ConfigureAwait(false);
+
+            var command = await this.GetCollection<Abstracts.Command>()
+                                    .AsQueryable()
+                                    .Where(c => c.Id == commandId)
+                                    .FirstOrDefaultAsync()
+                                    .ConfigureAwait(false);
+            if (command != null)
+            {
+                commandHandledInfo = new CommandHandledInfo
+                {
+                    Result = command.Reply,
+                    Id = command.Id
+                };
+            }
+            return commandHandledInfo;
+        }
+
+        public override Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
             var handledEventId = $"{eventId}_{subscriptionName}";
-            return await HandledEvents.CountAsync(@event => @event.Id == handledEventId)
-                                      .ConfigureAwait(false) > 0;
+            return this.GetCollection<HandledEventBase>()
+                       .AsQueryable()
+                       .AnyAsync(e => e.Id == handledEventId);
+
+            //return await HandledEvents.CountAsync(@event => @event.Id == handledEventId)
+            //                          .ConfigureAwait(false) > 0;
         }
 
         public override Task SaveFailHandledEventAsync(IMessageContext eventContext,
