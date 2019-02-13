@@ -58,7 +58,8 @@ namespace Sample.CommandServiceCore
         private static IMessageProcessor _domainEventProcessor;
         private static IMessageProcessor _applicationEventProcessor;
         public static string PathBase;
-
+        private static string _app = "uat";
+        private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             var kafkaBrokerList = new[]
@@ -74,14 +75,14 @@ namespace Sample.CommandServiceCore
                          //.UseUnityContainer()
                          .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                          .UseConfiguration(configuration)
-                         .UseCommonComponents()
+                         .UseCommonComponents(_app)
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseRelationalMessageStore<SampleModelContext>()
                          //.UseMongoDbMessageStore<SampleModelContext>()
-                         .UseInMemoryMessageQueue()
+                         //.UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitConnectionFactory)
-                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
@@ -225,7 +226,7 @@ namespace Sample.CommandServiceCore
         {
             #region Command Consuemrs init
 
-            var commandQueueName = "commandqueue";
+            var commandQueueName = $"{TopicPrefix}commandqueue";
             _commandConsumer1 =
                 MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
             _commandConsumer1.Start();
@@ -244,8 +245,8 @@ namespace Sample.CommandServiceCore
 
             _domainEventProcessor = MessageQueueFactory.CreateEventSubscriber(new[]
                                                                               {
-                                                                                  new TopicSubscription("DomainEvent"),
-                                                                                  new TopicSubscription("ProductDomainEvent")
+                                                                                  new TopicSubscription($"{TopicPrefix}DomainEvent"),
+                                                                                  new TopicSubscription($"{TopicPrefix}ProductDomainEvent")
                                                                               },
                                                                               "DomainEventSubscriber",
                                                                               Environment.MachineName,
@@ -256,7 +257,7 @@ namespace Sample.CommandServiceCore
 
             #region application event subscriber init
 
-            _applicationEventProcessor = MessageQueueFactory.CreateEventSubscriber("AppEvent",
+            _applicationEventProcessor = MessageQueueFactory.CreateEventSubscriber($"{TopicPrefix}AppEvent",
                                                                                    "AppEventSubscriber",
                                                                                    Environment.MachineName,
                                                                                    new[] { "ApplicationEventSubscriber" });

@@ -188,10 +188,13 @@ namespace IFramework.Command.Impl
 
             #endregion
 
+            var topic = command.GetFormatTopic();
             commandContext = MessageQueueClient.WrapMessage(command,
+                                                            topic:topic,
                                                             key: commandKey,
                                                             replyEndPoint: needReply ? _replyTopicName : null,
-                                                            sagaInfo: sagaInfo, producer: producer ?? _consumerId);
+                                                            sagaInfo: sagaInfo,
+                                                            producer: producer ?? _consumerId);
             if (string.IsNullOrEmpty(commandContext.Topic))
             {
                 throw new NoCommandTopic();
