@@ -51,20 +51,20 @@ namespace IFramework.Exceptions
             
         }
 
-        public DomainException(IDomainExceptionEvent domainExceptionEvent)
-            : this(domainExceptionEvent.ErrorCode, domainExceptionEvent.ToString())
+        public DomainException(IDomainExceptionEvent domainExceptionEvent, Exception innerException = null)
+            : this(domainExceptionEvent.ErrorCode, domainExceptionEvent.ToString(), innerException)
         {
             DomainExceptionEvent = domainExceptionEvent;
         }
 
-        public DomainException(object errorCode, string message = null)
-            : base(message ?? ErrorCodeDictionary.GetErrorMessage(errorCode))
+        public DomainException(object errorCode, string message = null, Exception innerException = null)
+            : base(message ?? ErrorCodeDictionary.GetErrorMessage(errorCode), innerException)
         {
             ErrorCode = errorCode;
         }
 
-        public DomainException(object errorCode, object[] args)
-            : base(ErrorCodeDictionary.GetErrorMessage(errorCode, args))
+        public DomainException(object errorCode, object[] args, Exception innerException = null)
+            : base(ErrorCodeDictionary.GetErrorMessage(errorCode, args), innerException)
         {
             ErrorCode = errorCode;
         }
@@ -76,7 +76,11 @@ namespace IFramework.Exceptions
             ErrorCodeType = (string)info.GetValue(nameof(ErrorCodeType), typeof(string));
             if (ErrorCodeType != null)
             {
-                ErrorCode = info.GetValue(nameof(ErrorCode), Type.GetType(ErrorCodeType));
+                var errorCodeType = Type.GetType(ErrorCodeType);
+                if (errorCodeType != null)
+                {
+                    ErrorCode = info.GetValue(nameof(ErrorCode), errorCodeType);
+                }
             }
         }
 

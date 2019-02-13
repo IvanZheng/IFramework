@@ -5,6 +5,11 @@ namespace Sample.DTO
     public enum ErrorCode
     {
         NoError,
+        [Description("唯一约束检查冲突: {0}")]
+        UniqueConstraint,
+        [Description("数据约束检查冲突: {0}")]
+        ConstraintCheckViolation,
+        [Description("重复键值冲突: {0}")]
         UsernameAlreadyExists,
         [Description("username:{0} or password is wrong!")] WrongUsernameOrPassword,
         UserNotExists,

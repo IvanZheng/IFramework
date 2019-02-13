@@ -16,4 +16,8 @@
     <Folder Include="Properties\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+  </ItemGroup>
+
   </Project>

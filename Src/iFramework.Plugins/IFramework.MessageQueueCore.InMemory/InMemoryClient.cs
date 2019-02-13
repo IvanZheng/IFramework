@@ -37,9 +37,17 @@ namespace IFramework.MessageQueue.InMemory
 
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null, string producer = null)
         {
-            if (message is Exception ex && !(ex is DomainException))
+            if (message is Exception ex)
             {
-                message = new Exception(ex.GetBaseException().Message);
+                if (ex is DomainException domainException)
+                {
+                    // Remove inner Exception because it too large after serializing
+                    message = new DomainException(domainException.ErrorCode, domainException.Message);
+                }
+                else
+                {
+                    message = new Exception(ex.GetBaseException().Message);
+                }
             }
             var messageContext = new MessageContext(message, messageId)
             {
