@@ -7,10 +7,11 @@ namespace IFramework.MessageStores.Abstracts
     {
         public HandledEvent() { }
 
-        public HandledEvent(string id, string subscriptionName, DateTime handledTime)
+        public HandledEvent(string id, string subscriptionName, string topic, DateTime handledTime)
         {
             Id = id;
             SubscriptionName = subscriptionName;
+            Topic = topic;
             HandledTime = handledTime;
         }
 
@@ -18,14 +19,15 @@ namespace IFramework.MessageStores.Abstracts
         public string Id { get; set; }
         public string SubscriptionName { get; set; }
         public DateTime HandledTime { get; set; }
+        public string Topic { get; set; }
     }
 
     public class FailHandledEvent : HandledEvent
     {
         public FailHandledEvent() { }
 
-        public FailHandledEvent(string id, string subscriptionName, DateTime handledTime, Exception e)
-            : base(id, subscriptionName, handledTime)
+        public FailHandledEvent(string id, string subscriptionName, string topic, DateTime handledTime, Exception e)
+            : base(id, subscriptionName, topic, handledTime)
         {
             Error = e.GetBaseException().Message;
             StackTrace = e.StackTrace;

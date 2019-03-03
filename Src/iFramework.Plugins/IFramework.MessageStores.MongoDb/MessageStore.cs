@@ -24,7 +24,7 @@ namespace IFramework.MessageStores.MongoDb
                                              IEnumerable<IMessageContext> commandContexts,
                                              IEnumerable<IMessageContext> messageContexts)
         {
-            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now));
+            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, eventContext.Topic, DateTime.Now));
             commandContexts.ForEach(commandContext =>
             {
                 commandContext.CorrelationId = eventContext.MessageId;
@@ -78,7 +78,7 @@ namespace IFramework.MessageStores.MongoDb
                                                        Exception e,
                                                        params IMessageContext[] messageContexts)
         {
-            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now, e));
+            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.Topic, DateTime.Now, e));
 
             messageContexts.ForEach(messageContext =>
             {

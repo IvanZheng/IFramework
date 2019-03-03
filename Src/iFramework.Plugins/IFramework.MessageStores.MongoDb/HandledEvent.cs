@@ -12,8 +12,8 @@ namespace IFramework.MessageStores.MongoDb
         public string EventId { get; set; }
         public HandledEventBase() { }
 
-        public HandledEventBase(string id, string subscriptionName, DateTime handledTime) 
-            : base(id, subscriptionName, handledTime)
+        public HandledEventBase(string id, string subscriptionName, string topic, DateTime handledTime) 
+            : base(id, subscriptionName, topic, handledTime)
         {
             EventId = id;
             Id = $"{EventId}_{subscriptionName}";
@@ -24,8 +24,8 @@ namespace IFramework.MessageStores.MongoDb
     public class HandledEvent : HandledEventBase
     {
         public HandledEvent() { }
-        public HandledEvent(string id, string subscriptionName, DateTime handledTime) 
-            : base(id, subscriptionName, handledTime) { }
+        public HandledEvent(string id, string subscriptionName, string topic, DateTime handledTime) 
+            : base(id, subscriptionName, topic, handledTime) { }
     }
 
     [BsonDiscriminator(nameof(FailHandledEvent))]
@@ -33,8 +33,8 @@ namespace IFramework.MessageStores.MongoDb
     {
         public FailHandledEvent() { }
 
-        public FailHandledEvent(string id, string subscriptionName, DateTime handledTime, Exception e)
-            : base(id, subscriptionName, handledTime)
+        public FailHandledEvent(string id, string subscriptionName, string topic, DateTime handledTime, Exception e)
+            : base(id, subscriptionName, topic, handledTime)
         {
             Error = e.GetBaseException().Message;
             StackTrace = e.StackTrace;
