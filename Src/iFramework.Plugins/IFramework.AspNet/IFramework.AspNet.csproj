@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>2.0.4-prerelease-0001</Version>
     <Authors>Ivan</Authors>
     <Company>Ivan</Company>
     <Description>Supports netcore standard2.0</Description>

@@ -1,9 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.4</Version>
     <PackageReleaseNotes>Add Message Processor Status</PackageReleaseNotes>
     <Authors>Ivan</Authors>
     <Description>Supports netcore standard2.0</Description>

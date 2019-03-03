@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-prelease-0018</Version>
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>Add Message Processor Status</PackageReleaseNotes>

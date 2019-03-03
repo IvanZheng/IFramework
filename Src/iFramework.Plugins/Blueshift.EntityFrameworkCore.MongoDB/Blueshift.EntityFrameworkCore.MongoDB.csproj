@@ -9,7 +9,6 @@
     <PackageId>IFramework.EntityFrameworkCore.Blueshift.MongoDB</PackageId>
     <Company>Ivan</Company>
     <Authors>Ivan</Authors>
-    <Version>2.1.0-prerelease-0007</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageReleaseNotes>merge async issue fix from blueshift</PackageReleaseNotes>
   </PropertyGroup>
