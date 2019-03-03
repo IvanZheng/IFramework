@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="1.0.0-beta" />
+    <PackageReference Include="Confluent.Kafka" Version="1.0.0-beta3" />
   </ItemGroup>
 
   <ItemGroup>

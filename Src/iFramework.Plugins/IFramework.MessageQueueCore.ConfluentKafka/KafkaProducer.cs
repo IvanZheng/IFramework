@@ -42,17 +42,18 @@ namespace IFramework.MessageQueue.ConfluentKafka
             Config = config ??  new ProducerConfig();
             
             _topic = topic;
-            var producerConfiguration = new Dictionary<string, string>
+            var producerConfiguration = new Confluent.Kafka.ProducerConfig
             {
-                {"bootstrap.servers", brokerList},
-                {"request.required.acks", Config["request.required.acks"]?.ToString() ?? "1"},
-                {"socket.nagle.disable", true.ToString().ToLower()},
+                BootstrapServers = brokerList,
+                Acks = (Acks)(Config["request.required.acks"] ?? 1),
+                SocketNagleDisable = true
                 //{"socket.blocking.max.ms", Config["socket.blocking.max.ms"] ?? 50},
                 //{"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
             };
 
-            _producer = new Producer<TKey, TValue>(producerConfiguration,valueSerializer:KafkaMessageSerializer<TValue>.SerializeValue);
-            _producer.OnError += _producer_OnError;
+            _producer = new ProducerBuilder<TKey, TValue>(producerConfiguration).SetValueSerializer(new KafkaMessageSerializer<TValue>())
+                                                                                .Build();
+            //_producer.OnError += _producer_OnError;
         }
 
         private void _producer_OnError(object sender, Error e)
@@ -72,7 +73,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        public async Task<DeliveryReport<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
+        public async Task<DeliveryResult<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
         {
             var retryTimes = 0;
             while (true)

@@ -33,18 +33,18 @@ namespace IFramework.KafkaTools.Controllers
 
         private Consumer<string, string> GetConsumer(string broker, string group)
         {
-            var consumerConfiguration = new Dictionary<string, string>
+            var consumerConfiguration = new ConsumerConfig
                 {
-                    {"group.id", group},
-                    {"client.id", $"KafkaTools.{group}"},
-                    {"enable.auto.commit", false.ToString().ToLower()},
+                    GroupId = group,
+                    ClientId = $"KafkaTools.{group}",
+                    EnableAutoCommit = false,
                     //{"socket.blocking.max.ms", ConsumerConfig["socket.blocking.max.ms"] ?? 50},
                     //{"fetch.error.backoff.ms", ConsumerConfig["fetch.error.backoff.ms"] ?? 50},
-                    {"socket.nagle.disable", true.ToString().ToLower()},
+                    SocketNagleDisable = true,
                     //{"statistics.interval.ms", 60000},
-                    {"bootstrap.servers", broker}
+                    BootstrapServers = broker
                 };
-            return new Consumer<string, string>(consumerConfiguration);
+            return new ConsumerBuilder<string, string>(consumerConfiguration).Build();
         }
 
 
@@ -52,13 +52,13 @@ namespace IFramework.KafkaTools.Controllers
         {
             return Producers.GetOrAdd($"{broker}", key =>
             {
-                var producerConfiguration = new Dictionary<string, string>
+                var producerConfiguration = new ProducerConfig 
                 {
-                    {"bootstrap.servers", broker},
-                    {"request.required.acks", "1"},
-                    {"socket.nagle.disable", true.ToString().ToLower()}
+                    BootstrapServers = broker,
+                    Acks = Acks.Leader,
+                    SocketNagleDisable = true
                 };
-                return new Producer<string, string>(producerConfiguration);
+                return new ProducerBuilder<string, string>(producerConfiguration).Build();
             });
         }
 
