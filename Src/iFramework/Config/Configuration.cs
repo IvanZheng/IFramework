@@ -73,7 +73,7 @@ namespace IFramework.Config
             this.UseMockMessageQueueClient();
             this.UseMockMessagePublisher();
             RegisterDefaultEventBus();
-            RegisterConcurrencyProcessor<ConcurrencyProcessor>();
+            RegisterConcurrencyProcessor<ConcurrencyProcessor, UniqueConstrainExceptionParser>();
             this.UseMessageQueue(app);
             this.MessageQueueUseMachineNameFormat();
             UseMessageTypeProvider<MessageTypeProvider>();
@@ -111,10 +111,13 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration RegisterConcurrencyProcessor<TConcurrencyProcessor>() where TConcurrencyProcessor : class, IConcurrencyProcessor
+        public Configuration RegisterConcurrencyProcessor<TConcurrencyProcessor, TUniqueConstrainExceptionParser>() 
+            where TConcurrencyProcessor : class, IConcurrencyProcessor
+            where TUniqueConstrainExceptionParser : class, IUniqueConstrainExceptionParser
         {
             ObjectProviderFactory.Instance
-                      .RegisterType<IConcurrencyProcessor, TConcurrencyProcessor>(ServiceLifetime.Singleton);
+                      .RegisterType<IConcurrencyProcessor, TConcurrencyProcessor>(ServiceLifetime.Singleton)
+                      .Register<IUniqueConstrainExceptionParser, TUniqueConstrainExceptionParser>(ServiceLifetime.Singleton);
             return this;
         }
 
