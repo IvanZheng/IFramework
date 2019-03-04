@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.Message;
+using IFramework.MessageQueue;
 using IFramework.MessageStores.Abstracts;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,7 @@ namespace IFramework.MessageStores.Relational
                                               IEnumerable<IMessageContext> commandContexts,
                                               IEnumerable<IMessageContext> messageContexts)
         {
-            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, eventContext.Topic, DateTime.Now));
+            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now));
             commandContexts.ForEach(commandContext =>
             {
                 commandContext.CorrelationId = eventContext.MessageId;
@@ -47,7 +48,7 @@ namespace IFramework.MessageStores.Relational
                                                        Exception e,
                                                        params IMessageContext[] messageContexts)
         {
-            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.Topic, DateTime.Now, e));
+            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now, e));
 
             messageContexts.ForEach(messageContext =>
             {

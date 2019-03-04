@@ -7,6 +7,7 @@ using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
 using Microsoft.Extensions.Logging;
@@ -132,7 +133,10 @@ namespace IFramework.MessageStores.Abstracts
             modelBuilder.Entity<HandledEvent>()
                         .Property(handledEvent => handledEvent.SubscriptionName)
                         .HasMaxLength(322);
-           
+
+            modelBuilder.Entity<HandledEvent>()
+                        .OwnsOne(e => e.MessageOffset);
+
             modelBuilder.Entity<Command>()
                         .Property(c => c.Name)
                         .HasMaxLength(200);
