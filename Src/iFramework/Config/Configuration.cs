@@ -201,11 +201,11 @@ namespace IFramework.Config
             CommitPerMessage = commitPerMessage;
             return this;
         }
-
+    
         public T Get<T>(string key)
         {
             T appSetting = default(T);
-            if (typeof(T).IsPrimitive)
+            if (typeof(T).IsPrimitive || typeof(T) == typeof(string))
             {
                 appSetting = ConfigurationCore.GetValue<T>(key);
             }
@@ -232,12 +232,12 @@ namespace IFramework.Config
                    ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
         }
 
-        public static string Get(string key)
+        public string Get(string key)
         {
             return Instance.ConfigurationCore?[key] ?? ConfigurationManager.AppSettings[key];;
         }
 
-        private static T GetAppConfig<T>(string appSetting)
+        private T GetAppConfig<T>(string appSetting)
         {
             var val = default(T);
             try
