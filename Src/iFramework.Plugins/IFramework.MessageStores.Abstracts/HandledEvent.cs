@@ -22,7 +22,7 @@ namespace IFramework.MessageStores.Abstracts
         public string Id { get; set; }
         public string SubscriptionName { get; set; }
         public DateTime HandledTime { get; set; }
-        public MessageOffset MessageOffset { get; set; }
+        public virtual MessageOffset MessageOffset { get; set; }
     }
 
     public class FailHandledEvent : HandledEvent
