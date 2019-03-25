@@ -100,8 +100,8 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 
         public string CorrelationId
         {
-            get => (string) Headers.TryGetValue("CorrelationID");
-            set => Headers["CorrelationID"] = value;
+            get => (string) Headers.TryGetValue("CorrelationId");
+            set => Headers["CorrelationId"] = value;
         }
 
         public string MessageId

@@ -80,14 +80,14 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
 
         public string CorrelationId
         {
-            get => (string) Headers.TryGetValue("CorrelationID");
-            set => Headers["CorrelationID"] = value;
+            get => (string) Headers.TryGetValue("CorrelationId");
+            set => Headers["CorrelationId"] = value;
         }
 
         public string MessageId
         {
-            get => (string) Headers.TryGetValue("MessageID");
-            set => Headers["MessageID"] = value;
+            get => (string) Headers.TryGetValue("MessageId");
+            set => Headers["MessageId"] = value;
         }
 
         public string ReplyToEndPoint
