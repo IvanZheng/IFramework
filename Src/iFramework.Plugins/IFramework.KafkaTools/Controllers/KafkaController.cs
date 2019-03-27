@@ -18,7 +18,7 @@ namespace IFramework.KafkaTools.Controllers
     public class KafkaController : ControllerBase
     {
         private const string MaintainerGroup = "MaintainerGroup";
-        private static readonly ConcurrentDictionary<string, Producer<string, string>> Producers = new ConcurrentDictionary<string, Producer<string, string>>();
+        private static readonly ConcurrentDictionary<string, IProducer<string, string>> Producers = new ConcurrentDictionary<string, IProducer<string, string>>();
 
         [HttpPost("offset")]
         public void CommitOffset([FromBody] CommitOffsetRequest request)
@@ -34,7 +34,7 @@ namespace IFramework.KafkaTools.Controllers
             }
         }
 
-        private Consumer<string, string> GetConsumer(string broker, string group)
+        private IConsumer<string, string> GetConsumer(string broker, string group)
         {
             var consumerConfiguration = new ConsumerConfig
             {
@@ -51,7 +51,7 @@ namespace IFramework.KafkaTools.Controllers
         }
 
 
-        private Producer<string, string> GetProducer(string broker)
+        private IProducer<string, string> GetProducer(string broker)
         {
             return Producers.GetOrAdd($"{broker}", key =>
             {

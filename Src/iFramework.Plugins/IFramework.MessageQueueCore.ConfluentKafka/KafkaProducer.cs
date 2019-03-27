@@ -32,7 +32,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
     {
         public ProducerConfig Config { get; private set; }
         private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>));
-        private readonly Producer<TKey, TValue> _producer;
+        private readonly IProducer<TKey, TValue> _producer;
         private readonly string _topic;
 
         public KafkaProducer(string topic,
@@ -88,8 +88,8 @@ namespace IFramework.MessageQueue.ConfluentKafka
                     var result = await _producer.ProduceAsync(topic,
                                                               new Message<TKey, TValue>{
                                                                   Key = key,
-                                                                  Value = message},
-                                                              cancellationToken)
+                                                                  Value = message
+                                                              })
                                                 .ConfigureAwait(false);
                     return result;
                 }

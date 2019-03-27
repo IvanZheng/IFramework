@@ -16,7 +16,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
     {
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         protected readonly string BrokerList;
-        private Consumer<TKey, TValue> _consumer;
+        private IConsumer<TKey, TValue> _consumer;
         protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
 
         public KafkaConsumer(string brokerList,
@@ -102,7 +102,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);
-            _consumer.Commit(new[] {topicPartitionOffset}, _cancellationTokenSource.Token);
+            _consumer.Commit(new[] {topicPartitionOffset});
             return Task.CompletedTask;
         }
 
