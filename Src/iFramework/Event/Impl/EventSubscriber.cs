@@ -272,7 +272,7 @@ namespace IFramework.Event.Impl
             }
             catch (Exception e)
             {
-                Logger.LogCritical(e, $"Handle event failed event: {eventContext.Message.ToJson()}");
+                Logger.LogCritical(e, $"Handle event failed event: {eventContext.ToJson()}");
             }
             finally
             {
