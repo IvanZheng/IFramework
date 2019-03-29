@@ -57,10 +57,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public Confluent.Kafka.ConsumerConfig ConsumerConfiguration { get; protected set; }
 
-        protected override void PollMessages()
+        protected override void PollMessages(CancellationToken cancellationToken)
         {
             //_consumer.Poll(TimeSpan.FromMilliseconds(1000));
-            var consumeResult = _consumer.Consume(_cancellationTokenSource.Token);
+            var consumeResult = _consumer.Consume(cancellationToken);
             if (consumeResult != null)
             {
                 _consumer_OnMessage(_consumer, consumeResult);

@@ -58,9 +58,9 @@ namespace IFramework.MessageQueue.EQueue
             Consumer?.Stop();
         }
 
-        protected override void PollMessages()
+        protected override void PollMessages(CancellationToken cancellationToken)
         {
-            var messages = PullMessages(100, 2000, CancellationTokenSource.Token);
+            var messages = PullMessages(100, 2000, cancellationToken);
             messages.ForEach(message =>
             {
                 AddMessageOffset(message.Topic, message.QueueId, message.QueueOffset);

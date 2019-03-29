@@ -70,7 +70,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             FinishConsumingMessage(messageContext.MessageOffset);
         }
 
-        protected abstract void PollMessages();
+        protected abstract void PollMessages(CancellationToken cancellationToken);
 
 
         protected virtual void ReceiveMessages(CancellationTokenSource cancellationTokenSource)
@@ -82,7 +82,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             {
                 try
                 {
-                    PollMessages();
+                    PollMessages(cancellationTokenSource.Token);
                     BlockIfFullLoad();
                 }
                 catch (OperationCanceledException)
