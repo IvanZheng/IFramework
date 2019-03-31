@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.Message;
-using IFramework.MessageQueue;
 using IFramework.MessageStores.Abstracts;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,11 +35,9 @@ namespace IFramework.MessageStores.Relational
             return SaveChangesAsync();
         }
 
-        public override async Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
+        public override Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
-            return await HandledEvents.CountAsync(@event => @event.Id == eventId
-                                                            && @event.SubscriptionName == subscriptionName)
-                                      .ConfigureAwait(false) > 0;
+            return HandledEvents.AnyAsync(@event => @event.Id == eventId && @event.SubscriptionName == subscriptionName);
         }
 
         public override Task SaveFailHandledEventAsync(IMessageContext eventContext,
