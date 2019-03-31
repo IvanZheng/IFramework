@@ -7,7 +7,6 @@ using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
-using IFramework.MessageQueue;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,7 @@ namespace IFramework.MessageStores.Abstracts
     public abstract class MessageStore : MsDbContext, IMessageStore
     {
         protected readonly ILogger Logger;
-        public bool InMemoryStore { get; private set; }
+
         protected MessageStore(DbContextOptions options)
             : base(options)
         {
@@ -27,13 +26,14 @@ namespace IFramework.MessageStores.Abstracts
 
         public DbSet<Command> Commands { get; set; }
         public DbSet<Event> Events { get; set; }
-       
+
         public DbSet<UnSentCommand> UnSentCommands { get; set; }
         public DbSet<UnPublishedEvent> UnPublishedEvents { get; set; }
+        public bool InMemoryStore { get; }
 
         public Task SaveCommandAsync(IMessageContext commandContext,
-                                object result = null,
-                                params IMessageContext[] messageContexts)
+                                     object result = null,
+                                     params IMessageContext[] messageContexts)
         {
             if (commandContext != null)
             {
@@ -72,16 +72,16 @@ namespace IFramework.MessageStores.Abstracts
 
 
         public abstract Task HandleEventAsync(IMessageContext eventContext,
-                                             string subscriptionName,
-                                             IEnumerable<IMessageContext> commandContexts,
-                                             IEnumerable<IMessageContext> messageContexts);
+                                              string subscriptionName,
+                                              IEnumerable<IMessageContext> commandContexts,
+                                              IEnumerable<IMessageContext> messageContexts);
 
         public abstract Task<bool> HasEventHandledAsync(string eventId, string subscriptionName);
 
         public abstract Task SaveFailHandledEventAsync(IMessageContext eventContext,
-                                                      string subscriptionName,
-                                                      Exception e,
-                                                      params IMessageContext[] messageContexts);
+                                                       string subscriptionName,
+                                                       Exception e,
+                                                       params IMessageContext[] messageContexts);
 
         public virtual async Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
         {
@@ -100,7 +100,6 @@ namespace IFramework.MessageStores.Abstracts
             return commandHandledInfo;
         }
 
-      
 
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
@@ -128,7 +127,7 @@ namespace IFramework.MessageStores.Abstracts
                         .HasMaxLength(200);
 
             modelBuilder.Entity<HandledEvent>()
-                        .HasKey(e => new { e.Id, e.SubscriptionName });
+                        .HasKey(e => new {e.Id, e.SubscriptionName});
 
             modelBuilder.Entity<HandledEvent>()
                         .Property(handledEvent => handledEvent.SubscriptionName)
@@ -140,18 +139,18 @@ namespace IFramework.MessageStores.Abstracts
             modelBuilder.Entity<Command>()
                         .Property(c => c.Name)
                         .HasMaxLength(200);
-          
+
             modelBuilder.Entity<Command>()
                         .Property(c => c.Topic)
                         .HasMaxLength(200);
-        
+
 
             var eventEntityBuilder = modelBuilder.Entity<Event>();
             eventEntityBuilder.HasIndex(e => e.AggregateRootId);
             eventEntityBuilder.HasIndex(e => e.CorrelationId);
             eventEntityBuilder.HasIndex(e => e.Name);
 
-           
+
             eventEntityBuilder.Property(e => e.Name)
                               .HasMaxLength(200);
             eventEntityBuilder.Property(e => e.AggregateRootId)
@@ -160,16 +159,15 @@ namespace IFramework.MessageStores.Abstracts
                               .HasMaxLength(200);
             eventEntityBuilder.Property(e => e.Topic)
                               .HasMaxLength(200);
-           
+
             eventEntityBuilder.OwnsOne(e => e.SagaInfo);
 
             modelBuilder.Entity<UnSentCommand>()
                         .OwnsOne(m => m.SagaInfo);
-           
+
 
             modelBuilder.Entity<UnPublishedEvent>()
                         .OwnsOne(m => m.SagaInfo);
-            
         }
 
         protected virtual Command BuildCommand(IMessageContext commandContext, object result)
