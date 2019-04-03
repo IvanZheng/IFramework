@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -10,28 +8,40 @@ namespace IFramework.Infrastructure
     {
         public static async Task DoInTransactionAsync(Func<Task> func,
                                                       IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                                      TransactionScopeOption scopOption = TransactionScopeOption.Required,
-                                                      bool continueOnCapturedContext = false)
+                                                      TransactionScopeOption scopeOption = TransactionScopeOption.Required,
+                                                      bool ignoreInTransaction = true)
         {
-            using (var scope = new TransactionScope(scopOption,
-                                                    new TransactionOptions {IsolationLevel = isolationLevel},
-                                                    TransactionScopeAsyncFlowOption.Enabled))
+            if (ignoreInTransaction && Transaction.Current != null)
             {
-                await func().ConfigureAwait(continueOnCapturedContext);
-                scope.Complete();
+                await func().ConfigureAwait(false);
+            }
+            else
+            {
+                using (var scope = new TransactionScope(scopeOption,
+                                                        new TransactionOptions {IsolationLevel = isolationLevel},
+                                                        TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await func().ConfigureAwait(false);
+                    scope.Complete();
+                }
             }
         }
 
         public static async Task<T> DoInTransactionAsync<T>(Func<Task<T>> func,
-                                                      IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                                      TransactionScopeOption scopOption = TransactionScopeOption.Required,
-                                                      bool continueOnCapturedContext = false)
+                                                            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+                                                            TransactionScopeOption scopeOption = TransactionScopeOption.Required,
+                                                            bool ignoreInTransaction = true)
         {
-            using (var scope = new TransactionScope(scopOption,
+            if (ignoreInTransaction && Transaction.Current != null)
+            {
+                return await func().ConfigureAwait(false);
+            }
+
+            using (var scope = new TransactionScope(scopeOption,
                                                     new TransactionOptions {IsolationLevel = isolationLevel},
                                                     TransactionScopeAsyncFlowOption.Enabled))
             {
-                var result = await func().ConfigureAwait(continueOnCapturedContext);
+                var result = await func().ConfigureAwait(false);
                 scope.Complete();
                 return result;
             }
@@ -39,22 +49,36 @@ namespace IFramework.Infrastructure
 
         public static void DoInTransaction(Action action,
                                            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                           TransactionScopeOption scopOption = TransactionScopeOption.Required)
+                                           TransactionScopeOption scopeOption = TransactionScopeOption.Required,
+                                           bool ignoreInTransaction = true)
         {
-            using (var scope = new TransactionScope(scopOption,
-                                                    new TransactionOptions {IsolationLevel = isolationLevel},
-                                                    TransactionScopeAsyncFlowOption.Enabled))
+            if (ignoreInTransaction && Transaction.Current != null)
             {
                 action();
-                scope.Complete();
+            }
+            else
+            {
+                using (var scope = new TransactionScope(scopeOption,
+                                                        new TransactionOptions {IsolationLevel = isolationLevel},
+                                                        TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    action();
+                    scope.Complete();
+                }
             }
         }
 
         public static object DoInTransaction(Func<object> action,
-                                           IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                           TransactionScopeOption scopOption = TransactionScopeOption.Required)
+                                             IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+                                             TransactionScopeOption scopeOption = TransactionScopeOption.Required,
+                                             bool ignoreInTransaction = true)
         {
-            using (var scope = new TransactionScope(scopOption,
+            if (ignoreInTransaction && Transaction.Current != null)
+            {
+                return action();
+            }
+
+            using (var scope = new TransactionScope(scopeOption,
                                                     new TransactionOptions {IsolationLevel = isolationLevel},
                                                     TransactionScopeAsyncFlowOption.Enabled))
             {
