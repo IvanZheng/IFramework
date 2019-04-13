@@ -132,25 +132,25 @@ namespace IFramework.Repositories
         /// <param name="entity">The entity to be updated.</param>
         void Update<TAggregateRoot>(TAggregateRoot entity) where TAggregateRoot : class;
 
-        (IQueryable<TAggregateRoot> data, long total) PageFind<TAggregateRoot>(int pageIndex,
+        (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind<TAggregateRoot>(int pageIndex,
                                                                     int pageSize,
                                                                     Expression<Func<TAggregateRoot, bool>> specification,
                                                                     params OrderExpression[] orderExpressions)
             where TAggregateRoot : class;
 
 
-        Task<(IQueryable<TAggregateRoot> data, long total)> PageFindAsync<TAggregateRoot>(int pageIndex,
+        Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync<TAggregateRoot>(int pageIndex,
                                                                                int pageSize,
                                                                                Expression<Func<TAggregateRoot, bool>> specification,
                                                                                params OrderExpression[] orderExpressions)
             where TAggregateRoot : class;
 
-        (IQueryable<TAggregateRoot> data, long total) PageFind<TAggregateRoot>(int pageIndex,
+        (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind<TAggregateRoot>(int pageIndex,
                                                                     int pageSize,
                                                                     ISpecification<TAggregateRoot> specification,
                                                                     params OrderExpression[] orderExpressions) where TAggregateRoot : class;
 
-        Task<(IQueryable<TAggregateRoot> data, long total)> PageFindAsync<TAggregateRoot>(int pageIndex,
+        Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync<TAggregateRoot>(int pageIndex,
                                                                                int pageSize,
                                                                                ISpecification<TAggregateRoot> specification,
                                                                                params OrderExpression[] orderExpressions)

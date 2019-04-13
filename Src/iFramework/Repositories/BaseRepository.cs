@@ -100,13 +100,13 @@ namespace IFramework.Repositories
         /// <param name="entity">The entity to be updated.</param>
         protected abstract void DoUpdate(TAggregateRoot entity);
 
-        protected abstract Task<(IQueryable<TAggregateRoot> data, long total)> DoPageFindAsync(int pageIndex,
+        protected abstract Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> DoPageFindAsync(int pageIndex,
                                                                                     int pageSize,
                                                                                     ISpecification<TAggregateRoot> specification,
                                                                                     params OrderExpression[] orderExpressions);
 
 
-        protected abstract (IQueryable<TAggregateRoot> data, long total) DoPageFind(int pageIndex,
+        protected abstract (IQueryable<TAggregateRoot> DataQueryable, long Total) DoPageFind(int pageIndex,
                                                                          int pageSize,
                                                                          ISpecification<TAggregateRoot> specification,
                                                                          params OrderExpression[] orderExpressions);
@@ -287,7 +287,7 @@ namespace IFramework.Repositories
             return DoExistsAsync(Specification<TAggregateRoot>.Eval(specification));
         }
 
-        public (IQueryable<TAggregateRoot> data, long total) PageFind(int pageIndex,
+        public (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind(int pageIndex,
                                                            int pageSize,
                                                            Expression<Func<TAggregateRoot, bool>> expression,
                                                            params OrderExpression[] orderExpressions)
@@ -295,7 +295,7 @@ namespace IFramework.Repositories
             return DoPageFind(pageIndex, pageSize, Specification<TAggregateRoot>.Eval(expression), orderExpressions);
         }
 
-        public Task<(IQueryable<TAggregateRoot> data, long total)> PageFindAsync(int pageIndex,
+        public Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync(int pageIndex,
                                                                            int pageSize,
                                                                            Expression<Func<TAggregateRoot, bool>> specification,
                                                                            params OrderExpression[] orderExpressions)
@@ -306,7 +306,7 @@ namespace IFramework.Repositories
                                    orderExpressions);
         }
 
-        public (IQueryable<TAggregateRoot> data, long total) PageFind(int pageIndex,
+        public (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind(int pageIndex,
                                                            int pageSize,
                                                            ISpecification<TAggregateRoot> specification,
                                                            params OrderExpression[] orderExpressions)
@@ -314,7 +314,7 @@ namespace IFramework.Repositories
             return DoPageFind(pageIndex, pageSize, specification, orderExpressions);
         }
 
-        public Task<(IQueryable<TAggregateRoot> data, long total)> PageFindAsync(int pageIndex,
+        public Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync(int pageIndex,
                                                                            int pageSize,
                                                                            ISpecification<TAggregateRoot> specification,
                                                                            params OrderExpression[] orderExpressions)
