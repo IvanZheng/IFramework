@@ -96,8 +96,8 @@ namespace Sample.CommandServiceCore.Controllers
         {
             using (_logger.BeginScope(new Dictionary<string, object> {{"needGc", needGc}}))
             {
-                var profile = Configuration.Get("Debug");
-                var member = Configuration.Get("Member:A");
+                var profile = Configuration.Instance.Get("Debug");
+                var member = Configuration.Instance.Get("Member:A");
                 _logger.LogDebug(new {profile, member});
                 _logger.LogDebug("index test");
                 return View();

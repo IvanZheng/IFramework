@@ -7,8 +7,15 @@ using IFramework.Exceptions;
 
 namespace IFramework.Infrastructure
 {
+
     public class ConcurrencyProcessor : IConcurrencyProcessor
     {
+        private readonly IUniqueConstrainExceptionParser _uniqueConstrainExceptionParser;
+        public ConcurrencyProcessor(IUniqueConstrainExceptionParser uniqueConstrainExceptionParser)
+        {
+            _uniqueConstrainExceptionParser = uniqueConstrainExceptionParser;
+        }
+
         protected virtual string UnKnownMessage { get; set; } = ErrorCode.UnknownError.ToString();
 
         public virtual async Task<T> ProcessAsync<T>(Func<Task<T>> func,
@@ -96,17 +103,7 @@ namespace IFramework.Infrastructure
 
         private bool NeedRetryDueToUniqueConstrainException(Exception exception, string[] uniqueConstrainNames)
         {
-            var needRetry = false;
-            if (uniqueConstrainNames?.Length > 0 && exception.GetBaseException() is DbException dbException)
-            {
-                var number = dbException.GetPropertyValue<int>("Number");
-                needRetry = (dbException.Source.Contains("MySql") && number == 1062 ||
-                             dbException.Source.Contains("SqlClient") && (number == 2601 || number == 2627 || number == 547) ||
-                             dbException.Source.Contains("Npgsql") && number == 23505) &&
-                            uniqueConstrainNames.Any(dbException.Message.Contains);
-            }
-
-            return needRetry;
+            return _uniqueConstrainExceptionParser.IsUniqueConstrainException(exception, uniqueConstrainNames);
         }
     }
 }

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using IFramework.Domain;
 
 namespace IFramework.MessageQueue
 {
-    public class MessageOffset
+    public class MessageOffset: ValueObject<MessageOffset>
     {
         public MessageOffset()
         {
@@ -18,10 +19,10 @@ namespace IFramework.MessageQueue
             Offset = offset;
         }
 
-        public string Broker { get; set; }
-        public string Topic { get; set; }
-        public int Partition { get; set; }
-        public long Offset { get; set; }
+        public string Broker { get; protected set; }
+        public string Topic { get; protected set; }
+        public int Partition { get; protected set; }
+        public long Offset { get; protected set; }
 
         public string SlidingDoorKey => SlidingDoor.GetSlidingDoorKey(Topic, Partition);
     }

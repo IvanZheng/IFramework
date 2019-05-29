@@ -74,20 +74,20 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         }
         public string[] Tags
         {
-            get => (string[])Headers.TryGetValue(nameof(Tags));
-            set => Headers[nameof(Tags)] = value;
+            get => Headers.TryGetValue(nameof(Tags))?.ToString().Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+            set => Headers[nameof(Tags)] = value?.Length > 0 ? string.Join(",", value):null;
         }
 
         public string CorrelationId
         {
-            get => (string) Headers.TryGetValue("CorrelationID");
-            set => Headers["CorrelationID"] = value;
+            get => (string) Headers.TryGetValue("CorrelationId");
+            set => Headers["CorrelationId"] = value;
         }
 
         public string MessageId
         {
-            get => (string) Headers.TryGetValue("MessageID");
-            set => Headers["MessageID"] = value;
+            get => (string) Headers.TryGetValue("MessageId");
+            set => Headers["MessageId"] = value;
         }
 
         public string ReplyToEndPoint

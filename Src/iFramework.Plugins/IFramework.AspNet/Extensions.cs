@@ -19,6 +19,28 @@ namespace IFramework.AspNet
     #if !Legency
     public static partial class Extensions
     {
+        public static string FormatUri(this string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return url;
+            }
+
+            Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var validatedUri);
+            if (validatedUri.IsAbsoluteUri)
+            {
+                return validatedUri.AbsoluteUri;
+            }
+
+            var uri = new Uri(new Uri("http://127.0.0.1"), validatedUri.ToString());
+            if (!url.StartsWith("/"))
+            {
+                return uri.PathAndQuery.Substring(1);
+            }
+
+            return uri.PathAndQuery;
+        }
+
         public static HttpResponse EnableRewind(this HttpResponse response)
         {
             if (response == null)

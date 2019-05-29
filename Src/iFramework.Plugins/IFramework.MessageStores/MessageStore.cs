@@ -19,7 +19,7 @@ namespace IFramework.MessageStores.Relational
                                               IEnumerable<IMessageContext> commandContexts,
                                               IEnumerable<IMessageContext> messageContexts)
         {
-            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now));
+            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now));
             commandContexts.ForEach(commandContext =>
             {
                 commandContext.CorrelationId = eventContext.MessageId;
@@ -35,11 +35,9 @@ namespace IFramework.MessageStores.Relational
             return SaveChangesAsync();
         }
 
-        public override async Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
+        public override Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
-            return await HandledEvents.CountAsync(@event => @event.Id == eventId
-                                                            && @event.SubscriptionName == subscriptionName)
-                                      .ConfigureAwait(false) > 0;
+            return HandledEvents.AnyAsync(@event => @event.Id == eventId && @event.SubscriptionName == subscriptionName);
         }
 
         public override Task SaveFailHandledEventAsync(IMessageContext eventContext,
@@ -47,7 +45,7 @@ namespace IFramework.MessageStores.Relational
                                                        Exception e,
                                                        params IMessageContext[] messageContexts)
         {
-            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now, e));
+            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now, e));
 
             messageContexts.ForEach(messageContext =>
             {

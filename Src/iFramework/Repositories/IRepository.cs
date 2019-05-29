@@ -158,23 +158,23 @@ namespace IFramework.Repositories
         /// <param name="entity">The entity to be updated.</param>
         void Update(TAggregateRoot entity);
 
-        (IQueryable<TAggregateRoot>, long) PageFind(int pageIndex,
+        (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind(int pageIndex,
                                                     int pageSize,
                                                     Expression<Func<TAggregateRoot, bool>> expression,
                                                     params OrderExpression[] orderByExpressions);
 
-        Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync(int pageIndex,
+        Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync(int pageIndex,
                                                                int pageSize,
                                                                Expression<Func<TAggregateRoot, bool>> specification,
                                                                params OrderExpression[] orderByExpressions);
 
-        (IQueryable<TAggregateRoot>, long) PageFind(int pageIndex,
+        (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind(int pageIndex,
                                                     int pageSize,
                                                     ISpecification<TAggregateRoot> specification,
                                                     params OrderExpression[] orderByExpressions);
 
 
-        Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync(int pageIndex,
+        Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync(int pageIndex,
                                                                int pageSize,
                                                                ISpecification<TAggregateRoot> specification,
                                                                params OrderExpression[] orderByExpressions);

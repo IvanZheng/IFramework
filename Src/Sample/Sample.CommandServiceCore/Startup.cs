@@ -89,6 +89,7 @@ namespace Sample.CommandServiceCore
                          .UseDbContextPool<SampleModelContext>(options =>
                          {
                              //options.EnableSensitiveDataLogging();
+                             options.UseLazyLoadingProxies();
                              options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
                              //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));

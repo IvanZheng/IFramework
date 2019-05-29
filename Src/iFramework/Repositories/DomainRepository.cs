@@ -178,7 +178,7 @@ namespace IFramework.Repositories
             GetRepository<TAggregateRoot>().Update(entity);
         }
 
-        public virtual (IQueryable<TAggregateRoot>, long) PageFind<TAggregateRoot>(int pageIndex,
+        public virtual (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind<TAggregateRoot>(int pageIndex,
                                                                            int pageSize,
                                                                            Expression<Func<TAggregateRoot, bool>> specification,
                                                                            params OrderExpression[] orderExpressions)
@@ -188,7 +188,7 @@ namespace IFramework.Repositories
         }
 
 
-        public virtual Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync<TAggregateRoot>(int pageIndex,
+        public virtual Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync<TAggregateRoot>(int pageIndex,
                                                                                       int pageSize,
                                                                                       Expression<Func<TAggregateRoot, bool>> specification,
                                                                                       params OrderExpression[] orderExpressions)
@@ -197,7 +197,7 @@ namespace IFramework.Repositories
             return GetRepository<TAggregateRoot>().PageFindAsync(pageIndex, pageSize, specification, orderExpressions);
         }
 
-        public virtual (IQueryable<TAggregateRoot>, long) PageFind<TAggregateRoot>(int pageIndex,
+        public virtual (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind<TAggregateRoot>(int pageIndex,
                                                                            int pageSize,
                                                                            ISpecification<TAggregateRoot> specification,
                                                                            params OrderExpression[] orderExpressions) where TAggregateRoot : class
@@ -207,7 +207,7 @@ namespace IFramework.Repositories
                           orderExpressions);
         }
 
-        public virtual Task<(IQueryable<TAggregateRoot>, long)> PageFindAsync<TAggregateRoot>(int pageIndex,
+        public virtual Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync<TAggregateRoot>(int pageIndex,
                                                                                       int pageSize,
                                                                                       ISpecification<TAggregateRoot> specification,
                                                                                       params OrderExpression[] orderExpressions)

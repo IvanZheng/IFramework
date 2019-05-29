@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Blueshift.EntityFrameworkCore.MongoDB;
+using IFramework.MessageQueue;
 using MongoDB.Driver.Linq;
 
 namespace IFramework.MessageStores.MongoDb
@@ -24,7 +25,7 @@ namespace IFramework.MessageStores.MongoDb
                                              IEnumerable<IMessageContext> commandContexts,
                                              IEnumerable<IMessageContext> messageContexts)
         {
-            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now));
+            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now));
             commandContexts.ForEach(commandContext =>
             {
                 commandContext.CorrelationId = eventContext.MessageId;
@@ -78,7 +79,7 @@ namespace IFramework.MessageStores.MongoDb
                                                        Exception e,
                                                        params IMessageContext[] messageContexts)
         {
-            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, DateTime.Now, e));
+            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now, e));
 
             messageContexts.ForEach(messageContext =>
             {
@@ -95,6 +96,7 @@ namespace IFramework.MessageStores.MongoDb
             base.OnModelCreating(modelBuilder);
             modelBuilder.Ignore<Abstracts.HandledEvent>();
             modelBuilder.Ignore<SagaInfo>();
+            modelBuilder.Ignore<MessageOffset>();
             modelBuilder.Ignore<AggregateRoot>();
             modelBuilder.Ignore<Entity>();
             modelBuilder.Ignore<TimestampedAggregateRoot>();

@@ -73,7 +73,7 @@ namespace IFramework.MessageQueue.InMemory
             {
                 try
                 {
-                    var messageContext = _messageQueue.Take();
+                    var messageContext = _messageQueue.Take(cancellationTokenSource.Token);
                     _onMessagesReceived(messageContext);
                 }
                 catch (OperationCanceledException)
