@@ -51,6 +51,20 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Storage
             return false;
         }
 
+        /// <inheritdoc />
+        public bool CanConnect()
+        {
+            return _mongoDbConnection.GetDatabase() != null;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> CanConnectAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            return await _mongoDbConnection.GetDatabaseAsync(cancellationToken)
+                                           .ConfigureAwait(false) != null;
+
+        }
+
         /// <summary>
         ///     Ensures that the database for the context does not exist.
         /// </summary>

@@ -2,7 +2,9 @@
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace Blueshift.EntityFrameworkCore.MongoDB.ChangeTracking
@@ -17,9 +19,9 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.ChangeTracking
         }
 
         /// <inheritdoc />
-        public override IReadOnlyList<InternalEntityEntry> GetInternalEntriesToSave()
+        public override IList<IUpdateEntry> GetEntriesToSave()
             => base
-                .GetInternalEntriesToSave()
+                .GetEntriesToSave()
                 .Where(internalEntityEntry => !internalEntityEntry.EntityType.MongoDb().IsComplexType)
                 .ToList();
     }

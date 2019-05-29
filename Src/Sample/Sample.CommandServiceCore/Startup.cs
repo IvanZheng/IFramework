@@ -39,17 +39,21 @@ using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAt
 using System.Net;
 using IFramework.Infrastructure;
 using System.Collections.Generic;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using IFramework.MessageStores.MongoDb;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
 
 namespace Sample.CommandServiceCore
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+        private readonly IHostingEnvironment _env;
         private static IMessagePublisher _messagePublisher;
         private static ICommandBus _commandBus;
         private static IMessageProcessor _commandConsumer1;
@@ -62,19 +66,50 @@ namespace Sample.CommandServiceCore
         private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            var kafkaBrokerList = new[]
+            _configuration = configuration;
+            _env = env;
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddLog4Net(new Log4NetProviderOptions {EnableScope = true});
+            services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
+            services.AddCustomOptions<FrameworkConfiguration>();
+            services.AddMvc(options =>
+                    {
+                        options.InputFormatters.Insert(0, new CommandInputFormatter());
+                        options.InputFormatters.Add(new FormDataInputFormatter());
+                        options.Filters.Add<ExceptionFilter>();
+                    })
+                    .AddControllersAsServices()
+                    .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+            services.AddControllersWithViews();
+            services.AddRazorPages();
+
+            services.AddAuthorization(options =>
             {
+                options.AddPolicy("AppAuthorization",
+                                  policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
+            });
+            services.AddSingleton<IApiResultWrapAttribute, ApiResultWrapAttribute>();
+            //services.AddMiniProfiler()
+            //        .AddEntityFramework();
+        }
+
+
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            var kafkaBrokerList = new[] {
                 //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
                 "10.100.7.46:9092"
             };
-            var rabbitConnectionFactory = new ConnectionFactory
-            {
+            var rabbitConnectionFactory = new ConnectionFactory {
                 Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
             };
             Configuration.Instance
                          //.UseUnityContainer()
-                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
-                         .UseConfiguration(configuration)
+                         .UseAutofacContainer(builder, a => a.GetName().Name.StartsWith("Sample"))
+                         .UseConfiguration(_configuration)
                          .UseCommonComponents(_app)
                          .UseJsonNet()
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
@@ -95,35 +130,8 @@ namespace Sample.CommandServiceCore
                              //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                              //options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
-        }
-
-        public IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            services.AddLog4Net(new Log4NetProviderOptions { EnableScope = true });
-            services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
-            services.AddCustomOptions<FrameworkConfiguration>();
-            services.AddMvc(options =>
-                    {
-                        options.InputFormatters.Insert(0, new CommandInputFormatter());
-                        options.InputFormatters.Add(new FormDataInputFormatter());
-                        options.Filters.Add<ExceptionFilter>();
-                    })
-                    .AddControllersAsServices()
-                ;
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("AppAuthorization",
-                                  policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
-            });
-            services.AddSingleton<IApiResultWrapAttribute, ApiResultWrapAttribute>();
-            services.AddMiniProfiler()
-                    .AddEntityFramework();
-
-            return ObjectProviderFactory.Instance
-                                        .Populate(services)
-                                        .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
-                                        .Build();
+            ObjectProviderFactory.Instance
+                                 .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped);
         }
 
         private static void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
@@ -209,10 +217,13 @@ namespace Sample.CommandServiceCore
             });
 
             app.UseStaticFiles();
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseCors("default"); 
+            app.UseEndpoints(endpoints  =>
             {
-                routes.MapRoute("default",
+                endpoints.MapControllerRoute("default",
                                 "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
 
             app.UseLogLevelController();

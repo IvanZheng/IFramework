@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
-using Blueshift.EntityFrameworkCore.MongoDB;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
@@ -13,7 +12,6 @@ using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
-using IFramework.MessageStores.MongoDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -37,8 +35,8 @@ namespace IFramework.Test.EntityFramework
             var configuratoin = builder.Build();
             var optionsBuilder = new DbContextOptionsBuilder<DemoDbContext>();
             //optionsBuilder.UseMySQL(configuratoin.GetConnectionString(MySqlConnectionStringName));
-            //optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
-            optionsBuilder.UseMongoDb(configuratoin.GetConnectionString(MongoDbConnectionStringName));
+            optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
+            //optionsBuilder.UseMongoDb(configuratoin.GetConnectionString(MongoDbConnectionStringName));
             return new DemoDbContext(optionsBuilder.Options);
         }
     }
@@ -61,10 +59,10 @@ namespace IFramework.Test.EntityFramework
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
                              options.EnableSensitiveDataLogging();
-                             options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
+                             //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
                              //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
                          });
 
             ObjectProviderFactory.Instance.Build();
@@ -150,9 +148,6 @@ namespace IFramework.Test.EntityFramework
                     dbContext.Users.Add(user);
                     await dbContext.SaveChangesAsync();
                     scope.Complete();
-                    var client = dbContext.GetMongoDbClient();
-                    var database = dbContext.GetMongoDbDatabase();
-                    var conn = dbContext.GetMongoDbConnection();
                 }
                 catch (Exception e)
                 {

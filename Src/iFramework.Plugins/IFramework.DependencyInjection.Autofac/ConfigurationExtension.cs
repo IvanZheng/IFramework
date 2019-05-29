@@ -33,10 +33,12 @@ namespace IFramework.DependencyInjection.Autofac
                                    .ToArray();
         }
 
-        public static Configuration UseAutofacContainer(this Configuration configuration,
+        public static Configuration UseAutofacContainer(this Configuration configuration, 
+                                                        ContainerBuilder containerBuilder,
                                                         Func<Assembly, bool> assemblyNameExpression)
         {
-            return configuration.UseAutofacContainer(GetAssemblies(assemblyNameExpression));
+            containerBuilder.RegisterAssemblyTypes(GetAssemblies(assemblyNameExpression));
+            return configuration.UseAutofacContainer(containerBuilder);
         }
 
         public static Configuration UseAutofacContainer(this Configuration configuration)

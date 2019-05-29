@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Utilities
@@ -67,7 +68,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.CollectionArgumentIsEmpty(parameterName));
+                throw new ArgumentException(CoreStrings.ArgumentPropertyNull(parameterName, value));
             }
 
             return value;

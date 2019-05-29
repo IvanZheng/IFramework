@@ -5,6 +5,7 @@ using IFramework.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Unity;
 using Unity.Injection;
+using Unity.Interception;
 using Unity.Interception.ContainerIntegration;
 using Unity.Interception.Interceptors.InstanceInterceptors.InterfaceInterception;
 using Unity.Interception.Interceptors.TypeInterceptors.VirtualMethodInterception;
@@ -16,7 +17,7 @@ namespace IFramework.DependencyInjection.Unity
 {
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
-        private readonly UnityContainer _container;
+        private readonly IUnityContainer _container;
 
         public ObjectProviderBuilder(UnityContainer container = null)
         {
@@ -124,7 +125,7 @@ namespace IFramework.DependencyInjection.Unity
             return this;
         }
 
-        private LifetimeManager GetLifeTimeManager(ServiceLifetime serviceLifetime)
+        private ITypeLifetimeManager GetLifeTimeManager(ServiceLifetime serviceLifetime)
         {
             switch (serviceLifetime)
             {

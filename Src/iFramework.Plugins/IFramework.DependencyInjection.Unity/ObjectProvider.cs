@@ -10,13 +10,13 @@ namespace IFramework.DependencyInjection.Unity
 {
     public class ObjectProvider : IObjectProvider
     {
-        public UnityContainer UnityContainer { get; private set; }
+        public IUnityContainer UnityContainer { get; private set; }
         public ObjectProvider(ObjectProvider parent = null)
         {
             Parent = parent;
         }
 
-        public ObjectProvider(UnityContainer container, ObjectProvider parent = null)
+        public ObjectProvider(IUnityContainer container, ObjectProvider parent = null)
             : this(parent)
         {
             SetComponentContext(container);
@@ -53,7 +53,7 @@ namespace IFramework.DependencyInjection.Unity
         public IObjectProvider CreateScope(IServiceCollection serviceCollection)
         {
             var objectProvider = new ObjectProvider(this);
-            var childScope = UnityContainer.CreateChildContainer();
+            var childScope = UnityContainer;
             childScope.RegisterInstance<IObjectProvider>(objectProvider);
             childScope.RegisterInstance(childScope.BuildServiceProvider(serviceCollection));
             objectProvider.SetComponentContext(childScope as UnityContainer);
@@ -108,7 +108,7 @@ namespace IFramework.DependencyInjection.Unity
             return UnityContainer.ResolveAll<T>(GetResolverOverrides(parameters));
         }
 
-        internal void SetComponentContext(UnityContainer container)
+        internal void SetComponentContext(IUnityContainer container)
         {
             UnityContainer = container;
         }

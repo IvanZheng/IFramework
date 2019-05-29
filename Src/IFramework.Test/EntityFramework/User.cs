@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using IFramework.Domain;
 using IFramework.Infrastructure;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace IFramework.Test.EntityFramework
 {

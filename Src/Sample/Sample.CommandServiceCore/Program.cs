@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore;
+﻿using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace Sample.CommandServiceCore
 {
@@ -8,26 +9,30 @@ namespace Sample.CommandServiceCore
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            CreateHostBuilder(args).Build().Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            var configRoot = new ConfigurationBuilder().AddCommandLine(args).Build();
-            var urls = configRoot.GetValue("urls", string.Empty);
-            var environment = configRoot.GetValue("environment", string.Empty);
+            return Host.CreateDefaultBuilder(args)
+                       .ConfigureWebHostDefaults(webBuilder =>
+                       {
+                           var configRoot = new ConfigurationBuilder().AddCommandLine(args).Build();
+                           var urls = configRoot.GetValue("urls", string.Empty);
+                           var environment = configRoot.GetValue("environment", string.Empty);
+                           if (!string.IsNullOrWhiteSpace(urls))
+                           {
+                               webBuilder.UseUrls(urls);
+                           }
 
-            var build = WebHost.CreateDefaultBuilder(args);
-            if (!string.IsNullOrWhiteSpace(urls))
-            {
-                build.UseUrls(urls);
-            }
-            if (!string.IsNullOrWhiteSpace(environment))
-            {
-                build.UseEnvironment(environment);
-            }
-            return build.UseStartup<Startup>()
-                        .Build();
+                           if (!string.IsNullOrWhiteSpace(environment))
+                           {
+                               webBuilder.UseEnvironment(environment);
+                           }
+
+                           webBuilder.ConfigureServices(services => services.AddAutofac())
+                                     .UseStartup<Startup>();
+                       });
         }
     }
 }

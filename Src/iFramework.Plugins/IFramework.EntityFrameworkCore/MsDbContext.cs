@@ -10,7 +10,7 @@ using IFramework.Infrastructure;
 using IFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace IFramework.EntityFrameworkCore
 {
@@ -18,7 +18,9 @@ namespace IFramework.EntityFrameworkCore
     {
         public MsDbContext(DbContextOptions options)
             : base(new DbContextOptionsBuilder(options).ReplaceService<IEntityMaterializerSource, ExtensionEntityMaterializerSource>()
-                                                       .Options) { }
+                                                       .Options)
+        {
+        }
 
         public void Reload<TEntity>(TEntity entity)
             where TEntity : class

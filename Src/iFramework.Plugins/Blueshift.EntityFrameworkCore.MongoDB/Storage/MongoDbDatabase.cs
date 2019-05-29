@@ -59,7 +59,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Storage
         /// </summary>
         /// <param name="entries">A list of entries to be persisted.</param>
         /// <returns>The number of entries that were persisted.</returns>
-        public override int SaveChanges(IReadOnlyList<IUpdateEntry> entries)
+        public override int SaveChanges(IList<IUpdateEntry> entries)
             => Check.NotNull(entries, nameof(entries))
                 .ToLookup(entry => GetCollectionEntityType(entry.EntityType))
                 .Sum(grouping => (int)GenericSaveChanges.MakeGenericMethod(grouping.Key.ClrType)
@@ -95,7 +95,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Storage
         ///     A <see cref="Task{TResult}"/> representing the state of the operation. The result contains the number
         ///     of entries that were persisted to the database.
         /// </returns>
-        public override async Task<int> SaveChangesAsync(IReadOnlyList<IUpdateEntry> entries,
+        public override async Task<int> SaveChangesAsync(IList<IUpdateEntry> entries,
             CancellationToken cancellationToken = new CancellationToken())
         {
             var tasks = Check.NotNull(entries, nameof(entries))
