@@ -16,7 +16,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
     {
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         protected readonly string BrokerList;
-        private Consumer<TKey, TValue> _consumer;
+        private IConsumer<TKey, TValue> _consumer;
         protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
 
         public KafkaConsumer(string brokerList,
@@ -40,27 +40,27 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
             OnMessageReceived = onMessageReceived;
 
-            ConsumerConfiguration = new Dictionary<string, string>
+            ConsumerConfiguration = new Confluent.Kafka.ConsumerConfig
             {
-                {"group.id", GroupId},
-                {"client.id", consumerId},
-                {"enable.auto.commit", false.ToString().ToLower()},
+                GroupId = GroupId,
+                ClientId = consumerId,
+                EnableAutoCommit = false,
                 //{"socket.blocking.max.ms", ConsumerConfig["socket.blocking.max.ms"] ?? 50},
                 //{"fetch.error.backoff.ms", ConsumerConfig["fetch.error.backoff.ms"] ?? 50},
-                {"socket.nagle.disable", true.ToString().ToLower()},
+                SocketNagleDisable = true,
                 //{"statistics.interval.ms", 60000},
-                {"retry.backoff.ms", ConsumerConfig.BackOffIncrement.ToString()},
-                {"bootstrap.servers", BrokerList},
-                {"auto.offset.reset", ConsumerConfig.AutoOffsetReset}
+                //{"retry.backoff.ms", ConsumerConfig.BackOffIncrement.ToString()},
+                BootstrapServers = BrokerList,
+                AutoOffsetReset = (Confluent.Kafka.AutoOffsetReset) ConsumerConfig.AutoOffsetReset
             };
         }
 
-        public Dictionary<string, string> ConsumerConfiguration { get; protected set; }
+        public Confluent.Kafka.ConsumerConfig ConsumerConfiguration { get; protected set; }
 
-        protected override void PollMessages()
+        protected override void PollMessages(CancellationToken cancellationToken)
         {
             //_consumer.Poll(TimeSpan.FromMilliseconds(1000));
-            var consumeResult = _consumer.Consume(_cancellationTokenSource.Token);
+            var consumeResult = _consumer.Consume(cancellationToken);
             if (consumeResult != null)
             {
                 _consumer_OnMessage(_consumer, consumeResult);
@@ -69,10 +69,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public override void Start()
         {
-            _consumer = new Consumer<TKey, TValue>(ConsumerConfiguration,
-                                                   valueDeserializer: KafkaMessageDeserializer<TValue>.DeserializeValue);
+            _consumer = new ConsumerBuilder<TKey, TValue>(ConsumerConfiguration).SetValueDeserializer(new KafkaMessageDeserializer<TValue>())
+                                                                                .Build();
             _consumer.Subscribe(Topics);
-            _consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
+            //_consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
             base.Start();
         }
 
@@ -102,7 +102,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);
-            _consumer.Commit(new[] {topicPartitionOffset}, _cancellationTokenSource.Token);
+            _consumer.Commit(new[] {topicPartitionOffset});
             return Task.CompletedTask;
         }
 

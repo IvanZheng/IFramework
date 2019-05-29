@@ -13,14 +13,13 @@ namespace IFramework.MessageQueue
     /// 'error' - trigger an error which is retrieved by consuming messages and checking 'message->err'. 
     ///* Type: enum value*
     /// </summary>
-    public static class AutoOffsetReset
+    public enum AutoOffsetReset
     {
-        public const string Smallest = "smallest";
-        public const string Earliest = "earliest";
-        public const string Beginning = "beginning";
-        public const string Largest = "largest";
-        public const string Latest = "latest";
-        public const string End = "end";
-        public const string Error = "error";
+        /// <summary>Latest</summary>
+        Latest,
+        /// <summary>Earliest</summary>
+        Earliest,
+        /// <summary>Error</summary>
+        Error,
     }
 }

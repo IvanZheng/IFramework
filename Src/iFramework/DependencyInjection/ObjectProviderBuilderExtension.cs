@@ -13,7 +13,7 @@ namespace IFramework.DependencyInjection
 {
     public static class ObjectProviderBuilderExtension
     {
-        private static readonly ConcurrentBag<Type> RegistedHandlerTypes = new ConcurrentBag<Type>();
+        private static readonly ConcurrentBag<Type> RegisteredHandlerTypes = new ConcurrentBag<Type>();
         /// <summary>
         ///     Register MessageHandlers with AOP features
         /// </summary>
@@ -65,7 +65,7 @@ namespace IFramework.DependencyInjection
                                       .ToArray();
 
             var exportedTypes = assembly.GetExportedTypes()
-                                        .Where(x => x.IsInterface == false && x.IsAbstract == false
+                                        .Where(x => !x.IsInterface && !x.IsAbstract
                                                                            && x.GetInterfaces()
                                                                                .Any(y => y.IsGenericType
                                                                                          && handlerGenericTypes.Contains(y.GetGenericTypeDefinition())));
@@ -77,14 +77,14 @@ namespace IFramework.DependencyInjection
 
         private static void RegisterHandlerFromType(IObjectProviderBuilder builder, Type type, ServiceLifetime lifetime)
         {
-            if (!RegistedHandlerTypes.Contains(type))
+            if (!RegisteredHandlerTypes.Contains(type))
             {
                 builder.Register(type, 
                                  type, 
                                  lifetime, 
                                  new VirtualMethodInterceptorInjection(),
                                  new InterceptionBehaviorInjection());
-                RegistedHandlerTypes.Add(type);
+                RegisteredHandlerTypes.Add(type);
             }
         }
     }

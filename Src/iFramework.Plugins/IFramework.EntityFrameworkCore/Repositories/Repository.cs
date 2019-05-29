@@ -86,7 +86,7 @@ namespace IFramework.EntityFrameworkCore.Repositories
             return DbSet.FindAll(specification, orderExpressions);
         }
 
-        protected override (IQueryable<TEntity>, long) DoPageFind(int pageIndex,
+        protected override (IQueryable<TEntity> DataQueryable, long Total) DoPageFind(int pageIndex,
                                                                   int pageSize,
                                                                   ISpecification<TEntity> specification,
                                                                   params OrderExpression[] orderExpressions)
@@ -116,7 +116,7 @@ namespace IFramework.EntityFrameworkCore.Repositories
             return (query.GetPageElements(pageIndex, pageSize), query.Count());
         }
 
-        protected override async Task<(IQueryable<TEntity>, long)> DoPageFindAsync(int pageIndex,
+        protected override async Task<(IQueryable<TEntity> DataQueryable, long Total)> DoPageFindAsync(int pageIndex,
                                                                                    int pageSize,
                                                                                    ISpecification<TEntity> specification,
                                                                                    params OrderExpression[] orderExpressions)

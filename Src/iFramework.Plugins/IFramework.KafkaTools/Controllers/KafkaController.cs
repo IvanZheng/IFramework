@@ -1,12 +1,14 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using IFramework.Infrastructure;
 using IFramework.KafkaTools.Models;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
+using IFramework.MessageQueue;
 using Microsoft.AspNetCore.Mvc;
+using ConsumerConfig = Confluent.Kafka.ConsumerConfig;
+using ProducerConfig = Confluent.Kafka.ProducerConfig;
 using TopicPartitionOffset = Confluent.Kafka.TopicPartitionOffset;
 
 namespace IFramework.KafkaTools.Controllers
@@ -15,10 +17,11 @@ namespace IFramework.KafkaTools.Controllers
     [ApiController]
     public class KafkaController : ControllerBase
     {
-        private static readonly ConcurrentDictionary<string, Producer<string, string>> Producers = new ConcurrentDictionary<string, Producer<string, string>>();
+        private const string MaintainerGroup = "MaintainerGroup";
+        private static readonly ConcurrentDictionary<string, IProducer<string, string>> Producers = new ConcurrentDictionary<string, IProducer<string, string>>();
 
         [HttpPost("offset")]
-        public void CommitOffset([FromBody]CommitOffsetRequest request)
+        public void CommitOffset([FromBody] CommitOffsetRequest request)
         {
             using (var consumer = GetConsumer(request.Broker, request.Group))
             {
@@ -31,39 +34,39 @@ namespace IFramework.KafkaTools.Controllers
             }
         }
 
-        private Consumer<string, string> GetConsumer(string broker, string group)
+        private IConsumer<string, string> GetConsumer(string broker, string group)
         {
-            var consumerConfiguration = new Dictionary<string, string>
-                {
-                    {"group.id", group},
-                    {"client.id", $"KafkaTools.{group}"},
-                    {"enable.auto.commit", false.ToString().ToLower()},
-                    //{"socket.blocking.max.ms", ConsumerConfig["socket.blocking.max.ms"] ?? 50},
-                    //{"fetch.error.backoff.ms", ConsumerConfig["fetch.error.backoff.ms"] ?? 50},
-                    {"socket.nagle.disable", true.ToString().ToLower()},
-                    //{"statistics.interval.ms", 60000},
-                    {"bootstrap.servers", broker}
-                };
-            return new Consumer<string, string>(consumerConfiguration);
+            var consumerConfiguration = new ConsumerConfig
+            {
+                GroupId = group,
+                ClientId = $"KafkaTools.{group}",
+                EnableAutoCommit = false,
+                //{"socket.blocking.max.ms", ConsumerConfig["socket.blocking.max.ms"] ?? 50},
+                //{"fetch.error.backoff.ms", ConsumerConfig["fetch.error.backoff.ms"] ?? 50},
+                SocketNagleDisable = true,
+                //{"statistics.interval.ms", 60000},
+                BootstrapServers = broker
+            };
+            return new ConsumerBuilder<string, string>(consumerConfiguration).Build();
         }
 
 
-        private Producer<string, string> GetProducer(string broker)
+        private IProducer<string, string> GetProducer(string broker)
         {
             return Producers.GetOrAdd($"{broker}", key =>
             {
-                var producerConfiguration = new Dictionary<string, string>
+                var producerConfiguration = new ProducerConfig
                 {
-                    {"bootstrap.servers", broker},
-                    {"request.required.acks", "1"},
-                    {"socket.nagle.disable", true.ToString().ToLower()}
+                    BootstrapServers = broker,
+                    Acks = Acks.Leader,
+                    SocketNagleDisable = true
                 };
-                return new Producer<string, string>(producerConfiguration);
+                return new ProducerBuilder<string, string>(producerConfiguration).Build();
             });
         }
 
         [HttpPost("produce")]
-        public async Task<object> ProduceMessage([FromBody]ProduceMessage produceMessage)
+        public async Task<object> ProduceMessage([FromBody] ProduceMessage produceMessage)
         {
             var producer = GetProducer(produceMessage.Broker);
             var result = await producer.ProduceAsync(produceMessage.Topic, new Message<string, string>
@@ -78,6 +81,54 @@ namespace IFramework.KafkaTools.Controllers
             return result;
         }
 
+        [HttpGet("messageByOffset")]
+        public dynamic GetMessageByOffset([FromQuery]MessageQueryRequest request)
+        {
+            using (var consumer = GetConsumer(request.Broker, MaintainerGroup))
+            {
+                var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(request.Topic,
+                                                                                       request.Partition),
+                                                                    request.Offset);
+                consumer.Assign(topicPartitionOffset);
+                consumer.Seek(topicPartitionOffset);
+                var result = consumer.Consume(TimeSpan.FromSeconds(1));
+                return new
+                {
+                    result?.Partition,
+                    result?.Topic, 
+                    result?.Offset,
+                    result?.Message
+                };
+            }
+        }
 
+        [HttpPost("produceByOffset")]
+        public async Task<object> ProduceByOffset([FromBody] MessagePostRequest request)
+        {
+            ConsumeResult<string, string> consumeResult = null;
+            using (var consumer = GetConsumer(request.Broker, MaintainerGroup))
+            {
+                var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(request.Topic,
+                                                                                       request.Partition),
+                                                                    request.Offset);
+                consumer.Assign(topicPartitionOffset);
+                consumer.Seek(topicPartitionOffset);
+                consumeResult = consumer.Consume(TimeSpan.FromSeconds(1));
+            }
+
+            if (consumeResult == null)
+            {
+                throw new Exception($"message doesn't exist");
+            }
+
+            var producer = GetProducer(request.Broker);
+            var produceResult = await producer.ProduceAsync(request.Topic, new Message<string, string>
+            {
+                Key = consumeResult.Key,
+                Value = consumeResult.Value,
+                Headers = consumeResult.Headers
+            });
+            return produceResult;
+        }
     }
 }

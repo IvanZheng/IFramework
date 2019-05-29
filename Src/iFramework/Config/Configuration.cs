@@ -73,7 +73,7 @@ namespace IFramework.Config
             this.UseMockMessageQueueClient();
             this.UseMockMessagePublisher();
             RegisterDefaultEventBus();
-            RegisterConcurrencyProcessor<ConcurrencyProcessor>();
+            RegisterConcurrencyProcessor<ConcurrencyProcessor, UniqueConstrainExceptionParser>();
             this.UseMessageQueue(app);
             this.MessageQueueUseMachineNameFormat();
             UseMessageTypeProvider<MessageTypeProvider>();
@@ -111,10 +111,13 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration RegisterConcurrencyProcessor<TConcurrencyProcessor>() where TConcurrencyProcessor : class, IConcurrencyProcessor
+        public Configuration RegisterConcurrencyProcessor<TConcurrencyProcessor, TUniqueConstrainExceptionParser>() 
+            where TConcurrencyProcessor : class, IConcurrencyProcessor
+            where TUniqueConstrainExceptionParser : class, IUniqueConstrainExceptionParser
         {
             ObjectProviderFactory.Instance
-                      .RegisterType<IConcurrencyProcessor, TConcurrencyProcessor>(ServiceLifetime.Singleton);
+                      .RegisterType<IConcurrencyProcessor, TConcurrencyProcessor>(ServiceLifetime.Singleton)
+                      .Register<IUniqueConstrainExceptionParser, TUniqueConstrainExceptionParser>(ServiceLifetime.Singleton);
             return this;
         }
 
@@ -198,11 +201,11 @@ namespace IFramework.Config
             CommitPerMessage = commitPerMessage;
             return this;
         }
-
+    
         public T Get<T>(string key)
         {
             T appSetting = default(T);
-            if (typeof(T).IsPrimitive)
+            if (typeof(T).IsPrimitive || typeof(T) == typeof(string))
             {
                 appSetting = ConfigurationCore.GetValue<T>(key);
             }
@@ -229,12 +232,12 @@ namespace IFramework.Config
                    ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
         }
 
-        public static string Get(string key)
+        public string Get(string key)
         {
             return Instance.ConfigurationCore?[key] ?? ConfigurationManager.AppSettings[key];;
         }
 
-        private static T GetAppConfig<T>(string appSetting)
+        private T GetAppConfig<T>(string appSetting)
         {
             var val = default(T);
             try

@@ -1,17 +1,20 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using IFramework.MessageQueue;
 
 namespace IFramework.MessageStores.Abstracts
 {
     public class HandledEvent
     {
-        public HandledEvent() { }
+        public HandledEvent()
+        {
+        }
 
-        public HandledEvent(string id, string subscriptionName, string topic, DateTime handledTime)
+        public HandledEvent(string id, string subscriptionName, MessageOffset messageOffset, DateTime handledTime)
         {
             Id = id;
             SubscriptionName = subscriptionName;
-            Topic = topic;
+            MessageOffset = messageOffset;
             HandledTime = handledTime;
         }
 
@@ -19,15 +22,15 @@ namespace IFramework.MessageStores.Abstracts
         public string Id { get; set; }
         public string SubscriptionName { get; set; }
         public DateTime HandledTime { get; set; }
-        public string Topic { get; set; }
+        public virtual MessageOffset MessageOffset { get; set; }
     }
 
     public class FailHandledEvent : HandledEvent
     {
         public FailHandledEvent() { }
 
-        public FailHandledEvent(string id, string subscriptionName, string topic, DateTime handledTime, Exception e)
-            : base(id, subscriptionName, topic, handledTime)
+        public FailHandledEvent(string id, string subscriptionName, MessageOffset messageOffset, DateTime handledTime, Exception e)
+            : base(id, subscriptionName, messageOffset, handledTime)
         {
             Error = e.GetBaseException().Message;
             StackTrace = e.StackTrace;

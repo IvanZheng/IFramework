@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.1.3</Version>
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <AssemblyName>IFramework.MessageStores.Relational</AssemblyName>

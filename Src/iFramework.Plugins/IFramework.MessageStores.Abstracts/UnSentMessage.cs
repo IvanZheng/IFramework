@@ -29,7 +29,7 @@ namespace IFramework.MessageStores.Abstracts
         [MaxLength(50)]
         public string Id { get; set; }
         public string ReplyToEndPoint { get; set; }
-        public SagaInfo SagaInfo { get; set; }
+        public virtual SagaInfo SagaInfo { get; set; }
         public string CorrelationId { get; set; }
         public string MessageBody { get; set; }
         public DateTime CreateTime { get; set; }

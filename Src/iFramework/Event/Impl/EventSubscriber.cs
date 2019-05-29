@@ -140,14 +140,14 @@ namespace IFramework.Event.Impl
                             subscriptionName
                         }))
                         {
-                            if (!await messageStore.HasEventHandledAsync(eventContext.MessageId,
-                                                                         subscriptionName)
-                                                   .ConfigureAwait(false))
+                            var eventMessageStates = new List<MessageState>();
+                            var commandMessageStates = new List<MessageState>();
+                            var eventBus = scope.GetService<IEventBus>();
+                            try
                             {
-                                var eventMessageStates = new List<MessageState>();
-                                var commandMessageStates = new List<MessageState>();
-                                var eventBus = scope.GetService<IEventBus>();
-                                try
+                                if (!await messageStore.HasEventHandledAsync(eventContext.MessageId,
+                                                                             subscriptionName)
+                                                       .ConfigureAwait(false))
                                 {
                                     var messageHandler = scope.GetRequiredService(messageHandlerType.Type);
                                     using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
@@ -213,57 +213,57 @@ namespace IFramework.Event.Impl
                                         MessagePublisher?.SendAsync(CancellationToken.None, eventMessageStates.ToArray());
                                     }
                                 }
-                                catch (Exception e)
+                            }
+                            catch (Exception e)
+                            {
+                                eventMessageStates.Clear();
+                                messageStore.Rollback();
+                                if (e is DomainException exception)
                                 {
-                                    eventMessageStates.Clear();
-                                    messageStore.Rollback();
-                                    if (e is DomainException exception)
+                                    var domainExceptionEvent = exception.DomainExceptionEvent;
+                                    if (domainExceptionEvent != null)
                                     {
-                                        var domainExceptionEvent = exception.DomainExceptionEvent;
-                                        if (domainExceptionEvent != null)
+                                        var topic = domainExceptionEvent.GetFormatTopic();
+                                        var exceptionMessage = MessageQueueClient.WrapMessage(domainExceptionEvent,
+                                                                                              eventContext.MessageId,
+                                                                                              topic,
+                                                                                              producer: Producer);
+                                        eventMessageStates.Add(new MessageState(exceptionMessage));
+                                    }
+
+                                    Logger.LogWarning(e, message.ToJson());
+                                }
+                                else
+                                {
+                                    //IO error or sytem Crash
+                                    //if we meet with unknown exception, we interrupt saga
+                                    if (sagaInfo != null)
+                                    {
+                                        eventBus.FinishSaga(e);
+                                    }
+
+                                    Logger.LogError(e, message.ToJson());
+                                }
+
+                                eventBus.GetToPublishAnywayMessages()
+                                        .ForEach(msg =>
                                         {
-                                            var topic = domainExceptionEvent.GetFormatTopic();
-                                            var exceptionMessage = MessageQueueClient.WrapMessage(domainExceptionEvent,
-                                                                                                  eventContext.MessageId,
-                                                                                                  topic,
-                                                                                                  producer: Producer);
-                                            eventMessageStates.Add(new MessageState(exceptionMessage));
-                                        }
+                                            var topic = msg.GetFormatTopic();
+                                            eventMessageStates.Add(new MessageState(MessageQueueClient.WrapMessage(msg,
+                                                                                                                   topic: topic,
+                                                                                                                   key: msg.Key,
+                                                                                                                   sagaInfo: sagaInfo,
+                                                                                                                   producer: Producer)));
+                                        });
 
-                                        Logger.LogWarning(e, message.ToJson());
-                                    }
-                                    else
-                                    {
-                                        //IO error or sytem Crash
-                                        //if we meet with unknown exception, we interrupt saga
-                                        if (sagaInfo != null)
-                                        {
-                                            eventBus.FinishSaga(e);
-                                        }
+                                eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
-                                        Logger.LogError(e, message.ToJson());
-                                    }
-
-                                    eventBus.GetToPublishAnywayMessages()
-                                            .ForEach(msg =>
-                                            {
-                                                var topic = msg.GetFormatTopic();
-                                                eventMessageStates.Add(new MessageState(MessageQueueClient.WrapMessage(msg,
-                                                                                                                       topic: topic,
-                                                                                                                       key: msg.Key, 
-                                                                                                                       sagaInfo: sagaInfo, 
-                                                                                                                       producer: Producer)));
-                                            });
-
-                                    eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
-
-                                    await messageStore.SaveFailHandledEventAsync(eventContext, subscriptionName, e,
-                                                                                 eventMessageStates.Select(s => s.MessageContext).ToArray())
-                                                      .ConfigureAwait(false);
-                                    if (eventMessageStates.Count > 0)
-                                    {
-                                        var sendTask = MessagePublisher.SendAsync(CancellationToken.None, eventMessageStates.ToArray());
-                                    }
+                                await messageStore.SaveFailHandledEventAsync(eventContext, subscriptionName, e,
+                                                                             eventMessageStates.Select(s => s.MessageContext).ToArray())
+                                                  .ConfigureAwait(false);
+                                if (eventMessageStates.Count > 0)
+                                {
+                                    var sendTask = MessagePublisher.SendAsync(CancellationToken.None, eventMessageStates.ToArray());
                                 }
                             }
                         }
