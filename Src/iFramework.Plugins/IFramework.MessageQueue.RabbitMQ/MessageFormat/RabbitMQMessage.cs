@@ -6,7 +6,7 @@ namespace IFramework.MessageQueue.RabbitMQ.MessageFormat
     {
         public RabbitMQMessage(byte[] payload = null)
         {
-            Headers = new Dictionary<string, object>();
+            Headers = new Dictionary<string, object>(System.StringComparer.OrdinalIgnoreCase);
             Payload = payload;
         }
 
