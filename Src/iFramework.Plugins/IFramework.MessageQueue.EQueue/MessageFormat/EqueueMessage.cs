@@ -6,7 +6,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
     {
         public EQueueMessage(byte[] payload = null)
         {
-            Headers = new Dictionary<string, object>();
+            Headers = new Dictionary<string, object>(System.StringComparer.OrdinalIgnoreCase);
             Payload = payload;
         }
 

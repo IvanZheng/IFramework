@@ -5,6 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Supports netcore standard2.0</Description>
     <Authors>Ivan</Authors>
+    <PackageReleaseNotes>update unity packages</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

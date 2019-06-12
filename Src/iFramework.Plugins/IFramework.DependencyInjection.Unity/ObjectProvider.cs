@@ -10,7 +10,6 @@ namespace IFramework.DependencyInjection.Unity
 {
     public class ObjectProvider : IObjectProvider
     {
-        private bool _disposed = false;
         public IUnityContainer UnityContainer { get; private set; }
         public ObjectProvider(ObjectProvider parent = null)
         {

@@ -48,8 +48,6 @@ namespace Sample.CommandServiceCore
 {
     public class Startup
     {
-        private readonly IConfiguration _configuration;
-        private readonly IHostingEnvironment _env;
         private static IMessagePublisher _messagePublisher;
         private static ICommandBus _commandBus;
         private static IMessageProcessor _commandConsumer1;
@@ -60,7 +58,7 @@ namespace Sample.CommandServiceCore
         public static string PathBase;
         private static string _app = "uat";
         private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             var kafkaBrokerList = new[]
             {
