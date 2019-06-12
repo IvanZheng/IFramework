@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
@@ -54,7 +54,7 @@
 
   <ItemGroup>
     <PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.5" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.138" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.0.138" />
     <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.13" />
