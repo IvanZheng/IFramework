@@ -47,6 +47,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
+using ObjectProviderBuilder = IFramework.DependencyInjection.Autofac.ObjectProviderBuilder;
 
 namespace Sample.CommandServiceCore
 {
@@ -66,8 +67,39 @@ namespace Sample.CommandServiceCore
         private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            _configuration = configuration;
-            _env = env;
+            var kafkaBrokerList = new[]
+            {
+                //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
+                "10.100.7.46:9092"
+            };
+            var rabbitConnectionFactory = new ConnectionFactory
+            {
+                Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
+            };
+            Configuration.Instance
+                         //.UseUnityContainer()
+                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+                         .UseConfiguration(configuration)
+                         .UseCommonComponents(_app)
+                         .UseJsonNet()
+                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
+                         .UseRelationalMessageStore<SampleModelContext>()
+                         //.UseMongoDbMessageStore<SampleModelContext>()
+                         //.UseInMemoryMessageQueue()
+                         //.UseRabbitMQ(rabbitConnectionFactory)
+                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseEQueue()
+                         .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
+                         .UseMessagePublisher("eventTopic")
+                         .UseDbContextPool<SampleModelContext>(options =>
+                         {
+                             //options.EnableSensitiveDataLogging();
+                             options.UseLazyLoadingProxies();
+                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                             //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
+                             //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
+                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                         });
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -96,46 +128,9 @@ namespace Sample.CommandServiceCore
             //        .AddEntityFramework();
         }
 
-
-        public void ConfigureContainer(ContainerBuilder builder)
+        public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
         {
-            var kafkaBrokerList = new[] {
-                //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
-                "10.100.7.46:9092"
-            };
-            var rabbitConnectionFactory = new ConnectionFactory {
-                Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
-            };
-            Configuration.Instance
-                         //.UseUnityContainer()
-                         .UseAutofacContainer(builder, a => a.GetName().Name.StartsWith("Sample"))
-                         .UseConfiguration(_configuration)
-                         .UseCommonComponents(_app)
-                         .UseJsonNet()
-                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()
-                         //.UseMongoDbMessageStore<SampleModelContext>()
-                         //.UseInMemoryMessageQueue()
-                         //.UseRabbitMQ(rabbitConnectionFactory)
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
-                         //.UseEQueue()
-                         .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
-                         .UseMessagePublisher("eventTopic")
-                         .UseDbContextPool<SampleModelContext>(options =>
-                         {
-                             //options.EnableSensitiveDataLogging();
-                             options.UseLazyLoadingProxies();
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                             //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
-                             //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
-                         });
-            ObjectProviderFactory.Instance
-                                 .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped);
-        }
-
-        private static void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
-        {
+            var lifetime = ServiceLifetime.Scoped;
             // TODO: register other components or services
             providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
             providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
