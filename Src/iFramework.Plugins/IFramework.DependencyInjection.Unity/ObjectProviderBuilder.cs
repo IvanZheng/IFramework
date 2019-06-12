@@ -30,16 +30,7 @@ namespace IFramework.DependencyInjection.Unity
             serviceCollection = serviceCollection ?? new ServiceCollection();
             _container.BuildServiceProvider(serviceCollection);
 
-            Register<IObjectProvider>(context =>
-            {
-                var provider = context as ObjectProvider;
-                if (provider == null)
-                {
-                    throw new Exception("object provider is not Unity ObjectProvider!");
-                }
-
-                return new ObjectProvider(provider.UnityContainer);
-            }, ServiceLifetime.Scoped);
+            Register(context => context, ServiceLifetime.Scoped);
          
             var objectProvider = new ObjectProvider(_container);
             return objectProvider;
