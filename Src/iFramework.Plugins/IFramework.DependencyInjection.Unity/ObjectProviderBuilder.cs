@@ -5,20 +5,20 @@ using IFramework.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Unity;
 using Unity.Injection;
+using Unity.Interception;
 using Unity.Interception.ContainerIntegration;
 using Unity.Interception.Interceptors.InstanceInterceptors.InterfaceInterception;
 using Unity.Interception.Interceptors.TypeInterceptors.VirtualMethodInterception;
 using Unity.Lifetime;
 using Unity.Microsoft.DependencyInjection;
-using Unity.Registration;
 
 namespace IFramework.DependencyInjection.Unity
 {
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
-        private readonly UnityContainer _container;
+        private readonly IUnityContainer _container;
 
-        public ObjectProviderBuilder(UnityContainer container = null)
+        public ObjectProviderBuilder(IUnityContainer container = null)
         {
             _container = container ?? new UnityContainer();
 
@@ -124,7 +124,7 @@ namespace IFramework.DependencyInjection.Unity
             return this;
         }
 
-        private LifetimeManager GetLifeTimeManager(ServiceLifetime serviceLifetime)
+        private ITypeLifetimeManager GetLifeTimeManager(ServiceLifetime serviceLifetime)
         {
             switch (serviceLifetime)
             {
