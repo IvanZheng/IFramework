@@ -36,18 +36,13 @@ using Sample.Domain;
 using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
-using System.Net;
-using IFramework.Infrastructure;
 using System.Collections.Generic;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
-using ObjectProviderBuilder = IFramework.DependencyInjection.Autofac.ObjectProviderBuilder;
 
 namespace Sample.CommandServiceCore
 {
@@ -77,8 +72,8 @@ namespace Sample.CommandServiceCore
                 Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
             };
             Configuration.Instance
-                         //.UseUnityContainer()
-                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+                         .UseUnityContainer()
+                         //.UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                          .UseConfiguration(configuration)
                          .UseCommonComponents(_app)
                          .UseJsonNet()

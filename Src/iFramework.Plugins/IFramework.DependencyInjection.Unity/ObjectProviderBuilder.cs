@@ -11,7 +11,6 @@ using Unity.Interception.Interceptors.InstanceInterceptors.InterfaceInterception
 using Unity.Interception.Interceptors.TypeInterceptors.VirtualMethodInterception;
 using Unity.Lifetime;
 using Unity.Microsoft.DependencyInjection;
-using Unity.Registration;
 
 namespace IFramework.DependencyInjection.Unity
 {
@@ -19,7 +18,7 @@ namespace IFramework.DependencyInjection.Unity
     {
         private readonly IUnityContainer _container;
 
-        public ObjectProviderBuilder(UnityContainer container = null)
+        public ObjectProviderBuilder(IUnityContainer container = null)
         {
             _container = container ?? new UnityContainer();
 
@@ -54,8 +53,9 @@ namespace IFramework.DependencyInjection.Unity
 
         public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime)
         {
-            _container.RegisterType<TFrom>(GetLifeTimeManager(lifetime),
-                                           new InjectionFactory(container => implementationFactory(new ObjectProvider(container as UnityContainer))));
+            _container.RegisterFactory(typeof(TFrom),
+                                       (container, type, name) => implementationFactory(new ObjectProvider(container)),
+                                       GetLifeTimeManager(lifetime) as IFactoryLifetimeManager);
             return this;
         }
 
