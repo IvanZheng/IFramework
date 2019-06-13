@@ -21,17 +21,18 @@ namespace IFramework.DependencyInjection.Unity
         public ObjectProviderBuilder(IUnityContainer container = null)
         {
             _container = container ?? new UnityContainer();
-
             _container.AddNewExtension<Interception>();
         }
 
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
-            serviceCollection = serviceCollection ?? new ServiceCollection();
-            _container.BuildServiceProvider(serviceCollection);
+            if (serviceCollection != null)
+            {
+                _container.BuildServiceProvider(serviceCollection);
+            }
 
             Register(context => context, ServiceLifetime.Scoped);
-         
+            Register<IServiceProvider>(context => context, ServiceLifetime.Scoped);
             var objectProvider = new ObjectProvider(_container);
             return objectProvider;
         }
