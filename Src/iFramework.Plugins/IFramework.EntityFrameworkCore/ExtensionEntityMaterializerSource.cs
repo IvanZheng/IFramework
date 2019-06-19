@@ -12,9 +12,12 @@ namespace IFramework.EntityFrameworkCore
 {
     public class ExtensionEntityMaterializerSource : EntityMaterializerSource
     {
-        public override Expression CreateMaterializeExpression(IEntityType entityType, Expression materializationExpression, int[] indexMap = null)
+        public override Expression CreateMaterializeExpression(IEntityType entityType,
+                                                               string entityInstanceName,
+                                                               Expression materializationExpression,
+                                                               int[] indexMap = null)
         {
-            var expression = base.CreateMaterializeExpression(entityType, materializationExpression, indexMap);
+            var expression = base.CreateMaterializeExpression(entityType, entityInstanceName, materializationExpression, indexMap);
             if (typeof(Entity).IsAssignableFrom(entityType.ClrType) && expression is BlockExpression blockExpression)
             {
                 var property = Expression.Property(blockExpression.Variables[0],

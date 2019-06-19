@@ -45,8 +45,7 @@ namespace IFramework.KafkaTools
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-
-            services.AddMvc()
+            services.AddMvc(options => { options.EnableEndpointRouting = false; })
                     .AddControllersAsServices()
                     .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
             services.AddHttpContextAccessor();
@@ -66,17 +65,23 @@ namespace IFramework.KafkaTools
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseStaticFiles();
-            app.UseRouting();
+            
             app.UseCors("default");
-            app.UseEndpoints(endpoints =>
+            app.UseStaticFiles();
+            //app.UseRouting();
+            //app.UseEndpoints(endpoints =>
+            //{
+            //    endpoints.MapControllerRoute("default",
+            //                                 "{controller=Home}/{action=Index}/{id?}");
+            //    endpoints.MapRazorPages();
+            //});
+          
+            
+            app.UseMvc(routes =>
             {
-                endpoints.MapControllerRoute("default",
-                                             "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapRazorPages();
+                routes.MapRoute("default",
+                                "{controller=Home}/{action=Index}/{id?}");
             });
-
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -84,7 +89,7 @@ namespace IFramework.KafkaTools
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
 
-            loggerFactory.CreateLogger<Startup>().LogDebug($"Aplication started {env.EnvironmentName}!");
+            loggerFactory.CreateLogger<Startup>().LogDebug($"Application started {env.EnvironmentName}!");
         }
     }
 }

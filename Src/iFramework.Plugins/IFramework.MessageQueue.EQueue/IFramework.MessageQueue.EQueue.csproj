@@ -27,7 +27,7 @@
     <PackageReference Include="ecommon.autofac" Version="2.5.0" />
     <PackageReference Include="ecommon.jsonnet" Version="2.5.0" />
     <PackageReference Include="ecommon.log4net" Version="2.5.2" />
-    <PackageReference Include="EQueue" Version="2.5.8" />
+    <PackageReference Include="EQueue" Version="2.5.9" />
     <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>

@@ -97,17 +97,19 @@ namespace Sample.CommandServiceCore
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLog4Net(new Log4NetProviderOptions {EnableScope = true});
+            services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
             services.AddCustomOptions<FrameworkConfiguration>();
             services.AddMvc(options =>
                     {
+                        options.EnableEndpointRouting = false;
                         options.InputFormatters.Insert(0, new CommandInputFormatter());
                         options.InputFormatters.Add(new FormDataInputFormatter());
                         options.Filters.Add<ExceptionFilter>();
                     })
                     .AddControllersAsServices()
                     .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+            services.AddHttpContextAccessor();
             services.AddControllersWithViews();
             services.AddRazorPages();
 
@@ -205,13 +207,19 @@ namespace Sample.CommandServiceCore
             });
 
             app.UseStaticFiles();
-            app.UseRouting();
-            app.UseCors("default"); 
-            app.UseEndpoints(endpoints  =>
+            //app.UseRouting();
+            app.UseCors("default");
+            //app.UseEndpoints(endpoints =>
+            //{
+            //    endpoints.MapControllerRoute("default",
+            //                    "{controller=Home}/{action=Index}/{id?}");
+            //    endpoints.MapRazorPages();
+            //});
+
+            app.UseMvc(routes =>
             {
-                endpoints.MapControllerRoute("default",
+                routes.MapRoute("default",
                                 "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapRazorPages();
             });
 
             app.UseLogLevelController();
