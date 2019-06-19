@@ -29,15 +29,15 @@ namespace IFramework.Test.EntityFramework
         protected const string NextSequenceId = "NEXT VALUE FOR ids";
 
         public DbSet<User> Users { get; set; }
-        //public DbSet<Card> Cards { get; set; }
+        public DbSet<Card> Cards { get; set; }
         public DbSet<Person> Persons { get;set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Ignore<Entity>();
-            modelBuilder.Ignore<AggregateRoot>();
-            modelBuilder.Ignore<TimestampedAggregateRoot>();
-            modelBuilder.Ignore<BaseEntity>();
+            //modelBuilder.Ignore<Entity>();
+            //modelBuilder.Ignore<AggregateRoot>();
+            //modelBuilder.Ignore<TimestampedAggregateRoot>();
+            //modelBuilder.Ignore<BaseEntity>();
             //modelBuilder.HasSequence<long>("ids")
             //            .StartsAt(1000)
             //            .IncrementsBy(1);
@@ -46,11 +46,10 @@ namespace IFramework.Test.EntityFramework
             //userEntity.HasMany(u => u.Cards)
             //            .WithOne()
             //            .HasForeignKey(c => c.UserId);
-            modelBuilder.Ignore<Card>();
+            //modelBuilder.Ignore<Card>();
 
-            userEntity.HasKey(u => u.Id);
-            
-
+            modelBuilder.Owned<Address>();
+            modelBuilder.Owned<UserProfile>();
             modelBuilder.Entity<Person>()
                         .Property(e => e.Id)
                         .UseMySQLAutoIncrementColumn(nameof(Person));

@@ -58,6 +58,7 @@ namespace IFramework.Test.EntityFramework
                          .UseLog4Net()
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
+                             options.UseLazyLoadingProxies();
                              options.EnableSensitiveDataLogging();
                              //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
@@ -66,11 +67,11 @@ namespace IFramework.Test.EntityFramework
                          });
 
             ObjectProviderFactory.Instance.Build();
-            //using (var serviceScope = ObjectProviderFactory.CreateScope())
-            //{
-            //    var dbContext = serviceScope.GetService<DemoDbContext>();
-            //    dbContext.Database.Migrate();
-            //}
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = serviceScope.GetService<DemoDbContext>();
+                dbContext.Database.EnsureCreated();
+            }
         }
 
         public class DbTest : IDisposable
@@ -116,6 +117,26 @@ namespace IFramework.Test.EntityFramework
             }
         }
 
+
+        [Fact]
+        public async Task RemoveUserCardTest()
+        {
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = serviceScope.GetService<DemoDbContext>();
+                var user = await dbContext.Users.FirstOrDefaultAsync()
+                                    .ConfigureAwait(false);
+                var card = user.Cards.FirstOrDefault();
+                if (card != null)
+                {
+                    user.RemoveCard(card);
+                }
+                //user.RemoveCards();
+                await dbContext.SaveChangesAsync()
+                         .ConfigureAwait(false);
+            }
+        }
+
         [Fact]
         public async Task AddUserTest()
         {
@@ -140,7 +161,12 @@ namespace IFramework.Test.EntityFramework
                         Assert.NotNull(dbContext);
                     }
 
-                    var user = new User("ivan", "male");
+                    var user = new User("ivan",
+                                        "male",
+                                        new UserProfile(new Address("china",
+                                                                    "shanghai",
+                                                                    "baker"),
+                                                        "football"));
                     user.AddCard("ICBC");
                     user.AddCard("CCB");
                     user.AddCard("ABC");
