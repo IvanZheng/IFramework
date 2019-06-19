@@ -119,6 +119,25 @@ namespace IFramework.Test.EntityFramework
 
 
         [Fact]
+        public async Task ModifyOwnedObjectTest()
+        {
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = serviceScope.GetService<DemoDbContext>();
+                var user = await dbContext.Users.FirstOrDefaultAsync()
+                                          .ConfigureAwait(false);
+                user.ModifyProfile(user.UserProfile.Clone(new
+                {
+                    Address = user.UserProfile.Address.Clone(new {City = "beijing"}),
+                    Hobby = "basketball"
+                }));
+                //user.RemoveCards();
+                await dbContext.SaveChangesAsync()
+                               .ConfigureAwait(false);
+            }
+        }
+
+        [Fact]
         public async Task RemoveUserCardTest()
         {
             using (var serviceScope = ObjectProviderFactory.CreateScope())
