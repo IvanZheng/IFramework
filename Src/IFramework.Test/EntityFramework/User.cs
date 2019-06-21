@@ -35,7 +35,7 @@ namespace IFramework.Test.EntityFramework
         public virtual Address Address { get; protected set; }
         public string Hobby { get; protected set; }
     }
-    public class User: TimestampedAggregateRoot
+    public class User: AggregateRoot
     {
         public string Id { get; protected set; }
         public string Name { get; protected set; }

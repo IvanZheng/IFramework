@@ -9,8 +9,10 @@ using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace IFramework.EntityFrameworkCore
 {
@@ -36,6 +38,7 @@ namespace IFramework.EntityFrameworkCore
             var entry = Entry(entity);
             await entry.ReloadAsync()
                        .ConfigureAwait(false);
+           
             (entity as AggregateRoot)?.Rollback();
         }
 

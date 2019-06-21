@@ -43,6 +43,11 @@ namespace IFramework.Test.EntityFramework
             //            .IncrementsBy(1);
 
             var userEntity = modelBuilder.Entity<User>();
+            userEntity.OwnsOne(u => u.UserProfile, b =>
+            {
+                b.Property(p => p.Hobby)
+                 .IsConcurrencyToken();
+            });
             //userEntity.HasMany(u => u.Cards)
             //            .WithOne()
             //            .HasForeignKey(c => c.UserId);

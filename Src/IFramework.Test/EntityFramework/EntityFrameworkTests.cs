@@ -126,6 +126,10 @@ namespace IFramework.Test.EntityFramework
                 var dbContext = serviceScope.GetService<DemoDbContext>();
                 var user = await dbContext.Users.FirstOrDefaultAsync()
                                           .ConfigureAwait(false);
+
+                await user.ReloadAsync()
+                          .ConfigureAwait(false);
+
                 user.ModifyProfile(user.UserProfile.Clone(new
                 {
                     Address = user.UserProfile.Address.Clone(new {City = "beijing"}),
