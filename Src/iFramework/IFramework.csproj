@@ -53,6 +53,7 @@
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.6.0-preview6.19303.8" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.6.0-preview6.19303.8" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0-preview6.19303.8" />
   </ItemGroup>
 
 </Project>

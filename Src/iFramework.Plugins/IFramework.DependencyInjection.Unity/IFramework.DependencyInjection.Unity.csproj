@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview6.19304.6" />
-    <PackageReference Include="Unity.Interception" Version="5.10.1" />
+    <PackageReference Include="Unity.Interception" Version="5.11.1" />
     <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="5.10.2" />
   </ItemGroup>
 

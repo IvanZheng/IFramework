@@ -67,7 +67,7 @@ namespace IFramework.Config
         {
             UseNullLogger();
             UseMemoryCahce();
-            UserDataContractJson();
+            UseMicrosoftJson();
             UseMessageStore<MockMessageStore>();
             UseMessageStoreDaemon<MockMessageStoreDaemon>();
             this.UseMockMessageQueueClient();
@@ -121,11 +121,19 @@ namespace IFramework.Config
             return this;
         }
 
-        private Configuration UserDataContractJson()
+        public Configuration UseDataContractJson()
         {
             ObjectProviderFactory.Instance
-                      .RegisterInstance(typeof(IJsonConvert)
-                                        , new DataContractJsonConvert());
+                                 .RegisterInstance(typeof(IJsonConvert),
+                                                   new DataContractJsonConvert());
+            return this;
+        }
+
+        public Configuration UseMicrosoftJson()
+        {
+            ObjectProviderFactory.Instance
+                                 .RegisterInstance(typeof(IJsonConvert),
+                                                   new MicrosoftJsonConvert());
             return this;
         }
 

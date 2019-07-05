@@ -26,8 +26,8 @@ namespace IFramework.KafkaTools
         public Startup(IConfiguration configuration)
         {
             Configuration.Instance
-                         //.UseUnityContainer()
-                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("IFramework.KafkaTools"))
+                         .UseUnityContainer()
+                         //.UseAutofacContainer(a => a.GetName().Name.StartsWith("IFramework.KafkaTools"))
                          .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet();
