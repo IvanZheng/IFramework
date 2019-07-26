@@ -26,7 +26,7 @@
     <PackageReference Include="ECommon.JsonNet" Version="2.5.0" />
     <PackageReference Include="ECommon.Log4Net" Version="2.5.2" />
     <PackageReference Include="EQueue" Version="2.5.9" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0-preview6.19303.8" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0-preview7.19362.9" />
   </ItemGroup>
 
 

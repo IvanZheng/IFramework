@@ -48,17 +48,18 @@ namespace IFramework.Test.EntityFramework
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
+            var configuration = builder.Build();
             Configuration.Instance
                          //.UseMicrosoftDependencyInjection()
                          //.UseUnityContainer()
                          .UseAutofacContainer()
-                         .UseConfiguration(builder.Build())
+                         .UseConfiguration(configuration)
                          .UseCommonComponents()
                          .UseJsonNet()
                          .UseLog4Net()
                          .UseDbContextPool<DemoDbContext>(options =>
                          {
-                             options.UseLazyLoadingProxies();
+                             //options.UseLazyLoadingProxies();
                              options.EnableSensitiveDataLogging();
                              //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
@@ -124,9 +125,9 @@ namespace IFramework.Test.EntityFramework
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var dbContext = serviceScope.GetService<DemoDbContext>();
-                var user = await dbContext.Users.FirstOrDefaultAsync()
+                var user = await dbContext.Users.Include(u => u.UserProfile).FirstOrDefaultAsync()
                                           .ConfigureAwait(false);
-
+                //user.LoadReference(u => u.UserProfile);
                 await user.ReloadAsync()
                           .ConfigureAwait(false);
 

@@ -45,6 +45,7 @@ namespace IFramework.Test.EntityFramework
             var userEntity = modelBuilder.Entity<User>();
             userEntity.OwnsOne(u => u.UserProfile, b =>
             {
+                b.OwnsOne(p => p.Address);
                 b.Property(p => p.Hobby)
                  .IsConcurrencyToken();
             });
@@ -54,7 +55,7 @@ namespace IFramework.Test.EntityFramework
             //modelBuilder.Ignore<Card>();
 
             modelBuilder.Owned<Address>();
-            modelBuilder.Owned<UserProfile>();
+            //modelBuilder.Owned<UserProfile>();
             modelBuilder.Entity<Person>()
                         .Property(e => e.Id)
                         .UseMySQLAutoIncrementColumn(nameof(Person));

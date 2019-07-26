@@ -39,7 +39,7 @@ using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAt
 using System.Collections.Generic;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
@@ -187,7 +187,7 @@ namespace Sample.CommandServiceCore
 
             app.Use(next => context =>
             {
-                context.Request.EnableRewind();
+                context.Request.EnableBuffering();
                 context.Response.EnableRewind();
                 return next(context);
             });

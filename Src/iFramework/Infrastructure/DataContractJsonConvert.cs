@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
 using System.Xml.Linq;
@@ -104,7 +105,7 @@ namespace IFramework.Infrastructure
     {
         public string SerializeObject(object value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool ignoreNullValue = true, bool useStringEnumConvert = true)
         {
-            return JsonSerializer.ToString(value, new JsonSerializerOptions {
+            return JsonSerializer.Serialize(value, new JsonSerializerOptions {
                 PropertyNameCaseInsensitive = false,
                 IgnoreReadOnlyProperties = false,
                 IgnoreNullValues = ignoreNullValue,
@@ -114,7 +115,7 @@ namespace IFramework.Infrastructure
 
         public object DeserializeObject(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return JsonSerializer.Parse(value, typeof(object), new JsonSerializerOptions {
+            return JsonSerializer.Deserialize(value, typeof(object), new JsonSerializerOptions {
                 PropertyNameCaseInsensitive = false,
                 IgnoreReadOnlyProperties = false,
                 PropertyNamingPolicy = useCamelCase ? JsonNamingPolicy.CamelCase : null
@@ -123,7 +124,7 @@ namespace IFramework.Infrastructure
 
         public dynamic DeserializeDynamicObject(string json, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return JsonSerializer.Parse(json, typeof(object), new JsonSerializerOptions {
+            return JsonSerializer.Deserialize(json, typeof(object), new JsonSerializerOptions {
                 PropertyNameCaseInsensitive = false,
                 PropertyNamingPolicy = useCamelCase ? JsonNamingPolicy.CamelCase : null,
                 IgnoreReadOnlyProperties = false
@@ -137,7 +138,7 @@ namespace IFramework.Infrastructure
 
         public T DeserializeAnonymousType<T>(string value, T anonymousTypeObject, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return JsonSerializer.Parse<T>(value, new JsonSerializerOptions {
+            return JsonSerializer.Deserialize<T>(value, new JsonSerializerOptions {
                 IgnoreReadOnlyProperties = false,
                 PropertyNameCaseInsensitive = false,
                 PropertyNamingPolicy = useCamelCase ? JsonNamingPolicy.CamelCase : null
@@ -146,7 +147,7 @@ namespace IFramework.Infrastructure
 
         public T DeserializeObject<T>(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return JsonSerializer.Parse<T>(value, new JsonSerializerOptions {
+            return JsonSerializer.Deserialize<T>(value, new JsonSerializerOptions {
                 IgnoreReadOnlyProperties = false,
                 PropertyNameCaseInsensitive = false,
                 PropertyNamingPolicy = useCamelCase ? JsonNamingPolicy.CamelCase : null
@@ -155,7 +156,7 @@ namespace IFramework.Infrastructure
 
         public object DeserializeObject(string value, Type type, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
         {
-            return JsonSerializer.Parse(value, type, new JsonSerializerOptions {
+            return JsonSerializer.Deserialize(value, type, new JsonSerializerOptions {
                 PropertyNameCaseInsensitive = false,
                 IgnoreReadOnlyProperties = false,
                 PropertyNamingPolicy = useCamelCase ? JsonNamingPolicy.CamelCase : null
