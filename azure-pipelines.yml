@@ -17,6 +17,6 @@ steps:
   displayName: Build
   inputs:
     command: 'build'
-    projects: '**/*.csproj'
+    projects: 'iFramework.Plugins/IFramework.KafkaTools/IFramework.KafkaTools.csproj'
     arguments: '--configuration $(buildConfiguration)'
     workingDirectory: 'Src'
