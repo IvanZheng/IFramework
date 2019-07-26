@@ -16,6 +16,6 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: 'iFramework.Plugins/IFramework.KafkaTools'
+    projects: 'iFramework.Plugins/IFramework.KafkaTools/IFramework.KafkaTools.csproj'
     arguments: '--configuration $(buildConfiguration)'
     workingDirectory: 'Src'
