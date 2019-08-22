@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using Xunit;
 
@@ -8,6 +9,13 @@ namespace IFramework.Test
 {
     public class UtilityTests
     {
+        [Fact]
+        public async Task ThreadContextTest()
+        {
+
+        }
+
+
         [Fact]
         public void InvokeTest()
         {

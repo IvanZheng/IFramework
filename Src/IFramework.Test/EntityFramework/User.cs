@@ -32,16 +32,17 @@ namespace IFramework.Test.EntityFramework
         {
         }
 
-        public virtual Address Address { get; protected set; }
+        private Address _address;
+        public virtual Address Address { get => _address; protected set => _address = value.Clone(); }
         public string Hobby { get; protected set; }
     }
-    public class User: AggregateRoot
+    public class User: TimestampedAggregateRoot
     {
         public string Id { get; protected set; }
         public string Name { get; protected set; }
         public string Gender { get; protected set; }
-
-        public virtual UserProfile UserProfile { get; protected set; }
+        private UserProfile _userProfile;
+        public virtual UserProfile UserProfile { get => _userProfile; protected set => _userProfile = value.Clone(); }
         public virtual ICollection<Card> Cards { get; set; } = new HashSet<Card>();
 
         protected User()

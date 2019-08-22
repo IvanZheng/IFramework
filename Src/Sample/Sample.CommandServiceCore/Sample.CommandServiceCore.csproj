@@ -55,7 +55,7 @@
   <ItemGroup>
     <PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="3.0.0-preview3-19153-02" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview7.19365.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview8.19405.7" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.180" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.0.180" />
     <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.17" />

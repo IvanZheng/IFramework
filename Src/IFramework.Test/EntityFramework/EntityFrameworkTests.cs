@@ -125,15 +125,19 @@ namespace IFramework.Test.EntityFramework
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var dbContext = serviceScope.GetService<DemoDbContext>();
-                var user = await dbContext.Users.Include(u => u.UserProfile).FirstOrDefaultAsync()
+                var user = await dbContext.Users
+                                          //.Include(u => u.UserProfile)
+                                          //.ThenInclude(p => p.Address)
+                                          .FirstOrDefaultAsync()
                                           .ConfigureAwait(false);
-                //user.LoadReference(u => u.UserProfile);
+                //await user.LoadReferenceAsync(u => u.UserProfile)
+                //          .ConfigureAwait(false);
                 await user.ReloadAsync()
                           .ConfigureAwait(false);
 
                 user.ModifyProfile(user.UserProfile.Clone(new
                 {
-                    Address = user.UserProfile.Address.Clone(new {City = "beijing"}),
+                    Address = user.UserProfile.Address.Clone(new { City = $"beijing.{DateTime.Now.Ticks}" }),
                     Hobby = "basketball"
                 }));
                 //user.RemoveCards();

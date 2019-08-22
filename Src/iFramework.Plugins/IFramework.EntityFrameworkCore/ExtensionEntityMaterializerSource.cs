@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using IFramework.Domain;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -13,10 +14,9 @@ namespace IFramework.EntityFrameworkCore
     {
         public override Expression CreateMaterializeExpression(IEntityType entityType,
                                                                string entityInstanceName,
-                                                               Expression materializationExpression,
-                                                               int[] indexMap = null)
+                                                               Expression materializationExpression)
         {
-            var expression = base.CreateMaterializeExpression(entityType, entityInstanceName, materializationExpression, indexMap);
+            var expression = base.CreateMaterializeExpression(entityType, entityInstanceName, materializationExpression);
             if (typeof(Entity).IsAssignableFrom(entityType.ClrType) && expression is BlockExpression blockExpression)
             {
                 var property = Expression.Property(blockExpression.Variables[0],
@@ -29,6 +29,10 @@ namespace IFramework.EntityFrameworkCore
                 expression = Expression.Block(blockExpression.Variables, list);
             }
             return expression;
+        }
+
+        public ExtensionEntityMaterializerSource(EntityMaterializerSourceDependencies dependencies) : base(dependencies)
+        {
         }
     }
 }
