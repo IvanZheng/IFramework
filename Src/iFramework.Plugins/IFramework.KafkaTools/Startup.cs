@@ -23,21 +23,23 @@ namespace IFramework.KafkaTools
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
         public Startup(IConfiguration configuration)
         {
-            Configuration.Instance
-                         .UseUnityContainer()
-                         //.UseAutofacContainer(a => a.GetName().Name.StartsWith("IFramework.KafkaTools"))
-                         .UseConfiguration(configuration)
-                         .UseCommonComponents()
-                         .UseJsonNet();
-
+            _configuration = configuration;
         }
         
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutofacContainer(a => a.GetName().Name.StartsWith("IFramework.KafkaTools"))
+                    .AddConfiguration(_configuration)
+                    .AddCommonComponents()
+                    .AddJsonNet();
+            services.AddUnityContainer();
+            services.AddCommonComponents();
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -60,7 +62,7 @@ namespace IFramework.KafkaTools
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddLog4Net(new Log4NetProviderOptions {EnableScope = true});
+            loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

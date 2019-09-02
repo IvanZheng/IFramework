@@ -6,6 +6,7 @@ using IFramework.Domain;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -46,14 +47,12 @@ namespace IFramework.Test
     {
         public JsonTests(ITestOutputHelper output)
         {
-            Configuration.Instance
-                         .UseAutofacContainer()
-                         .UseMicrosoftJson()
-                //.UseJsonNet()
-                ;
+            var services = new ServiceCollection();
+            services.AddAutofacContainer()
+                    .AddMicrosoftJson();
 
             ObjectProviderFactory.Instance
-                                 .Build();
+                                 .Build(services);
             _output = output;
         }
 

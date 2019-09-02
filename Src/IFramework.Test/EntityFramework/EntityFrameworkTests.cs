@@ -7,8 +7,6 @@ using System.Transactions;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
-using IFramework.Domain;
-using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
@@ -49,25 +47,28 @@ namespace IFramework.Test.EntityFramework
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
             var configuration = builder.Build();
-            Configuration.Instance
-                         //.UseMicrosoftDependencyInjection()
-                         //.UseUnityContainer()
-                         .UseAutofacContainer()
-                         .UseConfiguration(configuration)
-                         .UseCommonComponents()
-                         .UseJsonNet()
-                         .UseLog4Net()
-                         .UseDbContextPool<DemoDbContext>(options =>
-                         {
-                             //options.UseLazyLoadingProxies();
-                             options.EnableSensitiveDataLogging();
-                             //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
-                             //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
-                             //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
-                         });
+            var services = new ServiceCollection();
+            services.AddAutofacContainer()
+                    .AddConfiguration(configuration)
+                    .AddCommonComponents()
+                    //.UseMicrosoftDependencyInjection()
+                    //.UseUnityContainer()
+                    //.UseAutofacContainer()
+                    //.UseConfiguration(configuration)
+                    //.UseCommonComponents()
+                    .AddJsonNet()
+                    .AddLog4Net()
+                    .AddDbContextPool<DemoDbContext>(options =>
+                    {
+                        //options.UseLazyLoadingProxies();
+                        options.EnableSensitiveDataLogging();
+                        //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
+                        //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
+                        //options.UseInMemoryDatabase(nameof(DemoDbContext));
+                        options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
+                    });
 
-            ObjectProviderFactory.Instance.Build();
+            ObjectProviderFactory.Instance.Build(services);
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var dbContext = serviceScope.GetService<DemoDbContext>();
@@ -107,7 +108,7 @@ namespace IFramework.Test.EntityFramework
                 using (var serviceScope = ObjectProviderFactory.CreateScope())
                 {
                     var dbContext = serviceScope.GetService<DemoDbContext>();
-                    var person =  await dbContext.Persons.FindAsync(id).ConfigureAwait(false);
+                    var person = await dbContext.Persons.FindAsync(id).ConfigureAwait(false);
                     Assert.NotNull(person);
                 }
             }
@@ -115,53 +116,6 @@ namespace IFramework.Test.EntityFramework
             {
                 Console.WriteLine(e);
                 throw;
-            }
-        }
-
-
-        [Fact]
-        public async Task ModifyOwnedObjectTest()
-        {
-            using (var serviceScope = ObjectProviderFactory.CreateScope())
-            {
-                var dbContext = serviceScope.GetService<DemoDbContext>();
-                var user = await dbContext.Users
-                                          //.Include(u => u.UserProfile)
-                                          //.ThenInclude(p => p.Address)
-                                          .FirstOrDefaultAsync()
-                                          .ConfigureAwait(false);
-                //await user.LoadReferenceAsync(u => u.UserProfile)
-                //          .ConfigureAwait(false);
-                await user.ReloadAsync()
-                          .ConfigureAwait(false);
-
-                user.ModifyProfile(user.UserProfile.Clone(new
-                {
-                    Address = user.UserProfile.Address.Clone(new { City = $"beijing.{DateTime.Now.Ticks}" }),
-                    Hobby = "basketball"
-                }));
-                //user.RemoveCards();
-                await dbContext.SaveChangesAsync()
-                               .ConfigureAwait(false);
-            }
-        }
-
-        [Fact]
-        public async Task RemoveUserCardTest()
-        {
-            using (var serviceScope = ObjectProviderFactory.CreateScope())
-            {
-                var dbContext = serviceScope.GetService<DemoDbContext>();
-                var user = await dbContext.Users.FirstOrDefaultAsync()
-                                    .ConfigureAwait(false);
-                var card = user.Cards.FirstOrDefault();
-                if (card != null)
-                {
-                    user.RemoveCard(card);
-                }
-                //user.RemoveCards();
-                await dbContext.SaveChangesAsync()
-                         .ConfigureAwait(false);
             }
         }
 
@@ -245,8 +199,7 @@ namespace IFramework.Test.EntityFramework
                 var concurrencyProcessor = serviceScope.GetService<IConcurrencyProcessor>();
                 var dbContext = serviceScope.GetService<DemoDbContext>();
                 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                   new TransactionOptions
-                                                                   {
+                                                                   new TransactionOptions {
                                                                        IsolationLevel = IsolationLevel.ReadCommitted
                                                                    },
                                                                    TransactionScopeAsyncFlowOption.Enabled))
@@ -310,7 +263,7 @@ namespace IFramework.Test.EntityFramework
                 try
                 {
                     var user = await dbContext.Users.FindAsync("5BEE29960CCE411C20215A17").ConfigureAwait(false);
-                   // var connection = dbContext.GetMongoDbDatabase();
+                    // var connection = dbContext.GetMongoDbDatabase();
                     var users = await dbContext.Users
                                                //.Include(u => u.Cards)
                                                //.FindAll(u => !string.IsNullOrWhiteSpace(u.Name))
@@ -329,6 +282,53 @@ namespace IFramework.Test.EntityFramework
                     Console.WriteLine(e);
                     throw;
                 }
+            }
+        }
+
+
+        [Fact]
+        public async Task ModifyOwnedObjectTest()
+        {
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = serviceScope.GetService<DemoDbContext>();
+                var user = await dbContext.Users
+                                          //.Include(u => u.UserProfile)
+                                          //.ThenInclude(p => p.Address)
+                                          .FirstOrDefaultAsync()
+                                          .ConfigureAwait(false);
+                //await user.LoadReferenceAsync(u => u.UserProfile)
+                //          .ConfigureAwait(false);
+                await user.ReloadAsync()
+                          .ConfigureAwait(false);
+
+                user.ModifyProfile(user.UserProfile.Clone(new {
+                    Address = user.UserProfile.Address.Clone(new {City = $"beijing.{DateTime.Now.Ticks}"}),
+                    Hobby = "basketball"
+                }));
+                //user.RemoveCards();
+                await dbContext.SaveChangesAsync()
+                               .ConfigureAwait(false);
+            }
+        }
+
+        [Fact]
+        public async Task RemoveUserCardTest()
+        {
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var dbContext = serviceScope.GetService<DemoDbContext>();
+                var user = await dbContext.Users.FirstOrDefaultAsync()
+                                          .ConfigureAwait(false);
+                var card = user.Cards.FirstOrDefault();
+                if (card != null)
+                {
+                    user.RemoveCard(card);
+                }
+
+                //user.RemoveCards();
+                await dbContext.SaveChangesAsync()
+                               .ConfigureAwait(false);
             }
         }
     }

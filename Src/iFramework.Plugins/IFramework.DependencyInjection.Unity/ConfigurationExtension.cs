@@ -11,12 +11,13 @@ namespace IFramework.DependencyInjection.Unity
 {
     public static class ConfigurationExtension
     {
-        public static Configuration UseUnityContainer(this Configuration configuration, UnityContainer container = null)
+        public static IServiceCollection AddUnityContainer(this IServiceCollection configuration, UnityContainer container = null)
         {
-            container = container ?? new UnityContainer();
-
+            container ??= new UnityContainer();
             ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(container));
             return configuration;
         }
+
+
     }
 }

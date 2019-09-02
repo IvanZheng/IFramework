@@ -58,46 +58,48 @@ namespace Sample.CommandServiceCore
         public static string PathBase;
         private static string _app = "uat";
         private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
+        private readonly IConfiguration _configuration;
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            var kafkaBrokerList = new[]
-            {
-                //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
-                "10.100.7.46:9092"
-            };
             var rabbitConnectionFactory = new ConnectionFactory
             {
                 Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
             };
-            Configuration.Instance
-                         .UseUnityContainer()
-                         //.UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
-                         .UseConfiguration(configuration)
-                         .UseCommonComponents(_app)
-                         .UseJsonNet()
-                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()
+            _configuration = configuration;
+            //Configuration.Instance
                          //.UseMongoDbMessageStore<SampleModelContext>()
                          //.UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitConnectionFactory)
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
-                         .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
-                         .UseMessagePublisher("eventTopic")
-                         .UseDbContextPool<SampleModelContext>(options =>
-                         {
-                             //options.EnableSensitiveDataLogging();
-                             options.UseLazyLoadingProxies();
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                             //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
-                             //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
-                         });
+                         //.UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
+                        
+                         ;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
+            services.AddUnityContainer()
+                    //.AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+                    .AddConfiguration(_configuration)
+                    .AddLog4Net(new Log4NetProviderOptions {EnableScope = true})
+                    .AddJsonNet()
+                    .AddCommonComponents(_app)
+                    .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
+                    .AddRelationalMessageStore<SampleModelContext>()
+                    .AddConfluentKafka()
+                    .AddMessagePublisher("eventTopic")
+                    .AddCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
+                    .AddDbContextPool<SampleModelContext>(options =>
+                    {
+                        //options.EnableSensitiveDataLogging();
+                        options.UseLazyLoadingProxies();
+                        options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                        //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
+                        //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
+                        //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                    })
+                    ;
+            //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
             services.AddCustomOptions<FrameworkConfiguration>();
             services.AddMvc(options =>
@@ -225,6 +227,7 @@ namespace Sample.CommandServiceCore
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();
 
+            loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             var logger = loggerFactory.CreateLogger<Startup>(); 
             logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
