@@ -61,23 +61,16 @@ namespace Sample.CommandServiceCore
         private readonly IConfiguration _configuration;
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            var rabbitConnectionFactory = new ConnectionFactory
-            {
-                Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
-            };
+         
             _configuration = configuration;
-            //Configuration.Instance
-                         //.UseMongoDbMessageStore<SampleModelContext>()
-                         //.UseInMemoryMessageQueue()
-                         //.UseRabbitMQ(rabbitConnectionFactory)
-                         //.UseEQueue()
-                         //.UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
-                        
-                         ;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var rabbitConnectionFactory = new ConnectionFactory
+            {
+                Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
+            };
             services//.AddUnityContainer()
                     .AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                     .AddConfiguration(_configuration)
@@ -87,8 +80,10 @@ namespace Sample.CommandServiceCore
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                     .AddRelationalMessageStore<SampleModelContext>()
                     .AddConfluentKafka()
+                    //.AddInMemoryMessageQueue()
+                    //.AddRabbitMQ(rabbitConnectionFactory)
                     .AddMessagePublisher("eventTopic")
-                    .AddCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
+                    .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
                     .AddDbContextPool<SampleModelContext>(options =>
                     {
                         //options.EnableSensitiveDataLogging();

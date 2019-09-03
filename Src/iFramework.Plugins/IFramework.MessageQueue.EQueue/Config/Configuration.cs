@@ -26,7 +26,7 @@ namespace IFramework.Config
                                 .BuildContainer();
         }
 
-        public static Configuration UseEQueue(this Configuration configuration,
+        public static IServiceCollection AddEQueue(this IServiceCollection services,
                                               string nameServerAddresses = null,
                                               string clusterName = "DefaultCluster",
                                               int nameServerPort = 9493)
@@ -41,7 +41,7 @@ namespace IFramework.Config
                                                                                                           new ParameterInjection("nameServerPort", nameServerPort)))
                       .Register<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
 
-            return configuration;
+            return services;
         }
     }
 }

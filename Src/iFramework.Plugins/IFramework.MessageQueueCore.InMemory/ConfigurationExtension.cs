@@ -9,12 +9,10 @@ namespace IFramework.MessageQueue.InMemory
 {
     public static class ConfigurationExtension
     {
-        public static Configuration UseInMemoryMessageQueue(this Configuration configuration)
+        public static IServiceCollection AddInMemoryMessageQueue(this IServiceCollection services)
         {
-            ObjectProviderFactory.Instance
-                      .ObjectProviderBuilder
-                      .Register<IMessageQueueClient, InMemoryClient>(ServiceLifetime.Singleton);
-            return configuration;
+            services.RegisterType<IMessageQueueClient, InMemoryClient>(ServiceLifetime.Singleton);
+            return services;
         }
     }
 }

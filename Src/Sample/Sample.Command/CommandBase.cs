@@ -17,5 +17,5 @@ namespace Sample.Command
         public virtual string[] Tags { get; set; }
     }
 
-    public abstract class LinearCommandBase : CommandBase, ILinearCommand { }
+    public abstract class SerialCommandBase : CommandBase, ILinearCommand { }
 }

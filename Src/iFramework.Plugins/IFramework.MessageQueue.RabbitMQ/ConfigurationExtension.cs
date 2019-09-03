@@ -8,10 +8,10 @@ namespace IFramework.MessageQueue.RabbitMQ
 {
     public static class ConfigurationExtension
     {
-        public static Configuration UseRabbitMQ(this Configuration configuration,
+        public static IServiceCollection AddRabbitMQ(this IServiceCollection services,
                                                 ConnectionFactory connectionFactory)
         {
-            configuration.SetCommitPerMessage(true);
+            Configuration.Instance.SetCommitPerMessage(true);
             var constructInjection = new ConstructInjection(new ParameterInjection("connectionFactory", connectionFactory));
 
             ObjectProviderFactory.Instance
@@ -19,7 +19,7 @@ namespace IFramework.MessageQueue.RabbitMQ
                                  .Register<IMessageQueueClientProvider, RabbitMQClientProvider>(ServiceLifetime.Singleton,
                                                                                                 constructInjection)
                                  .Register<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
-            return configuration;
+            return services;
         }
     }
 }

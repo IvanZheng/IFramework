@@ -1,6 +1,6 @@
 ﻿namespace Sample.Command
 {
-    public class Register : LinearCommandBase
+    public class Register : SerialCommandBase
     {
         public string Email { get; set; }
         public string UserName { get; set; }

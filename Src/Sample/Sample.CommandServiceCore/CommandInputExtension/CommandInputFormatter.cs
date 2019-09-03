@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Sample.CommandServiceCore.CommandInputExtension
@@ -43,6 +45,9 @@ namespace Sample.CommandServiceCore.CommandInputExtension
             {
                 throw new ArgumentNullException(nameof(context));
             }
+
+            var logger = context.HttpContext.RequestServices.GetService<ILogger<CommandInputFormatter>>();
+
             encoding = encoding ?? SelectCharacterEncoding(context);
             if (encoding == null)
             {
@@ -70,16 +75,16 @@ namespace Sample.CommandServiceCore.CommandInputExtension
                 }
                 else
                 {
-                    using (var streamReader = context.ReaderFactory(request.Body, encoding))
-                    {
-                        var part = await streamReader.ReadToEndAsync();
-                        command = part.ToJsonObject(commandType);
-                    }
+                    var memory = new byte[request.ContentLength??0];
+                    await request.Body.ReadAsync(memory);
+                    var part = encoding.GetString(memory);
+                    command = part.ToJsonObject(commandType);
                 }
                 return command != null ? InputFormatterResult.Success(command) : InputFormatterResult.Failure();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex);
                 return InputFormatterResult.Failure();
             }
         }

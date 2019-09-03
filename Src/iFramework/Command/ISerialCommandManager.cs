@@ -2,11 +2,11 @@
 
 namespace IFramework.Command
 {
-    public interface ILinearCommandManager
+    public interface ISerialCommandManager
     {
         object GetLinearKey(ILinearCommand command);
 
-        void RegisterLinearCommand<TLinearCommand>(Func<TLinearCommand, object> func)
+        void RegisterSerialCommand<TLinearCommand>(Func<TLinearCommand, object> func)
             where TLinearCommand : ILinearCommand;
     }
 }

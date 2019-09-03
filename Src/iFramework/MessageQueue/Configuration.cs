@@ -74,18 +74,18 @@ namespace IFramework.Config
                                                   string consumerId,
                                                   string replyTopic = "replyTopic",
                                                   string replySubscription = "replySubscription",
-                                                  ILinearCommandManager linerCommandManager = null,
+                                                  ISerialCommandManager serialCommandManager = null,
                                                   ConsumerConfig consumerConfig = null)
         {
      
             services.RegisterType(typeof(ICommandBus), provider =>
             {
-                if (linerCommandManager == null)
+                if (serialCommandManager == null)
                 {
-                    linerCommandManager = new LinearCommandManager();
+                    serialCommandManager = new SerialCommandManager();
                 }
                 var messageQueueClient = provider.GetService<IMessageQueueClient>();
-                var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic,
+                var commandBus = new CommandBus(messageQueueClient, serialCommandManager, consumerId, replyTopic,
                                                 replySubscription, consumerConfig);
                 return commandBus;
             }, ServiceLifetime.Singleton);
