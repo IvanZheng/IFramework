@@ -54,6 +54,10 @@ namespace IFramework.Test.EntityFramework
             //            .HasForeignKey(c => c.UserId);
             //modelBuilder.Ignore<Card>();
 
+            modelBuilder.Entity<User>()
+                        .HasIndex(u => u.Name)
+                        .IsUnique();
+
             modelBuilder.Owned<Address>();
             //modelBuilder.Owned<UserProfile>();
             modelBuilder.Entity<Person>()

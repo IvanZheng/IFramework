@@ -127,6 +127,7 @@ namespace IFramework.Test.EntityFramework
                                                     new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
                                                     TransactionScopeAsyncFlowOption.Enabled))
             {
+                var logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
                 var serviceProvider = serviceScope.GetService<IServiceProvider>();
                 if (serviceProvider == null)
                 {
@@ -138,7 +139,6 @@ namespace IFramework.Test.EntityFramework
                     var dbContext = serviceScope.GetService<DemoDbContext>();
                     if (dbContext == null)
                     {
-                        var logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
                         logger.LogError((serviceScope as ObjectProvider)?.UnityContainer.Registrations.ToJson());
                         Assert.NotNull(dbContext);
                     }
@@ -159,7 +159,8 @@ namespace IFramework.Test.EntityFramework
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    logger.LogError((object)e);
+                    //Console.WriteLine(e);
                     throw;
                 }
             }
