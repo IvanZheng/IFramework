@@ -8,7 +8,6 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.DependencyInjection.Unity;
 using IFramework.EntityFrameworkCore;
 using IFramework.JsonNet;
-using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.ConfluentKafka;
@@ -39,6 +38,7 @@ using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAt
 using System.Collections.Generic;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
+using IFramework.Logging.Log4Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
@@ -78,12 +78,12 @@ namespace Sample.CommandServiceCore
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddUnityContainer()
-                    //.AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+            services//.AddUnityContainer()
+                    .AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                     .AddConfiguration(_configuration)
-                    .AddLog4Net(new Log4NetProviderOptions {EnableScope = true})
-                    .AddJsonNet()
+                    .AddLog4Net()
                     .AddCommonComponents(_app)
+                    .AddJsonNet()
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                     .AddRelationalMessageStore<SampleModelContext>()
                     .AddConfluentKafka()
@@ -227,7 +227,7 @@ namespace Sample.CommandServiceCore
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();
 
-            loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
+            //loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             var logger = loggerFactory.CreateLogger<Startup>(); 
             logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");

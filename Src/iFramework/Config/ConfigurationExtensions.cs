@@ -24,14 +24,13 @@ namespace IFramework.Config
         public static IServiceCollection AddConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             Configuration.Instance.ConfigurationCore = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            ObjectProviderFactory.Instance.RegisterInstance(typeof(Configuration), Configuration.Instance);
+            services.AddSingleton(typeof(Configuration), Configuration.Instance);
             return services;
         }
 
         public static IServiceCollection AddCommonComponents(this IServiceCollection services, string app = null)
         {
-            services.AddNullLogger()
-                    .AddMemoryCache()
+            services.AddMemoryCache()
                     .AddMicrosoftJson()
                     .AddMessageStore<MockMessageStore>()
                     .AddMessageStoreDaemon<MockMessageStoreDaemon>()

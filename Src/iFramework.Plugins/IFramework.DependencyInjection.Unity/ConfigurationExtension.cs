@@ -13,7 +13,7 @@ namespace IFramework.DependencyInjection.Unity
     {
         public static IServiceCollection AddUnityContainer(this IServiceCollection configuration, UnityContainer container = null)
         {
-            container ??= new UnityContainer();
+            container = container ?? new UnityContainer();
             ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(container));
             return configuration;
         }

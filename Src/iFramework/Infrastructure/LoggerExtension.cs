@@ -181,7 +181,7 @@ namespace Microsoft.Extensions.Logging
         {
             logger = logger.GetInternalLogger();
             var loggers = logger.GetType()
-                                .GetProperty("Loggers")
+                                .GetProperty("MessageLoggers")
                                 ?.GetValue(logger) as Array;
             if (loggers == null)
             {
@@ -189,13 +189,15 @@ namespace Microsoft.Extensions.Logging
             }
             for (int i = 0;  i < loggers.Length; i ++)
             {
-                var loggerInformation = loggers.GetValue(i);
-                if (loggerInformation != null)
+                var messageLogger = loggers.GetValue(i);
+                if (messageLogger != null)
                 {
-                    loggerInformation.GetType()
-                                     .GetProperty("MinLevel")
-                                     ?.SetValue(loggerInformation, minLevel);
-                    loggers.SetValue(loggerInformation, i);
+                    var minLevelField = messageLogger.GetType().GetRuntimeFields().FirstOrDefault(f => f.Name.StartsWith("<MinLevel>"));
+                    if (minLevelField != null)
+                    {
+                        minLevelField.SetValue(messageLogger, minLevel);
+                        loggers.SetValue(messageLogger, i);
+                    }
                 }
             }
         }
