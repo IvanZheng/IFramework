@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using IFramework.Infrastructure;
 using log4net.Core;
 using log4net.Layout;
+using log4net.Util;
 
 namespace IFramework.Logging.Log4Net
 {
@@ -56,6 +59,16 @@ namespace IFramework.Logging.Log4Net
             log.HostIp = Utility.GetLocalIpv4().ToString();
             log.LogLevel = loggingEvent.Level.ToString();
 
+
+            foreach (DictionaryEntry loggingEventProperty in loggingEvent.Properties)
+            {
+                if (!(loggingEventProperty.Key?.ToString().StartsWith("log4net:") ?? true))
+                {
+                    log.Scope = log.Scope ?? new Dictionary<string, object>();
+                    log.Scope.Add(loggingEventProperty.Key.ToString(), loggingEventProperty.Value);
+                }
+            }
+
             if (loggingEvent.ExceptionObject != null)
             {
                 log.Exception = new LogException
@@ -65,15 +78,15 @@ namespace IFramework.Logging.Log4Net
                     StackTrace = loggingEvent.ExceptionObject.StackTrace
                 };
             }
-            var logDict = log.ToJson().ToJsonObject<Dictionary<string, object>>();
-            additionalProperties.ForEach(p =>
-            {
-                if (p.Key != nameof(App) && p.Key != nameof(Module))
-                {
-                    logDict[p.Key] = p.Value;
-                }
-            });
-            return logDict;
+            //var logDict = log.ToJson().ToJsonObject<Dictionary<string, object>>();
+            //additionalProperties.ForEach(p =>
+            //{
+            //    if (p.Key != nameof(App) && p.Key != nameof(Module))
+            //    {
+            //        logDict[p.Key] = p.Value;
+            //    }
+            //});
+            return log;
         }
     }
 }

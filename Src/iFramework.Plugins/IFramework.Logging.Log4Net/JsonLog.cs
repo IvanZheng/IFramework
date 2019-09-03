@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using log4net.Core;
 
 namespace IFramework.Logging.Log4Net
@@ -17,6 +18,7 @@ namespace IFramework.Logging.Log4Net
         public string Thread { get; set; }
         public string Target { get; set; }
         public object Data { get; set; }
+        public Dictionary<string, object> Scope { get; set; }
         public LogException Exception { get; set; }
     }
 
