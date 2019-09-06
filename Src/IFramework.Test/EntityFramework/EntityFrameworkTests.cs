@@ -100,7 +100,7 @@ namespace IFramework.Test.EntityFramework
                 using (var serviceScope = ObjectProviderFactory.CreateScope())
                 {
                     var dbContext = serviceScope.GetService<DemoDbContext>();
-                    var person = new Person(id, "ivan");
+                    var person = new Person(id, $"ivan_{DateTime.Now.Ticks}");
                     dbContext.Persons.Add(person);
                     await dbContext.SaveChangesAsync();
                 }
@@ -143,7 +143,7 @@ namespace IFramework.Test.EntityFramework
                         Assert.NotNull(dbContext);
                     }
 
-                    var user = new User("ivan",
+                    var user = new User($"ivan_{DateTime.Now.Ticks}",
                                         "male",
                                         new UserProfile(new Address("china",
                                                                     "shanghai",
@@ -263,7 +263,8 @@ namespace IFramework.Test.EntityFramework
 
                 try
                 {
-                    var user = await dbContext.Users.FindAsync("5BEE29960CCE411C20215A17").ConfigureAwait(false);
+                    var user = await dbContext.Users.FindAsync("5D6E104A0CCE415AD44F17AE")
+                                              .ConfigureAwait(false);
                     // var connection = dbContext.GetMongoDbDatabase();
                     var users = await dbContext.Users
                                                //.Include(u => u.Cards)
