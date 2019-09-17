@@ -7,6 +7,7 @@ using System.Transactions;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
+using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
@@ -299,8 +300,8 @@ namespace IFramework.Test.EntityFramework
                                           //.ThenInclude(p => p.Address)
                                           .FirstOrDefaultAsync()
                                           .ConfigureAwait(false);
-                //await user.LoadReferenceAsync(u => u.UserProfile)
-                //          .ConfigureAwait(false);
+                await user.LoadReferenceAsync(u => u.UserProfile)
+                          .ConfigureAwait(false);
                 await user.ReloadAsync()
                           .ConfigureAwait(false);
 

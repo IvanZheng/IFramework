@@ -54,11 +54,11 @@
 
   <ItemGroup>
     <PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview9.19424.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-rc1.19457.4" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.180" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.0.180" />
     <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.17" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.6.0-preview9.19421.4" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.6.0-rc1.19456.4" />
   </ItemGroup>
 
   <ItemGroup>
