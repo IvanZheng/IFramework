@@ -40,6 +40,7 @@ using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Logging.Log4Net;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
@@ -137,12 +138,12 @@ namespace Sample.CommandServiceCore
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
-                              IHostingEnvironment env,
+                              IHostEnvironment env,
                               ILoggerFactory loggerFactory,
                               IMessageTypeProvider messageTypeProvider,
                               IOptions<FrameworkConfiguration> frameworkConfigOptions,
                               IMailboxProcessor mailboxProcessor,
-                              IApplicationLifetime applicationLifetime)
+                              IHostApplicationLifetime applicationLifetime)
         {
             applicationLifetime.ApplicationStopping.Register(() =>
             {
