@@ -80,19 +80,19 @@ namespace Sample.CommandServiceCore
                     .AddJsonNet()
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                     .AddRelationalMessageStore<SampleModelContext>()
-                    .AddConfluentKafka()
-                    //.AddInMemoryMessageQueue()
+                    //.AddConfluentKafka()
+                    .AddInMemoryMessageQueue()
                     //.AddRabbitMQ(rabbitConnectionFactory)
                     .AddMessagePublisher("eventTopic")
                     .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
                     .AddDbContextPool<SampleModelContext>(options =>
                     {
                         //options.EnableSensitiveDataLogging();
-                        options.UseLazyLoadingProxies();
-                        options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                        //options.UseLazyLoadingProxies();
+                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                         //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                        //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        options.UseInMemoryDatabase(nameof(SampleModelContext));
                     })
                     ;
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
