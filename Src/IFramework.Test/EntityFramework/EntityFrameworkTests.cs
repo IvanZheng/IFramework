@@ -33,8 +33,8 @@ namespace IFramework.Test.EntityFramework
                                                     .AddJsonFile("appsettings.json");
             var configuratoin = builder.Build();
             var optionsBuilder = new DbContextOptionsBuilder<DemoDbContext>();
-            //optionsBuilder.UseMySQL(configuratoin.GetConnectionString(MySqlConnectionStringName));
-            optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
+            optionsBuilder.UseMySQL(configuratoin.GetConnectionString(MySqlConnectionStringName));
+            //optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
             //optionsBuilder.UseMongoDb(configuratoin.GetConnectionString(MongoDbConnectionStringName));
             return new DemoDbContext(optionsBuilder.Options);
         }
@@ -61,12 +61,13 @@ namespace IFramework.Test.EntityFramework
                     .AddLog4Net()
                     .AddDbContextPool<DemoDbContext>(options =>
                     {
-                        //options.UseLazyLoadingProxies();
+                        options.UseLazyLoadingProxies();
                         options.EnableSensitiveDataLogging();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
                         //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
+                        options.UseMySql(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
                         //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                        options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
+                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
                     });
 
             ObjectProviderFactory.Instance.Build(services);
