@@ -65,9 +65,9 @@ namespace IFramework.Test.EntityFramework
                         options.EnableSensitiveDataLogging();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
                         //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
-                        options.UseMySql(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
+                        //options.UseMySql(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
                         //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
+                        options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
                     });
 
             ObjectProviderFactory.Instance.Build(services);
@@ -250,6 +250,7 @@ namespace IFramework.Test.EntityFramework
         {
             using (var scope = ObjectProviderFactory.CreateScope())
             {
+                scope.SetContextData("TenantId", DateTime.Now.Ticks);
                 var serviceProvider = scope.GetService<IServiceProvider>();
                 if (serviceProvider == null)
                 {
@@ -262,7 +263,7 @@ namespace IFramework.Test.EntityFramework
                 //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
 
                 var dbContext = scope.GetService<DemoDbContext>();
-
+                dbContext.InitializeTenant();
                 try
                 {
                     var user = await dbContext.Users.FindAsync("5D6E104A0CCE415AD44F17AE")
@@ -301,8 +302,8 @@ namespace IFramework.Test.EntityFramework
                                           //.ThenInclude(p => p.Address)
                                           .FirstOrDefaultAsync()
                                           .ConfigureAwait(false);
-                await user.LoadReferenceAsync(u => u.UserProfile)
-                          .ConfigureAwait(false);
+                //await user.LoadReferenceAsync(u => u.UserProfile)
+                //          .ConfigureAwait(false);
                 await user.ReloadAsync()
                           .ConfigureAwait(false);
 

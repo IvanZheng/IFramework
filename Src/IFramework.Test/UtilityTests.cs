@@ -9,11 +9,11 @@ namespace IFramework.Test
 {
     public class UtilityTests
     {
-        [Fact]
-        public async Task ThreadContextTest()
-        {
+        //[Fact]
+        //public async Task ThreadContextTest()
+        //{
 
-        }
+        //}
 
 
         [Fact]

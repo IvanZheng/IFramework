@@ -4,10 +4,12 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Domain;
 using IFramework.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using MySql.Data.EntityFrameworkCore.Extensions;
 
@@ -16,6 +18,8 @@ namespace IFramework.Test.EntityFramework
     public class DemoDbContext : MsDbContext
     {
         public static int Total;
+        private long _tenantId;
+
         public DemoDbContext(DbContextOptions options)
             : base(options)
         {
@@ -26,6 +30,12 @@ namespace IFramework.Test.EntityFramework
         {
             base.Dispose();
         }
+
+        public void InitializeTenant()
+        {
+            _tenantId = this.GetService<IObjectProvider>().GetContextData<long>("TenantId");
+        }
+
         protected const string NextSequenceId = "NEXT VALUE FOR ids";
 
         public DbSet<User> Users { get; set; }

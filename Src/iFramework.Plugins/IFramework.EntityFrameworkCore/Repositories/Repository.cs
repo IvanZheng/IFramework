@@ -192,17 +192,13 @@ namespace IFramework.EntityFrameworkCore.Repositories
 
         protected override void DoReload(TEntity entity)
         {
-            Container.Entry(entity).Reload();
-            (entity as AggregateRoot)?.Rollback();
+            Container.Reload(entity);
         }
 
         protected override async Task DoReloadAsync(TEntity entity)
         {
-            await Container.Entry(entity)
-                           .ReloadAsync()
+            await Container.ReloadAsync(entity)
                            .ConfigureAwait(false);
-
-            (entity as AggregateRoot)?.Rollback();
         }
     }
 }
