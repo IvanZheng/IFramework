@@ -68,9 +68,6 @@ namespace IFramework.EntityFrameworkCore
 
         private async Task ReloadAsync(EntityEntry entityEntry, bool includeSubObjects, CancellationToken cancellationToken)
         {
-            await entityEntry.ReloadAsync(cancellationToken)
-                             .ConfigureAwait(false);
-
             if (includeSubObjects)
             {
                 foreach (var referenceEntry in entityEntry.Members.OfType<ReferenceEntry>())
@@ -83,20 +80,26 @@ namespace IFramework.EntityFrameworkCore
                     }
                 }
 
-                foreach (var collectionEntry in entityEntry.Members.OfType<CollectionEntry>())
+                foreach (var collectionEntry in entityEntry.Members.OfType<CollectionEntry>().ToArray())
                 {
                     if (collectionEntry.IsLoaded)
                     {
-                        foreach (var entity in collectionEntry.CurrentValue)
+                        foreach (var entity in collectionEntry.CurrentValue.OfType<object>().ToArray())
                         {
-                            await ReloadAsync(Entry(entity),
+                            var subEntityEntry = Entry(entity);
+                            await ReloadAsync(subEntityEntry,
                                               true,
                                               cancellationToken).ConfigureAwait(false);
+                            subEntityEntry.State = EntityState.Detached;
                         }
+
+                        collectionEntry.CurrentValue = null;
+                        collectionEntry.IsLoaded = false;
                     }
                 }
             }
-
+            await entityEntry.ReloadAsync(cancellationToken)
+                             .ConfigureAwait(false);
             (entityEntry.Entity as AggregateRoot)?.Rollback();
         }
 
