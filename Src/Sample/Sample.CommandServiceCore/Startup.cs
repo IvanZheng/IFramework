@@ -80,9 +80,9 @@ namespace Sample.CommandServiceCore
                          .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
                          .UseRelationalMessageStore<SampleModelContext>()
                          //.UseMongoDbMessageStore<SampleModelContext>()
-                         //.UseInMemoryMessageQueue()
+                         .UseInMemoryMessageQueue()
                          //.UseRabbitMQ(rabbitConnectionFactory)
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
+                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
                          //.UseEQueue()
                          .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
                          .UseMessagePublisher("eventTopic")
@@ -90,10 +90,10 @@ namespace Sample.CommandServiceCore
                          {
                              //options.EnableSensitiveDataLogging();
                              options.UseLazyLoadingProxies();
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                              //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
                              //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                             options.UseInMemoryDatabase(nameof(SampleModelContext));
                          });
         }
 
