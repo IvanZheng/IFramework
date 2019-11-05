@@ -3,9 +3,9 @@ using IFramework.Command.Impl;
 
 namespace Sample.Command
 {
-    public class ReduceProduct : LinearCommandBase
+    public class ReduceProduct : SerialCommandBase
     {
-        [LinearKey]
+        [SerialKey]
         public Guid ProductId { get; set; }
 
         public int ReduceCount { get; set; }

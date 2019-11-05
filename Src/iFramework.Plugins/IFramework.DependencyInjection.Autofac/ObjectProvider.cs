@@ -11,7 +11,7 @@ using IFramework.Infrastructure;
 
 namespace IFramework.DependencyInjection.Autofac
 {
-    public class ObjectProvider : IObjectProvider
+    public class ObjectProvider : ObjectProviderBase
     {
         private IComponentContext _componentContext;
         public ILifetimeScope Scope => _componentContext as ILifetimeScope;
@@ -38,13 +38,13 @@ namespace IFramework.DependencyInjection.Autofac
             SetComponentContext(componentContext);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Scope?.Dispose();
         }
 
-        public IObjectProvider Parent { get; }
-        public IObjectProvider CreateScope()
+        public override IObjectProvider Parent { get; }
+        public override IObjectProvider CreateScope()
         {
             var objectProvider = new ObjectProvider(this);
             var childScope = Scope.BeginLifetimeScope(builder =>
@@ -55,7 +55,7 @@ namespace IFramework.DependencyInjection.Autofac
             return objectProvider;
         }
 
-        public IObjectProvider CreateScope(IServiceCollection serviceCollection)
+        public override IObjectProvider CreateScope(IServiceCollection serviceCollection)
         {
             var objectProvider = new ObjectProvider(this);
             var childScope = Scope.BeginLifetimeScope(builder =>
@@ -68,7 +68,7 @@ namespace IFramework.DependencyInjection.Autofac
 
         }
 
-        public IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction)
+        public override IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction)
         {
             if (buildAction == null)
             {
@@ -85,44 +85,43 @@ namespace IFramework.DependencyInjection.Autofac
             return objectProvider;
         }
 
-        public object GetService(Type t, params Parameter[] parameters)
+        public override object GetService(Type t, params Parameter[] parameters)
         {
             return _componentContext.ResolveOptional(t, GetResolvedParameters(parameters));
         }
 
 
-        public T GetService<T>(params Parameter[] parameters) where T : class
+        public override T GetService<T>(params Parameter[] parameters)
         {
             return _componentContext.ResolveOptional<T>(GetResolvedParameters(parameters));
         }
-        public object GetService(Type t, string name, params Parameter[] parameters)
+        public override object GetService(Type t, string name, params Parameter[] parameters)
         {
             return _componentContext.ResolveNamed(name, t, GetResolvedParameters(parameters));
         }
 
-        public T GetService<T>(string name, params Parameter[] parameters)
-            where T : class
+        public override T GetService<T>(string name, params Parameter[] parameters)
         {
             return _componentContext.ResolveOptionalNamed<T>(name, GetResolvedParameters(parameters));
         }
 
-        public IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters)
+        public  override IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters)
         {
             var typeToResolve = typeof(IEnumerable<>).MakeGenericType(type);
             return _componentContext.ResolveOptional(typeToResolve, GetResolvedParameters(parameters)) as IEnumerable<object>;
         }
 
-        public IEnumerable<T> GetAllServices<T>(params Parameter[] parameters) where T : class
+        public  override IEnumerable<T> GetAllServices<T>(params Parameter[] parameters)
         {
             return _componentContext.ResolveOptional<IEnumerable<T>>(GetResolvedParameters(parameters));
         }
 
-        public object GetService(Type serviceType)
+        public  override object GetService(Type serviceType)
         {
             return _componentContext.ResolveOptional(serviceType);
         }
 
-        public object GetRequiredService(Type serviceType)
+        public override object GetRequiredService(Type serviceType)
         {
             return _componentContext.Resolve(serviceType);
         }

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.Test
 {
@@ -25,14 +26,13 @@ namespace IFramework.Test
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
-            
-            Configuration.Instance
-                         .UseAutofacContainer(new ContainerBuilder())
-                         .UseConfiguration(builder.Build())
-                         .UseJsonNet()
-                         .UseLog4Net();
+            var services = new ServiceCollection();
+            services.AddAutofacContainer(new ContainerBuilder())
+                         .AddConfiguration(builder.Build())
+                         .AddJsonNet()
+                         .AddLog4Net();
 
-            ObjectProviderFactory.Instance.Build();
+            ObjectProviderFactory.Instance.Build(services);
 
             var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(GetType());

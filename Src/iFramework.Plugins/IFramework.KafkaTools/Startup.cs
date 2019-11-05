@@ -4,38 +4,42 @@ using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.DependencyInjection;
+using IFramework.DependencyInjection.Autofac;
 using IFramework.DependencyInjection.Unity;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Serialization;
 
 namespace IFramework.KafkaTools
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
         public Startup(IConfiguration configuration)
         {
-            Configuration.Instance
-                         .UseUnityContainer()
-                         //.UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
-                         .UseConfiguration(configuration)
-                         .UseCommonComponents()
-                         .UseJsonNet();
-
+            _configuration = configuration;
         }
         
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutofacContainer(a => a.GetName().Name.StartsWith("IFramework.KafkaTools"))
+                    .AddConfiguration(_configuration)
+                    .AddCommonComponents()
+                    .AddJsonNet();
+            services.AddUnityContainer();
+            services.AddCommonComponents();
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -43,39 +47,42 @@ namespace IFramework.KafkaTools
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(options => { options.EnableEndpointRouting = false; })
+                    .AddControllersAsServices()
+                    .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+            services.AddHttpContextAccessor();
+            services.AddControllersWithViews();
+            services.AddRazorPages();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
-            return ObjectProviderFactory.Instance
-                                        .Populate(services)
-                                        .Build();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddLog4Net(new Log4NetProviderOptions {EnableScope = true});
+            loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
-
-            app.UseHttpsRedirection();
+            
+            app.UseCors("default");
             app.UseStaticFiles();
-            app.UseCookiePolicy();
-
+            //app.UseRouting();
+            //app.UseEndpoints(endpoints =>
+            //{
+            //    endpoints.MapControllerRoute("default",
+            //                                 "{controller=Home}/{action=Index}/{id?}");
+            //    endpoints.MapRazorPages();
+            //});
+          
+            
             app.UseMvc(routes =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                routes.MapRoute("default",
+                                "{controller=Home}/{action=Index}/{id?}");
             });
 
             app.UseSwagger();
@@ -84,7 +91,7 @@ namespace IFramework.KafkaTools
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
 
-            loggerFactory.CreateLogger<Startup>().LogDebug($"Aplication started {env.EnvironmentName}!");
+            loggerFactory.CreateLogger<Startup>().LogDebug($"Application started {env.EnvironmentName}!");
         }
     }
 }

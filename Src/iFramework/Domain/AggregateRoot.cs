@@ -41,7 +41,7 @@ namespace IFramework.Domain
 
         public virtual void Rollback()
         {
-            EventQueue.Clear();
+            ClearDomainEvents();
         }
 
         protected virtual void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IAggregateRootEvent

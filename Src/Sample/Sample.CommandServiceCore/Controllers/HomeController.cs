@@ -62,12 +62,12 @@ namespace Sample.CommandServiceCore.Controllers
         [LogInterceptor(Order = 2)]
         public virtual async Task<object> DoApi()
         {
-            //var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
+            var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
             //var userId = new Guid("4ED7460E-C914-45A6-B1C9-4DC97C5D52D0");
             //await _communityService.ModifyUserEmailAsync(userId, $"{DateTime.Now.Ticks}");
 
             var version = await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
-            return $"{DateTime.Now} version:{version} DoApi Done! ";
+            return $"{DateTime.Now} version:{version} DoApi Done! sameProvider:{sameProvider} ";
         }
 
         public IActionResult Test()
@@ -96,6 +96,7 @@ namespace Sample.CommandServiceCore.Controllers
         {
             using (_logger.BeginScope(new Dictionary<string, object> {{"needGc", needGc}}))
             {
+                _logger.SetMinLevel(LogLevel.Debug);
                 var profile = Configuration.Instance.Get("Debug");
                 var member = Configuration.Instance.Get("Member:A");
                 _logger.LogDebug(new {profile, member});

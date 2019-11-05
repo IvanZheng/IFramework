@@ -29,7 +29,7 @@ namespace IFramework.Command.Impl
         private readonly string _consumerId;
 
         //protected string[] _commandQueueNames;
-        private readonly ILinearCommandManager _linearCommandManager;
+        private readonly ISerialCommandManager _serialCommandManager;
 
         private readonly MailboxProcessor _messageProcessor;
         private readonly string _replySubscriptionName;
@@ -37,7 +37,7 @@ namespace IFramework.Command.Impl
         private IMessageConsumer _internalConsumer;
 
         public CommandBus(IMessageQueueClient messageQueueClient,
-                          ILinearCommandManager linearCommandManager,
+                          ISerialCommandManager serialCommandManager,
                           string consumerId,
                           string replyTopicName,
                           string replySubscriptionName,
@@ -47,7 +47,7 @@ namespace IFramework.Command.Impl
             _consumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             _consumerId = consumerId;
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();
-            _linearCommandManager = linearCommandManager;
+            _serialCommandManager = serialCommandManager;
             _replyTopicName = Configuration.Instance.FormatAppName(replyTopicName);
             _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
             // _commandQueueNames = commandQueueNames;
@@ -169,7 +169,7 @@ namespace IFramework.Command.Impl
             string commandKey = command.Key;
             if (command is ILinearCommand linearCommand)
             {
-                var linearKey = _linearCommandManager.GetLinearKey(linearCommand);
+                var linearKey = _serialCommandManager.GetLinearKey(linearCommand);
                 if (linearKey != null)
                 {
                     commandKey = linearKey.ToString();

@@ -30,14 +30,14 @@ namespace IFramework.Config
         }
 
 
-        public static Configuration UseMessageQueue(this Configuration configuration, string appName = null)
+        public static IServiceCollection AddMessageQueue(this IServiceCollection services, string appName = null)
         {
             AppName = appName;
             var appNameFormat = string.IsNullOrEmpty(appName) ? "{0}" : appName + ".{0}";
-            configuration.SetAppNameFormat(appNameFormat)
-                         .UseMockCommandBus()
-                         .UseMockMessagePublisher();
-            return configuration;
+            services.SetAppNameFormat(appNameFormat)
+                    .AddMockCommandBus()
+                    .AddMockMessagePublisher();
+            return services;
         }
 
         //public static Configuration UseDefaultEventBus(this Configuration configuration)
@@ -47,60 +47,49 @@ namespace IFramework.Config
         //}
 
 
-        public static Configuration UseMockMessageQueueClient(this Configuration configuration)
-        {
-            ObjectProviderFactory.Instance.RegisterType<IMessageQueueClient, MockMessageQueueClient>(ServiceLifetime.Singleton);
-            return configuration;
-        }
+      
+        
 
-        public static Configuration UseMockMessagePublisher(this Configuration configuration)
+        public static IServiceCollection AddMessagePublisher(this IServiceCollection services, string defaultTopic)
         {
-            ObjectProviderFactory.Instance.RegisterType<IMessagePublisher, MockMessagePublisher>(ServiceLifetime.Singleton);
-            return configuration;
-        }
-
-        public static Configuration UseMessagePublisher(this Configuration configuration, string defaultTopic)
-        {
-            var builder = ObjectProviderFactory.Instance.ObjectProviderBuilder;
-
-            builder.Register<IMessagePublisher>(provider =>
+           
+            services.AddSingleton<IMessagePublisher>(provider =>
             {
                 var messageQueueClient = provider.GetService<IMessageQueueClient>();
-                configuration.SetDefaultTopic(defaultTopic);
-                defaultTopic = configuration.FormatAppName(defaultTopic);
+                Configuration.Instance.SetDefaultTopic(defaultTopic);
+                defaultTopic = Configuration.Instance.FormatAppName(defaultTopic);
                 var messagePublisher = new MessagePublisher(messageQueueClient, defaultTopic);
                 return messagePublisher;
-            }, ServiceLifetime.Singleton);
-            return configuration;
+            });
+            return services;
         }
 
-        public static Configuration UseMockCommandBus(this Configuration configuration)
+        public static IServiceCollection AddMockCommandBus(this IServiceCollection services)
         {
-            ObjectProviderFactory.Instance.RegisterType<ICommandBus, MockCommandBus>(ServiceLifetime.Singleton);
-            return configuration;
+            services.RegisterType<ICommandBus, MockCommandBus>(ServiceLifetime.Singleton);
+            return services;
         }
 
-        public static Configuration UseCommandBus(this Configuration configuration,
+        public static IServiceCollection AddCommandBus(this IServiceCollection services,
                                                   string consumerId,
                                                   string replyTopic = "replyTopic",
                                                   string replySubscription = "replySubscription",
-                                                  ILinearCommandManager linerCommandManager = null,
+                                                  ISerialCommandManager serialCommandManager = null,
                                                   ConsumerConfig consumerConfig = null)
         {
-            var builder = ObjectProviderFactory.Instance.ObjectProviderBuilder;
-
-            builder.Register<ICommandBus>(provider =>
+     
+            services.RegisterType(typeof(ICommandBus), provider =>
             {
-                if (linerCommandManager == null)
+                if (serialCommandManager == null)
                 {
-                    linerCommandManager = new LinearCommandManager();
+                    serialCommandManager = new SerialCommandManager();
                 }
                 var messageQueueClient = provider.GetService<IMessageQueueClient>();
-                var commandBus = new CommandBus(messageQueueClient, linerCommandManager, consumerId, replyTopic,
+                var commandBus = new CommandBus(messageQueueClient, serialCommandManager, consumerId, replyTopic,
                                                 replySubscription, consumerConfig);
                 return commandBus;
             }, ServiceLifetime.Singleton);
-            return configuration;
+            return services;
         }
 
         public static TimeSpan GetMessageQueueReceiveMessageTimeout(this Configuration configuration)
@@ -115,27 +104,27 @@ namespace IFramework.Config
             return configuration;
         }
 
-        public static Configuration SetAppNameFormat(this Configuration configuration, string format)
+        public static IServiceCollection SetAppNameFormat(this IServiceCollection services, string format)
         {
             _appNameFormat = format;
-            return configuration;
+            return services;
         }
 
-        public static Configuration SetMessageQueueNameFormat(this Configuration configuration, string format)
+        public static IServiceCollection SetMessageQueueNameFormat(this IServiceCollection services, string format)
         {
             _MessageQueueNameFormat = format;
-            return configuration;
+            return services;
         }
 
-        public static Configuration MessageQueueUseMachineNameFormat(this Configuration configuration,
+        public static IServiceCollection MessageQueueUseMachineNameFormat(this IServiceCollection services,
                                                                      bool onlyInDebug = true)
         {
             var debug = Configuration.Instance.Get<bool>("Debug");
             if (!onlyInDebug || debug)
             {
-                configuration.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
+                services.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
             }
-            return configuration;
+            return services;
         }
 
         public static string FormatAppName(this Configuration configuration, string topic)

@@ -2,7 +2,7 @@
 
 namespace Sample.Command
 {
-    public class Login : LinearCommandBase
+    public class Login : SerialCommandBase
     {
         [Required]
         public string UserName { get; set; }

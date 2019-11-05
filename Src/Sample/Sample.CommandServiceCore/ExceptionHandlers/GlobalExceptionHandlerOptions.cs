@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sample.CommandServiceCore.Models;
 
@@ -27,7 +28,7 @@ namespace Sample.CommandServiceCore.ExceptionHandlers
         private readonly bool _isDevelopment;
         private readonly ILogger _logger;
 
-        public GlobalExceptionHandlerOptions(ILoggerFactory loggerFactory, IHostingEnvironment env)
+        public GlobalExceptionHandlerOptions(ILoggerFactory loggerFactory, IHostEnvironment env)
         {
             _logger = loggerFactory.CreateLogger<GlobalExceptionHandlerOptions>();
             _isDevelopment = env.IsDevelopment();

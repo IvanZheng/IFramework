@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Sample.CommandServiceCore.Authorizations
 {
-    public class AuthorizationFilterAttrubute : ActionFilterAttribute
+    public class AuthorizationFilterAttribute : ActionFilterAttribute
     {
         public override Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {

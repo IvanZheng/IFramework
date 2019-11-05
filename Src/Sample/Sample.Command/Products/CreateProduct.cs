@@ -2,7 +2,7 @@
 
 namespace Sample.Command
 {
-    public class CreateProduct : LinearCommandBase
+    public class CreateProduct : SerialCommandBase
     {
         public Guid ProductId { get; set; }
         public string Name { get; set; }

@@ -49,7 +49,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.ChangeTracking
 
         private object GetPropertyValue(object entity, IProperty property)
         {
-            if (property.IsShadowProperty && property.IsForeignKey())
+            if (property.IsShadowProperty() && property.IsForeignKey())
             {
                 IForeignKey foreignKey = property.AsProperty().ForeignKeys[0];
                 INavigation navigationProperty = property.DeclaringEntityType == foreignKey.PrincipalEntityType
@@ -59,7 +59,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.ChangeTracking
                 property = foreignKey.PrincipalKey.Properties[0];
             }
 
-            return property.IsShadowProperty
+            return property.IsShadowProperty()
                 ? entity.GetHashCode()
                 : property.GetGetter().GetClrValue(entity);
         }

@@ -9,8 +9,9 @@ using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace IFramework.EntityFrameworkCore
 {
@@ -18,23 +19,88 @@ namespace IFramework.EntityFrameworkCore
     {
         public MsDbContext(DbContextOptions options)
             : base(new DbContextOptionsBuilder(options).ReplaceService<IEntityMaterializerSource, ExtensionEntityMaterializerSource>()
-                                                       .Options) { }
-
-        public void Reload<TEntity>(TEntity entity)
-            where TEntity : class
+                                                       .Options)
         {
-            var entry = Entry(entity);
-            entry.Reload();
-            (entity as AggregateRoot)?.Rollback();
         }
 
-        public async Task ReloadAsync<TEntity>(TEntity entity)
+        public void Reload<TEntity>(TEntity entity, bool includeSubObjects = true)
+            where TEntity : class
+        {
+            var entry = Entry(entity); 
+            Reload((EntityEntry) entry, includeSubObjects);
+        }
+
+        private void Reload(EntityEntry entityEntry, bool includeSubObjects)
+        { 
+            entityEntry.Reload();
+
+            if (includeSubObjects)
+            {
+                foreach (var referenceEntry in entityEntry.Members.OfType<ReferenceEntry>())
+                {
+                    if (referenceEntry.IsLoaded)
+                    {
+                         Reload(referenceEntry.TargetEntry, true);
+                    }
+                }
+
+                foreach (var collectionEntry in entityEntry.Members.OfType<CollectionEntry>())
+                {
+                    if (collectionEntry.IsLoaded)
+                    {
+                        foreach (var entity in collectionEntry.CurrentValue)
+                        {
+                             Reload(entity);
+                        }
+                    }
+                }
+            }
+
+            (entityEntry.Entity as AggregateRoot)?.Rollback();
+        }
+
+        public async Task ReloadAsync<TEntity>(TEntity entity, bool includeSubObjects = true, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var entry = Entry(entity);
-            await entry.ReloadAsync()
-                       .ConfigureAwait(false);
-            (entity as AggregateRoot)?.Rollback();
+            await ReloadAsync((EntityEntry) entry, includeSubObjects, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task ReloadAsync(EntityEntry entityEntry, bool includeSubObjects, CancellationToken cancellationToken)
+        {
+            if (includeSubObjects)
+            {
+                foreach (var referenceEntry in entityEntry.Members.OfType<ReferenceEntry>())
+                {
+                    if (referenceEntry.IsLoaded)
+                    {
+                        await ReloadAsync(referenceEntry.TargetEntry, 
+                                          true, 
+                                          cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
+                foreach (var collectionEntry in entityEntry.Members.OfType<CollectionEntry>().ToArray())
+                {
+                    if (collectionEntry.IsLoaded)
+                    {
+                        foreach (var entity in collectionEntry.CurrentValue.OfType<object>().ToArray())
+                        {
+                            var subEntityEntry = Entry(entity);
+                            await ReloadAsync(subEntityEntry,
+                                              true,
+                                              cancellationToken).ConfigureAwait(false);
+                            subEntityEntry.State = EntityState.Detached;
+                        }
+
+                        collectionEntry.CurrentValue = null;
+                        collectionEntry.IsLoaded = false;
+                    }
+                }
+            }
+            await entityEntry.ReloadAsync(cancellationToken)
+                             .ConfigureAwait(false);
+            (entityEntry.Entity as AggregateRoot)?.Rollback();
         }
 
         public void RemoveEntity<TEntity>(TEntity entity)
@@ -54,11 +120,11 @@ namespace IFramework.EntityFrameworkCore
             Entry(entity).Reference(expression).Load();
         }
 
-        public Task LoadReferenceAsync<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, TEntityProperty>> expression)
+        public Task LoadReferenceAsync<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, TEntityProperty>> expression, CancellationToken cancellationToken = default)
             where TEntity : class
             where TEntityProperty : class
         {
-            return Entry(entity).Reference(expression).LoadAsync();
+            return Entry(entity).Reference(expression).LoadAsync(cancellationToken);
         }
 
         public void LoadCollection<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TEntityProperty>>> expression)
@@ -68,16 +134,18 @@ namespace IFramework.EntityFrameworkCore
             Entry(entity).Collection(expression).Load();
         }
 
-        public Task LoadCollectionAsync<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TEntityProperty>>> expression)
+        public Task LoadCollectionAsync<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TEntityProperty>>> expression, CancellationToken cancellationToken = default)
             where TEntity : class
             where TEntityProperty : class
         {
-            return Entry(entity).Collection(expression).LoadAsync();
+            return Entry(entity).Collection(expression).LoadAsync(cancellationToken);
         }
 
         public virtual void Rollback()
         {
-            (this as IDbContextDependencies).StateManager.ResetState();
+            var stateManager = (this as IDbContextDependencies).StateManager;
+            stateManager?.ResetState();
+
             //do
             //{
             //    ChangeTracker.Entries()

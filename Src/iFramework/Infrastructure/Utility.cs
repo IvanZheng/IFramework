@@ -14,6 +14,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using IFramework.Config;
@@ -356,9 +357,8 @@ namespace IFramework.Infrastructure
             return null;
         }
 
-        public static void ForEach<T>(
-            this IEnumerable<T> source,
-            Action<T> act)
+        public static void ForEach<T>(this IEnumerable<T> source,
+                                      Action<T> act)
         {
             if (source == null)
             {
@@ -367,6 +367,19 @@ namespace IFramework.Infrastructure
             foreach (var element in source)
             {
                 act(element);
+            }
+        }
+
+        public static async Task ForEachAsync<T>(this IEnumerable<T> source,
+                                      Func<T, Task> func)
+        {
+            if (source == null)
+            {
+                return;
+            }
+            foreach (var element in source)
+            {
+                await func(element).ConfigureAwait(false);
             }
         }
 

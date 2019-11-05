@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
@@ -54,20 +54,20 @@
 
   <ItemGroup>
     <PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.5" />
-    <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.138" />
-    <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.0.138" />
-    <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
+    <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.1.0" />
+    <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.1.0" />
+    <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.17" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.6.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\Blueshift.EntityFrameworkCore.MongoDB\Blueshift.EntityFrameworkCore.MongoDB.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.AspNet\IFramework.AspNet.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj" />
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.Log4Net\IFramework.Logging.Log4Net.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.RabbitMQ\IFramework.MessageQueue.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj" />

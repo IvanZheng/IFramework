@@ -1,6 +1,7 @@
 ﻿using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.JsonNet
 {
@@ -10,12 +11,10 @@ namespace IFramework.JsonNet
         ///     Use Log4Net as the logger for the enode framework.
         /// </summary>
         /// <returns></returns>
-        public static Configuration UseJsonNet(this Configuration configuration)
+        public static IServiceCollection AddJsonNet(this IServiceCollection services)
         {
-            ObjectProviderFactory.Instance
-                      .ObjectProviderBuilder
-                      .RegisterInstance(typeof(IJsonConvert), new JsonConvertImpl());
-            return configuration;
+            services.AddSingleton(typeof(IJsonConvert), new JsonConvertImpl());
+            return services;
         }
     }
 }

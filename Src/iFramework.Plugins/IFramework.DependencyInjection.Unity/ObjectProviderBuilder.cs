@@ -21,26 +21,18 @@ namespace IFramework.DependencyInjection.Unity
         public ObjectProviderBuilder(IUnityContainer container = null)
         {
             _container = container ?? new UnityContainer();
-
             _container.AddNewExtension<Interception>();
         }
 
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
-            serviceCollection = serviceCollection ?? new ServiceCollection();
-            _container.BuildServiceProvider(serviceCollection);
-
-            Register<IObjectProvider>(context =>
+            if (serviceCollection != null)
             {
-                var provider = context as ObjectProvider;
-                if (provider == null)
-                {
-                    throw new Exception("object provider is not Unity ObjectProvider!");
-                }
+                _container.BuildServiceProvider(serviceCollection);
+            }
 
-                return new ObjectProvider(provider.UnityContainer);
-            }, ServiceLifetime.Scoped);
-         
+            Register(context => context, ServiceLifetime.Scoped);
+            Register<IServiceProvider>(context => context, ServiceLifetime.Scoped);
             var objectProvider = new ObjectProvider(_container);
             return objectProvider;
         }
@@ -53,8 +45,9 @@ namespace IFramework.DependencyInjection.Unity
 
         public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime)
         {
-            _container.RegisterType<TFrom>(GetLifeTimeManager(lifetime),
-                                           new InjectionFactory(container => implementationFactory(new ObjectProvider(container as UnityContainer))));
+            _container.RegisterFactory(typeof(TFrom),
+                                       (container, type, name) => implementationFactory(new ObjectProvider(container)),
+                                       GetLifeTimeManager(lifetime) as IFactoryLifetimeManager);
             return this;
         }
 

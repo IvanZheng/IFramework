@@ -16,5 +16,8 @@ namespace IFramework.DependencyInjection
         T GetService<T>(string name, params Parameter[] parameters) where T : class;
         IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters);
         IEnumerable<T> GetAllServices<T>(params Parameter[] parameters) where T : class;
+
+        void SetContextData(string key, object value);
+        T GetContextData<T>(string key);
     }
 }

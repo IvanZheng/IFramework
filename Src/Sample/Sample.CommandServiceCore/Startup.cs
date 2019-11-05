@@ -8,7 +8,6 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.DependencyInjection.Unity;
 using IFramework.EntityFrameworkCore;
 using IFramework.JsonNet;
-using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.ConfluentKafka;
@@ -36,14 +35,14 @@ using Sample.Domain;
 using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
-using System.Net;
-using IFramework.Infrastructure;
 using System.Collections.Generic;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using IFramework.MessageStores.MongoDb;
-using Microsoft.AspNetCore.Http.Internal;
+using IFramework.Logging.Log4Net;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
 
 namespace Sample.CommandServiceCore
@@ -60,56 +59,57 @@ namespace Sample.CommandServiceCore
         public static string PathBase;
         private static string _app = "uat";
         private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        private readonly IConfiguration _configuration;
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            var kafkaBrokerList = new[]
-            {
-                //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
-                "10.100.7.46:9092"
-            };
+         
+            _configuration = configuration;
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
             var rabbitConnectionFactory = new ConnectionFactory
             {
                 Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
             };
-            Configuration.Instance
-                         //.UseUnityContainer()
-                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
-                         .UseConfiguration(configuration)
-                         .UseCommonComponents(_app)
-                         .UseJsonNet()
-                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()
-                         //.UseMongoDbMessageStore<SampleModelContext>()
-                         //.UseInMemoryMessageQueue()
-                         //.UseRabbitMQ(rabbitConnectionFactory)
-                         .UseConfluentKafka(string.Join(",", kafkaBrokerList))
-                         //.UseEQueue()
-                         .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
-                         .UseMessagePublisher("eventTopic")
-                         .UseDbContextPool<SampleModelContext>(options =>
-                         {
-                             //options.EnableSensitiveDataLogging();
-                             options.UseLazyLoadingProxies();
-                             options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                             //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
-                             //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             //options.UseInMemoryDatabase(nameof(SampleModelContext));
-                         });
-        }
-
-        public IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            services.AddLog4Net(new Log4NetProviderOptions { EnableScope = true });
+            services//.AddUnityContainer()
+                    .AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+                    .AddConfiguration(_configuration)
+                    .AddLog4Net()
+                    .AddCommonComponents(_app)
+                    .AddJsonNet()
+                    .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
+                    .AddRelationalMessageStore<SampleModelContext>()
+                    //.AddConfluentKafka()
+                    .AddInMemoryMessageQueue()
+                    //.AddRabbitMQ(rabbitConnectionFactory)
+                    .AddMessagePublisher("eventTopic")
+                    .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
+                    .AddDbContextPool<SampleModelContext>(options =>
+                    {
+                        //options.EnableSensitiveDataLogging();
+                        //options.UseLazyLoadingProxies();
+                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                        //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
+                        //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
+                        options.UseInMemoryDatabase(nameof(SampleModelContext));
+                    })
+                    ;
+            //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
             services.AddCustomOptions<FrameworkConfiguration>();
             services.AddMvc(options =>
                     {
+                        options.EnableEndpointRouting = false;
                         options.InputFormatters.Insert(0, new CommandInputFormatter());
                         options.InputFormatters.Add(new FormDataInputFormatter());
                         options.Filters.Add<ExceptionFilter>();
                     })
                     .AddControllersAsServices()
-                ;
+                    .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+            services.AddHttpContextAccessor();
+            services.AddControllersWithViews();
+            services.AddRazorPages();
 
             services.AddAuthorization(options =>
             {
@@ -117,17 +117,13 @@ namespace Sample.CommandServiceCore
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
             services.AddSingleton<IApiResultWrapAttribute, ApiResultWrapAttribute>();
-            services.AddMiniProfiler()
-                    .AddEntityFramework();
-
-            return ObjectProviderFactory.Instance
-                                        .Populate(services)
-                                        .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
-                                        .Build();
+            //services.AddMiniProfiler()
+            //        .AddEntityFramework();
         }
 
-        private static void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
+        public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
         {
+            var lifetime = ServiceLifetime.Scoped;
             // TODO: register other components or services
             providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
             providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
@@ -142,12 +138,12 @@ namespace Sample.CommandServiceCore
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
-                              IHostingEnvironment env,
+                              IHostEnvironment env,
                               ILoggerFactory loggerFactory,
                               IMessageTypeProvider messageTypeProvider,
                               IOptions<FrameworkConfiguration> frameworkConfigOptions,
                               IMailboxProcessor mailboxProcessor,
-                              IApplicationLifetime applicationLifetime)
+                              IHostApplicationLifetime applicationLifetime)
         {
             applicationLifetime.ApplicationStopping.Register(() =>
             {
@@ -189,7 +185,7 @@ namespace Sample.CommandServiceCore
 
             app.Use(next => context =>
             {
-                context.Request.EnableRewind();
+                context.Request.EnableBuffering();
                 context.Response.EnableRewind();
                 return next(context);
             });
@@ -209,6 +205,15 @@ namespace Sample.CommandServiceCore
             });
 
             app.UseStaticFiles();
+            //app.UseRouting();
+            app.UseCors("default");
+            //app.UseEndpoints(endpoints =>
+            //{
+            //    endpoints.MapControllerRoute("default",
+            //                    "{controller=Home}/{action=Index}/{id?}");
+            //    endpoints.MapRazorPages();
+            //});
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute("default",
@@ -218,6 +223,7 @@ namespace Sample.CommandServiceCore
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();
 
+            //loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             var logger = loggerFactory.CreateLogger<Startup>(); 
             logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");

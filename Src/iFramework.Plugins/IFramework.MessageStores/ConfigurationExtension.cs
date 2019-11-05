@@ -7,13 +7,11 @@ namespace IFramework.MessageStores.Relational
 {
     public static class ConfigurationExtension
     {
-        public static Configuration UseRelationalMessageStore<TMessageStore>(this Configuration configuration,
-                                                                             ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public static IServiceCollection AddRelationalMessageStore<TMessageStore>(this IServiceCollection services,
+                                                                                  ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TMessageStore : class, IMessageStore
         {
-            return configuration.UseRelationalMessageStore<TMessageStore, MessageStoreDaemon>(lifetime);
+            return services.AddRelationalMessageStore<TMessageStore, MessageStoreDaemon>(lifetime);
         }
-
-      
     }
 }

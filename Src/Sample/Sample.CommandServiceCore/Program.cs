@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore;
+﻿using Autofac.Extensions.DependencyInjection;
+using IFramework.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace Sample.CommandServiceCore
 {
@@ -8,26 +10,15 @@ namespace Sample.CommandServiceCore
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            CreateHostBuilder(args).Build().Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args)
-        {
-            var configRoot = new ConfigurationBuilder().AddCommandLine(args).Build();
-            var urls = configRoot.GetValue("urls", string.Empty);
-            var environment = configRoot.GetValue("environment", string.Empty);
-
-            var build = WebHost.CreateDefaultBuilder(args);
-            if (!string.IsNullOrWhiteSpace(urls))
-            {
-                build.UseUrls(urls);
-            }
-            if (!string.IsNullOrWhiteSpace(environment))
-            {
-                build.UseEnvironment(environment);
-            }
-            return build.UseStartup<Startup>()
-                        .Build();
-        }
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                })
+                .UseServiceProviderFactory(new ServiceProviderFactory());
     }
 }

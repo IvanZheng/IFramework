@@ -36,9 +36,10 @@ namespace IFramework.EntityFrameworkCore.Repositories
         {
             DbSet.Add(entity);
         }
-        protected override Task DoAddAsync(TEntity entity)
-        {
-            return DbSet.AddAsync(entity);
+        protected override async Task DoAddAsync(TEntity entity)
+        { 
+            await DbSet.AddAsync(entity)
+                              .ConfigureAwait(false);
         }
         protected override bool DoExists(ISpecification<TEntity> specification)
         {
@@ -65,9 +66,10 @@ namespace IFramework.EntityFrameworkCore.Repositories
             return DbSet.Find(keyValues);
         }
 
-        protected override Task<TEntity> DoGetByKeyAsync(params object[] keyValues)
+        protected override async Task<TEntity> DoGetByKeyAsync(params object[] keyValues)
         {
-            return DbSet.FindAsync(keyValues);
+            return await DbSet.FindAsync(keyValues)
+                              .ConfigureAwait(false);
         }
 
         protected override void DoRemove(TEntity entity)
@@ -190,17 +192,13 @@ namespace IFramework.EntityFrameworkCore.Repositories
 
         protected override void DoReload(TEntity entity)
         {
-            Container.Entry(entity).Reload();
-            (entity as AggregateRoot)?.Rollback();
+            Container.Reload(entity);
         }
 
         protected override async Task DoReloadAsync(TEntity entity)
         {
-            await Container.Entry(entity)
-                           .ReloadAsync()
+            await Container.ReloadAsync(entity)
                            .ConfigureAwait(false);
-
-            (entity as AggregateRoot)?.Rollback();
         }
     }
 }

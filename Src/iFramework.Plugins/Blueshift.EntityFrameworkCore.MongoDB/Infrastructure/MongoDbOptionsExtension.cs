@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
@@ -98,6 +99,12 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         {
             get => _databaseName;
             [param: NotNull] set => _databaseName = Check.NotEmpty(value, nameof(value));
+        }
+
+        /// <inheritdoc/>
+        public void PopulateDebugInfo(IDictionary<string, string> debugInfo)
+        {
+            
         }
 
         /// <inheritdoc/>

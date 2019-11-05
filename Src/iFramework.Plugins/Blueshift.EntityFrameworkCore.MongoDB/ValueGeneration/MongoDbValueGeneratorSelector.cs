@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
@@ -54,7 +55,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.ValueGeneration
             Check.NotNull(property, nameof(property));
             Check.NotNull(entityType, nameof(entityType));
 
-            IDictionary<Type, Func<ValueGenerator>> valueGeneratorCreator = property.IsShadowProperty
+            IDictionary<Type, Func<ValueGenerator>> valueGeneratorCreator = property.IsShadowProperty()
                 ? _shadowKeyGeneratorMap
                 : _valueGeneratorMap;
 

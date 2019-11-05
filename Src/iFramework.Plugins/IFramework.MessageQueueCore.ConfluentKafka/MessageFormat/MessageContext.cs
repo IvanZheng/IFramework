@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Confluent.Kafka;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -88,7 +89,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 
         public string Key
         {
-            get => (string) Headers.TryGetValue("Key");
+            get => Headers.TryGetValue("Key")?.ToString();
             set => Headers["Key"] = value;
         }
 
@@ -100,19 +101,19 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 
         public string CorrelationId
         {
-            get => (string) Headers.TryGetValue("CorrelationId");
+            get => Headers.TryGetValue("CorrelationId")?.ToString();
             set => Headers["CorrelationId"] = value;
         }
 
         public string MessageId
         {
-            get => (string) Headers.TryGetValue("MessageId");
+            get => Headers.TryGetValue("MessageId")?.ToString();
             set => Headers["MessageId"] = value;
         }
 
         public string ReplyToEndPoint
         {
-            get => (string) Headers.TryGetValue("ReplyToEndPoint");
+            get => Headers.TryGetValue("ReplyToEndPoint")?.ToString();
             set => Headers["ReplyToEndPoint"] = value;
         }
 
@@ -134,25 +135,40 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 
         public DateTime SentTime
         {
-            get => (DateTime) Headers.TryGetValue("SentTime");
+            get
+            {
+                var timeValue = Headers.TryGetValue("SentTime");
+                if (timeValue is DateTime sentTime)
+                {
+                    return sentTime;
+                }
+                else
+                {
+                    if (DateTime.TryParse(timeValue?.ToString(), out var time))
+                    {
+                        return time;
+                    }
+                    return time;
+                }
+            }
             set => Headers["SentTime"] = value;
         }
 
         public string Topic
         {
-            get => (string) Headers.TryGetValue("Topic");
+            get => Headers.TryGetValue("Topic")?.ToString();
             set => Headers["Topic"] = value;
         }
 
         public string Ip
         {
-            get => (string) Headers.TryGetValue("IP");
+            get => Headers.TryGetValue("IP")?.ToString();
             set => Headers["IP"] = value;
         }
 
         public string Producer
         {
-            get => (string) Headers.TryGetValue("Producer");
+            get => Headers.TryGetValue("Producer")?.ToString();
             set => Headers["Producer"] = value;
         }
 
