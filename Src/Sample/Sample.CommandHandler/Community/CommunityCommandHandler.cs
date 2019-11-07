@@ -31,12 +31,12 @@ namespace Sample.CommandHandler.Community
         public CommunityCommandHandler(IUnitOfWork unitOfWork,
                                        ICommunityRepository domainRepository,
                                        IEventBus eventBus,
-                                       IMessageContext commanadContext,
+                                       IMessageContext commandContext,
                                        ILogger<CommunityCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _domainRepository = domainRepository;
-            _commandContext = commanadContext;
+            _commandContext = commandContext;
             _logger = logger;
             _eventBus = eventBus;
             // _container = container;
