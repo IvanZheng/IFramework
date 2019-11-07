@@ -5,6 +5,8 @@ using System.Text;
 using IFramework.DependencyInjection;
 using IFramework.Event;
 using IFramework.Event.Impl;
+using IFramework.EventStore;
+using IFramework.EventStore.Impl;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Caching;
 using IFramework.Infrastructure.Caching.Impl;
@@ -41,7 +43,9 @@ namespace IFramework.Config
                     .AddMessageQueue(app)
                     .MessageQueueUseMachineNameFormat()
                     .AddMessageTypeProvider<MessageTypeProvider>()
-                    .AddMailbox<MailboxProcessor, DefaultProcessingMessageScheduler>();
+                    .AddMailbox<MailboxProcessor, DefaultProcessingMessageScheduler>()
+                    .AddSingleton<IEventSerializer, JsonEventSerializer>()
+                    .AddSingleton<IEventDeserializer, JsonEventDeserializer>();
             return services;
         }
         
