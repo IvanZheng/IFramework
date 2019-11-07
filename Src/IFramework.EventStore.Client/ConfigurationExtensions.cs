@@ -18,7 +18,8 @@ namespace IFramework.EventStore.Client
             services.AddSingleton(provider =>
             {
                 var eventStoreOptions = provider.GetService<IOptions<EventStoreOptions>>().Value;
-                return EventStoreConnection.Create(eventStoreOptions.ConnectionString);
+                return EventStoreConnection.Create(eventStoreOptions.ConnectionString,
+                                                   eventStoreOptions.ConnectionName);
             }).AddSingleton<IEventStore, EventStore>();
             return services;
         }

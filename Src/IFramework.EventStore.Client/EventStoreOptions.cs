@@ -7,5 +7,6 @@ namespace IFramework.EventStore.Client
     public class EventStoreOptions
     {
         public string ConnectionString { get; set; }
+        public string ConnectionName { get; set; }
     }
 }

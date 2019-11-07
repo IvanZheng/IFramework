@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.DependencyInjection;
@@ -11,6 +9,7 @@ using IFramework.Event;
 using IFramework.EventStore.Client;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
+using IFramework.Message;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -43,16 +42,35 @@ namespace IFramework.Test
         [Fact]
         public async Task EventStreamAppendReadTest()
         {
-            var streamId = "1";
-            var expectedVersion = 0;
+            const string userId = "1";
+            var name = $"ivan_{DateTime.Now.Ticks}";
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
+                var messageTypeProvider = serviceScope.GetService<IMessageTypeProvider>();
+                messageTypeProvider.Register(nameof(UserCreated), typeof(UserCreated))
+                                   .Register(nameof(UserModified), typeof(UserModified));
                 var eventStore = serviceScope.GetService<IEventStore>();
-                var events = (await eventStore.GetEvents(streamId)
-                                             .ConfigureAwait(false)).Cast<IAggregateRootEvent>()
-                                                                    .ToArray();
-                expectedVersion = events.LastOrDefault()?.Version ?? 0;
-                //await eventStore.AppendEvents(streamId, expectedVersion, new []{new AccountModified(), });
+                await eventStore.Connect()
+                                .ConfigureAwait(false);
+                var events = (await eventStore.GetEvents(userId)
+                                              .ConfigureAwait(false))
+                             .Cast<IAggregateRootEvent>()
+                             .ToArray();
+                var expectedVersion = events.LastOrDefault()?.Version ?? -1;
+                if (expectedVersion == -1)
+                {
+                    await eventStore.AppendEvents(userId, 
+                                                  expectedVersion,
+                                                  new UserCreated(userId, name, expectedVersion + 1))
+                                    .ConfigureAwait(false);
+                }
+                else
+                {
+                    await eventStore.AppendEvents(userId,
+                                                  expectedVersion,
+                                                  new UserModified(userId, name, expectedVersion + 1))
+                                    .ConfigureAwait(false);
+                }
             }
         }
     }

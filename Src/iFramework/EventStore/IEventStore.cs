@@ -7,6 +7,7 @@ namespace IFramework.Event
 {
     public interface IEventStore
     {
+        Task Connect();
         /// <summary>
         /// 
         /// </summary>

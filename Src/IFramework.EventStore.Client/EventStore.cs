@@ -26,6 +26,11 @@ namespace IFramework.EventStore.Client
             _messageTypeProvider = messageTypeProvider;
         }
 
+        public Task Connect()
+        {
+            return _connection.ConnectAsync();
+        }
+
         public async Task<IEvent[]> GetEvents(string id, long start = 0, long? end = null)
         {
             var streamEvents = new List<ResolvedEvent>();

@@ -26,7 +26,8 @@ namespace IFramework.Config
         public static IServiceCollection AddConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             Configuration.Instance.ConfigurationCore = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            services.AddSingleton(typeof(Configuration), Configuration.Instance);
+            services.AddSingleton(typeof(Configuration), Configuration.Instance)
+                    .AddSingleton<IConfiguration>(Configuration.Instance);
             return services;
         }
 
