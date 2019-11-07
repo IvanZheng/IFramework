@@ -48,10 +48,11 @@ namespace IFramework.Test
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var eventStore = serviceScope.GetService<IEventStore>();
-                var events = await eventStore.GetEvents(streamId)
-                                             .ConfigureAwait(false);
-                //expectedVersion = events.FirstOrDefault().
-                //eventStore.AppendEvents(streamId, expectedVersion, events);
+                var events = (await eventStore.GetEvents(streamId)
+                                             .ConfigureAwait(false)).Cast<IAggregateRootEvent>()
+                                                                    .ToArray();
+                expectedVersion = events.LastOrDefault()?.Version ?? 0;
+                //await eventStore.AppendEvents(streamId, expectedVersion, new []{new AccountModified(), });
             }
         }
     }
