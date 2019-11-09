@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using IFramework.Event;
+﻿using IFramework.Event;
+using Newtonsoft.Json;
 
-namespace IFramework.EventStore
+namespace IFramework.EventStore.Client
 {
     public class EventMetadata
     {

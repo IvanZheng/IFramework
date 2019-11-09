@@ -42,9 +42,9 @@ namespace IFramework.Test
         [Fact]
         public async Task EventStreamAppendReadTest()
         {
-            const string userId = "1";
+            const string userId = "2";
             var name = $"ivan_{DateTime.Now.Ticks}";
-            var correlationId = $"cmd_{DateTime.Now.Ticks}";
+            var correlationId = $"cmd{DateTime.Now.Ticks}";
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var messageTypeProvider = serviceScope.GetService<IMessageTypeProvider>();

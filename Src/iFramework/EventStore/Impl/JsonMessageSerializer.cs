@@ -9,7 +9,7 @@ namespace IFramework.EventStore.Impl
     {
         public byte[] Serialize(object data)
         {
-            var jsonValue = data.ToJson();
+            var jsonValue = data.ToJson(useCamelCase:true);
             return Encoding.UTF8.GetBytes(jsonValue);
         }
     }
