@@ -44,6 +44,7 @@ namespace IFramework.Test
         {
             const string userId = "1";
             var name = $"ivan_{DateTime.Now.Ticks}";
+            var correlationId = $"cmd_{DateTime.Now.Ticks}";
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var messageTypeProvider = serviceScope.GetService<IMessageTypeProvider>();
@@ -61,6 +62,7 @@ namespace IFramework.Test
                 {
                     await eventStore.AppendEvents(userId, 
                                                   expectedVersion,
+                                                  correlationId,
                                                   new UserCreated(userId, name, expectedVersion + 1))
                                     .ConfigureAwait(false);
                 }
@@ -68,6 +70,7 @@ namespace IFramework.Test
                 {
                     await eventStore.AppendEvents(userId,
                                                   expectedVersion,
+                                                  correlationId,
                                                   new UserModified(userId, name, expectedVersion + 1))
                                     .ConfigureAwait(false);
                 }
