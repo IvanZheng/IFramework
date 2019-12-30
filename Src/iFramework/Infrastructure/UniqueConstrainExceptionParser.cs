@@ -18,7 +18,7 @@ namespace IFramework.Infrastructure
                        uniqueConstrainNames.Any(dbException.Message.Contains);
             });
 
-            RegisterUniqueConstrainHandler("MySql", (dbException, uniqueConstrainNames) =>
+            RegisterUniqueConstrainHandler("MySql.Data", (dbException, uniqueConstrainNames) =>
             {
                 var number = dbException.GetPropertyValue<int>("Number");
                 return number == 1062 &&
