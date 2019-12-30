@@ -36,6 +36,7 @@ using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 using System.Collections.Generic;
+using IFramework.Infrastructure;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Logging.Log4Net;
@@ -89,10 +90,10 @@ namespace Sample.CommandServiceCore
                     {
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
-                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                        options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                         //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                        options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        //options.UseInMemoryDatabase(nameof(SampleModelContext));
                     })
                     ;
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
@@ -143,8 +144,18 @@ namespace Sample.CommandServiceCore
                               IMessageTypeProvider messageTypeProvider,
                               IOptions<FrameworkConfiguration> frameworkConfigOptions,
                               IMailboxProcessor mailboxProcessor,
-                              IHostApplicationLifetime applicationLifetime)
+                              IHostApplicationLifetime applicationLifetime,
+                              IUniqueConstrainExceptionParser uniqueConstrainExceptionParser)
         {
+            
+            //uniqueConstrainExceptionParser.RegisterUniqueConstrainHandler("Npgsql", (dbException, uniqueConstrainNames) =>
+            //{
+            //    var code = dbException.GetPropertyValue<int>("Code");
+            //    var constraintName = dbException.GetPropertyValue<string>("ConstraintName");
+            //    return code == 23505 &&
+            //           uniqueConstrainNames.Any(constraintName.Contains);
+            //});
+
             applicationLifetime.ApplicationStopping.Register(() =>
             {
                 _commandConsumer1?.Stop();
