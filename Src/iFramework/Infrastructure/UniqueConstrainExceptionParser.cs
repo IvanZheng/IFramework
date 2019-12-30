@@ -27,9 +27,9 @@ namespace IFramework.Infrastructure
 
             RegisterUniqueConstrainHandler("Npgsql", (dbException, uniqueConstrainNames) =>
             {
-                var code = dbException.GetPropertyValue<int>("Code");
+                var code = dbException.GetPropertyValue<string>("Code");
                 var constraintName = dbException.GetPropertyValue<string>("ConstraintName");
-                return code == 23505 &&
+                return code.Equals("23505") &&
                        uniqueConstrainNames.Any(constraintName.Contains);
             });
         }
