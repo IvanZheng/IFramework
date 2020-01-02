@@ -111,31 +111,32 @@ namespace Sample.CommandServiceCore
             services.AddHttpContextAccessor();
             services.AddControllersWithViews();
             services.AddRazorPages();
-
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
             services.AddSingleton<IApiResultWrapAttribute, ApiResultWrapAttribute>();
+
+            services.AddScoped<HomeController, HomeController>(new VirtualMethodInterceptorInjection(),
+                                                               new InterceptionBehaviorInjection());
+            services.AddSingleton<IAuthorizationHandler, AppAuthorizationHandler>();
+            services.AddScoped<ICommunityRepository, CommunityRepository>();
+            services.AddScoped<ICommunityService, CommunityService>(new InterfaceInterceptorInjection(),
+                                                                    new InterceptionBehaviorInjection());
+            services.RegisterMessageHandlers(new []{"CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber"});
+
             //services.AddMiniProfiler()
             //        .AddEntityFramework();
         }
 
-        public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
-        {
-            var lifetime = ServiceLifetime.Scoped;
-            // TODO: register other components or services
-            providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
-            providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
-            providerBuilder.Register<ICommunityService, CommunityService>(lifetime,
-                                                                          new InterfaceInterceptorInjection(),
-                                                                          new InterceptionBehaviorInjection());
-            providerBuilder.Register<HomeController, HomeController>(lifetime,
-                                                                     new VirtualMethodInterceptorInjection(),
-                                                                     new InterceptionBehaviorInjection());
-            providerBuilder.RegisterMessageHandlers(new []{"CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber"}, lifetime);
-        }
+        //public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
+        //{
+        //    var lifetime = ServiceLifetime.Scoped;
+        //    providerBuilder.Register<HomeController, HomeController>(lifetime,
+        //                                                             new VirtualMethodInterceptorInjection(),
+        //                                                             new InterceptionBehaviorInjection());
+        //  }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,

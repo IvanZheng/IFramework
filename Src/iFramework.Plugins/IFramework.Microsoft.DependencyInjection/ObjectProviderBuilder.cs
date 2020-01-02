@@ -10,6 +10,14 @@ namespace IFramework.DependencyInjection.Microsoft
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
         private readonly IServiceCollection _serviceCollection;
+
+        private readonly List<Action<IObjectProviderBuilder>> _registerActions = new List<Action<IObjectProviderBuilder>>();
+        public IObjectProviderBuilder AddRegisterAction(Action<IObjectProviderBuilder> action)
+        {
+            _registerActions.Add(action);
+            return this;
+        }
+
         public ObjectProviderBuilder(IServiceCollection serviceCollection = null)
         {
             _serviceCollection = serviceCollection ?? new ServiceCollection();
@@ -21,7 +29,8 @@ namespace IFramework.DependencyInjection.Microsoft
             {
                 _serviceCollection.Add(serviceCollection);
             }
-
+            _registerActions.ForEach(action => action(this));
+            _registerActions.Clear();
             _serviceCollection.AddScoped<IObjectProvider>(provider => new ObjectProvider(provider));
             return new ObjectProvider(_serviceCollection);
         }
@@ -34,7 +43,7 @@ namespace IFramework.DependencyInjection.Microsoft
 
         public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime)
         {
-            _serviceCollection.RegisterType(typeof(TFrom), provider => implementationFactory(new ObjectProvider(provider)), lifetime);
+            _serviceCollection.AddService(typeof(TFrom), provider => implementationFactory(new ObjectProvider(provider)), lifetime);
             return this;
         }
 
@@ -49,7 +58,7 @@ namespace IFramework.DependencyInjection.Microsoft
             {
                 throw new NotImplementedException();
             }
-            _serviceCollection.RegisterType(from, to, lifetime);
+            _serviceCollection.AddService(from, to, lifetime);
             return this;
         }
 
@@ -59,7 +68,7 @@ namespace IFramework.DependencyInjection.Microsoft
             {
                 throw new NotImplementedException();
             }
-            _serviceCollection.RegisterType(from, to);
+            _serviceCollection.AddService(from, to);
             return this;
         }
 
@@ -77,7 +86,7 @@ namespace IFramework.DependencyInjection.Microsoft
             {
                 throw new NotImplementedException();
             }
-            _serviceCollection.RegisterType<TFrom, TTo>();
+            _serviceCollection.AddService<TFrom, TTo>();
             return this;
         }
 
@@ -96,7 +105,7 @@ namespace IFramework.DependencyInjection.Microsoft
             {
                 throw new NotImplementedException();
             }
-            _serviceCollection.RegisterType<TFrom, TTo>(lifetime);
+            _serviceCollection.AddService<TFrom, TTo>(lifetime);
             return this;
         }
 

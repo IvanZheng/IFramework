@@ -49,15 +49,15 @@ namespace IFramework.Config
             where TMailboxProcessor : class, IMailboxProcessor
             where TProcessingMessageScheduler: class, IProcessingMessageScheduler
         {
-            services.RegisterType<IProcessingMessageScheduler, TProcessingMessageScheduler>(ServiceLifetime.Singleton);
-            services.RegisterType<IMailboxProcessor, TMailboxProcessor>(ServiceLifetime.Singleton);
+            services.AddService<IProcessingMessageScheduler, TProcessingMessageScheduler>(ServiceLifetime.Singleton);
+            services.AddService<IMailboxProcessor, TMailboxProcessor>(ServiceLifetime.Singleton);
             return services;
         }
 
         public static IServiceCollection AddMessageTypeProvider<TMessageTypeProvider>(this IServiceCollection services)
             where TMessageTypeProvider :class, IMessageTypeProvider
         {
-            services.RegisterType<IMessageTypeProvider, TMessageTypeProvider>(ServiceLifetime.Singleton);
+            services.AddService<IMessageTypeProvider, TMessageTypeProvider>(ServiceLifetime.Singleton);
             return services;
         }
 
@@ -65,29 +65,29 @@ namespace IFramework.Config
             where TConcurrencyProcessor : class, IConcurrencyProcessor
             where TUniqueConstrainExceptionParser : class, IUniqueConstrainExceptionParser
         {
-            services.RegisterType<IConcurrencyProcessor, TConcurrencyProcessor>(ServiceLifetime.Singleton)
-                    .RegisterType<IUniqueConstrainExceptionParser, TUniqueConstrainExceptionParser>(ServiceLifetime.Singleton);
+            services.AddService<IConcurrencyProcessor, TConcurrencyProcessor>(ServiceLifetime.Singleton)
+                    .AddService<IUniqueConstrainExceptionParser, TUniqueConstrainExceptionParser>(ServiceLifetime.Singleton);
             return services;
         }
 
         public static IServiceCollection AddDefaultEventBus(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             services.AddSingleton(new SyncEventSubscriberProvider());
-            services.RegisterType<IEventBus, EventBus>(lifetime);
-            services.RegisterType<IMessageContext, EmptyMessageContext>(lifetime);
+            services.AddService<IEventBus, EventBus>(lifetime);
+            services.AddService<IMessageContext, EmptyMessageContext>(lifetime);
             return services;
         }
     
 
         public static IServiceCollection AddMockMessagePublisher(this IServiceCollection services)
         {
-            services.RegisterType<IMessagePublisher, MockMessagePublisher>(ServiceLifetime.Singleton);
+            services.AddService<IMessagePublisher, MockMessagePublisher>(ServiceLifetime.Singleton);
             return services;
         }
 
         public static IServiceCollection AddMockMessageQueueClient(this IServiceCollection services)
         {
-            services.RegisterType<IMessageQueueClient, MockMessageQueueClient>(ServiceLifetime.Singleton);
+            services.AddService<IMessageQueueClient, MockMessageQueueClient>(ServiceLifetime.Singleton);
             return services;
         }
 
@@ -95,7 +95,7 @@ namespace IFramework.Config
         public static IServiceCollection AddMessageStoreDaemon<TMessageStoreDaemon>(this IServiceCollection services)
             where TMessageStoreDaemon : class, IMessageStoreDaemon
         {
-            services.RegisterType<IMessageStoreDaemon, TMessageStoreDaemon>(ServiceLifetime.Singleton);
+            services.AddService<IMessageStoreDaemon, TMessageStoreDaemon>(ServiceLifetime.Singleton);
             return services;
 
         }
@@ -112,12 +112,12 @@ namespace IFramework.Config
             Configuration.Instance.NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
             if (Configuration.Instance.NeedMessageStore)
             {
-                services.RegisterType<TMessageStore, TMessageStore>(lifetime);
-                services.RegisterType(typeof(IMessageStore),provider => provider.GetService<TMessageStore>(), lifetime);
+                services.AddService<TMessageStore, TMessageStore>(lifetime);
+                services.AddService(typeof(IMessageStore),provider => provider.GetService<TMessageStore>(), lifetime);
             }
             else
             {
-                services.RegisterType<IMessageStore, MockMessageStore>(lifetime);
+                services.AddService<IMessageStore, MockMessageStore>(lifetime);
             }
             return services;
         }
@@ -130,7 +130,7 @@ namespace IFramework.Config
 
         public static IServiceCollection AddMemoryCache(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
         {
-            services.RegisterType<ICacheManager, MemoryCacheManager>(lifetime);
+            services.AddService<ICacheManager, MemoryCacheManager>(lifetime);
             return services;
         }
 

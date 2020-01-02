@@ -66,7 +66,7 @@ namespace IFramework.Config
 
         public static IServiceCollection AddMockCommandBus(this IServiceCollection services)
         {
-            services.RegisterType<ICommandBus, MockCommandBus>(ServiceLifetime.Singleton);
+            services.AddService<ICommandBus, MockCommandBus>(ServiceLifetime.Singleton);
             return services;
         }
 
@@ -78,7 +78,7 @@ namespace IFramework.Config
                                                   ConsumerConfig consumerConfig = null)
         {
      
-            services.RegisterType(typeof(ICommandBus), provider =>
+            services.AddService(typeof(ICommandBus), provider =>
             {
                 if (serialCommandManager == null)
                 {
