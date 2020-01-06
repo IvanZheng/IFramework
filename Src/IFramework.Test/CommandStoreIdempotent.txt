@@ -6,11 +6,16 @@
 	Processing,
 	Done
 }
-var status = CommandStore.CommandHandled(command);
+
 // HSETNX key field value 
 // 只有在字段 field 不存在时，设置哈希表字段的值。
 // result =  HSETNX AggregateId commandId Processing
-// if (result == 0) status = HMGET AggregateId commandId  取出执行状态
+// if (result == 0) status = HMGET AggregateId commandId  
+// result为0, 说明已经保存过commandId, 取出command的执行状态
+// 否则返回UnDo Status
+var status = CommandStore.CommandHandled(command);
+
+
  if (status == UnDo) //说明命令从未被执行
  {
 	events = CommandHandler.Do(command);
