@@ -10,6 +10,7 @@ using IFramework.EventStore.Client;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
 using IFramework.Message;
+using IFramework.Test.Commands;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -45,6 +46,7 @@ namespace IFramework.Test
             const string userId = "2";
             var name = $"ivan_{DateTime.Now.Ticks}";
             var correlationId = $"cmd{DateTime.Now.Ticks}";
+           
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var messageTypeProvider = serviceScope.GetService<IMessageTypeProvider>();
@@ -60,17 +62,19 @@ namespace IFramework.Test
                 var expectedVersion = events.LastOrDefault()?.Version ?? -1;
                 if (expectedVersion == -1)
                 {
+                    var command = new CreateUser {Id = correlationId, UserName = name, UserId = userId};
                     await eventStore.AppendEvents(userId, 
                                                   expectedVersion,
-                                                  correlationId,
+                                                  command,
                                                   new UserCreated(userId, name, expectedVersion + 1))
                                     .ConfigureAwait(false);
                 }
                 else
                 {
+                    var command = new ModifyUser {Id = correlationId, UserName = name, UserId = userId};
                     await eventStore.AppendEvents(userId,
                                                   expectedVersion,
-                                                  correlationId,
+                                                  command,
                                                   new UserModified(userId, name, expectedVersion + 1))
                                     .ConfigureAwait(false);
                 }

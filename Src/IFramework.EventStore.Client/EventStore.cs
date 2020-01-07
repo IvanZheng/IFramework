@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
+using IFramework.Command;
 using IFramework.Event;
 using IFramework.Message;
 
@@ -63,7 +64,7 @@ namespace IFramework.EventStore.Client
                                .ToArray();
         }
 
-        public Task AppendEvents(string id, long expectedVersion, string correlationId, params IEvent[] events)
+        public Task AppendEvents(string id, long expectedVersion, ICommand command, params IEvent[] events)
         {
             var targetVersion = expectedVersion;
             var eventStream = events.Select(e =>
@@ -76,7 +77,7 @@ namespace IFramework.EventStore.Client
                                                              _eventSerializer.Serialize(new EventMetadata(e,
                                                                                                           ++targetVersion,
                                                                                                           messageCode,
-                                                                                                          correlationId)));
+                                                                                                          command.Id)));
                                     })
                                     .ToArray();
             return _connection.AppendToStreamAsync(id, expectedVersion, eventStream);

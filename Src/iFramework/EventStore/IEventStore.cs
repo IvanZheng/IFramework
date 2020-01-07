@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.Command;
 
 namespace IFramework.Event
 {
@@ -22,9 +23,9 @@ namespace IFramework.Event
         /// </summary>
         /// <param name="id"></param>
         /// <param name="expectedVersion">The event version that you expect the stream to currently be at.</param>
-        /// <param name="correlationId"></param>
+        /// <param name="command"></param>
         /// <param name="events"></param>
         /// <returns></returns>
-        Task AppendEvents(string id, long expectedVersion, string correlationId, params IEvent[] events);
+        Task AppendEvents(string id, long expectedVersion, ICommand command, params IEvent[] events);
     }
 }

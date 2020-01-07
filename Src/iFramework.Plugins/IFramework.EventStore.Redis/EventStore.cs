@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using IFramework.Command;
 using IFramework.Event;
+using IFramework.Infrastructure;
 using StackExchange.Redis;
 
 namespace IFramework.EventStore.Redis
@@ -30,7 +33,19 @@ namespace IFramework.EventStore.Redis
             if (string.IsNullOrWhiteSpace(luaScript))
             {
                 luaScript = @"
-                    
+                    local version = 0
+                    if redis.call('EXISTS', @commandId) == 1 then
+                        return 0
+                    end
+                    local expectedVersion = redis.call('GET', @aggregateId)
+                    if expectedVersion == nil or expectedVersion == @expectedVersion then
+                        redis.call('SET', @commandId, @command)    
+                        version = redis.call('INCR', @aggregateId)
+                       # ZREVRANGEBYSCORE myset +inf -inf WITHSCORES LIMIT 0 1
+                    else
+                        return 0
+                    end
+
                 ";
             }
 
@@ -42,14 +57,15 @@ namespace IFramework.EventStore.Redis
             throw new NotImplementedException();
         }
 
-        public async Task AppendEvents(string id, long expectedVersion, string correlationId, params IEvent[] events)
+        public async Task AppendEvents(string aggregateId, long expectedVersion, ICommand command, params IEvent[] events)
         {
             var redisResult = await _db.ScriptEvaluateAsync(_luaScript,
                                                             new {
-                                                                aggregateId = (RedisKey) id,
-                                                                commandId = (RedisKey) correlationId,
+                                                                aggregateId = (RedisKey) aggregateId,
+                                                                commandId = (RedisKey) command.Id,
+                                                                command = command.ToJson(),
                                                                 expectedVersion,
-                                                                events
+                                                                events = events.ToJson()
                                                             })
                                        .ConfigureAwait(false);
         }
