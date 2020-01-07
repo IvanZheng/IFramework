@@ -99,7 +99,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Logging.Log4Net"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventStores", "EventStores", "{EB8C136A-91E3-412F-BF99-3AD71E8A8EB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EventStore.Client", "IFramework.EventStore.Client\IFramework.EventStore.Client.csproj", "{65DAB7BB-5A9A-472C-951A-DFCDE74418DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.EventStore.Client", "IFramework.EventStore.Client\IFramework.EventStore.Client.csproj", "{65DAB7BB-5A9A-472C-951A-DFCDE74418DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.EventStore.Redis", "iFramework.Plugins\IFramework.EventStore.Redis\IFramework.EventStore.Redis.csproj", "{A27349BF-396D-4318-82C6-790897F58AA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -726,6 +728,24 @@ Global
 		{65DAB7BB-5A9A-472C-951A-DFCDE74418DC}.Release|x64.Build.0 = Release|Any CPU
 		{65DAB7BB-5A9A-472C-951A-DFCDE74418DC}.Release|x86.ActiveCfg = Release|Any CPU
 		{65DAB7BB-5A9A-472C-951A-DFCDE74418DC}.Release|x86.Build.0 = Release|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Debug|x64.Build.0 = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Debug|x86.Build.0 = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Integration|Any CPU.ActiveCfg = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Integration|Any CPU.Build.0 = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Integration|x64.ActiveCfg = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Integration|x64.Build.0 = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Integration|x86.ActiveCfg = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Integration|x86.Build.0 = Debug|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Release|x64.ActiveCfg = Release|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Release|x64.Build.0 = Release|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Release|x86.ActiveCfg = Release|Any CPU
+		{A27349BF-396D-4318-82C6-790897F58AA3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -766,9 +786,10 @@ Global
 		{EE594A07-4919-431D-97FC-66EFEB7E7352} = {A0DFB82C-D746-4443-8C1B-7AB2DF36EF85}
 		{E7CE557F-CA29-4FF0-86D6-560891A2FD6F} = {D85A2D0B-5D20-4C0F-B06F-D688EFAD1624}
 		{65DAB7BB-5A9A-472C-951A-DFCDE74418DC} = {EB8C136A-91E3-412F-BF99-3AD71E8A8EB5}
+		{A27349BF-396D-4318-82C6-790897F58AA3} = {EB8C136A-91E3-412F-BF99-3AD71E8A8EB5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal
