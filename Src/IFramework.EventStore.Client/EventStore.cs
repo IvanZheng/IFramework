@@ -82,5 +82,10 @@ namespace IFramework.EventStore.Client
                                     .ToArray();
             return _connection.AppendToStreamAsync(id, expectedVersion, eventStream);
         }
+
+        public Task<IEvent[]> GetEvents(string id, string commandId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

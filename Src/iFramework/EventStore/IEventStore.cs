@@ -27,5 +27,13 @@ namespace IFramework.Event
         /// <param name="events"></param>
         /// <returns></returns>
         Task AppendEvents(string id, long expectedVersion, string correlationId, params IEvent[] events);
+
+        /// <summary>
+        /// get aggregate's events by commandId
+        /// </summary>
+        /// <param name="id">aggregate id</param>
+        /// <param name="commandId">command id</param>
+        /// <returns></returns>
+        Task<IEvent[]> GetEvents(string id, string commandId);
     }
 }

@@ -6,6 +6,8 @@
 
         public string ConnectionString { get; set; }
 
-        public string LuaScript { get; set; } = "";
+        public string AppendEventsLuaScript { get; set; }
+
+        public string GetEventsLuaScript { get; set; }
     }
 }

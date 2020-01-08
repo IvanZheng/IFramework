@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using IFramework.Command;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
@@ -64,25 +65,32 @@ namespace IFramework.Test
                                               .ConfigureAwait(false))
                              .Cast<IAggregateRootEvent>()
                              .ToArray();
+                IEvent @event;
+                ICommand command;
                 var expectedVersion = events.LastOrDefault()?.Version ?? -1;
                 if (expectedVersion == -1)
                 {
-                    var command = new CreateUser {Id = correlationId, UserName = name, UserId = userId};
+                    command = new CreateUser {Id = correlationId, UserName = name, UserId = userId};
+                    @event = new UserCreated(userId, name, expectedVersion + 1);
                     await eventStore.AppendEvents(userId, 
                                                   expectedVersion,
                                                   command.Id,
-                                                  new UserCreated(userId, name, expectedVersion + 1))
+                                                  @event)
                                     .ConfigureAwait(false);
                 }
                 else
                 {
-                    var command = new ModifyUser {Id = correlationId, UserName = name, UserId = userId};
+                    command = new ModifyUser {Id = correlationId, UserName = name, UserId = userId};
+                    @event = new UserModified(userId, name, expectedVersion + 1);
                     await eventStore.AppendEvents(userId,
                                                   expectedVersion,
                                                   command.Id,
-                                                  new UserModified(userId, name, expectedVersion + 1))
+                                                  @event)
                                     .ConfigureAwait(false);
                 }
+                var commandEvents = await eventStore.GetEvents(userId, command.Id)
+                                                    .ConfigureAwait(false);
+                Assert.Equal(@event.Id, commandEvents.FirstOrDefault()?.Id);
             }
         }
     }
