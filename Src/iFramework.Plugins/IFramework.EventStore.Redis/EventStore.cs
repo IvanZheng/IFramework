@@ -1,9 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.Event;
 using IFramework.Infrastructure;
+using IFramework.Message;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
 namespace IFramework.EventStore.Redis
@@ -11,13 +13,17 @@ namespace IFramework.EventStore.Redis
     public class EventStore : IEventStore
     {
         private readonly RedisEventStoreOptions _eventStoreOptions;
+        private readonly IMessageTypeProvider _messageTypeProvider;
+        private readonly ILogger<EventStore> _logger;
         private ConnectionMultiplexer _connectionMultiplexer;
         private IDatabase _db;
         private LuaScript _luaScript;
 
-        public EventStore(RedisEventStoreOptions eventStoreOptions)
+        public EventStore(IOptions<RedisEventStoreOptions> eventStoreOptions, IMessageTypeProvider messageTypeProvider, ILogger<EventStore> logger)
         {
-            _eventStoreOptions = eventStoreOptions;
+            _eventStoreOptions = eventStoreOptions.Value;
+            _messageTypeProvider = messageTypeProvider;
+            _logger = logger;
         }
 
         private object AsyncState { get; set; }
@@ -33,28 +39,33 @@ namespace IFramework.EventStore.Redis
             if (string.IsNullOrWhiteSpace(luaScript))
             {
                 luaScript = @"
-                    local version = 0
-                    if redis.call('EXISTS', @commandId) == 1 then
-                        return 0
+                    if redis.call('EXISTS', @commandId) == '1' then
+                        return -1
                     end
-                    local expectedVersion = redis.call('GET', @aggregateId)
-                    if expectedVersion == nil or expectedVersion == @expectedVersion then
-                        redis.call('SET', @commandId, @command)    
-                        version = redis.call('INCR', @aggregateId)
-                       # ZREVRANGEBYSCORE myset +inf -inf WITHSCORES LIMIT 0 1
+                    local expectedVersion = redis.call('ZREVRANGE', @aggregateId, '0', '0', 'WITHSCORES')
+                    if #expectedVersion == 0 or expectedVersion[2] == @expectedVersion then
+                        local version = @expectedVersion + 1
+                        redis.call('SET', @commandId, @command)     
+                        redis.call('ZADD', @aggregateId, version, @events)
+                        return version
                     else
-                        return 0
+                        return -2
                     end
-
                 ";
             }
 
             _luaScript = LuaScript.Prepare(luaScript);
         }
 
-        public Task<IEvent[]> GetEvents(string id, long start = 0, long? end = null)
+        public async Task<IEvent[]> GetEvents(string id, long start = 0, long? end = null)
         {
-            throw new NotImplementedException();
+            var results = await _db.SortedSetRangeByScoreWithScoresAsync(id, start, end ?? double.PositiveInfinity);
+            return results?.SelectMany(r => r.Element
+                                            .ToString()
+                                            .ToJsonObject<EventPayload[]>()
+                                            .Select(ep => ep.Payload
+                                                            .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent))
+                          .ToArray();
         }
 
         public async Task AppendEvents(string aggregateId, long expectedVersion, ICommand command, params IEvent[] events)
@@ -63,11 +74,19 @@ namespace IFramework.EventStore.Redis
                                                             new {
                                                                 aggregateId = (RedisKey) aggregateId,
                                                                 commandId = (RedisKey) command.Id,
-                                                                command = command.ToJson(),
+                                                                command = new EventPayload{ 
+                                                                    Code = _messageTypeProvider.GetMessageCode(command.GetType()),
+                                                                    Payload = command.ToJson()}.ToJson(),
                                                                 expectedVersion,
-                                                                events = events.ToJson()
+                                                                events = events.Select(e => new EventPayload{
+                                                                                   Code = _messageTypeProvider.GetMessageCode(e.GetType()),
+                                                                                   Payload = e.ToJson()
+                                                                               })
+                                                                               .ToJson()
                                                             })
                                        .ConfigureAwait(false);
+         
+            _logger.LogDebug(redisResult);
         }
     }
 }

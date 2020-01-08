@@ -7,6 +7,7 @@ using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.Event;
 using IFramework.EventStore.Client;
+using IFramework.EventStore.Redis;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
 using IFramework.Message;
@@ -35,7 +36,9 @@ namespace IFramework.Test
                     //.UseCommonComponents()
                     .AddJsonNet()
                     .AddLog4Net()
-                    .AddEventStoreClient();
+                    .AddRedisEventStore()
+                    //.AddEventStoreClient()
+                ;
 
             ObjectProviderFactory.Instance.Build(services);
         }
