@@ -46,7 +46,7 @@ namespace IFramework.Test
         [Fact]
         public async Task EventStreamAppendReadTest()
         {
-            const string userId = "2";
+            const string userId = "3";
             var name = $"ivan_{DateTime.Now.Ticks}";
             var correlationId = $"cmd{DateTime.Now.Ticks}";
            
