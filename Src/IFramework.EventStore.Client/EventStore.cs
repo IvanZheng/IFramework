@@ -64,7 +64,7 @@ namespace IFramework.EventStore.Client
                                .ToArray();
         }
 
-        public Task AppendEvents(string id, long expectedVersion, ICommand command, params IEvent[] events)
+        public Task AppendEvents(string id, long expectedVersion, string correlationId, params IEvent[] events)
         {
             var targetVersion = expectedVersion;
             var eventStream = events.Select(e =>
@@ -77,7 +77,7 @@ namespace IFramework.EventStore.Client
                                                              _eventSerializer.Serialize(new EventMetadata(e,
                                                                                                           ++targetVersion,
                                                                                                           messageCode,
-                                                                                                          command.Id)));
+                                                                                                          correlationId)));
                                     })
                                     .ToArray();
             return _connection.AppendToStreamAsync(id, expectedVersion, eventStream);

@@ -54,7 +54,9 @@ namespace IFramework.Test
             {
                 var messageTypeProvider = serviceScope.GetService<IMessageTypeProvider>();
                 messageTypeProvider.Register(nameof(UserCreated), typeof(UserCreated))
-                                   .Register(nameof(UserModified), typeof(UserModified));
+                                   .Register(nameof(UserModified), typeof(UserModified))
+                                   .Register(nameof(CreateUser), typeof(CreateUser));
+
                 var eventStore = serviceScope.GetService<IEventStore>();
                 await eventStore.Connect()
                                 .ConfigureAwait(false);
@@ -68,7 +70,7 @@ namespace IFramework.Test
                     var command = new CreateUser {Id = correlationId, UserName = name, UserId = userId};
                     await eventStore.AppendEvents(userId, 
                                                   expectedVersion,
-                                                  command,
+                                                  command.Id,
                                                   new UserCreated(userId, name, expectedVersion + 1))
                                     .ConfigureAwait(false);
                 }
@@ -77,7 +79,7 @@ namespace IFramework.Test
                     var command = new ModifyUser {Id = correlationId, UserName = name, UserId = userId};
                     await eventStore.AppendEvents(userId,
                                                   expectedVersion,
-                                                  command,
+                                                  command.Id,
                                                   new UserModified(userId, name, expectedVersion + 1))
                                     .ConfigureAwait(false);
                 }
