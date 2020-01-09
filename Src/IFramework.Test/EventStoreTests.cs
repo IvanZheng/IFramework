@@ -93,5 +93,31 @@ namespace IFramework.Test
                 Assert.Equal(@event.Id, commandEvents.FirstOrDefault()?.Id);
             }
         }
+
+        [Fact]
+        public async Task TestEventHandle()
+        {
+            var subscriber = "subscriber1";
+            var eventId = "eventId1";
+            var correlationId = $"cmd{DateTime.Now.Ticks}";
+            var name = "ivan";
+            const string userId = "3";
+
+            var commands = new[] {new CreateUser{Id = correlationId, UserName = name, UserId = userId}};
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var messageTypeProvider = serviceScope.GetService<IMessageTypeProvider>();
+                messageTypeProvider.Register(nameof(UserCreated), typeof(UserCreated))
+                                   .Register(nameof(UserModified), typeof(UserModified))
+                                   .Register(nameof(CreateUser), typeof(CreateUser));
+
+                var eventStore = serviceScope.GetService<IEventStore>();
+                await eventStore.Connect()
+                                .ConfigureAwait(false);
+                var returnCommands = await eventStore.HandleEvent("subscriber1", eventId, commands)
+                                               .ConfigureAwait(false);
+                Assert.NotEmpty(returnCommands);
+            }
+        }
     }
 }

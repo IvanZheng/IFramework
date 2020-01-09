@@ -37,10 +37,11 @@ namespace IFramework.Event
         Task<IEvent[]> GetEvents(string id, string commandId);
 
         /// <summary>
-        /// 
+        /// return commands that subscriber generated in the event handling,
+        /// if event has been handled before, return the last handling commands ignoring the current commands
         /// </summary>
         /// <param name="subscriber"></param>
-        /// <param name="EventId"></param>
+        /// <param name="eventId"></param>
         /// <param name="commands"></param>
         /// <returns></returns>
         Task<ICommand[]> HandleEvent(string subscriber, string eventId, ICommand[] commands);

@@ -80,7 +80,14 @@ namespace IFramework.EventStore.Redis
             var handleEventLuaScript = _eventStoreOptions.HandleEventLuaScript;
             if (string.IsNullOrWhiteSpace(handleEventLuaScript))
             {
-                handleEventLuaScript = @"";
+                handleEventLuaScript = @"
+                local result = redis.call('HSETNX', @subscriber, @eventId, @commands)
+                if result == 1 then
+                    return 1                
+                else
+                    return redis.call('HGET', @subscriber, @eventId)
+                end
+                ";
             }
 
             _handleEventLuaScript = LuaScript.Prepare(handleEventLuaScript);
@@ -157,7 +164,16 @@ namespace IFramework.EventStore.Redis
                                            commands = commandsBody
                                        })
                                        .ConfigureAwait(false);
-            throw new NotImplementedException();
+            if (redisResult.Type == ResultType.SimpleString || redisResult.Type == ResultType.BulkString)
+            {
+                commands = ((string) redisResult)
+                           .ToJsonObject<EventPayload[]>()
+                           .Select(ep => ep.Payload
+                                           .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as ICommand)
+                           .ToArray();
+            }
+
+            return commands;
         }
     }
 }
