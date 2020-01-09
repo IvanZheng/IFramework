@@ -9,5 +9,7 @@
         public string AppendEventsLuaScript { get; set; }
 
         public string GetEventsLuaScript { get; set; }
+
+        public string HandleEventLuaScript { get; set; }
     }
 }

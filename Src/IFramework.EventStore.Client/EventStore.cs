@@ -87,5 +87,10 @@ namespace IFramework.EventStore.Client
         {
             throw new NotImplementedException();
         }
+
+        public Task<ICommand[]> HandleEvent(string subscriber, string eventId, ICommand[] commands)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

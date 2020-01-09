@@ -1,6 +1,8 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using IFramework.Command;
 using IFramework.Event;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
@@ -20,6 +22,7 @@ namespace IFramework.EventStore.Redis
         private          ConnectionMultiplexer  _connectionMultiplexer;
         private          IDatabase              _db;
         private          LuaScript              _getEventsLuaScript;
+        private          LuaScript              _handleEventLuaScript;
 
         public EventStore(IOptions<RedisEventStoreOptions> eventStoreOptions, IMessageTypeProvider messageTypeProvider, ILogger<EventStore> logger)
         {
@@ -73,6 +76,14 @@ namespace IFramework.EventStore.Redis
             }
 
             _getEventsLuaScript = LuaScript.Prepare(getEventsLuaScript);
+
+            var handleEventLuaScript = _eventStoreOptions.HandleEventLuaScript;
+            if (string.IsNullOrWhiteSpace(handleEventLuaScript))
+            {
+                handleEventLuaScript = @"";
+            }
+
+            _handleEventLuaScript = LuaScript.Prepare(handleEventLuaScript);
         }
 
         public async Task<IEvent[]> GetEvents(string id, long start = 0, long? end = null)
@@ -105,6 +116,7 @@ namespace IFramework.EventStore.Redis
                                                                 events = eventsBody
                                                             })
                                        .ConfigureAwait(false);
+            _logger.LogDebug($"redisResult:{redisResult} aggregateId:{aggregateId} expectedVersion:{expectedVersion} correlationId:{correlationId} events:{eventsBody}");
             if ((int) redisResult == -1)
             {
                 throw new MessageDuplicatelyHandled();
@@ -114,8 +126,6 @@ namespace IFramework.EventStore.Redis
             {
                 throw new DBConcurrencyException($"aggregateId:{aggregateId} expectedVersion:{expectedVersion} concurrency conflict");
             }
-
-            _logger.LogDebug($"redisResult:{redisResult} aggregateId:{aggregateId} expectedVersion:{expectedVersion} correlationId:{correlationId} events:{eventsBody}");
         }
 
         public async Task<IEvent[]> GetEvents(string id, string commandId)
@@ -132,6 +142,22 @@ namespace IFramework.EventStore.Redis
                                          .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
                          .ToArray();
             return events;
+        }
+
+        public async Task<ICommand[]> HandleEvent(string subscriber, string eventId, ICommand[] commands)
+        {
+            var commandsBody = commands.Select(c => new EventPayload {
+                                           Code = _messageTypeProvider.GetMessageCode(c.GetType()),
+                                           Payload = c.ToJson()
+                                       })
+                                       .ToJson();
+            var redisResult = await _db.ScriptEvaluateAsync(_handleEventLuaScript, new {
+                                           subscriber = (RedisKey) subscriber,
+                                           eventId,
+                                           commands = commandsBody
+                                       })
+                                       .ConfigureAwait(false);
+            throw new NotImplementedException();
         }
     }
 }
