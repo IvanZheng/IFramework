@@ -29,12 +29,13 @@ namespace IFramework.MessageQueue
 
         public static IMessageProcessor CreateCommandConsumer(string commandQueue,
                                                               string consumerId,
-                                                              string[] handlerProvierNames,
-                                                              ConsumerConfig consumerConfig = null)
+                                                              string[] handlerProviderNames,
+                                                              ConsumerConfig consumerConfig = null,
+                                                              bool useEventSourcing = false)
         {
             var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
-            var handlerProvider = new CommandHandlerProvider(handlerProvierNames);
+            var handlerProvider = new CommandHandlerProvider(handlerProviderNames);
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
             var commandConsumer = new CommandProcessor(messageQueueClient,
                                                        messagePublisher,
@@ -51,7 +52,8 @@ namespace IFramework.MessageQueue
                                                               string consumerId,
                                                               string[] handlerProviderNames,
                                                               ConsumerConfig consumerConfig = null,
-                                                              Func<string[], bool> tagFilter = null)
+                                                              Func<string[], bool> tagFilter = null,
+                                                              bool useEventSourcing = false)
         {
             var eventSubscriber = CreateEventSubscriber(new[] {new TopicSubscription(topic, tagFilter)},
                                          subscription,
@@ -65,7 +67,8 @@ namespace IFramework.MessageQueue
                                                               string subscription,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
-                                                              ConsumerConfig consumerConfig = null)
+                                                              ConsumerConfig consumerConfig = null,
+                                                              bool useEventSourcing = false)
         {
             subscription = Configuration.Instance.FormatAppName(subscription);
             var handlerProvider = new EventSubscriberProvider(handlerProviderNames);

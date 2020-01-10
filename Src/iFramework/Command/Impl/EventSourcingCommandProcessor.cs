@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -10,122 +9,31 @@ using IFramework.DependencyInjection;
 using IFramework.Event;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
-using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace IFramework.Command.Impl
 {
-    public class CommandProcessor : IMessageProcessor
+    public class EventSourcingCommandProcessor : CommandProcessor
     {
-        private string _producer;
-        protected CancellationTokenSource CancellationTokenSource;
-        protected string CommandQueueName;
-        protected ConsumerConfig ConsumerConfig;
-        protected string ConsumerId;
-        protected IHandlerProvider HandlerProvider;
-        protected IMessageConsumer InternalConsumer;
-        protected ILogger Logger;
-        protected MailboxProcessor MessageProcessor;
-        protected IMessagePublisher MessagePublisher;
-        protected IMessageQueueClient MessageQueueClient;
-
-        public CommandProcessor(IMessageQueueClient messageQueueClient,
-                                IMessagePublisher messagePublisher,
-                                IHandlerProvider handlerProvider,
-                                string commandQueueName,
-                                string consumerId,
-                                ConsumerConfig consumerConfig = null)
+        public EventSourcingCommandProcessor(IMessageQueueClient messageQueueClient,
+                                             IMessagePublisher   messagePublisher,
+                                             IHandlerProvider    handlerProvider,
+                                             string              commandQueueName,
+                                             string              consumerId,
+                                             ConsumerConfig      consumerConfig = null)
+            : base(messageQueueClient,
+                   messagePublisher,
+                   handlerProvider,
+                   commandQueueName,
+                   consumerId,
+                   consumerConfig)
         {
-            ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
-            CommandQueueName = commandQueueName;
-            HandlerProvider = handlerProvider;
-            MessagePublisher = messagePublisher;
-            ConsumerId = consumerId;
-            CancellationTokenSource = new CancellationTokenSource();
-            MessageQueueClient = messageQueueClient;
-            var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
-            MessageProcessor = new MailboxProcessor(new DefaultProcessingMessageScheduler(),
-                                                    new OptionsWrapper<MailboxOption>(new MailboxOption
-                                                    {
-                                                        BatchCount = ConsumerConfig.MailboxProcessBatchCount
-                                                    }),
-                                                    loggerFactory.CreateLogger<MailboxProcessor>());
-            Logger = loggerFactory.CreateLogger(GetType());
         }
 
-        public string Producer => _producer ?? (_producer = $"{CommandQueueName}.{ConsumerId}");
-
-        public void Start()
-        {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(CommandQueueName))
-                {
-                    InternalConsumer = MessageQueueClient.StartQueueClient(CommandQueueName,
-                                                                           ConsumerId,
-                                                                           OnMessageReceived,
-                                                                           ConsumerConfig);
-                }
-
-                MessageProcessor.Start();
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, $"Command Consumer {ConsumerId} Start Failed");
-            }
-        }
-
-        public void Stop()
-        {
-            InternalConsumer.Stop();
-            MessageProcessor.Stop();
-        }
-
-        public string GetStatus()
-        {
-            return $"{Producer}: {InternalConsumer?.Status}";
-        }
-
-        public decimal MessageCount { get; set; }
-
-        protected void OnMessageReceived(params IMessageContext[] messageContexts)
-        {
-            messageContexts.ForEach(messageContext =>
-            {
-                MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
-                MessageCount++;
-            });
-        }
-
-        protected List<MessageState> GetSagaReplyMessageStates(SagaInfo sagaInfo, IEventBus eventBus)
-        {
-            var eventMessageStates = new List<MessageState>();
-            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
-            {
-                eventBus.GetSagaResults()
-                        .ForEach(sagaResult =>
-                        {
-                            var topic = sagaInfo.ReplyEndPoint;
-                            if (!string.IsNullOrEmpty(topic))
-                            {
-                                var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
-                                                                               topic: topic,
-                                                                               messageId: ObjectId.GenerateNewId().ToString(),
-                                                                               sagaInfo: sagaInfo, producer: Producer);
-                                eventMessageStates.Add(new MessageState(sagaReply));
-                            }
-                        });
-            }
-
-            return eventMessageStates;
-        }
-
-        protected virtual async Task ConsumeMessage(IMessageContext commandContext)
+        protected override async Task ConsumeMessage(IMessageContext commandContext)
         {
             Stopwatch watch = Stopwatch.StartNew();
             try
@@ -137,12 +45,12 @@ namespace IFramework.Command.Impl
                 {
                     return;
                 }
+
                 using (var scope = ObjectProviderFactory.Instance
                                                         .ObjectProvider
                                                         .CreateScope(builder => builder.RegisterInstance(typeof(IMessageContext), commandContext)))
                 {
-                    using (Logger.BeginScope(new
-                    {
+                    using (Logger.BeginScope(new {
                         commandContext.Topic,
                         commandContext.MessageId,
                         commandContext.Key
@@ -188,18 +96,18 @@ namespace IFramework.Command.Impl
                                     var messageHandler = scope.GetRequiredService(messageHandlerType.Type);
 
                                     using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                                       new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+                                                                                       new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
                                                                                        TransactionScopeAsyncFlowOption.Enabled))
                                     {
                                         if (messageHandlerType.IsAsync)
                                         {
-                                            await ((dynamic)messageHandler).Handle((dynamic)command)
+                                            await ((dynamic) messageHandler).Handle((dynamic) command)
                                                                             .ConfigureAwait(false);
                                         }
                                         else
                                         {
                                             var handler = messageHandler;
-                                            await Task.Run(() => { ((dynamic)handler).Handle((dynamic)command); }).ConfigureAwait(false);
+                                            await Task.Run(() => { ((dynamic) handler).Handle((dynamic) command); }).ConfigureAwait(false);
                                         }
 
                                         if (needReply)
@@ -240,7 +148,7 @@ namespace IFramework.Command.Impl
                                         eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
 
                                         await messageStore.SaveCommandAsync(commandContext, commandContext.Reply,
-                                                                 eventMessageStates.Select(s => s.MessageContext).ToArray())
+                                                                            eventMessageStates.Select(s => s.MessageContext).ToArray())
                                                           .ConfigureAwait(false);
                                         transactionScope.Complete();
                                     }
@@ -301,11 +209,9 @@ namespace IFramework.Command.Impl
 
                                     eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
                                     await messageStore.SaveFailedCommandAsync(commandContext, e,
-                                                                   eventMessageStates.Select(s => s.MessageContext)
-                                                                                     .ToArray())
+                                                                              eventMessageStates.Select(s => s.MessageContext)
+                                                                                                .ToArray())
                                                       .ConfigureAwait(false);
-
-
                                 }
                             }
                         }
