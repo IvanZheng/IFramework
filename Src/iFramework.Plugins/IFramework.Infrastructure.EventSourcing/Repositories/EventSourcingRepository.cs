@@ -62,19 +62,27 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
             {
                 // get from snapshot store and replay with events
                 ag = await _snapshotStore.GetAsync<TAggregateRoot>(id);
-                var fromVersion = ag?.Version ?? 1;
+                var fromVersion = ag?.Version ?? 0;
                 var events = await _eventStore.GetEvents(id, fromVersion)
                                               .ConfigureAwait(false);
-                if (ag == null)
+                if (ag == null && events.Length > 0)
                 {
                     ag = Activator.CreateInstance<TAggregateRoot>();
                 }
-                ag.Replay(events.Cast<IAggregateRootEvent>()
-                                    .ToArray());
-                _inMemoryStore.Set(ag);
-                if (ag.Version > fromVersion)
+
+                if (ag != null)
                 {
-                    await _snapshotStore.UpdateAsync(ag);
+                    if (events.Length > 0)
+                    {
+                        ag.Replay(events.Cast<IAggregateRootEvent>()
+                                        .ToArray());
+                    }
+                   
+                    _inMemoryStore.Set(ag);
+                    if (ag.Version > fromVersion)
+                    {
+                        await _snapshotStore.UpdateAsync(ag);
+                    }
                 }
             }
             return ag;
