@@ -4,7 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using IFramework.Domain;
 using IFramework.Event;
+using IFramework.Infrastructure.EventSourcing.Domain;
 using IFramework.Infrastructure.EventSourcing.Stores;
 using IFramework.Repositories;
 using IFramework.Specifications;
@@ -13,11 +15,11 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
 {
     public class EventSourcingRepository<TAggregateRoot> :
         IRepository<TAggregateRoot> 
-        where TAggregateRoot : class
+        where TAggregateRoot : EventSourcingAggregateRoot, new()
     {
-        private InMemoryStore _inMemoryStore;
-        private ISnapshotStore _snapshotStore;
-        private IEventStore _eventStore;
+        private readonly InMemoryStore _inMemoryStore;
+        private readonly ISnapshotStore _snapshotStore;
+        private readonly IEventStore _eventStore;
 
         public EventSourcingRepository(InMemoryStore inMemoryStore, ISnapshotStore snapshotStore, IEventStore eventStore)
         {
@@ -48,12 +50,30 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
 
         public TAggregateRoot GetByKey(params object[] keyValues)
         {
-            throw new NotImplementedException();
+            return GetByKeyAsync(keyValues).GetAwaiter()
+                                           .GetResult();
         }
 
-        public Task<TAggregateRoot> GetByKeyAsync(params object[] keyValues)
+        public async Task<TAggregateRoot> GetByKeyAsync(params object[] keyValues)
         {
-            throw new NotImplementedException();
+            var id = string.Join(".", keyValues);
+            var ag = _inMemoryStore.Get<TAggregateRoot>(id);
+            if (ag == null)
+            {
+                // get from snapshot store and replay with events
+                ag = await _snapshotStore.GetAsync<TAggregateRoot>(id);
+                var fromVersion = ag?.Version ?? 1;
+                var events = await _eventStore.GetEvents(id, fromVersion)
+                                              .ConfigureAwait(false);
+                if (ag == null)
+                {
+                    ag = Activator.CreateInstance<TAggregateRoot>();
+                }
+                ag.Replay(events.Cast<IAggregateRootEvent>()
+                                    .ToArray());
+                _inMemoryStore.Set(ag);
+            }
+            return ag;
         }
 
         public long Count(ISpecification<TAggregateRoot> specification)
