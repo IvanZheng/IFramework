@@ -6,11 +6,10 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
 {
     public class InMemoryStore
     {
-        private readonly int _maxCapacity;
-        private readonly ConcurrentDictionary<string, string> _aggregateRootSet = new ConcurrentDictionary<string, string>();
-        public InMemoryStore(int maxCapacity)
+        private readonly IDictionary<string, string> _aggregateRootSet;
+        public InMemoryStore(int maxCapacity = 100000)
         {
-            _maxCapacity = maxCapacity;
+            _aggregateRootSet = new ConcurrentLimitedSizeDictionary<string, string>(maxCapacity);
         }
 
         public TAggregateRoot Get<TAggregateRoot>(string id) where TAggregateRoot : class
