@@ -15,7 +15,8 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
         public TAggregateRoot Get<TAggregateRoot>(string id) where TAggregateRoot : class
         {
             TAggregateRoot aggregateRoot = default;
-            var aggregateRootContent = _aggregateRootSet.TryGetValue(id);
+            var key = FormatStoreKey<TAggregateRoot>(id);
+            var aggregateRootContent = _aggregateRootSet.TryGetValue(key);
             if (!string.IsNullOrWhiteSpace(aggregateRootContent))
             {
                 aggregateRoot = aggregateRootContent.ToJsonObject<TAggregateRoot>();
@@ -24,9 +25,16 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
             return aggregateRoot;
         }
 
+        private string FormatStoreKey<TAggregateRoot>(string id) where TAggregateRoot : class
+        {
+            var key = $"{typeof(TAggregateRoot).Name}.{id}";
+            return key;
+        }
+
         public void Set<TAggregateRoot>(TAggregateRoot ag) where TAggregateRoot : EventSourcingAggregateRoot, new()
         {
-            _aggregateRootSet[ag.Id] = ag.ToJson();
+            var key = FormatStoreKey<TAggregateRoot>(ag.Id);
+            _aggregateRootSet[key] = ag.ToJson();
         }
     }
 }

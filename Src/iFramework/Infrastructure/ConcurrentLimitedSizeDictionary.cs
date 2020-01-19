@@ -10,13 +10,13 @@ namespace IFramework.Infrastructure
     {
         private readonly ConcurrentDictionary<TKey, TValue> _dict;
         private readonly int _size;
-        private ConcurrentQueue<TKey> _queue;
+        private Queue<TKey> _queue;
 
         public ConcurrentLimitedSizeDictionary(int size)
         {
             _size = size;
             _dict = new ConcurrentDictionary<TKey, TValue>(16, size + 1);
-            _queue = new ConcurrentQueue<TKey>();
+            _queue = new Queue<TKey>(_size);
         }
 
         public void Add(TKey key, TValue value)
@@ -27,12 +27,10 @@ namespace IFramework.Infrastructure
                 {
                     if (_queue.Count == _size)
                     {
-                        if (_queue.TryDequeue(out var keyIndex))
-                        {
-                            _dict.TryRemove(keyIndex);
-                        }
+                        var keyIndex = _queue.Dequeue();
+                        _dict.TryRemove(keyIndex);
+                        
                     }
-
                     _queue.Enqueue(key);
                 }
             }
@@ -49,7 +47,7 @@ namespace IFramework.Infrastructure
             {
                 if (_dict.TryRemove(key))
                 {
-                    ConcurrentQueue<TKey> newQueue = new ConcurrentQueue<TKey>();
+                    var newQueue = new Queue<TKey>();
                     foreach (TKey item in _queue)
                     {
                         if (!item.Equals(key))
@@ -114,7 +112,7 @@ namespace IFramework.Infrastructure
             lock (this)
             {
                 _dict.Clear();
-                _queue = new ConcurrentQueue<TKey>();
+                _queue = new Queue<TKey>();
             }
         }
 

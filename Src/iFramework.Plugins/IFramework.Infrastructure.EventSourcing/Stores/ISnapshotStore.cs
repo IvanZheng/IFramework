@@ -9,5 +9,6 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
     public interface ISnapshotStore
     {
         Task<TAggregateRoot> GetAsync<TAggregateRoot>(string id) where TAggregateRoot : EventSourcingAggregateRoot;
+        Task UpdateAsync(EventSourcingAggregateRoot ar);
     }
 }
