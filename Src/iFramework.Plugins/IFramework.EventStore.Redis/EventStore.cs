@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Command;
@@ -16,13 +15,13 @@ namespace IFramework.EventStore.Redis
     public class EventStore : IEventStore
     {
         private readonly RedisEventStoreOptions _eventStoreOptions;
-        private readonly ILogger<EventStore>    _logger;
-        private readonly IMessageTypeProvider   _messageTypeProvider;
-        private          LuaScript              _appendEventsLuaScript;
-        private          ConnectionMultiplexer  _connectionMultiplexer;
-        private          IDatabase              _db;
-        private          LuaScript              _getEventsLuaScript;
-        private          LuaScript              _handleEventLuaScript;
+        private readonly ILogger<EventStore> _logger;
+        private readonly IMessageTypeProvider _messageTypeProvider;
+        private LuaScript _appendEventsLuaScript;
+        private ConnectionMultiplexer _connectionMultiplexer;
+        private IDatabase _db;
+        private LuaScript _getEventsLuaScript;
+        private LuaScript _handleEventLuaScript;
 
         public EventStore(IOptions<RedisEventStoreOptions> eventStoreOptions, IMessageTypeProvider messageTypeProvider, ILogger<EventStore> logger)
         {

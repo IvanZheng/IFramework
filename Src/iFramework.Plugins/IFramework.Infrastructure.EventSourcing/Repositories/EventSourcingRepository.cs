@@ -72,6 +72,10 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
                 ag.Replay(events.Cast<IAggregateRootEvent>()
                                     .ToArray());
                 _inMemoryStore.Set(ag);
+                if (ag.Version > fromVersion)
+                {
+                    await _snapshotStore.UpdateAsync(ag);
+                }
             }
             return ag;
         }

@@ -10,5 +10,6 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
     {
         Task<TAggregateRoot> GetAsync<TAggregateRoot>(string id) where TAggregateRoot : EventSourcingAggregateRoot;
         Task UpdateAsync(EventSourcingAggregateRoot ar);
+        Task Connect();
     }
 }
