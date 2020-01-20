@@ -2,30 +2,38 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
-using IFramework.Domain;
 using IFramework.Event;
 using IFramework.Infrastructure.EventSourcing.Domain;
 using IFramework.Infrastructure.EventSourcing.Stores;
 using IFramework.Repositories;
 using IFramework.Specifications;
+using IFramework.UnitOfWork;
 
 namespace IFramework.Infrastructure.EventSourcing.Repositories
 {
+    public interface IEventSourcingRepository
+    {
+        EventSourcingEntityEntry[] GetEntries();
+        void Reset();
+    }
+
     public class EventSourcingRepository<TAggregateRoot> :
-        IRepository<TAggregateRoot> 
+        IRepository<TAggregateRoot>, IEventSourcingRepository
         where TAggregateRoot : class, IEventSourcingAggregateRoot, new()
     {
-        private readonly InMemoryStore _inMemoryStore;
-        private readonly ISnapshotStore _snapshotStore;
         private readonly IEventStore _eventStore;
+        private readonly InMemoryStore _inMemoryStore;
+        private readonly Dictionary<string, EventSourcingEntityEntry> _local;
+        private readonly ISnapshotStore _snapshotStore;
 
-        public EventSourcingRepository(InMemoryStore inMemoryStore, ISnapshotStore snapshotStore, IEventStore eventStore)
+        public EventSourcingRepository(InMemoryStore inMemoryStore, ISnapshotStore snapshotStore, IEventStore eventStore, IUnitOfWork unitOfWork)
         {
+            _local = new Dictionary<string, EventSourcingEntityEntry>();
             _inMemoryStore = inMemoryStore;
             _snapshotStore = snapshotStore;
             _eventStore = eventStore;
+            (unitOfWork as UnitOfWork)?.RegisterRepositories(this);
         }
 
         public void Add(IEnumerable<TAggregateRoot> entities)
@@ -35,7 +43,7 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
 
         public void Add(TAggregateRoot entity)
         {
-            throw new NotImplementedException();
+            _local[entity.Id] = new EventSourcingEntityEntry(entity);
         }
 
         public Task AddAsync(IEnumerable<TAggregateRoot> entities)
@@ -45,18 +53,25 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
 
         public Task AddAsync(TAggregateRoot entity)
         {
-            throw new NotImplementedException();
+            Add(entity);
+            return Task.CompletedTask;
         }
 
         public TAggregateRoot GetByKey(params object[] keyValues)
         {
-            return GetByKeyAsync(keyValues).GetAwaiter()
-                                           .GetResult();
+            return GetByKeyAsync(keyValues)
+                   .GetAwaiter()
+                   .GetResult();
         }
 
         public async Task<TAggregateRoot> GetByKeyAsync(params object[] keyValues)
         {
             var id = string.Join(".", keyValues);
+            if (_local.ContainsKey(id))
+            {
+                return _local[id].Entity as TAggregateRoot;
+            }
+
             var ag = _inMemoryStore.Get<TAggregateRoot>(id);
             if (ag == null)
             {
@@ -77,7 +92,7 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
                         ag.Replay(events.Cast<IAggregateRootEvent>()
                                         .ToArray());
                     }
-                   
+
                     _inMemoryStore.Set(ag);
                     if (ag.Version > fromVersion)
                     {
@@ -85,6 +100,12 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
                     }
                 }
             }
+
+            if (ag != null)
+            {
+                _local[id] = new EventSourcingEntityEntry(ag, ag.Version);
+            }
+
             return ag;
         }
 
@@ -175,7 +196,7 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
 
         public void Remove(TAggregateRoot entity)
         {
-            throw new NotImplementedException();
+            _local[entity.Id].Deleted = true;
         }
 
         public void Remove(IEnumerable<TAggregateRoot> entities)
@@ -216,6 +237,16 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
         public Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderByExpressions)
         {
             throw new NotImplementedException();
+        }
+
+        public EventSourcingEntityEntry[] GetEntries()
+        {
+            return _local.Values.ToArray();
+        }
+
+        public void Reset()
+        {
+            _local.Clear();
         }
     }
 }
