@@ -1,22 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using IFramework.Domain;
 using IFramework.Event;
 
 namespace IFramework.Infrastructure.EventSourcing.Domain
 {
-    public class EventSourcingAggregateRoot: VersionedAggregateRoot
+    public interface IEventSourcingAggregateRoot : IAggregateRoot
     {
-        public string Id { get; protected set; }
+        string Id { get; }
+        int Version { get; set; }
+        void Replay(params IAggregateRootEvent[] events);
+    }
 
+    public class EventSourcingAggregateRoot : VersionedAggregateRoot, IEventSourcingAggregateRoot
+    {
         internal EventSourcingAggregateRoot(IAggregateRootEvent[] events)
         {
             Replay(events);
         }
 
-        internal void Replay(params IAggregateRootEvent[] events)
+        public string Id { get; protected set; }
+
+        int IEventSourcingAggregateRoot.Version
+        {
+            get => Version;
+            set => Version = value;
+        }
+
+        public void Replay(params IAggregateRootEvent[] events)
         {
             foreach (var @event in events.OrderBy(e => e.Version))
             {

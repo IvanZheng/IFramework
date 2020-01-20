@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using IFramework.Infrastructure;
 using IFramework.Infrastructure.EventSourcing.Domain;
 using IFramework.Infrastructure.EventSourcing.Stores;
 using IFramework.Message;
@@ -12,16 +14,14 @@ namespace IFramework.EventStore.Redis
     public class RedisSnapshotStore : ISnapshotStore
     {
         private readonly ILogger<RedisSnapshotStore> _logger;
-        private readonly IMessageTypeProvider _messageTypeProvider;
         private readonly RedisSnapshotStoreOptions _options;
         private ConnectionMultiplexer _connectionMultiplexer;
         private IDatabase _db;
         private object AsyncState { get; set; }
 
-        public RedisSnapshotStore(IOptions<RedisSnapshotStoreOptions> options, ILogger<RedisSnapshotStore> logger, IMessageTypeProvider messageTypeProvider)
+        public RedisSnapshotStore(IOptions<RedisSnapshotStoreOptions> options, ILogger<RedisSnapshotStore> logger)
         {
             _logger = logger;
-            _messageTypeProvider = messageTypeProvider;
             _options = options.Value;
         }
 
@@ -32,14 +32,61 @@ namespace IFramework.EventStore.Redis
             _db = _connectionMultiplexer.GetDatabase(_options.DatabaseName, AsyncState);
         }
 
-        public Task<TAggregateRoot> GetAsync<TAggregateRoot>(string id) where TAggregateRoot : EventSourcingAggregateRoot
+        public async Task<TAggregateRoot> GetAsync<TAggregateRoot>(string id) where TAggregateRoot : IEventSourcingAggregateRoot
         {
-            throw new NotImplementedException();
+            var hashValues = await _db.HashGetAllAsync(id)
+                                      .ConfigureAwait(false);
+            if (hashValues.Length == 0)
+            {
+                return default;
+            }
+            var snapshotPayload = new SnapshotPayload(hashValues);
+            return snapshotPayload.Payload
+                                  .ToJsonObject<TAggregateRoot>();
         }
 
-        public Task UpdateAsync(EventSourcingAggregateRoot ar)
+        public async Task UpdateAsync(IEventSourcingAggregateRoot ar)
         {
-            throw new NotImplementedException();
+            var snapshotPayload = new SnapshotPayload(ar);
+            await _db.HashSetAsync(snapshotPayload.Id, snapshotPayload.ToHashEntries())
+                     .ConfigureAwait(false);
+        }
+
+        public class SnapshotPayload
+        {
+            public string Id { get; protected set; }
+            public string TypeCode { get; protected set; }
+            public string Payload { get; protected set; }
+            public int Version { get; protected set; }
+
+            public SnapshotPayload(HashEntry[] hashEntries)
+            {
+                Id = hashEntries.GetValue<string>(nameof(Id), null);
+                Payload = hashEntries.GetValue<string>(nameof(Payload), null);
+                Version = hashEntries.GetValue(nameof(Version), 0);
+                TypeCode = hashEntries.GetValue<string>(nameof(TypeCode), null);
+            }
+
+            public SnapshotPayload(IEventSourcingAggregateRoot aggregateRoot)
+            {
+                if (aggregateRoot == null)
+                {
+                    throw new ArgumentNullException(nameof(aggregateRoot));
+                }
+
+                Id = aggregateRoot.Id;
+                Payload = aggregateRoot.ToJson();
+                Version = aggregateRoot.Version;
+                TypeCode = aggregateRoot.GetType().FullName;
+            }
+
+            public SnapshotPayload(string id, string typeCode, string payload, int version)
+            {
+                Id = id;
+                TypeCode = typeCode;
+                Payload = payload;
+                Version = version;
+            }
         }
     }
 }

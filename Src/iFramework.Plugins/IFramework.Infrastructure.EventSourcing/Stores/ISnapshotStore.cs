@@ -8,8 +8,8 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
 {
     public interface ISnapshotStore
     {
-        Task<TAggregateRoot> GetAsync<TAggregateRoot>(string id) where TAggregateRoot : EventSourcingAggregateRoot;
-        Task UpdateAsync(EventSourcingAggregateRoot ar);
+        Task<TAggregateRoot> GetAsync<TAggregateRoot>(string id) where TAggregateRoot : IEventSourcingAggregateRoot;
+        Task UpdateAsync(IEventSourcingAggregateRoot ar);
         Task Connect();
     }
 }

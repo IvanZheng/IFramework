@@ -31,7 +31,7 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
             return key;
         }
 
-        public void Set<TAggregateRoot>(TAggregateRoot ag) where TAggregateRoot : EventSourcingAggregateRoot, new()
+        public void Set<TAggregateRoot>(TAggregateRoot ag) where TAggregateRoot : class, IEventSourcingAggregateRoot, new()
         {
             var key = FormatStoreKey<TAggregateRoot>(ag.Id);
             _aggregateRootSet[key] = ag.ToJson();

@@ -15,7 +15,7 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
 {
     public class EventSourcingRepository<TAggregateRoot> :
         IRepository<TAggregateRoot> 
-        where TAggregateRoot : EventSourcingAggregateRoot, new()
+        where TAggregateRoot : class, IEventSourcingAggregateRoot, new()
     {
         private readonly InMemoryStore _inMemoryStore;
         private readonly ISnapshotStore _snapshotStore;
