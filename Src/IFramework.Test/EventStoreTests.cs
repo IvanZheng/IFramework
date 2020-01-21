@@ -75,6 +75,7 @@ namespace IFramework.Test
                     await eventStore.AppendEvents(userId, 
                                                   expectedVersion,
                                                   command.Id,
+                                                  command,
                                                   @event)
                                     .ConfigureAwait(false);
                 }
@@ -85,6 +86,7 @@ namespace IFramework.Test
                     await eventStore.AppendEvents(userId,
                                                   expectedVersion,
                                                   command.Id,
+                                                  null,
                                                   @event)
                                     .ConfigureAwait(false);
                 }

@@ -64,7 +64,7 @@ namespace IFramework.EventStore.Client
                                .ToArray();
         }
 
-        public Task AppendEvents(string id, long expectedVersion, string correlationId, params IEvent[] events)
+        public Task AppendEvents(string id, long expectedVersion, string correlationId, object result, params IEvent[] events)
         {
             var targetVersion = expectedVersion;
             var eventStream = events.Select(e =>

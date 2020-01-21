@@ -43,18 +43,19 @@ namespace IFramework.EventStore.Redis
             if (string.IsNullOrWhiteSpace(appendEventsLuaScript))
             {
                 appendEventsLuaScript = @"
-                    local aggregateCommandKey = string.format('ag:{%s}:commands', @aggregateId)
+                    local aggregateCommandKey = string.format('ag:{%s}:%s', @aggregateId, @commandId)
                     local aggregateEventKey = string.format('ag:{%s}:events', @aggregateId)
-
-                    if redis.call('HEXISTS', aggregateCommandKey, @commandId) == '1' then
-                        return -1
+                    
+                    local version = redis.call('JSON.GET', aggregateCommandKey, '.version')
+                    if version then
+                        return redis.call('JSON.GET', aggregateCommandKey, '.result')
                     end
                     local expectedVersion = redis.call('ZREVRANGE', aggregateEventKey, '0', '0', 'WITHSCORES')
                     if #expectedVersion == 0 or expectedVersion[2] == @expectedVersion then
-                        local version = @expectedVersion + 1
-                        redis.call('HMSET', aggregateCommandKey, @commandId, version)     
-                        redis.call('ZADD', aggregateEventKey, version, @events)
-                        return version
+                        local newVersion = @expectedVersion + 1
+                        redis.call('JSON.SET', aggregateCommandKey, '.', @result)     
+                        redis.call('ZADD', aggregateEventKey, newVersion, @events)
+                        return newVersion
                     else
                         return -2
                     end
@@ -67,9 +68,9 @@ namespace IFramework.EventStore.Redis
             if (string.IsNullOrWhiteSpace(getEventsLuaScript))
             {
                 getEventsLuaScript = @"
-                local aggregateCommandKey = string.format('ag:{%s}:commands', @aggregateId)
+                local aggregateCommandKey = string.format('ag:{%s}:%s', @aggregateId, @commandId)
                 local aggregateEventKey = string.format('ag:{%s}:events', @aggregateId) 
-                local version =  redis.call('HGET', aggregateCommandKey, @commandId)
+                local version = redis.call('JSON.GET', aggregateCommandKey, '.version')
                 return redis.call('ZRANGEBYSCORE',aggregateEventKey, version, version)
                 ";
             }
@@ -101,31 +102,41 @@ namespace IFramework.EventStore.Redis
                                    .ConfigureAwait(false);
             return results?.SelectMany(r => r.Element
                                              .ToString()
-                                             .ToJsonObject<EventPayload[]>()
+                                             .ToJsonObject<ObjectPayload[]>()
                                              .Select(ep => ep.Payload
                                                              .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent))
                           .ToArray();
         }
 
-        public async Task AppendEvents(string aggregateId, long expectedVersion, string correlationId, params IEvent[] events)
+        public async Task AppendEvents(string aggregateId, long expectedVersion, string correlationId, object result, params IEvent[] events)
         {
-            var eventsBody = events.Select(e => new EventPayload {
-                                       Code = _messageTypeProvider.GetMessageCode(e.GetType()),
-                                       Payload = e.ToJson()
-                                   })
+            var eventsBody = events.Select(e => new ObjectPayload(e, _messageTypeProvider.GetMessageCode(e.GetType())))
                                    .ToJson();
             var redisResult = await _db.ScriptEvaluateAsync(_appendEventsLuaScript,
                                                             new {
                                                                 aggregateId = (RedisKey) aggregateId,
                                                                 commandId = correlationId,
                                                                 expectedVersion,
+                                                                result = new {
+                                                                    version = expectedVersion + 1,
+                                                                    result = result != null ? new ObjectPayload(result, _messageTypeProvider.GetMessageCode(result.GetType()).ToJson()) : new ObjectPayload()
+                                                                }.ToJson(),
                                                                 events = eventsBody
                                                             })
                                        .ConfigureAwait(false);
             _logger.LogDebug($"redisResult:{redisResult} aggregateId:{aggregateId} expectedVersion:{expectedVersion} correlationId:{correlationId} events:{eventsBody}");
-            if ((int) redisResult == -1)
+            if (redisResult.Type == ResultType.BulkString || redisResult.Type == ResultType.SimpleString)
             {
-                throw new MessageDuplicatelyHandled();
+                var objectPayload = ((string) redisResult).ToJsonObject<ObjectPayload>();
+                object commandResult = null;
+
+                if (!string.IsNullOrWhiteSpace(objectPayload?.Payload))
+                {
+                    commandResult = objectPayload.Payload
+                                                 .ToJsonObject(_messageTypeProvider.GetMessageType(objectPayload.Code));
+                }                   
+
+                throw new MessageDuplicatelyHandled(commandResult);
             }
 
             if ((int) redisResult == -2)
@@ -143,7 +154,7 @@ namespace IFramework.EventStore.Redis
                                                             })
                                        .ConfigureAwait(false);
             var events = ((string) redisResult)
-                         .ToJsonObject<EventPayload[]>()
+                         .ToJsonObject<ObjectPayload[]>()
                          .Select(ep => ep.Payload
                                          .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
                          .ToArray();
@@ -152,10 +163,7 @@ namespace IFramework.EventStore.Redis
 
         public async Task<ICommand[]> HandleEvent(string subscriber, string eventId, ICommand[] commands)
         {
-            var commandsBody = commands.Select(c => new EventPayload {
-                                           Code = _messageTypeProvider.GetMessageCode(c.GetType()),
-                                           Payload = c.ToJson()
-                                       })
+            var commandsBody = commands.Select(c => new ObjectPayload(c, _messageTypeProvider.GetMessageCode(c.GetType())))
                                        .ToJson();
             var redisResult = await _db.ScriptEvaluateAsync(_handleEventLuaScript, new {
                                            subscriber = (RedisKey) subscriber,
@@ -166,7 +174,7 @@ namespace IFramework.EventStore.Redis
             if (redisResult.Type == ResultType.SimpleString || redisResult.Type == ResultType.BulkString)
             {
                 commands = ((string) redisResult)
-                           .ToJsonObject<EventPayload[]>()
+                           .ToJsonObject<ObjectPayload[]>()
                            .Select(ep => ep.Payload
                                            .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as ICommand)
                            .ToArray();
