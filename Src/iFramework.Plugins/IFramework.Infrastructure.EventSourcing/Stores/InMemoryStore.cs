@@ -12,6 +12,11 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
             _aggregateRootSet = new ConcurrentLimitedSizeDictionary<string, string>(maxCapacity);
         }
 
+        public void Remove(string id)
+        {
+            _aggregateRootSet.Remove(id);
+        }
+
         public TAggregateRoot Get<TAggregateRoot>(string id) where TAggregateRoot : class
         {
             TAggregateRoot aggregateRoot = default;

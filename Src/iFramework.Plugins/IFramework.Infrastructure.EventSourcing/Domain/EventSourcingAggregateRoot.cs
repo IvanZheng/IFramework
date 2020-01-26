@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using IFramework.Domain;
 using IFramework.Event;
 
@@ -9,6 +10,8 @@ namespace IFramework.Infrastructure.EventSourcing.Domain
         string Id { get; }
         int Version { get; set; }
         void Replay(params IAggregateRootEvent[] events);
+        IEnumerable<IAggregateRootEvent> GetDomainEvents();
+        void Rollback();
     }
 
     public class EventSourcingAggregateRoot : VersionedAggregateRoot, IEventSourcingAggregateRoot

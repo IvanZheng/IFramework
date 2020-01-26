@@ -35,7 +35,7 @@ namespace IFramework.MessageQueue
         {
             var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
-            var handlerProvider = new CommandHandlerProvider(handlerProviderNames);
+            var handlerProvider = new CommandHandlerProvider( );
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
             var commandConsumer = new CommandProcessor(messageQueueClient,
                                                        messagePublisher,

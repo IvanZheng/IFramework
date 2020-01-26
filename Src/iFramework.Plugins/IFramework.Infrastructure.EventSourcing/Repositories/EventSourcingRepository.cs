@@ -18,8 +18,15 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
         void Reset();
     }
 
-    public class EventSourcingRepository<TAggregateRoot> :
+    public interface IEventSourcingRepository<TAggregateRoot> : 
         IRepository<TAggregateRoot>, IEventSourcingRepository
+        where TAggregateRoot : class
+    {
+
+    }
+
+    public class EventSourcingRepository<TAggregateRoot> :
+        IEventSourcingRepository<TAggregateRoot>
         where TAggregateRoot : class, IEventSourcingAggregateRoot, new()
     {
         private readonly IEventStore _eventStore;
@@ -27,7 +34,7 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
         private readonly Dictionary<string, EventSourcingEntityEntry> _local;
         private readonly ISnapshotStore _snapshotStore;
 
-        public EventSourcingRepository(InMemoryStore inMemoryStore, ISnapshotStore snapshotStore, IEventStore eventStore, IUnitOfWork unitOfWork)
+        public EventSourcingRepository(InMemoryStore inMemoryStore, ISnapshotStore snapshotStore, IEventStore eventStore, IEventSourcingUnitOfWork unitOfWork)
         {
             _local = new Dictionary<string, EventSourcingEntityEntry>();
             _inMemoryStore = inMemoryStore;

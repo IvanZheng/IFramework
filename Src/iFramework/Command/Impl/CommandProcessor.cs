@@ -116,7 +116,8 @@ namespace IFramework.Command.Impl
                                 var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
                                                                                topic: topic,
                                                                                messageId: ObjectId.GenerateNewId().ToString(),
-                                                                               sagaInfo: sagaInfo, producer: Producer);
+                                                                               sagaInfo: sagaInfo, 
+                                                                               producer: Producer);
                                 eventMessageStates.Add(new MessageState(sagaReply));
                             }
                         });

@@ -10,7 +10,7 @@ using Sample.DTO;
 
 namespace Sample.CommandHandler.Products
 {
-    public class ProdutCommandHandler : ICommandHandler<CreateProduct>,
+    public class ProductCommandHandler : ICommandHandler<CreateProduct>,
                                         ICommandAsyncHandler<ReduceProduct>,
                                         ICommandHandler<GetProducts>
     {
@@ -20,7 +20,7 @@ namespace Sample.CommandHandler.Products
         private readonly ICommunityRepository _domainRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public ProdutCommandHandler(IUnitOfWork unitOfWork,
+        public ProductCommandHandler(IUnitOfWork unitOfWork,
                                     ICommunityRepository domainRepository,
                                     // IEventBus eventBus,
                                     IMessageContext commandContext)

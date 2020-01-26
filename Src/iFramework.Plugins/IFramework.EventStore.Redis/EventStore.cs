@@ -108,7 +108,7 @@ namespace IFramework.EventStore.Redis
                           .ToArray();
         }
 
-        public async Task AppendEvents(string aggregateId, long expectedVersion, string correlationId, object result, params IEvent[] events)
+        public async Task AppendEvents(string aggregateId, long expectedVersion, string correlationId, object commandResult, params IEvent[] events)
         {
             var eventsBody = events.Select(e => new ObjectPayload(e, _messageTypeProvider.GetMessageCode(e.GetType())))
                                    .ToJson();
@@ -119,7 +119,7 @@ namespace IFramework.EventStore.Redis
                                                                 expectedVersion,
                                                                 result = new {
                                                                     version = expectedVersion + 1,
-                                                                    result = result != null ? new ObjectPayload(result, _messageTypeProvider.GetMessageCode(result.GetType()).ToJson()) : new ObjectPayload()
+                                                                    result = commandResult != null ? new ObjectPayload(commandResult, _messageTypeProvider.GetMessageCode(commandResult.GetType()).ToJson()) : new ObjectPayload()
                                                                 }.ToJson(),
                                                                 events = eventsBody
                                                             })
@@ -128,15 +128,14 @@ namespace IFramework.EventStore.Redis
             if (redisResult.Type == ResultType.BulkString || redisResult.Type == ResultType.SimpleString)
             {
                 var objectPayload = ((string) redisResult).ToJsonObject<ObjectPayload>();
-                object commandResult = null;
-
                 if (!string.IsNullOrWhiteSpace(objectPayload?.Payload))
                 {
                     commandResult = objectPayload.Payload
                                                  .ToJsonObject(_messageTypeProvider.GetMessageType(objectPayload.Code));
-                }                   
+                }
 
-                throw new MessageDuplicatelyHandled(commandResult);
+                events = await GetEvents(aggregateId, correlationId).ConfigureAwait(false);
+                throw new MessageDuplicatelyHandled(commandResult, events);
             }
 
             if ((int) redisResult == -2)
