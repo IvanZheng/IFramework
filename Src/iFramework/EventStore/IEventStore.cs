@@ -44,7 +44,8 @@ namespace IFramework.Event
         /// <param name="subscriber"></param>
         /// <param name="eventId"></param>
         /// <param name="commands"></param>
+        /// <param name="events"></param>
         /// <returns></returns>
-        Task<ICommand[]> HandleEvent(string subscriber, string eventId, ICommand[] commands);
+        Task<(ICommand[], IEvent[])> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events);
     }
 }

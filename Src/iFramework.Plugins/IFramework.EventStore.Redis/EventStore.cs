@@ -81,7 +81,7 @@ namespace IFramework.EventStore.Redis
             if (string.IsNullOrWhiteSpace(handleEventLuaScript))
             {
                 handleEventLuaScript = @"
-                local result = redis.call('HSETNX', @subscriber, @eventId, @commands)
+                local result = redis.call('HSETNX', @subscriber, @eventId, @messages)
                 if result == 1 then
                     return 1                
                 else
@@ -160,26 +160,52 @@ namespace IFramework.EventStore.Redis
             return events;
         }
 
-        public async Task<ICommand[]> HandleEvent(string subscriber, string eventId, ICommand[] commands)
+        public class HandledEventMessages
+        {
+            public string Commands { get; set; }
+            public string Events { get; set; }
+            public HandledEventMessages(){}
+            public HandledEventMessages(string commands, string events)
+            {
+                Commands = commands;
+                Events = events;
+            }
+        }
+
+        public async Task<(ICommand[], IEvent[])> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events)
         {
             var commandsBody = commands.Select(c => new ObjectPayload(c, _messageTypeProvider.GetMessageCode(c.GetType())))
                                        .ToJson();
+            var eventsBody = events.Select(e => new ObjectPayload(e, _messageTypeProvider.GetMessageCode(e.GetType())))
+                                   .ToJson();
             var redisResult = await _db.ScriptEvaluateAsync(_handleEventLuaScript, new {
                                            subscriber = (RedisKey) subscriber,
                                            eventId,
-                                           commands = commandsBody
+                                           messages = new HandledEventMessages(commandsBody, eventsBody).ToJson()
                                        })
                                        .ConfigureAwait(false);
+
+
             if (redisResult.Type == ResultType.SimpleString || redisResult.Type == ResultType.BulkString)
             {
-                commands = ((string) redisResult)
+                var handledEventMessages = ((string) redisResult).ToJsonObject<HandledEventMessages>();
+
+                commands = handledEventMessages.Commands
                            .ToJsonObject<ObjectPayload[]>()
                            .Select(ep => ep.Payload
                                            .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as ICommand)
                            .ToArray();
+
+                events = handledEventMessages.Events
+                                               .ToJsonObject<ObjectPayload[]>()
+                                               .Select(ep => ep.Payload
+                                                               .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
+                                               .ToArray();
             }
 
-            return commands;
+
+
+            return (commands, events);
         }
     }
 }

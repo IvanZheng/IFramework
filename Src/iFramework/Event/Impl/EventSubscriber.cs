@@ -101,7 +101,7 @@ namespace IFramework.Event.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected async Task ConsumeMessage(IMessageContext eventContext)
+        protected virtual async Task ConsumeMessage(IMessageContext eventContext)
         {
             try
             {
