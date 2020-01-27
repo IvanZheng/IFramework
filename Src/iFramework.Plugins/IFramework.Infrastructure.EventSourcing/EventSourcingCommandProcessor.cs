@@ -85,9 +85,10 @@ namespace IFramework.Infrastructure.EventSourcing
                     var unitOfWork = scope.GetService<IEventSourcingUnitOfWork>();
                     await concurrencyProcessor.ProcessAsync(async () =>
                                               {
-                                                  // TODO: reconstruct eventMessageStates building
+                                                  commandContext.Reply = null;
                                                   eventMessageStates.Clear();
                                                   eventBus.ClearMessages();
+
                                                   try
                                                   {
                                                       if (messageHandlerType.IsAsync)
@@ -100,17 +101,29 @@ namespace IFramework.Infrastructure.EventSourcing
                                                           var handler = messageHandler;
                                                           await Task.Run(() => { ((dynamic) handler).Handle((dynamic) command); }).ConfigureAwait(false);
                                                       }
-
-
-                                                      if (needReply)
+                                                  }
+                                                  catch (Exception e)
+                                                  {
+                                                      if (e is DomainException exception)
                                                       {
-                                                          messageReply = MessageQueueClient.WrapMessage(commandContext.Reply,
-                                                                                                        commandContext.MessageId,
-                                                                                                        commandContext.ReplyToEndPoint,
-                                                                                                        producer: Producer);
-                                                          eventMessageStates.Add(new MessageState(messageReply));
+                                                          commandContext.Reply = exception;
+                                                          Logger.LogWarning(e, command.ToJson());
+                                                          var domainExceptionEvent = exception.DomainExceptionEvent;
+                                                          if (domainExceptionEvent != null)
+                                                          {
+                                                             eventBus.Publish(domainExceptionEvent);
+                                                          }
                                                       }
-
+                                                      else
+                                                      {
+                                                          commandContext.Reply = new Exception(e.GetBaseException().Message);
+                                                          Logger.LogError(e, command.ToJson());
+                                                      }
+                                                  }
+                                                  finally
+                                                  {
+                                                      await unitOfWork.CommitAsync()
+                                                                      .ConfigureAwait(false);
                                                       eventBus.GetEvents()
                                                               .ForEach(@event =>
                                                               {
@@ -123,107 +136,14 @@ namespace IFramework.Infrastructure.EventSourcing
                                                                                                                     producer: Producer);
                                                                   eventMessageStates.Add(new MessageState(eventContext));
                                                               });
-
-                                                      eventBus.GetToPublishAnywayMessages()
-                                                              .ForEach(@event =>
-                                                              {
-                                                                  var topic = @event.GetFormatTopic();
-                                                                  var eventContext = MessageQueueClient.WrapMessage(@event,
-                                                                                                                    commandContext.MessageId,
-                                                                                                                    topic,
-                                                                                                                    @event.Key,
-                                                                                                                    sagaInfo: sagaInfo,
-                                                                                                                    producer: Producer);
-                                                                  eventMessageStates.Add(new MessageState(eventContext));
-                                                              });
-
-                                                      eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
-                                                  }
-                                                  catch (Exception e)
-                                                  {
-                                                      eventMessageStates.Clear();
-
                                                       if (needReply)
                                                       {
-                                                          messageReply = MessageQueueClient.WrapMessage(e,
+                                                          messageReply = MessageQueueClient.WrapMessage(commandContext.Reply,
                                                                                                         commandContext.MessageId,
                                                                                                         commandContext.ReplyToEndPoint,
-                                                                                                        producer: Producer,
-                                                                                                        messageId: ObjectId.GenerateNewId().ToString());
+                                                                                                        producer: Producer);
                                                           eventMessageStates.Add(new MessageState(messageReply));
                                                       }
-
-                                                      eventBus.GetToPublishAnywayMessages()
-                                                              .ForEach(@event =>
-                                                              {
-                                                                  var topic = @event.GetFormatTopic();
-                                                                  var eventContext = MessageQueueClient.WrapMessage(@event,
-                                                                                                                    commandContext.MessageId,
-                                                                                                                    topic,
-                                                                                                                    @event.Key,
-                                                                                                                    sagaInfo: sagaInfo,
-                                                                                                                    producer: Producer);
-                                                                  eventMessageStates.Add(new MessageState(eventContext));
-                                                              });
-                                                      if (e is DomainException exception)
-                                                      {
-                                                          var domainExceptionEvent = exception.DomainExceptionEvent;
-                                                          if (domainExceptionEvent != null)
-                                                          {
-                                                              var topic = domainExceptionEvent.GetFormatTopic();
-
-                                                              var exceptionMessage = MessageQueueClient.WrapMessage(domainExceptionEvent,
-                                                                                                                    commandContext.MessageId,
-                                                                                                                    topic,
-                                                                                                                    producer: Producer);
-                                                              eventMessageStates.Add(new MessageState(exceptionMessage));
-                                                          }
-
-                                                          Logger.LogWarning(e, command.ToJson());
-                                                      }
-                                                      else
-                                                      {
-                                                          Logger.LogError(e, command.ToJson());
-                                                          //if we meet with unknown exception, we interrupt saga
-                                                          if (sagaInfo != null)
-                                                          {
-                                                              eventBus.FinishSaga(e);
-                                                          }
-                                                      }
-
-                                                      eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
-                                                  }
-                                                  finally
-                                                  {
-                                                      try
-                                                      {
-                                                          await unitOfWork.CommitAsync()
-                                                                          .ConfigureAwait(false);
-                                                      }
-                                                      catch (MessageDuplicatelyHandled e)
-                                                      {
-                                                         eventMessageStates.Clear();
-                                                         e.Events.ForEach(@event =>
-                                                         {
-                                                             var topic = @event.GetFormatTopic();
-                                                             var eventContext = MessageQueueClient.WrapMessage(@event,
-                                                                                                               commandContext.MessageId,
-                                                                                                               topic,
-                                                                                                               @event.Key,
-                                                                                                               sagaInfo: sagaInfo,
-                                                                                                               producer: Producer);
-                                                             eventMessageStates.Add(new MessageState(eventContext));
-                                                         });
-                                                         if (needReply)
-                                                         {
-                                                             messageReply = MessageQueueClient.WrapMessage(e.Result,
-                                                                                                           commandContext.MessageId,
-                                                                                                           commandContext.ReplyToEndPoint,
-                                                                                                           producer: Producer);
-                                                             eventMessageStates.Add(new MessageState(messageReply));
-                                                         }
-                                                      }
-                                                
                                                   }
                                               })
                                               .ConfigureAwait(false);

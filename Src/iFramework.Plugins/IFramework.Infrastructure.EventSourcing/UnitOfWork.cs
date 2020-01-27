@@ -12,6 +12,7 @@ using IFramework.Infrastructure.EventSourcing.Stores;
 using IFramework.Message;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure.EventSourcing
 {
@@ -21,17 +22,19 @@ namespace IFramework.Infrastructure.EventSourcing
     {
         private readonly IMessageContext _commandContext;
         private readonly InMemoryStore _inMemoryStore;
+        private readonly ILogger _logger;
         private readonly IEventBus _eventBus;
         private readonly IEventStore _eventStore;
 
         protected List<IEventSourcingRepository> Repositories = new List<IEventSourcingRepository>();
 
-        public UnitOfWork(IEventStore eventStore, IEventBus eventBus, IMessageContext commandContext, InMemoryStore inMemoryStore)
+        public UnitOfWork(IEventStore eventStore, IEventBus eventBus, IMessageContext commandContext, InMemoryStore inMemoryStore, ILogger<UnitOfWork> logger)
         {
             _eventStore = eventStore;
             _eventBus = eventBus;
             _commandContext = commandContext;
             _inMemoryStore = inMemoryStore;
+            _logger = logger;
         }
 
         public void Dispose() { }
@@ -58,19 +61,28 @@ namespace IFramework.Infrastructure.EventSourcing
                                     try
                                     {
                                         var aggregateEvents = aggregateRoot.GetDomainEvents().Cast<IEvent>().ToArray();
+                                        _eventBus.Publish(aggregateEvents);
                                         await _eventStore.AppendEvents(aggregateRoot.Id,
                                                                        e.Version,
                                                                        _commandContext.MessageId,
                                                                        _commandContext.Reply,
-                                                                       aggregateEvents)
+                                                                       _eventBus.GetEvents()
+                                                                                .ToArray())
                                                          .ConfigureAwait(false);
-                                        _eventBus.Publish(aggregateEvents);
+                                        
                                     }
                                     catch (DbUpdateConcurrencyException)
                                     {
                                         Rollback();
                                         _inMemoryStore.Remove(aggregateRoot.Id);
                                         throw;
+                                    }
+                                    catch (MessageDuplicatelyHandled ex)
+                                    {
+                                        _logger.LogWarning(ex);
+                                        _eventBus.ClearMessages();
+                                        _eventBus.Publish(ex.Events);
+                                        _commandContext.Reply = ex.Result;
                                     }
                                 });
             }

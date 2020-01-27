@@ -135,7 +135,7 @@ namespace IFramework.EventStore.Redis
                 }
 
                 events = await GetEvents(aggregateId, correlationId).ConfigureAwait(false);
-                throw new MessageDuplicatelyHandled(commandResult, events);
+                throw new MessageDuplicatelyHandled(correlationId, aggregateId, commandResult, events);
             }
 
             if ((int) redisResult == -2)
