@@ -121,7 +121,7 @@ namespace IFramework.Infrastructure.EventSourcing
                                                               eventBus.FinishSaga(e);
                                                           }
 
-                                                          commandContext.Reply = new Exception(e.GetBaseException().Message);
+                                                          commandContext.Reply = e;
                                                           Logger.LogError(e, command.ToJson());
                                                       }
                                                   }
