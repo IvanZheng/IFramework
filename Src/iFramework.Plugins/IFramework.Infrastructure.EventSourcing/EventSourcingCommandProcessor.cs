@@ -111,11 +111,16 @@ namespace IFramework.Infrastructure.EventSourcing
                                                           var domainExceptionEvent = exception.DomainExceptionEvent;
                                                           if (domainExceptionEvent != null)
                                                           {
-                                                             eventBus.Publish(domainExceptionEvent);
+                                                              eventBus.Publish(domainExceptionEvent);
                                                           }
                                                       }
                                                       else
                                                       {
+                                                          if (sagaInfo != null)
+                                                          {
+                                                              eventBus.FinishSaga(e);
+                                                          }
+
                                                           commandContext.Reply = new Exception(e.GetBaseException().Message);
                                                           Logger.LogError(e, command.ToJson());
                                                       }
