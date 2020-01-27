@@ -136,6 +136,7 @@ namespace IFramework.Infrastructure.EventSourcing
                                                                                                                     producer: Producer);
                                                                   eventMessageStates.Add(new MessageState(eventContext));
                                                               });
+                                                      GetSagaReplyMessageState(eventMessageStates, sagaInfo, eventBus);
                                                       if (needReply)
                                                       {
                                                           messageReply = MessageQueueClient.WrapMessage(commandContext.Reply,

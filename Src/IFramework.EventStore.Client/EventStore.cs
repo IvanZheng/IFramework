@@ -64,7 +64,9 @@ namespace IFramework.EventStore.Client
                                .ToArray();
         }
 
-        public Task AppendEvents(string id, long expectedVersion, string correlationId, object result, params IEvent[] events)
+      
+
+        public Task AppendEvents(string id, long expectedVersion, string correlationId, object result, object sagaResult, params IEvent[] events)
         {
             var targetVersion = expectedVersion;
             var eventStream = events.Select(e =>
@@ -88,7 +90,7 @@ namespace IFramework.EventStore.Client
             throw new NotImplementedException();
         }
 
-        public Task<(ICommand[], IEvent[])> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events)
+        public Task<(ICommand[] commands, IEvent[] events, object sagaResult)> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events, object sagaResult)
         {
             throw new NotImplementedException();
         }

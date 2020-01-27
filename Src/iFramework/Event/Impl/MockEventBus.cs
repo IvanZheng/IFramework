@@ -32,7 +32,7 @@ namespace IFramework.Event.Impl
             return null;
         }
 
-        public IEnumerable<object> GetSagaResults()
+        public object GetSagaResult()
         {
             return null;
         }

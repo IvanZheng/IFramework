@@ -102,14 +102,13 @@ namespace IFramework.Command.Impl
             });
         }
 
-        protected List<MessageState> GetSagaReplyMessageStates(SagaInfo sagaInfo, IEventBus eventBus)
+        protected void GetSagaReplyMessageState(List<MessageState> messageStates, SagaInfo sagaInfo, IEventBus eventBus)
         {
             var eventMessageStates = new List<MessageState>();
-            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            var sagaResult = eventBus.GetSagaResult();
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId) && sagaResult != null)
             {
-                eventBus.GetSagaResults()
-                        .ForEach(sagaResult =>
-                        {
+                
                             var topic = sagaInfo.ReplyEndPoint;
                             if (!string.IsNullOrEmpty(topic))
                             {
@@ -118,12 +117,9 @@ namespace IFramework.Command.Impl
                                                                                messageId: ObjectId.GenerateNewId().ToString(),
                                                                                sagaInfo: sagaInfo, 
                                                                                producer: Producer);
-                                eventMessageStates.Add(new MessageState(sagaReply));
+                                messageStates.Add(new MessageState(sagaReply));
                             }
-                        });
             }
-
-            return eventMessageStates;
         }
 
         protected virtual async Task ConsumeMessage(IMessageContext commandContext)
@@ -238,7 +234,7 @@ namespace IFramework.Command.Impl
                                                     eventMessageStates.Add(new MessageState(eventContext));
                                                 });
 
-                                        eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                        GetSagaReplyMessageState(eventMessageStates, sagaInfo, eventBus);
 
                                         await messageStore.SaveCommandAsync(commandContext, commandContext.Reply,
                                                                  eventMessageStates.Select(s => s.MessageContext).ToArray())
@@ -300,7 +296,7 @@ namespace IFramework.Command.Impl
                                         }
                                     }
 
-                                    eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                    GetSagaReplyMessageState(eventMessageStates, sagaInfo, eventBus);
                                     await messageStore.SaveFailedCommandAsync(commandContext, e,
                                                                    eventMessageStates.Select(s => s.MessageContext)
                                                                                      .ToArray())

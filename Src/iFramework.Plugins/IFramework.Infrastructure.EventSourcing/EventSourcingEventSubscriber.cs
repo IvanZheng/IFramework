@@ -122,7 +122,7 @@ namespace IFramework.Infrastructure.EventSourcing
 
 
 
-                                _eventStore.HandleEvent(subscriptionName, eventContext.MessageId, null, null);
+                                await _eventStore.HandleEvent(subscriptionName, eventContext.MessageId, null, null, null);
 
 
                             if (commandMessageStates.Count > 0)

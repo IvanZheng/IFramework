@@ -48,7 +48,7 @@ namespace IFramework.EventStore.Redis
                     
                     local version = redis.call('JSON.GET', aggregateCommandKey, '.version')
                     if version then
-                        return redis.call('JSON.GET', aggregateCommandKey, '.result')
+                        return redis.call('JSON.GET', aggregateCommandKey, '.')
                     end
                     local expectedVersion = redis.call('ZREVRANGE', aggregateEventKey, '0', '0', 'WITHSCORES')
                     if #expectedVersion == 0 or expectedVersion[2] == @expectedVersion then
@@ -108,34 +108,45 @@ namespace IFramework.EventStore.Redis
                           .ToArray();
         }
 
-        public async Task AppendEvents(string aggregateId, long expectedVersion, string correlationId, object commandResult, params IEvent[] events)
+        public async Task AppendEvents(string aggregateId, long expectedVersion, string correlationId, object commandResult, object sagaResult, params IEvent[] events)
         {
             var eventsBody = events.Select(e => new ObjectPayload(e, _messageTypeProvider.GetMessageCode(e.GetType())))
                                    .ToJson();
+            var commandResultPayload = commandResult != null ? new ObjectPayload(commandResult, _messageTypeProvider.GetMessageCode(commandResult.GetType())) : new ObjectPayload();
+            var sagaResultPayload = sagaResult != null ? new ObjectPayload(sagaResult, _messageTypeProvider.GetMessageCode(sagaResult.GetType())) : new ObjectPayload();
+            var resultPayload = new MessageAttachment(commandResultPayload,
+                                                      sagaResultPayload,
+                                                      expectedVersion + 1).ToJson(useCamelCase: true);
             var redisResult = await _db.ScriptEvaluateAsync(_appendEventsLuaScript,
-                                                            new {
+                                                            new
+                                                            {
                                                                 aggregateId = (RedisKey) aggregateId,
                                                                 commandId = correlationId,
                                                                 expectedVersion,
-                                                                result = new {
-                                                                    version = expectedVersion + 1,
-                                                                    result = commandResult != null ? new ObjectPayload(commandResult, _messageTypeProvider.GetMessageCode(commandResult.GetType()).ToJson()) : new ObjectPayload()
-                                                                }.ToJson(),
+                                                                result = resultPayload,
                                                                 events = eventsBody
                                                             })
                                        .ConfigureAwait(false);
             _logger.LogDebug($"redisResult:{redisResult} aggregateId:{aggregateId} expectedVersion:{expectedVersion} correlationId:{correlationId} events:{eventsBody}");
             if (redisResult.Type == ResultType.BulkString || redisResult.Type == ResultType.SimpleString)
             {
-                var objectPayload = ((string) redisResult).ToJsonObject<ObjectPayload>();
-                if (!string.IsNullOrWhiteSpace(objectPayload?.Payload))
+                var messageAttachment = ((string) redisResult).ToJsonObject<MessageAttachment>();
+                if (!string.IsNullOrWhiteSpace(messageAttachment.CommandResult?.Payload))
                 {
-                    commandResult = objectPayload.Payload
-                                                 .ToJsonObject(_messageTypeProvider.GetMessageType(objectPayload.Code));
+                    commandResult = messageAttachment.CommandResult
+                                                     .Payload
+                                                     .ToJsonObject(_messageTypeProvider.GetMessageType(messageAttachment.CommandResult.Code));
+                }
+
+                if (!string.IsNullOrWhiteSpace(messageAttachment.SagaResult?.Payload))
+                {
+                    sagaResult = messageAttachment.SagaResult
+                                                  .Payload
+                                                  .ToJsonObject(_messageTypeProvider.GetMessageType(messageAttachment.SagaResult.Code));
                 }
 
                 events = await GetEvents(aggregateId, correlationId).ConfigureAwait(false);
-                throw new MessageDuplicatelyHandled(correlationId, aggregateId, commandResult, events);
+                throw new MessageDuplicatelyHandled(correlationId, aggregateId, commandResult, sagaResult, events);
             }
 
             if ((int) redisResult == -2)
@@ -147,7 +158,8 @@ namespace IFramework.EventStore.Redis
         public async Task<IEvent[]> GetEvents(string id, string commandId)
         {
             var redisResult = await _db.ScriptEvaluateAsync(_getEventsLuaScript,
-                                                            new {
+                                                            new
+                                                            {
                                                                 aggregateId = (RedisKey) id,
                                                                 commandId
                                                             })
@@ -160,28 +172,20 @@ namespace IFramework.EventStore.Redis
             return events;
         }
 
-        public class HandledEventMessages
-        {
-            public string Commands { get; set; }
-            public string Events { get; set; }
-            public HandledEventMessages(){}
-            public HandledEventMessages(string commands, string events)
-            {
-                Commands = commands;
-                Events = events;
-            }
-        }
-
-        public async Task<(ICommand[], IEvent[])> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events)
+        public async Task<(ICommand[] commands, IEvent[] events, object sagaResult)> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events, object sagaResult)
         {
             var commandsBody = commands.Select(c => new ObjectPayload(c, _messageTypeProvider.GetMessageCode(c.GetType())))
                                        .ToJson();
             var eventsBody = events.Select(e => new ObjectPayload(e, _messageTypeProvider.GetMessageCode(e.GetType())))
                                    .ToJson();
-            var redisResult = await _db.ScriptEvaluateAsync(_handleEventLuaScript, new {
+            var sagaResultBody = sagaResult != null ? new ObjectPayload(sagaResult, _messageTypeProvider.GetMessageCode(sagaResult.GetType())) : new ObjectPayload();
+            var redisResult = await _db.ScriptEvaluateAsync(_handleEventLuaScript, new
+                                       {
                                            subscriber = (RedisKey) subscriber,
                                            eventId,
-                                           messages = new HandledEventMessages(commandsBody, eventsBody).ToJson()
+                                           messages = new HandledEventMessages(commandsBody,
+                                                                               eventsBody,
+                                                                               sagaResultBody.ToJson()).ToJson()
                                        })
                                        .ConfigureAwait(false);
 
@@ -191,21 +195,39 @@ namespace IFramework.EventStore.Redis
                 var handledEventMessages = ((string) redisResult).ToJsonObject<HandledEventMessages>();
 
                 commands = handledEventMessages.Commands
-                           .ToJsonObject<ObjectPayload[]>()
-                           .Select(ep => ep.Payload
-                                           .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as ICommand)
-                           .ToArray();
-
-                events = handledEventMessages.Events
                                                .ToJsonObject<ObjectPayload[]>()
                                                .Select(ep => ep.Payload
-                                                               .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
+                                                               .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as ICommand)
                                                .ToArray();
+
+                events = handledEventMessages.Events
+                                             .ToJsonObject<ObjectPayload[]>()
+                                             .Select(ep => ep.Payload
+                                                             .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
+                                             .ToArray();
+                var sagaResultPayload = handledEventMessages.SagaResult
+                                                            .ToJsonObject<ObjectPayload>();
+                sagaResult = sagaResultPayload.Payload.ToJsonObject(_messageTypeProvider.GetMessageType(sagaResultPayload.Code));
             }
 
 
+            return (commands, events, sagaResult);
+        }
 
-            return (commands, events);
+        public class HandledEventMessages
+        {
+            public HandledEventMessages() { }
+
+            public HandledEventMessages(string commands, string events, string sagaResult)
+            {
+                Commands = commands;
+                Events = events;
+                SagaResult = sagaResult;
+            }
+
+            public string Commands { get; set; }
+            public string Events { get; set; }
+            public string SagaResult { get; set; }
         }
     }
 }

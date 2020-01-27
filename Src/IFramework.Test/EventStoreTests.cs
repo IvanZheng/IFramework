@@ -50,7 +50,7 @@ namespace IFramework.Test
             const string userId = "3";
             var name = $"ivan_{DateTime.Now.Ticks}";
             var correlationId = $"cmd{DateTime.Now.Ticks}";
-           
+            var sagaResult = userId;
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var messageTypeProvider = serviceScope.GetService<IMessageTypeProvider>();
@@ -76,6 +76,7 @@ namespace IFramework.Test
                                                   expectedVersion,
                                                   command.Id,
                                                   command,
+                                                  sagaResult,
                                                   @event)
                                     .ConfigureAwait(false);
                 }
@@ -87,6 +88,7 @@ namespace IFramework.Test
                                                   expectedVersion,
                                                   command.Id,
                                                   null,
+                                                  sagaResult,
                                                   @event)
                                     .ConfigureAwait(false);
                 }
@@ -113,12 +115,12 @@ namespace IFramework.Test
                 messageTypeProvider.Register(nameof(UserCreated), typeof(UserCreated))
                                    .Register(nameof(UserModified), typeof(UserModified))
                                    .Register(nameof(CreateUser), typeof(CreateUser));
-
+                var sagaResult = userId;
                 var eventStore = serviceScope.GetService<IEventStore>();
                 await eventStore.Connect()
                                 .ConfigureAwait(false);
-                var result = await eventStore.HandleEvent("subscriber1", eventId, commands, events)
-                                               .ConfigureAwait(false);
+                var result = await eventStore.HandleEvent("subscriber1", eventId, commands, events, sagaResult)
+                                             .ConfigureAwait(false);
                 Assert.NotEmpty(result.Item1);
                 Assert.NotEmpty(result.Item2);
             }

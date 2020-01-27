@@ -66,6 +66,7 @@ namespace IFramework.Infrastructure.EventSourcing
                                                                        e.Version,
                                                                        _commandContext.MessageId,
                                                                        _commandContext.Reply,
+                                                                       _eventBus.GetSagaResult(),
                                                                        _eventBus.GetEvents()
                                                                                 .ToArray())
                                                          .ConfigureAwait(false);
@@ -82,7 +83,11 @@ namespace IFramework.Infrastructure.EventSourcing
                                         _logger.LogWarning(ex);
                                         _eventBus.ClearMessages();
                                         _eventBus.Publish(ex.Events);
-                                        _commandContext.Reply = ex.Result;
+                                        _commandContext.Reply = ex.CommandResult;
+                                        if (ex.SagaResult != null)
+                                        {
+                                            _eventBus.FinishSaga(ex.SagaResult);
+                                        }
                                     }
                                 });
             }

@@ -192,7 +192,7 @@ namespace IFramework.Event.Impl
                                                                                                                            sagaInfo: sagaInfo, producer: Producer)));
                                                 });
 
-                                        eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                       GetSagaReplyMessageStates(eventMessageStates, sagaInfo, eventBus);
 
                                         await messageStore.HandleEventAsync(eventContext,
                                                                             subscriptionName,
@@ -256,7 +256,7 @@ namespace IFramework.Event.Impl
                                                                                                                    producer: Producer)));
                                         });
 
-                                eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                GetSagaReplyMessageStates(eventMessageStates, sagaInfo, eventBus);
 
                                 await messageStore.SaveFailHandledEventAsync(eventContext, subscriptionName, e,
                                                                              eventMessageStates.Select(s => s.MessageContext).ToArray())
@@ -281,28 +281,22 @@ namespace IFramework.Event.Impl
         }
 
 
-        private List<MessageState> GetSagaReplyMessageStates(SagaInfo sagaInfo, IEventBus eventBus)
+        private void GetSagaReplyMessageStates(List<MessageState> messageStates, SagaInfo sagaInfo, IEventBus eventBus)
         {
-            var eventMessageStates = new List<MessageState>();
-            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            var sagaResult = eventBus.GetSagaResult();
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId) && sagaResult != null)
             {
-                eventBus.GetSagaResults()
-                        .ForEach(sagaResult =>
-                        {
-                            var topic = sagaInfo.ReplyEndPoint;
-                            if (!string.IsNullOrEmpty(topic))
-                            {
-                                var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
-                                                                               topic: topic,
-                                                                               messageId: ObjectId.GenerateNewId().ToString(),
-                                                                               sagaInfo: sagaInfo,
-                                                                               producer: Producer);
-                                eventMessageStates.Add(new MessageState(sagaReply));
-                            }
-                        });
+                 var topic = sagaInfo.ReplyEndPoint;
+                 if (!string.IsNullOrEmpty(topic))
+                 {
+                     var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
+                                                                    topic: topic,
+                                                                    messageId: ObjectId.GenerateNewId().ToString(),
+                                                                    sagaInfo: sagaInfo,
+                                                                    producer: Producer);
+                     messageStates.Add(new MessageState(sagaReply));
+                 }
             }
-
-            return eventMessageStates;
         }
 
         protected void OnMessagesReceived(params IMessageContext[] messageContexts)
