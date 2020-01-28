@@ -172,20 +172,27 @@ namespace IFramework.EventStore.Redis
             return events;
         }
 
-        public async Task<(ICommand[] commands, IEvent[] events, object sagaResult)> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events, object sagaResult)
+        public async Task<(ICommand[] commands, IEvent[] events, object sagaResult)> HandleEvent(string subscriber, 
+                                                                                                 string eventId,
+                                                                                                 ICommand[] commands, 
+                                                                                                 IEvent[] events, 
+                                                                                                 object sagaResult,
+                                                                                                 object eventResult)
         {
             var commandsBody = commands.Select(c => new ObjectPayload(c, _messageTypeProvider.GetMessageCode(c.GetType())))
                                        .ToJson();
             var eventsBody = events.Select(e => new ObjectPayload(e, _messageTypeProvider.GetMessageCode(e.GetType())))
                                    .ToJson();
             var sagaResultBody = sagaResult != null ? new ObjectPayload(sagaResult, _messageTypeProvider.GetMessageCode(sagaResult.GetType())) : new ObjectPayload();
+            var eventResultBody = eventResult != null ? new ObjectPayload(eventResult, _messageTypeProvider.GetMessageCode(eventResult.GetType())) : new ObjectPayload();
             var redisResult = await _db.ScriptEvaluateAsync(_handleEventLuaScript, new
                                        {
                                            subscriber = (RedisKey) subscriber,
                                            eventId,
                                            messages = new HandledEventMessages(commandsBody,
                                                                                eventsBody,
-                                                                               sagaResultBody.ToJson()).ToJson()
+                                                                               sagaResultBody.ToJson(),
+                                                                               eventResultBody.ToJson()).ToJson()
                                        })
                                        .ConfigureAwait(false);
 
@@ -218,16 +225,18 @@ namespace IFramework.EventStore.Redis
         {
             public HandledEventMessages() { }
 
-            public HandledEventMessages(string commands, string events, string sagaResult)
+            public HandledEventMessages(string commands, string events, string sagaResult, string eventResult)
             {
                 Commands = commands;
                 Events = events;
                 SagaResult = sagaResult;
+                EventResult = eventResult;
             }
 
             public string Commands { get; set; }
             public string Events { get; set; }
             public string SagaResult { get; set; }
+            public string EventResult { get; set; }
         }
     }
 }

@@ -90,7 +90,12 @@ namespace IFramework.EventStore.Client
             throw new NotImplementedException();
         }
 
-        public Task<(ICommand[] commands, IEvent[] events, object sagaResult)> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events, object sagaResult)
+        public Task<(ICommand[] commands, IEvent[] events, object sagaResult)> HandleEvent(string subscriber, 
+                                                                                           string eventId, 
+                                                                                           ICommand[] commands, 
+                                                                                           IEvent[] events, 
+                                                                                           object sagaResult,
+                                                                                           object eventResult)
         {
             throw new NotImplementedException();
         }

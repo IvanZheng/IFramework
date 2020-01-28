@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using IFramework.Command;
 using IFramework.DependencyInjection;
 using IFramework.Event;
@@ -30,9 +29,9 @@ namespace IFramework.Infrastructure.EventSourcing
                                             IEventStore eventStore,
                                             ConsumerConfig consumerConfig = null)
             : base(messageQueueClient,
-                   handlerProvider, 
-                   commandBus, 
-                   messagePublisher, 
+                   handlerProvider,
+                   commandBus,
+                   messagePublisher,
                    subscriptionName,
                    topicSubscriptions,
                    consumerId,
@@ -53,6 +52,7 @@ namespace IFramework.Infrastructure.EventSourcing
                     Logger.LogDebug($"message is null! messageContext: {eventContext.ToJson()}");
                     return;
                 }
+
                 var sagaInfo = eventContext.SagaInfo;
                 var messageHandlerTypes = HandlerProvider.GetHandlerTypes(message.GetType());
 
@@ -68,7 +68,7 @@ namespace IFramework.Infrastructure.EventSourcing
                     using var scope = ObjectProviderFactory.Instance
                                                            .ObjectProvider
                                                            .CreateScope(builder => builder.RegisterInstance(typeof(IMessageContext), eventContext));
-                    var messageStore = scope.GetService<IMessageStore>();
+
                     var subscriptionName = $"{SubscriptionName}.{messageHandlerType.Type.FullName}";
                     using var _ = Logger.BeginScope(new
                     {
@@ -82,75 +82,28 @@ namespace IFramework.Infrastructure.EventSourcing
                     var eventBus = scope.GetService<IEventBus>();
                     try
                     {
-                        
-                            var messageHandler = scope.GetRequiredService(messageHandlerType.Type);
-                            
-                                if (messageHandlerType.IsAsync)
-                                {
-                                    await ((dynamic) messageHandler).Handle((dynamic) message)
-                                                                    .ConfigureAwait(false);
-                                }
-                                else
-                                {
-                                    ((dynamic) messageHandler).Handle((dynamic) message);
-                                }
+                        var messageHandler = scope.GetRequiredService(messageHandlerType.Type);
 
-                                //get commands to be sent
-                                eventBus.GetCommands()
-                                        .ForEach(cmd =>
-                                                     commandMessageStates.Add(new MessageState(CommandBus?.WrapCommand(cmd,
-                                                                                                                       sagaInfo: sagaInfo, producer: Producer)))
-                                                );
-                                //get events to be published
-                                eventBus.GetEvents()
-                                        .ForEach(msg =>
-                                        {
-                                            var topic = msg.GetFormatTopic();
-                                            eventMessageStates.Add(new MessageState(MessageQueueClient.WrapMessage(msg,
-                                                                                                                   topic: topic,
-                                                                                                                   key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
-                                        });
-
-                                eventBus.GetToPublishAnywayMessages()
-                                        .ForEach(msg =>
-                                        {
-                                            var topic = msg.GetFormatTopic();
-                                            eventMessageStates.Add(new MessageState(MessageQueueClient.WrapMessage(msg,
-                                                                                                                   topic: topic, key: msg.Key,
-                                                                                                                   sagaInfo: sagaInfo, producer: Producer)));
-                                        });
-
-
-
-                                await _eventStore.HandleEvent(subscriptionName, eventContext.MessageId, null, null, null);
-
-
-                            if (commandMessageStates.Count > 0)
-                            {
-                                CommandBus?.SendMessageStates(commandMessageStates);
-                            }
-
-                            if (eventMessageStates.Count > 0)
-                            {
-                                MessagePublisher?.SendAsync(CancellationToken.None, eventMessageStates.ToArray());
-                            }
-                        
+                        if (messageHandlerType.IsAsync)
+                        {
+                            await ((dynamic) messageHandler).Handle((dynamic) message)
+                                                            .ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            ((dynamic) messageHandler).Handle((dynamic) message);
+                        }
                     }
                     catch (Exception e)
                     {
-                        eventMessageStates.Clear();
-                        messageStore.Rollback();
+                        eventBus.ClearMessages();
                         if (e is DomainException exception)
                         {
+                            eventContext.Reply = e;
                             var domainExceptionEvent = exception.DomainExceptionEvent;
                             if (domainExceptionEvent != null)
                             {
-                                var topic = domainExceptionEvent.GetFormatTopic();
-                                var exceptionMessage = MessageQueueClient.WrapMessage(domainExceptionEvent,
-                                                                                      eventContext.MessageId,
-                                                                                      topic,
-                                                                                      producer: Producer);
-                                eventMessageStates.Add(new MessageState(exceptionMessage));
+                                eventBus.Publish(domainExceptionEvent);
                             }
 
                             Logger.LogWarning(e, message.ToJson());
@@ -163,29 +116,60 @@ namespace IFramework.Infrastructure.EventSourcing
                             {
                                 eventBus.FinishSaga(e);
                             }
-
+                            eventContext.Reply = new Exception(e.GetBaseException().Message);
                             Logger.LogError(e, message.ToJson());
                         }
+                    }
+                    finally
+                    {
+                        var result = await _eventStore.HandleEvent(subscriptionName,
+                                                                   eventContext.MessageId,
+                                                                   eventBus.GetCommands().ToArray(),
+                                                                   eventBus.GetEvents().ToArray(),
+                                                                   eventBus.GetSagaResult(),
+                                                                   eventContext.Reply);
+                        //get commands to be sent
+                        result.commands
+                              .ForEach(cmd =>
+                                           commandMessageStates.Add(new MessageState(CommandBus?.WrapCommand(cmd,
+                                                                                                             sagaInfo: sagaInfo,
+                                                                                                             producer: Producer)))
+                                      );
+                        //get events to be published
+                        result.events
+                              .ForEach(msg =>
+                              {
+                                  var topic = msg.GetFormatTopic();
+                                  eventMessageStates.Add(new MessageState(MessageQueueClient.WrapMessage(msg,
+                                                                                                         topic: topic,
+                                                                                                         key: msg.Key,
+                                                                                                         sagaInfo: sagaInfo,
+                                                                                                         producer: Producer)));
+                              });
 
-                        eventBus.GetToPublishAnywayMessages()
-                                .ForEach(msg =>
-                                {
-                                    var topic = msg.GetFormatTopic();
-                                    eventMessageStates.Add(new MessageState(MessageQueueClient.WrapMessage(msg,
-                                                                                                           topic: topic,
-                                                                                                           key: msg.Key,
-                                                                                                           sagaInfo: sagaInfo,
-                                                                                                           producer: Producer)));
-                                });
+                        if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId) && result.sagaResult != null)
+                        {
+                            var topic = sagaInfo.ReplyEndPoint;
+                            if (!string.IsNullOrEmpty(topic))
+                            {
+                                var sagaReply = MessageQueueClient.WrapMessage(result.sagaResult,
+                                                                               topic: topic,
+                                                                               messageId: ObjectId.GenerateNewId().ToString(),
+                                                                               sagaInfo: sagaInfo,
+                                                                               producer: Producer);
+                                eventMessageStates.Add(new MessageState(sagaReply));
+                            }
+                        }
 
-                       
+                        if (commandMessageStates.Count > 0)
+                        {
+                            CommandBus?.SendMessageStates(commandMessageStates);
+                        }
 
-                        await messageStore.SaveFailHandledEventAsync(eventContext, subscriptionName, e,
-                                                                     eventMessageStates.Select(s => s.MessageContext).ToArray())
-                                          .ConfigureAwait(false);
                         if (eventMessageStates.Count > 0)
                         {
-                            var sendTask = MessagePublisher.SendAsync(CancellationToken.None, eventMessageStates.ToArray());
+                            MessagePublisher?.SendAsync(CancellationToken.None,
+                                                        eventMessageStates.ToArray());
                         }
                     }
                 }

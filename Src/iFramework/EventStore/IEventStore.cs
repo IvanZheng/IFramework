@@ -47,7 +47,13 @@ namespace IFramework.Event
         /// <param name="commands"></param>
         /// <param name="events"></param>
         /// <param name="sagaResult"></param>
+        /// <param name="eventResult"></param>
         /// <returns></returns>
-        Task<(ICommand[] commands, IEvent[] events, object sagaResult)> HandleEvent(string subscriber, string eventId, ICommand[] commands, IEvent[] events, object sagaResult);
+        Task<(ICommand[] commands, IEvent[] events, object sagaResult)> HandleEvent(string subscriber, 
+                                                                                    string eventId,
+                                                                                    ICommand[] commands, 
+                                                                                    IEvent[] events, 
+                                                                                    object sagaResult,
+                                                                                    object eventResult);
     }
 }

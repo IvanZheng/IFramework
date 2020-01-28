@@ -104,9 +104,10 @@ namespace IFramework.Infrastructure.EventSourcing
                                                   }
                                                   catch (Exception e)
                                                   {
+                                                      
                                                       if (e is DomainException exception)
                                                       {
-                                                          commandContext.Reply = exception;
+                                                          commandContext.Reply = e;
                                                           Logger.LogWarning(e, command.ToJson());
                                                           var domainExceptionEvent = exception.DomainExceptionEvent;
                                                           if (domainExceptionEvent != null)
@@ -121,7 +122,7 @@ namespace IFramework.Infrastructure.EventSourcing
                                                               eventBus.FinishSaga(e);
                                                           }
 
-                                                          commandContext.Reply = e;
+                                                          commandContext.Reply = new Exception(e.GetBaseException().Message);
                                                           Logger.LogError(e, command.ToJson());
                                                       }
                                                   }

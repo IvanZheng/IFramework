@@ -102,11 +102,11 @@ namespace IFramework.Test
         public async Task TestEventHandle()
         {
             var subscriber = "subscriber1";
-            var eventId = "eventId2";
+            var eventId = "eventId3";
             var correlationId = $"cmd{DateTime.Now.Ticks}";
             var name = "ivan";
             const string userId = "3";
-
+            var eventResult = "eventResult";
             var commands = new ICommand[] {new CreateUser{Id = correlationId, UserName = name, UserId = userId}};
             var events = new IEvent[] {new UserCreated(userId, name, 0), new UserModified(userId, name, 1)};
             using (var serviceScope = ObjectProviderFactory.CreateScope())
@@ -119,7 +119,7 @@ namespace IFramework.Test
                 var eventStore = serviceScope.GetService<IEventStore>();
                 await eventStore.Connect()
                                 .ConfigureAwait(false);
-                var result = await eventStore.HandleEvent("subscriber1", eventId, commands, events, sagaResult)
+                var result = await eventStore.HandleEvent("subscriber1", eventId, commands, events, sagaResult, eventResult)
                                              .ConfigureAwait(false);
                 Assert.NotEmpty(result.Item1);
                 Assert.NotEmpty(result.Item2);
