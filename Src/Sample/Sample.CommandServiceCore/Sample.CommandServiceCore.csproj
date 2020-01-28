@@ -66,6 +66,8 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EventStore.Redis\IFramework.EventStore.Redis.csproj" />
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Infrastructure.EventSourcing\IFramework.Infrastructure.EventSourcing.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.Log4Net\IFramework.Logging.Log4Net.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj" />

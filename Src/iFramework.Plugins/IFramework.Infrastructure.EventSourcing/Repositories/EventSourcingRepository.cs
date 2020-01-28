@@ -18,11 +18,13 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
         void Reset();
     }
 
-    public interface IEventSourcingRepository<TAggregateRoot> : 
-        IRepository<TAggregateRoot>, IEventSourcingRepository
+    public interface IEventSourcingRepository<TAggregateRoot> : IEventSourcingRepository
         where TAggregateRoot : class
     {
-
+        void Add(TAggregateRoot entity);
+        TAggregateRoot GetByKey(params object[] keyValues);
+        Task<TAggregateRoot> GetByKeyAsync(params object[] keyValues);
+        void Remove(TAggregateRoot entity);
     }
 
     public class EventSourcingRepository<TAggregateRoot> :
@@ -43,26 +45,11 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
             (unitOfWork as UnitOfWork)?.RegisterRepositories(this);
         }
 
-        public void Add(IEnumerable<TAggregateRoot> entities)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Add(TAggregateRoot entity)
         {
             _local[entity.Id] = new EventSourcingEntityEntry(entity);
         }
-
-        public Task AddAsync(IEnumerable<TAggregateRoot> entities)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task AddAsync(TAggregateRoot entity)
-        {
-            Add(entity);
-            return Task.CompletedTask;
-        }
+       
 
         public TAggregateRoot GetByKey(params object[] keyValues)
         {
@@ -116,136 +103,11 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
             return ag;
         }
 
-        public long Count(ISpecification<TAggregateRoot> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> CountAsync(ISpecification<TAggregateRoot> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long Count(Expression<Func<TAggregateRoot, bool>> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> CountAsync(Expression<Func<TAggregateRoot, bool>> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long Count()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> CountAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IQueryable<TAggregateRoot> FindAll(params OrderExpression[] orderByExpressions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IQueryable<TAggregateRoot> FindAll(ISpecification<TAggregateRoot> specification, params OrderExpression[] orderByExpressions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IQueryable<TAggregateRoot> FindAll(Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderByExpressions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TAggregateRoot Find(ISpecification<TAggregateRoot> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TAggregateRoot> FindAsync(ISpecification<TAggregateRoot> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TAggregateRoot Find(Expression<Func<TAggregateRoot, bool>> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TAggregateRoot> FindAsync(Expression<Func<TAggregateRoot, bool>> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Exists(ISpecification<TAggregateRoot> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> ExistsAsync(ISpecification<TAggregateRoot> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Exists(Expression<Func<TAggregateRoot, bool>> specification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> ExistsAsync(Expression<Func<TAggregateRoot, bool>> specification)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Remove(TAggregateRoot entity)
         {
             _local[entity.Id].Deleted = true;
         }
-
-        public void Remove(IEnumerable<TAggregateRoot> entities)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Reload(TAggregateRoot entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ReloadAsync(TAggregateRoot entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Update(TAggregateRoot entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind(int pageIndex, int pageSize, Expression<Func<TAggregateRoot, bool>> expression, params OrderExpression[] orderByExpressions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync(int pageIndex, int pageSize, Expression<Func<TAggregateRoot, bool>> specification, params OrderExpression[] orderByExpressions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public (IQueryable<TAggregateRoot> DataQueryable, long Total) PageFind(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderByExpressions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<(IQueryable<TAggregateRoot> DataQueryable, long Total)> PageFindAsync(int pageIndex, int pageSize, ISpecification<TAggregateRoot> specification, params OrderExpression[] orderByExpressions)
-        {
-            throw new NotImplementedException();
-        }
-
+    
         public EventSourcingEntityEntry[] GetEntries()
         {
             return _local.Values.ToArray();

@@ -44,6 +44,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
+using IFramework.Infrastructure.EventSourcing.Configurations;
+using IFramework.EventStore.Redis;
 
 namespace Sample.CommandServiceCore
 {
@@ -94,6 +96,8 @@ namespace Sample.CommandServiceCore
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                         options.UseInMemoryDatabase(nameof(SampleModelContext));
                     })
+                    .AddRedisEventStore()
+                    .AddEventSourcing()
                     ;
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
