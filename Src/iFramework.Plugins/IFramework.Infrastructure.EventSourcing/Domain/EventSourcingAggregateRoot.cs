@@ -16,11 +16,6 @@ namespace IFramework.Infrastructure.EventSourcing.Domain
 
     public class EventSourcingAggregateRoot : VersionedAggregateRoot, IEventSourcingAggregateRoot
     {
-        internal EventSourcingAggregateRoot(IAggregateRootEvent[] events)
-        {
-            Replay(events);
-        }
-
         public string Id { get; protected set; }
 
         int IEventSourcingAggregateRoot.Version
@@ -33,7 +28,7 @@ namespace IFramework.Infrastructure.EventSourcing.Domain
         {
             foreach (var @event in events.OrderBy(e => e.Version))
             {
-                base.OnEvent(@event);
+                HandleEvent(@event);
                 Version = @event.Version;
             }
         }

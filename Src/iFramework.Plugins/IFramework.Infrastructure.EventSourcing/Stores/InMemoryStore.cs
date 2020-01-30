@@ -4,7 +4,7 @@ using IFramework.Infrastructure.EventSourcing.Domain;
 
 namespace IFramework.Infrastructure.EventSourcing.Stores
 {
-    public class InMemoryStore
+    public class InMemoryStore: IInMemoryStore
     {
         private readonly IDictionary<string, string> _aggregateRootSet;
         public InMemoryStore(int maxCapacity = 100000)
@@ -24,7 +24,7 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
             var aggregateRootContent = _aggregateRootSet.TryGetValue(key);
             if (!string.IsNullOrWhiteSpace(aggregateRootContent))
             {
-                aggregateRoot = aggregateRootContent.ToJsonObject<TAggregateRoot>();
+                aggregateRoot = aggregateRootContent.ToJsonObject<TAggregateRoot>(true);
             }
 
             return aggregateRoot;

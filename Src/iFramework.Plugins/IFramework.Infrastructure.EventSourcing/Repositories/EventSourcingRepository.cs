@@ -32,11 +32,11 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
         where TAggregateRoot : class, IEventSourcingAggregateRoot, new()
     {
         private readonly IEventStore _eventStore;
-        private readonly InMemoryStore _inMemoryStore;
+        private readonly IInMemoryStore _inMemoryStore;
         private readonly Dictionary<string, EventSourcingEntityEntry> _local;
         private readonly ISnapshotStore _snapshotStore;
 
-        public EventSourcingRepository(InMemoryStore inMemoryStore, ISnapshotStore snapshotStore, IEventStore eventStore, IEventSourcingUnitOfWork unitOfWork)
+        public EventSourcingRepository(IInMemoryStore inMemoryStore, ISnapshotStore snapshotStore, IEventStore eventStore, IEventSourcingUnitOfWork unitOfWork)
         {
             _local = new Dictionary<string, EventSourcingEntityEntry>();
             _inMemoryStore = inMemoryStore;
@@ -72,7 +72,7 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
                 // get from snapshot store and replay with events
                 ag = await _snapshotStore.GetAsync<TAggregateRoot>(id);
                 var fromVersion = ag?.Version ?? 0;
-                var events = await _eventStore.GetEvents(id, fromVersion)
+                var events = await _eventStore.GetEvents(id, fromVersion + 1)
                                               .ConfigureAwait(false);
                 if (ag == null && events.Length > 0)
                 {

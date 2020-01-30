@@ -13,7 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Infrastructure.EventSourcing\IFramework.Infrastructure.EventSourcing.csproj" />
     <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+    <ProjectReference Include="..\Sample.Command\Sample.Command.csproj" />
     <ProjectReference Include="..\Sample.DomainEvent\Sample.DomainEvents.csproj" />
   </ItemGroup>
 

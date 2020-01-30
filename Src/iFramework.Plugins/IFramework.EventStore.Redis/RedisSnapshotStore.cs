@@ -18,6 +18,10 @@ namespace IFramework.EventStore.Redis
         private ConnectionMultiplexer _connectionMultiplexer;
         private IDatabase _db;
         private object AsyncState { get; set; }
+        private static string FormatId(string id)
+        {
+            return $"snp.{{{id}}}";
+        }
 
         public RedisSnapshotStore(IOptions<RedisSnapshotStoreOptions> options, ILogger<RedisSnapshotStore> logger)
         {
@@ -34,7 +38,7 @@ namespace IFramework.EventStore.Redis
 
         public async Task<TAggregateRoot> GetAsync<TAggregateRoot>(string id) where TAggregateRoot : IEventSourcingAggregateRoot
         {
-            var hashValues = await _db.HashGetAllAsync(id)
+            var hashValues = await _db.HashGetAllAsync(FormatId(id))
                                       .ConfigureAwait(false);
             if (hashValues.Length == 0)
             {
@@ -42,13 +46,13 @@ namespace IFramework.EventStore.Redis
             }
             var snapshotPayload = new SnapshotPayload(hashValues);
             return snapshotPayload.Payload
-                                  .ToJsonObject<TAggregateRoot>();
+                                  .ToJsonObject<TAggregateRoot>(true);
         }
 
         public async Task UpdateAsync(IEventSourcingAggregateRoot ar)
         {
             var snapshotPayload = new SnapshotPayload(ar);
-            await _db.HashSetAsync(snapshotPayload.Id, snapshotPayload.ToHashEntries())
+            await _db.HashSetAsync(FormatId(snapshotPayload.Id), snapshotPayload.ToHashEntries())
                      .ConfigureAwait(false);
         }
 
@@ -77,7 +81,7 @@ namespace IFramework.EventStore.Redis
                 Id = aggregateRoot.Id;
                 Payload = aggregateRoot.ToJson();
                 Version = aggregateRoot.Version;
-                TypeCode = aggregateRoot.GetType().FullName;
+                TypeCode = aggregateRoot.GetType().GetFullNameWithAssembly();
             }
 
             public SnapshotPayload(string id, string typeCode, string payload, int version)

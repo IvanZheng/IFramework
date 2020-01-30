@@ -96,7 +96,6 @@ namespace Sample.CommandServiceCore
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                         options.UseInMemoryDatabase(nameof(SampleModelContext));
                     })
-                    .AddRedisEventStore()
                     .AddEventSourcing()
                     ;
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});

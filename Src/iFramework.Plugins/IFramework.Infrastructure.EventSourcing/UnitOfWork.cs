@@ -21,14 +21,14 @@ namespace IFramework.Infrastructure.EventSourcing
     public class UnitOfWork : IEventSourcingUnitOfWork
     {
         private readonly IMessageContext _commandContext;
-        private readonly InMemoryStore _inMemoryStore;
+        private readonly IInMemoryStore _inMemoryStore;
         private readonly ILogger _logger;
         private readonly IEventBus _eventBus;
         private readonly IEventStore _eventStore;
 
         protected List<IEventSourcingRepository> Repositories = new List<IEventSourcingRepository>();
 
-        public UnitOfWork(IEventStore eventStore, IEventBus eventBus, IMessageContext commandContext, InMemoryStore inMemoryStore, ILogger<UnitOfWork> logger)
+        public UnitOfWork(IEventStore eventStore, IEventBus eventBus, IMessageContext commandContext, IInMemoryStore inMemoryStore, ILogger<UnitOfWork> logger)
         {
             _eventStore = eventStore;
             _eventBus = eventBus;

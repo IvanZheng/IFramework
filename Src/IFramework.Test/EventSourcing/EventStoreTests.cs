@@ -9,10 +9,13 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.Event;
 using IFramework.EventStore.Client;
 using IFramework.EventStore.Redis;
+using IFramework.Infrastructure.EventSourcing.Repositories;
+using IFramework.Infrastructure.EventSourcing.Stores;
 using IFramework.JsonNet;
 using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.Test.Commands;
+using IFramework.Test.EventSourcing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -37,11 +40,25 @@ namespace IFramework.Test
                     //.UseCommonComponents()
                     .AddJsonNet()
                     .AddLog4Net()
-                    .AddRedisEventStore()
+                    .AddEventSourcing()
                     //.AddEventStoreClient()
                 ;
 
             ObjectProviderFactory.Instance.Build(services);
+
+            ObjectProviderFactory.GetService<IEventStore>()
+                                 .Connect()
+                                 .GetAwaiter()
+                                 .GetResult();
+            ObjectProviderFactory.GetService<ISnapshotStore>()
+                                 .Connect()
+                                 .GetAwaiter()
+                                 .GetResult();
+
+            ObjectProviderFactory.GetService<IMessageTypeProvider>()
+                                 .Register(nameof(UserCreated), typeof(UserCreated))
+                                 .Register(nameof(UserModified), typeof(UserModified))
+                                 .Register(nameof(CreateUser), typeof(CreateUser));
         }
 
         [Fact]
@@ -53,22 +70,15 @@ namespace IFramework.Test
             var sagaResult = userId;
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
-                var messageTypeProvider = serviceScope.GetService<IMessageTypeProvider>();
-                messageTypeProvider.Register(nameof(UserCreated), typeof(UserCreated))
-                                   .Register(nameof(UserModified), typeof(UserModified))
-                                   .Register(nameof(CreateUser), typeof(CreateUser));
-
                 var eventStore = serviceScope.GetService<IEventStore>();
-                await eventStore.Connect()
-                                .ConfigureAwait(false);
                 var events = (await eventStore.GetEvents(userId)
                                               .ConfigureAwait(false))
                              .Cast<IAggregateRootEvent>()
                              .ToArray();
                 IEvent @event;
                 ICommand command;
-                var expectedVersion = events.LastOrDefault()?.Version ?? -1;
-                if (expectedVersion == -1)
+                var expectedVersion = events.LastOrDefault()?.Version ?? 0;
+                if (expectedVersion == 0)
                 {
                     command = new CreateUser {Id = correlationId, UserName = name, UserId = userId};
                     @event = new UserCreated(userId, name, expectedVersion + 1);
@@ -96,6 +106,20 @@ namespace IFramework.Test
                                                     .ConfigureAwait(false);
                 Assert.Equal(@event.Id, commandEvents.FirstOrDefault()?.Id);
             }
+        }
+
+        [Fact]
+        public async Task TestSnapshotStore()
+        {
+            const string userId = "3";
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var repository = serviceScope.GetService<IEventSourcingRepository<EventSourcingUser>>();
+                var user = await repository.GetByKeyAsync(userId)
+                                           .ConfigureAwait(false);
+                Assert.NotNull(user);
+            }
+
         }
 
         [Fact]

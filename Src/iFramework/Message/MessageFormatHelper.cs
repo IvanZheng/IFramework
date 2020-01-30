@@ -47,7 +47,7 @@ namespace IFramework.Message
 
         public static T GetMessage<T>(this byte[] messageBody)
         {
-            return Encoding.UTF8.GetString(messageBody).ToJsonObject<T>();
+            return Encoding.UTF8.GetString(messageBody).ToJsonObject<T>(true);
         }
 
         public static object GetMessage(this byte[] messageBody, Type type)
@@ -70,7 +70,7 @@ namespace IFramework.Message
         public static T GetFormattedMessage<T>(this byte[] messageBody)
         {
             var message = default(T);
-            message = messageBody.GetFormattedMessage().ToJsonObject<T>();
+            message = messageBody.GetFormattedMessage().ToJsonObject<T>(true);
             return message;
         }
     }
