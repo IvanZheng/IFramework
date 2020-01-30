@@ -20,7 +20,7 @@ namespace IFramework.EventStore.Redis
         private object AsyncState { get; set; }
         private static string FormatId(string id)
         {
-            return $"snp.{{{id}}}";
+            return $"snp:{{{id}}}";
         }
 
         public RedisSnapshotStore(IOptions<RedisSnapshotStoreOptions> options, ILogger<RedisSnapshotStore> logger)
