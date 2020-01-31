@@ -66,10 +66,16 @@ namespace IFramework.EventStore.Client
 
       
 
-        public Task AppendEvents(string id, long expectedVersion, string correlationId, object result, object sagaResult, params IEvent[] events)
+        public Task AppendEvents(string id,
+                                 long expectedVersion,
+                                 string correlationId, 
+                                 object result, 
+                                 object sagaResult, 
+                                 IEvent[] aggregateRootEvents,
+                                 IEvent[] applicationEvents = null)
         {
             var targetVersion = expectedVersion;
-            var eventStream = events.Select(e =>
+            var eventStream = aggregateRootEvents.Select(e =>
                                     {
                                         var messageCode = _messageTypeProvider.GetMessageCode(e.GetType());
                                         return new EventData(Guid.NewGuid(),

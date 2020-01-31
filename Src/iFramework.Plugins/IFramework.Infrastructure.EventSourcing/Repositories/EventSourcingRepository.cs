@@ -83,7 +83,7 @@ namespace IFramework.Infrastructure.EventSourcing.Repositories
                 {
                     if (events.Length > 0)
                     {
-                        ag.Replay(events.Cast<IAggregateRootEvent>()
+                        ag.Replay(events.OfType<IAggregateRootEvent>()
                                         .ToArray());
                     }
 

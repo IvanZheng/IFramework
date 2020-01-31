@@ -8,15 +8,22 @@ namespace IFramework.Exceptions
     {
         public string CommandId { get; private set; }
         public string AggregateRootId { get; private set; }
-        public IEvent[] Events { get; private set; }
+        public IEvent[] AggregateRootEvents { get; private set; }
+        public IEvent[] ApplicationEvents { get; private set; }
         public object CommandResult { get; private set; }
         public object SagaResult { get; private set; }
-        public MessageDuplicatelyHandled(string commandId, string aggregateRootId, object commandResult, object sagaResult, IEvent[] events = null) 
+        public MessageDuplicatelyHandled(string commandId, 
+                                         string aggregateRootId, 
+                                         object commandResult, 
+                                         object sagaResult,
+                                         IEvent[] aggregateRootEvents,
+                                         IEvent[] applicationEvents = null) 
             : base($"MessageDuplicatelyHandled aggregateRootId:{aggregateRootId} commandId: {commandId}")
         {
             CommandId = commandId;
             AggregateRootId = aggregateRootId;
-            Events = events;
+            AggregateRootEvents = aggregateRootEvents;
+            ApplicationEvents = applicationEvents;
             CommandResult = commandResult;
             SagaResult = sagaResult;
         }

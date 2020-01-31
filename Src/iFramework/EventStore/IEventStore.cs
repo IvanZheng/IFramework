@@ -24,11 +24,18 @@ namespace IFramework.Event
         /// <param name="id"></param>
         /// <param name="expectedVersion">The event version that you expect the stream to currently be at.</param>
         /// <param name="correlationId"></param>
-        /// <param name="commandResult"></param>
+        /// <param name="result"></param>
         /// <param name="sagaResult"></param>
-        /// <param name="events"></param>
+        /// <param name="aggregateRootEvents"></param>
+        /// <param name="applicationEvents"></param>
         /// <returns></returns>
-        Task AppendEvents(string id, long expectedVersion, string correlationId, object commandResult, object sagaResult, params IEvent[] events);
+        Task AppendEvents(string id,
+                          long expectedVersion,
+                          string correlationId, 
+                          object result,
+                          object sagaResult,
+                          IEvent[] aggregateRootEvents,
+                          IEvent[] applicationEvents = null);
 
         /// <summary>
         /// get aggregate's events by commandId

@@ -21,10 +21,10 @@ namespace IFramework.Infrastructure.EventSourcing
     public class UnitOfWork : IEventSourcingUnitOfWork
     {
         private readonly IMessageContext _commandContext;
-        private readonly IInMemoryStore _inMemoryStore;
-        private readonly ILogger _logger;
         private readonly IEventBus _eventBus;
         private readonly IEventStore _eventStore;
+        private readonly IInMemoryStore _inMemoryStore;
+        private readonly ILogger _logger;
 
         protected List<IEventSourcingRepository> Repositories = new List<IEventSourcingRepository>();
 
@@ -51,45 +51,54 @@ namespace IFramework.Infrastructure.EventSourcing
 
         public async Task CommitAsync(CancellationToken cancellationToken, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, TransactionScopeOption scopeOption = TransactionScopeOption.Required)
         {
-            foreach (var repository in Repositories)
+            var aggregateRoots = Repositories.SelectMany(r => r.GetEntries()
+                                                               .Where(e => e.EntityState == EntityState.Added || e.EntityState == EntityState.Modified))
+                                             .ToArray();
+            if (aggregateRoots.Length > 1)
             {
-                await repository.GetEntries()
-                                .Where(e => e.EntityState == EntityState.Added || e.EntityState == EntityState.Modified)
-                                .ForEachAsync(async e =>
-                                {
-                                    var aggregateRoot = e.Entity;
-                                    try
-                                    {
-                                        var aggregateEvents = aggregateRoot.GetDomainEvents().Cast<IEvent>().ToArray();
-                                        _eventBus.Publish(aggregateEvents);
-                                        await _eventStore.AppendEvents(aggregateRoot.Id,
-                                                                       e.Version,
-                                                                       _commandContext.MessageId,
-                                                                       _commandContext.Reply,
-                                                                       _eventBus.GetSagaResult(),
-                                                                       _eventBus.GetEvents()
-                                                                                .ToArray())
-                                                         .ConfigureAwait(false);
-                                        
-                                    }
-                                    catch (DbUpdateConcurrencyException)
-                                    {
-                                        Rollback();
-                                        _inMemoryStore.Remove(aggregateRoot.Id);
-                                        throw;
-                                    }
-                                    catch (MessageDuplicatelyHandled ex)
-                                    {
-                                        _logger.LogWarning(ex);
-                                        _eventBus.ClearMessages();
-                                        _eventBus.Publish(ex.Events);
-                                        _commandContext.Reply = ex.CommandResult;
-                                        if (ex.SagaResult != null)
-                                        {
-                                            _eventBus.FinishSaga(ex.SagaResult);
-                                        }
-                                    }
-                                });
+                throw new Exception("EventSourcing only supports to operate one aggregate root per command");
+            }
+
+            var aggregateRoot = aggregateRoots.FirstOrDefault()?.Entity;
+            var aggregateEvents = aggregateRoot?.GetDomainEvents()
+                                               .Cast<IEvent>()
+                                               .ToArray();
+
+            var expectedVersion = aggregateEvents == null || aggregateEvents.Length == 0 ? -1 : aggregateRoot.Version;
+            try
+            {
+                await _eventStore.AppendEvents(_commandContext.Key,
+                                               expectedVersion,
+                                               _commandContext.MessageId,
+                                               _commandContext.Reply,
+                                               _eventBus.GetSagaResult(),
+                                               aggregateEvents,
+                                               _eventBus.GetEvents()
+                                                        .ToArray())
+                                 .ConfigureAwait(false);
+                _eventBus.Publish(aggregateEvents);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                Rollback();
+                if (aggregateRoot != null)
+                {
+                    _inMemoryStore.Remove(aggregateRoot.Id);
+                }
+
+                throw;
+            }
+            catch (MessageDuplicatelyHandled ex)
+            {
+                _logger.LogWarning(ex);
+                _eventBus.ClearMessages();
+                _eventBus.Publish(ex.AggregateRootEvents);
+                _eventBus.Publish(ex.ApplicationEvents);
+                _commandContext.Reply = ex.CommandResult;
+                if (ex.SagaResult != null)
+                {
+                    _eventBus.FinishSaga(ex.SagaResult);
+                }
             }
         }
 

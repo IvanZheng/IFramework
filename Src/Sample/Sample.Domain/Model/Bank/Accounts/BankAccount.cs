@@ -9,6 +9,7 @@ namespace Sample.Domain.Model.BankAccounts
 {
     public class BankAccount: EventSourcingAggregateRoot
     {
+      
         public string Name { get; private set; }
         public string CardId { get; private set; }
         /// <summary>
@@ -25,11 +26,11 @@ namespace Sample.Domain.Model.BankAccounts
         public AccountStatus Status { get; private set; }
 
         public BankAccount(){}
+
         public BankAccount(string id, string name, string cardId, decimal amount)
         {
             Id = id;
             Name = name;
-            CardId = cardId;
             CardId = cardId;
             AvailableAmount = amount;
             TotalAmount = amount;

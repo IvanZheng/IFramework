@@ -9,6 +9,7 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.Event;
 using IFramework.EventStore.Client;
 using IFramework.EventStore.Redis;
+using IFramework.Exceptions;
 using IFramework.Infrastructure.EventSourcing.Repositories;
 using IFramework.Infrastructure.EventSourcing.Stores;
 using IFramework.JsonNet;
@@ -62,12 +63,56 @@ namespace IFramework.Test
         }
 
         [Fact]
+        public async Task EventStreamAppendApplicationEventsTest()
+        {
+            const string userId = "3";
+            var name = $"ivan_{DateTime.Now.Ticks}";
+            var correlationId = $"cmd{DateTime.Now.Ticks}";
+            var sagaResult = userId;
+            var applicationEvent = new ApplicationUserEvent(userId, name);
+            var expectedVersion = -1;
+            var command = new ModifyUser {Id = correlationId, UserName = name, UserId = userId};
+            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            {
+                var eventStore = serviceScope.GetService<IEventStore>();
+                await eventStore.AppendEvents(userId, 
+                                              expectedVersion,
+                                              command.Id,
+                                              command,
+                                              sagaResult,
+                                              null,
+                                              new IEvent[] {applicationEvent})
+                                .ConfigureAwait(false);
+
+
+                try
+                {
+                    await eventStore.AppendEvents(userId, 
+                                                  expectedVersion,
+                                                  command.Id,
+                                                  command,
+                                                  sagaResult,
+                                                  null,
+                                                  new IEvent[] {applicationEvent})
+                                    .ConfigureAwait(false);
+                }
+                catch (MessageDuplicatelyHandled e)
+                {
+                    Assert.Equal(e.AggregateRootId, userId);
+                    Assert.Equal((e.CommandResult as ICommand)?.Id, command.Id);
+                    Assert.Equal(e.ApplicationEvents?.FirstOrDefault()?.Id, applicationEvent.Id);
+                }
+            }
+        }
+
+        [Fact]
         public async Task EventStreamAppendReadTest()
         {
             const string userId = "3";
             var name = $"ivan_{DateTime.Now.Ticks}";
             var correlationId = $"cmd{DateTime.Now.Ticks}";
             var sagaResult = userId;
+            var applicationEvent = new ApplicationUserEvent(userId, name);
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {
                 var eventStore = serviceScope.GetService<IEventStore>();
@@ -82,29 +127,42 @@ namespace IFramework.Test
                 {
                     command = new CreateUser {Id = correlationId, UserName = name, UserId = userId};
                     @event = new UserCreated(userId, name, expectedVersion + 1);
-                    await eventStore.AppendEvents(userId, 
-                                                  expectedVersion,
-                                                  command.Id,
-                                                  command,
-                                                  sagaResult,
-                                                  @event)
-                                    .ConfigureAwait(false);
+                   
                 }
                 else
                 {
                     command = new ModifyUser {Id = correlationId, UserName = name, UserId = userId};
                     @event = new UserModified(userId, name, expectedVersion + 1);
-                    await eventStore.AppendEvents(userId,
+                }
+
+                await eventStore.AppendEvents(userId, 
+                                              expectedVersion,
+                                              command.Id,
+                                              command,
+                                              sagaResult,
+                                              new []{@event},
+                                              new IEvent[] {applicationEvent})
+                                .ConfigureAwait(false);
+
+
+                try
+                {
+                    await eventStore.AppendEvents(userId, 
                                                   expectedVersion,
                                                   command.Id,
-                                                  null,
+                                                  command,
                                                   sagaResult,
-                                                  @event)
+                                                  new []{@event},
+                                                  new IEvent[] {applicationEvent})
                                     .ConfigureAwait(false);
                 }
-                var commandEvents = await eventStore.GetEvents(userId, command.Id)
-                                                    .ConfigureAwait(false);
-                Assert.Equal(@event.Id, commandEvents.FirstOrDefault()?.Id);
+                catch (MessageDuplicatelyHandled e)
+                {
+                    Assert.Equal(e.AggregateRootId, userId);
+                    Assert.Equal((e.CommandResult as ICommand)?.Id, command.Id);
+                    Assert.Equal(e.AggregateRootEvents?.FirstOrDefault()?.Id, @event.Id);
+                    Assert.Equal(e.ApplicationEvents?.FirstOrDefault()?.Id, applicationEvent.Id);
+                }
             }
         }
 
