@@ -124,6 +124,7 @@ namespace IFramework.Command.Impl
 
         protected virtual async Task ConsumeMessage(IMessageContext commandContext)
         {
+            await Task.Yield();
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
@@ -191,12 +192,12 @@ namespace IFramework.Command.Impl
                                         if (messageHandlerType.IsAsync)
                                         {
                                             await ((dynamic)messageHandler).Handle((dynamic)command)
-                                                                            .ConfigureAwait(false);
+                                                                           .ConfigureAwait(false);
                                         }
                                         else
                                         {
                                             var handler = messageHandler;
-                                            await Task.Run(() => { ((dynamic)handler).Handle((dynamic)command); }).ConfigureAwait(false);
+                                            ((dynamic)handler).Handle((dynamic)command);
                                         }
 
                                         if (needReply)

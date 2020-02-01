@@ -103,6 +103,7 @@ namespace IFramework.Event.Impl
 
         protected virtual async Task ConsumeMessage(IMessageContext eventContext)
         {
+            await Task.Yield();
             try
             {
                 Logger.LogDebug($"start handle event {ConsumerId} {eventContext.Message.ToJson()}");

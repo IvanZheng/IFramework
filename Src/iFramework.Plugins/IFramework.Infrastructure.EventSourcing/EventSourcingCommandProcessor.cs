@@ -39,6 +39,7 @@ namespace IFramework.Infrastructure.EventSourcing
 
         protected override async Task ConsumeMessage(IMessageContext commandContext)
         {
+            await Task.Yield();
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
@@ -99,7 +100,7 @@ namespace IFramework.Infrastructure.EventSourcing
                                                       else
                                                       {
                                                           var handler = messageHandler;
-                                                          await Task.Run(() => { ((dynamic) handler).Handle((dynamic) command); }).ConfigureAwait(false);
+                                                          ((dynamic) handler).Handle((dynamic) command);
                                                       }
                                                   }
                                                   catch (Exception e)
