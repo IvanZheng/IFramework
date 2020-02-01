@@ -1,7 +1,7 @@
 ﻿using System;
 using IFramework.Domain;
 
-namespace Sample.DomainEvents.Banks
+namespace Sample.Command.Banks
 {
     public class TransactionInfo : ValueObject<TransactionInfo>
     {

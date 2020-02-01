@@ -1,77 +1,46 @@
 ﻿namespace Sample.Command.Banks
 {
-    public class CreateAccount : SerialCommandBase
+    public abstract class AccountCommand : SerialCommandBase
     {
         public string AccountId { get; set; }
+        public override string Key
+        {
+            get => AccountId;
+            set => AccountId = value;
+        }
+    }
+
+    public abstract class AccountTransactionCommand : AccountCommand
+    {
+        public TransactionInfo TransactionInfo { get; set; }
+    }
+
+    public class CreateAccount : AccountCommand
+    {
         public string Name { get; set; }
         public string CardId { get; set; }
         public decimal Amount { get; set; }
-
-        public override string Key
-        {
-            get => AccountId;
-            set => AccountId = value;
-        }
     }
 
-    public class CommitCredit : SerialCommandBase
+    public class CommitAccountCredit : AccountTransactionCommand
     {
-        public string AccountId { get; set; }
-        public decimal Amount { get; set; }
-        public string TransactionId { get; set; }
-
-        public override string Key
-        {
-            get => AccountId;
-            set => AccountId = value;
-        }
+        
     }
 
-    public class CommitDebit : SerialCommandBase
+    public class CommitAccountDebit : AccountTransactionCommand
     {
-        public string AccountId { get; set; }
-        public decimal Amount { get; set; }
-        public string TransactionId { get; set; }
-
-        public override string Key
-        {
-            get => AccountId;
-            set => AccountId = value;
-        }
+     
     }
 
-    public class PrepareCredit : SerialCommandBase
+    public class PrepareAccountCredit : AccountTransactionCommand
     {
-        public string AccountId { get; set; }
-
-        public override string Key
-        {
-            get => AccountId;
-            set => AccountId = value;
-        }
     }
 
-    public class PrepareDebit : SerialCommandBase
+    public class PrepareAccountDebit : AccountTransactionCommand
     {
-        public string AccountId { get; set; }
-
-        public override string Key
-        {
-            get => AccountId;
-            set => AccountId = value;
-        }
     }
 
-    public class RevertDebitPreparation : SerialCommandBase
+    public class RevertAccountDebitPreparation : AccountTransactionCommand
     {
-        public string AccountId { get; set; }
-        public decimal Amount { get; set; }
-        public decimal TransactionId { get; set; }
-
-        public override string Key
-        {
-            get => AccountId;
-            set => AccountId = value;
-        }
     }
 }

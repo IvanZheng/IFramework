@@ -1,4 +1,6 @@
-﻿namespace Sample.DomainEvents.Banks
+﻿using Sample.Command.Banks;
+
+namespace Sample.DomainEvents.Banks
 {
     public abstract class TransactionEvent : AggregateRootEvent
     {

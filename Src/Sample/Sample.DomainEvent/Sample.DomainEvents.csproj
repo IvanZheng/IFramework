@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+    <ProjectReference Include="..\Sample.Command\Sample.Command.csproj" />
     <ProjectReference Include="..\Sample.DTO\Sample.DTO.csproj" />
   </ItemGroup>
 
