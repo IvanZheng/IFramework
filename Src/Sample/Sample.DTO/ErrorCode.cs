@@ -13,8 +13,10 @@ namespace Sample.DTO
         UsernameAlreadyExists,
         [Description("username:{0} or password is wrong!")] WrongUsernameOrPassword,
         UserNotExists,
-        CountNotEnougth,
+        CountNotEnough,
+        [Description("Bank Account({0}) already exists!")]
+        BankAccountAlreadyExists,
         CommandInvalid = 0x7ffffffe,
-        UnknownError = 0x7fffffff
+        UnknownError = 0x7fffffff,
     }
 }

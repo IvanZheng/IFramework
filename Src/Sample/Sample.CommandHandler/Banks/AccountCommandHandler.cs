@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IFramework.Command;
+using IFramework.Exceptions;
 using IFramework.Infrastructure.EventSourcing.Repositories;
 using IFramework.Message;
 using Sample.Command.Banks;
 using Sample.Domain.Model.BankAccounts;
+using ErrorCode = Sample.DTO.ErrorCode;
 
 namespace Sample.CommandHandler.Banks
 {
@@ -33,14 +35,20 @@ namespace Sample.CommandHandler.Banks
             throw new NotImplementedException();
         }
 
-        public Task Handle(CreateAccount message)
+        public async Task Handle(CreateAccount message)
         {
-           var account = new BankAccount(message.AccountId,
-                                         message.Name,
-                                         message.CardId,
-                                         message.Amount);
-           _repository.Add(account);
-           return Task.CompletedTask;
+            var account = await _repository.GetByKeyAsync(message.AccountId)
+                                           .ConfigureAwait(false);
+            if (account != null)
+            {
+                throw new DomainException(ErrorCode.BankAccountAlreadyExists, new object[] {message.AccountId});
+            }
+
+            account = new BankAccount(message.AccountId,
+                                      message.Name,
+                                      message.CardId,
+                                      message.Amount);
+            _repository.Add(account);
         }
 
         public Task Handle(PrepareAccountCredit message)
