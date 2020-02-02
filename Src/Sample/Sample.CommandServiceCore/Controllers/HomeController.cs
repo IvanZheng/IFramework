@@ -12,6 +12,7 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.EventSourcing.Repositories;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,7 @@ using Sample.Command.Community;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
+using Sample.Domain.Model.BankAccounts;
 using Sample.Persistence;
 
 namespace Sample.CommandServiceCore.Controllers

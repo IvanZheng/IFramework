@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sample.Command.Banks
+namespace Sample.Command
 {
     /// <summary>
     /// 账户流水

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using IFramework.Command;
 using IFramework.Event;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.EventSourcing.Domain;
 using IFramework.Message;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -145,8 +147,8 @@ namespace IFramework.EventStore.Redis
                 if (!string.IsNullOrWhiteSpace(commandResult.Result?.Payload))
                 {
                     result = commandResult.Result
-                                                     .Payload
-                                                     .ToJsonObject(_messageTypeProvider.GetMessageType(commandResult.Result.Code));
+                                          .Payload
+                                          .ToJsonObject(_messageTypeProvider.GetMessageType(commandResult.Result.Code));
                 }
 
                 if (!string.IsNullOrWhiteSpace(commandResult.SagaResult?.Payload))
@@ -172,7 +174,14 @@ namespace IFramework.EventStore.Redis
 
             if ((int) redisResult == -2)
             {
-                throw new DBConcurrencyException($"aggregateId:{id} expectedVersion:{expectedVersion} concurrency conflict");
+                if (expectedVersion == 0)
+                {
+                    throw new AddDuplicatedAggregateRoot(id);
+                }
+                else
+                {
+                    throw new DBConcurrencyException($"aggregateId:{id} expectedVersion:{expectedVersion} concurrency conflict");
+                }
             }
         }
 

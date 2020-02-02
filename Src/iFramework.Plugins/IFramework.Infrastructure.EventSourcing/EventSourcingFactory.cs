@@ -20,7 +20,7 @@ namespace IFramework.Infrastructure.EventSourcing
         {
             var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
-            var handlerProvider = new CommandHandlerProvider( );
+            var handlerProvider = new CommandHandlerProvider(handlerProviderNames);
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
             var eventStore = ObjectProviderFactory.GetService<IEventStore>();
             var commandConsumer = new EventSourcingCommandProcessor(messageQueueClient,

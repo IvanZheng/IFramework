@@ -1,13 +1,13 @@
-﻿namespace Sample.Command.Banks
+﻿using IFramework.Command.Impl;
+using IFramework.Message;
+
+namespace Sample.Command
 {
+    [Topic("BankCommandQueue")]
     public abstract class AccountCommand : SerialCommandBase
     {
+        [SerialKey]
         public string AccountId { get; set; }
-        public override string Key
-        {
-            get => AccountId;
-            set => AccountId = value;
-        }
     }
 
     public abstract class AccountTransactionCommand : AccountCommand

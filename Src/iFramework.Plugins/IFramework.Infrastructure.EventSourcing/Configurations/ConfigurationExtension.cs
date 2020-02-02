@@ -12,8 +12,8 @@ namespace IFramework.Infrastructure.EventSourcing.Configurations
     {
         public static IServiceCollection AddEventSourcingComponents(this IServiceCollection services)
         {
-            services.RegisterType(typeof(IEventSourcingRepository<>), typeof(EventSourcingRepository<>), ServiceLifetime.Scoped)
-                    .RegisterType<IEventSourcingUnitOfWork, UnitOfWork>(ServiceLifetime.Scoped)
+            services.AddScoped(typeof(IEventSourcingRepository<>), typeof(EventSourcingRepository<>))
+                    .AddScoped<IEventSourcingUnitOfWork, UnitOfWork>()
                     .AddSingleton<IInMemoryStore, InMemoryStore>();
             return services;
         }

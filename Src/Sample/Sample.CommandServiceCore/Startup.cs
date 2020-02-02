@@ -36,6 +36,7 @@ using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 using System.Collections.Generic;
+using IFramework.Event;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Logging.Log4Net;
@@ -46,6 +47,10 @@ using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
 using IFramework.Infrastructure.EventSourcing.Configurations;
 using IFramework.EventStore.Redis;
+using IFramework.Infrastructure.EventSourcing;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using IFramework.Infrastructure.EventSourcing.Stores;
+using Sample.DomainEvents.Banks;
 
 namespace Sample.CommandServiceCore
 {
@@ -58,6 +63,7 @@ namespace Sample.CommandServiceCore
         private static IMessageProcessor _commandConsumer3;
         private static IMessageProcessor _domainEventProcessor;
         private static IMessageProcessor _applicationEventProcessor;
+        private static IMessageProcessor _eventSourcingCommandConsumer;
         public static string PathBase;
         private static string _app = "uat";
         private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
@@ -74,8 +80,8 @@ namespace Sample.CommandServiceCore
             {
                 Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
             };
-            services//.AddUnityContainer()
-                    .AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+            services.AddUnityContainer()
+                    //.AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
                     .AddConfiguration(_configuration)
                     .AddLog4Net()
                     .AddCommonComponents(_app)
@@ -136,7 +142,10 @@ namespace Sample.CommandServiceCore
             providerBuilder.Register<HomeController, HomeController>(lifetime,
                                                                      new VirtualMethodInterceptorInjection(),
                                                                      new InterceptionBehaviorInjection());
-            providerBuilder.RegisterMessageHandlers(new []{"CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber"}, lifetime);
+            providerBuilder.RegisterMessageHandlers(new []{"CommandHandlers", 
+                "DomainEventSubscriber",
+                "ApplicationEventSubscriber"
+            }, lifetime);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -146,8 +155,17 @@ namespace Sample.CommandServiceCore
                               IMessageTypeProvider messageTypeProvider,
                               IOptions<FrameworkConfiguration> frameworkConfigOptions,
                               IMailboxProcessor mailboxProcessor,
-                              IHostApplicationLifetime applicationLifetime)
+                              IHostApplicationLifetime applicationLifetime,
+                              IEventStore eventStore,
+                              ISnapshotStore snapshotStore)
         {
+            eventStore.Connect()
+                      .GetAwaiter()
+                      .GetResult();
+            snapshotStore.Connect()
+                         .GetAwaiter()
+                         .GetResult();
+
             applicationLifetime.ApplicationStopping.Register(() =>
             {
                 _commandConsumer1?.Stop();
@@ -164,7 +182,9 @@ namespace Sample.CommandServiceCore
                                {
                                    ["Login"] = "Sample.Command.Login, Sample.Command"
                                })
-                               .Register("Modify", typeof(Modify));
+                               .Register("Modify", typeof(Modify))
+                               .Register(nameof(CreateAccount), typeof(CreateAccount))
+                               .Register(nameof(AccountCreated), typeof(AccountCreated));
            
             StartMessageQueueComponents();
 
@@ -235,6 +255,16 @@ namespace Sample.CommandServiceCore
         private void StartMessageQueueComponents()
         {
             #region Command Consuemrs init
+
+            _eventSourcingCommandConsumer = EventSourcingFactory.CreateCommandConsumer($"{TopicPrefix}BankCommandQueue",
+                                                                                       "0",
+                                                                                       new[]
+                                                                                       {
+                                                                                           "BankAccountCommandHandlers",
+                                                                                           "BankTransactionCommandHandlers"
+                                                                                       });
+
+            _eventSourcingCommandConsumer.Start();
 
             var commandQueueName = $"{TopicPrefix}commandqueue";
             _commandConsumer1 =

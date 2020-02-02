@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using IFramework.Command.Impl;
+using IFramework.Message;
 
-namespace Sample.Command.Banks
+namespace Sample.Command
 {
+    [Topic("BankCommandQueue")]
     public class TransactionCommand: SerialCommandBase
     {
+        [SerialKey]
         public string TransactionId { get; set; }
         public string FromAccountId { get; protected set; }
         public string ToAccountId { get; protected set; }
         public decimal Amount { get; protected set; }
-
-        public override string Key { get => TransactionId; set => TransactionId = value; }
     }
 
     public class SubmitTransaction : TransactionCommand

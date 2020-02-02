@@ -1,4 +1,4 @@
-﻿using Sample.Command.Banks;
+﻿using Sample.Command;
 
 namespace Sample.DomainEvents.Banks
 {

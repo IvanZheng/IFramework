@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using IFramework.Message;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace IFramework.Infrastructure.EventSourcing
 {
@@ -59,12 +61,13 @@ namespace IFramework.Infrastructure.EventSourcing
                 throw new Exception("EventSourcing only supports to operate one aggregate root per command");
             }
 
-            var aggregateRoot = aggregateRoots.FirstOrDefault()?.Entity;
+            var aggregateEntry = aggregateRoots.FirstOrDefault();
+            var aggregateRoot = aggregateEntry?.Entity;
             var aggregateEvents = aggregateRoot?.GetDomainEvents()
                                                .Cast<IEvent>()
                                                .ToArray();
 
-            var expectedVersion = aggregateEvents == null || aggregateEvents.Length == 0 ? -1 : aggregateRoot.Version;
+            var expectedVersion = aggregateEvents == null || aggregateEvents.Length == 0 ? -1 : aggregateEntry.Version;
             try
             {
                 await _eventStore.AppendEvents(_commandContext.Key,
@@ -78,7 +81,7 @@ namespace IFramework.Infrastructure.EventSourcing
                                  .ConfigureAwait(false);
                 _eventBus.Publish(aggregateEvents);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DBConcurrencyException)
             {
                 Rollback();
                 if (aggregateRoot != null)
@@ -88,12 +91,27 @@ namespace IFramework.Infrastructure.EventSourcing
 
                 throw;
             }
+            catch (AddDuplicatedAggregateRoot ex)
+            {
+                _logger.LogWarning(ex);
+                _eventBus.ClearMessages();
+                _commandContext.Reply = ex;
+                _eventBus.FinishSaga(ex);
+                
+            }
             catch (MessageDuplicatelyHandled ex)
             {
                 _logger.LogWarning(ex);
                 _eventBus.ClearMessages();
-                _eventBus.Publish(ex.AggregateRootEvents);
-                _eventBus.Publish(ex.ApplicationEvents);
+                if (ex.AggregateRootEvents?.Length > 0)
+                {
+                    _eventBus.Publish(ex.AggregateRootEvents);
+                }
+
+                if (ex.ApplicationEvents?.Length > 0)
+                {
+                    _eventBus.Publish(ex.ApplicationEvents);
+                }
                 _commandContext.Reply = ex.CommandResult;
                 if (ex.SagaResult != null)
                 {

@@ -1,5 +1,5 @@
 ﻿using IFramework.Infrastructure.EventSourcing.Domain;
-using Sample.Command.Banks;
+using Sample.Command;
 using Sample.DomainEvents.Banks;
 
 namespace Sample.Domain.Model.BankAccounts
@@ -33,7 +33,7 @@ namespace Sample.Domain.Model.BankAccounts
             TotalFund = accountCreated.Amount;
             Status = AccountStatus.Normal;
         }
-
+        public BankAccount(){}
         public BankAccount(string id, string name, string cardId, decimal amount)
         {
             Initialize(id, name, cardId, amount);

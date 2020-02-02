@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using IFramework.Infrastructure.EventSourcing.Domain;
-using Sample.Command.Banks;
+using Sample.Command;
 
 namespace Sample.Domain.Model.BankAccounts
 {
