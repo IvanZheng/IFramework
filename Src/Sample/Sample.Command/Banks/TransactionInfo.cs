@@ -7,14 +7,15 @@ namespace Sample.Command
     {
         public TransactionInfo() { }
 
-        public TransactionInfo(string fromAccountId, string accountId, decimal amount, DateTime time)
+        public TransactionInfo(string transactionId, string fromAccountId, string accountId, decimal amount, DateTime time)
         {
+            TransactionId = transactionId;
             FromAccountId = fromAccountId;
             ToAccountId = accountId;
             Amount = amount;
             Time = time;
         }
-
+        public string TransactionId { get; protected set; }
         public string FromAccountId { get; protected set; }
         public string ToAccountId { get; protected set; }
         public decimal Amount { get; protected set; }

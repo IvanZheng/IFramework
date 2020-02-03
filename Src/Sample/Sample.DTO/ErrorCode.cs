@@ -14,6 +14,12 @@ namespace Sample.DTO
         [Description("username:{0} or password is wrong!")] WrongUsernameOrPassword,
         UserNotExists,
         CountNotEnough,
+        [Description("对象({0})不存在")]
+        ObjectNotExists,
+        [Description("转账扣款准备失败: {0}")]
+        AccountDebitPrepareFailed,
+        [Description("转账入账准备失败: {0}")]
+        AccountCreditPrepareFailed,
         [Description("Bank Account({0}) already exists!")]
         BankAccountAlreadyExists,
         CommandInvalid = 0x7ffffffe,

@@ -19,6 +19,19 @@ namespace Sample.CommandHandler.Banks
         private readonly IMessageContext _commandContext;
         private readonly IEventSourcingRepository<BankAccount> _repository;
 
+        protected async Task<BankAccount> GetAccountAsync(string accountId, bool throwExceptionIfNotExists = true)
+        {
+            var account = await _repository.GetByKeyAsync(accountId)
+                                           .ConfigureAwait(false);
+            if (account == null && throwExceptionIfNotExists)
+            {
+                throw new DomainException(ErrorCode.ObjectNotExists, new object[] {accountId});
+            }
+
+            return account;
+        }
+
+
         public AccountCommandHandler(IMessageContext commandContext, IEventSourcingRepository<BankAccount> repository)
         {
             _commandContext = commandContext;
@@ -37,23 +50,24 @@ namespace Sample.CommandHandler.Banks
 
         public async Task Handle(CreateAccount message)
         {
-            //var account = await _repository.GetByKeyAsync(message.AccountId)
-            //                               .ConfigureAwait(false);
-            //if (account != null)
-            //{
-            //    throw new DomainException(ErrorCode.BankAccountAlreadyExists, new object[] {message.AccountId});
-            //}
+            var account = await GetAccountAsync(message.AccountId, 
+                                                false).ConfigureAwait(false);
 
-            var account = new BankAccount(message.AccountId,
+            if (account != null)
+            {
+                throw new DomainException(ErrorCode.BankAccountAlreadyExists, new object[] { message.AccountId });
+            }
+            account = new BankAccount(message.AccountId,
                                           message.Name,
                                           message.CardId,
                                           message.Amount);
             _repository.Add(account);
         }
 
-        public Task Handle(PrepareAccountCredit message)
+        public async Task Handle(PrepareAccountCredit message)
         {
-            throw new NotImplementedException();
+            var account = await GetAccountAsync(message.AccountId).ConfigureAwait(false);
+            account.PrepareCredit(message.TransactionInfo);
         }
 
         public Task Handle(PrepareAccountDebit message)

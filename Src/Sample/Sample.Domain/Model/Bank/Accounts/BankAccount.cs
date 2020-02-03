@@ -6,6 +6,13 @@ namespace Sample.Domain.Model.BankAccounts
 {
     public class BankAccount : EventSourcingAggregateRoot
     {
+        public BankAccount() { }
+
+        public BankAccount(string id, string name, string cardId, decimal amount)
+        {
+            Initialize(id, name, cardId, amount);
+        }
+
         public string Name { get; private set; }
         public string CardId { get; private set; }
 
@@ -24,6 +31,12 @@ namespace Sample.Domain.Model.BankAccounts
         /// </summary>
         public AccountStatus Status { get; private set; }
 
+
+        private void Initialize(string id, string name, string cardId, decimal amount)
+        {
+            OnEvent(new AccountCreated(id, amount, name, cardId));
+        }
+
         private void Handle(AccountCreated accountCreated)
         {
             Id = accountCreated.Id;
@@ -33,23 +46,67 @@ namespace Sample.Domain.Model.BankAccounts
             TotalFund = accountCreated.Amount;
             Status = AccountStatus.Normal;
         }
-        public BankAccount(){}
-        public BankAccount(string id, string name, string cardId, decimal amount)
+
+        public void PrepareCredit(TransactionInfo transaction)
         {
-            Initialize(id, name, cardId, amount);
+            if (Status == AccountStatus.Normal)
+            {
+                OnEvent(new AccountCreditPrepared(Id, transaction));
+            }
+            else
+            {
+                OnException(new AccountCreditPrepareFailed(Id, transaction));
+            }
         }
 
-        protected void Initialize(string id, string name, string cardId, decimal amount)
+        public void CommitDebit(TransactionInfo transaction)
         {
-            OnEvent(new AccountCreated(id, amount, name, cardId));
+            OnEvent(new AccountDebitCommitted(Id, transaction, TotalFund - transaction.Amount));
         }
 
-        public void PrepareCredit(decimal amount, string transactionId) { }
 
-        public void CommitCredit(decimal amount, string transactionId) { }
+        public void CommitCredit(TransactionInfo transaction)
+        {
+            OnEvent(new AccountCreditCommitted(Id, 
+                                               transaction, 
+                                               AvailableFund + transaction.Amount,
+                                               TotalFund + transaction.Amount));
+        }
+        private void Handle(AccountCreditCommitted @event)
+        {
+            AvailableFund = @event.AvailableFund;
+            TotalFund = @event.TotalFund;
+        }
 
-        public void PrepareDebit(decimal amount, string transactionId) { }
+        public void PrepareDebit(TransactionInfo transaction)
+        {
+            if (Status != AccountStatus.Normal)
+            {
+                OnException(new AccountDebitPrepareFailed(Id, transaction, "Debit account status is not available."));
+            }
+            else if (AvailableFund < transaction.Amount)
+            {
+                OnException(new AccountDebitPrepareFailed(Id, transaction, "Debit account is without enough funds."));
+            }
+            else
+            {
+                OnEvent(new AccountDebitPrepared(Id, transaction, AvailableFund - transaction.Amount));
+            }
+        }
 
-        public void RevertDebitPreparation(decimal amount, string transactionId) { }
+        private void Handle(AccountDebitPrepared @event)
+        {
+            AvailableFund = @event.AvailableFund;
+        }
+
+        public void RevertDebitPreparation(TransactionInfo transaction)
+        {
+            OnEvent(new DebitPreparationReverted(Id, transaction, AvailableFund + transaction.Amount));
+        }
+
+        private void Handle(DebitPreparationReverted @event)
+        {
+            AvailableFund = @event.AvailableFund;
+        }
     }
 }

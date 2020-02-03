@@ -23,19 +23,19 @@ namespace Sample.Domain.Model.BankAccounts
         /// <summary>
         /// 是否入账准备成功
         /// </summary>
-        public bool CreditPrepared { get; private set; }
+        public bool? CreditPrepared { get; private set; }
         /// <summary>
         /// 是否出账准备成功
         /// </summary>
-        public bool DebitPrepared { get; private set; }
+        public bool? DebitPrepared { get; private set; }
         /// <summary>
         /// 入账完成
         /// </summary>
-        public bool CreditCommitted { get; private set; }
+        public bool? CreditCommitted { get; private set; }
         /// <summary>
         /// 出账完成
         /// </summary>
-        public bool DebitCommitted { get; private set; }
+        public bool? DebitCommitted { get; private set; }
         /// <summary>
         /// 转账交易状态
         /// </summary>

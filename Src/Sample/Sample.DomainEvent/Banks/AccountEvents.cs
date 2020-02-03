@@ -1,52 +1,96 @@
-﻿namespace Sample.DomainEvents.Banks
+﻿using IFramework.Event;
+using Sample.Command;
+using BankErrorCode = Sample.DTO.ErrorCode;
+namespace Sample.DomainEvents.Banks
 {
     public abstract class AccountTransactionEvent : AggregateRootEvent
     {
-        protected AccountTransactionEvent(object aggregateRootId, decimal amount, string transactionId)
+        protected AccountTransactionEvent(object aggregateRootId, TransactionInfo transaction)
             : base(aggregateRootId)
         {
-            Amount = amount;
-            TransactionId = transactionId;
+            Transaction = transaction;
         }
 
-        public decimal Amount { get; protected set; }
-        public string TransactionId { get; protected set; }
+        public TransactionInfo Transaction { get; protected set; }
+    }
+
+    public abstract class AccountTransactionException : AccountTransactionEvent, IAggregateRootExceptionEvent
+    {
+        protected AccountTransactionException(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
+
+        public abstract object ErrorCode { get; set; }
     }
 
     public class AccountDebitPrepared : AccountTransactionEvent
     {
-        public AccountDebitPrepared(object aggregateRootId, decimal amount, string transactionId)
-            : base(aggregateRootId, amount, transactionId) { }
+        public AccountDebitPrepared(object aggregateRootId, TransactionInfo transaction, decimal availableFund)
+            : base(aggregateRootId, transaction)
+        {
+            AvailableFund = availableFund;
+        }
+
+        public decimal AvailableFund { get; protected set; }
     }
 
     public class AccountCreditPrepared : AccountTransactionEvent
     {
-        public AccountCreditPrepared(object aggregateRootId, decimal amount, string transactionId)
-            : base(aggregateRootId, amount, transactionId) { }
+        public AccountCreditPrepared(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
     }
 
     public class AccountDebitCommitted : AccountTransactionEvent
     {
-        public AccountDebitCommitted(object aggregateRootId, decimal amount, string transactionId)
-            : base(aggregateRootId, amount, transactionId) { }
+        public decimal TotalFund { get; protected set; }
+
+        public AccountDebitCommitted(object aggregateRootId, TransactionInfo transaction, decimal totalFund)
+            : base(aggregateRootId, transaction)
+        {
+            TotalFund = totalFund;
+        }
     }
 
     public class AccountCreditCommitted : AccountTransactionEvent
     {
-        public AccountCreditCommitted(object aggregateRootId, decimal amount, string transactionId)
-            : base(aggregateRootId, amount, transactionId) { }
+        public decimal AvailableFund { get; protected set; }
+        public decimal TotalFund { get; protected set; }
+
+        public AccountCreditCommitted(object aggregateRootId, TransactionInfo transaction, decimal availableFund, decimal totalFund)
+            : base(aggregateRootId, transaction)
+        {
+            AvailableFund = availableFund;
+            TotalFund = totalFund;
+        }
     }
 
-    public class AccountDebitPrepareFailed : AccountTransactionEvent
+    public class DebitPreparationReverted : AccountTransactionEvent
     {
-        public AccountDebitPrepareFailed(object aggregateRootId, decimal amount, string transactionId)
-            : base(aggregateRootId, amount, transactionId) { }
+        public decimal AvailableFund { get; protected set; }
+        public DebitPreparationReverted(object aggregateRootId, TransactionInfo transaction, decimal availableFund) 
+            : base(aggregateRootId, transaction)
+        {
+            AvailableFund = availableFund;
+        }
     }
 
-    public class AccountCreditPrepareFailed : AccountTransactionEvent
+    public class AccountDebitPrepareFailed : AccountTransactionException
     {
-        public AccountCreditPrepareFailed(object aggregateRootId, decimal amount, string transactionId)
-            : base(aggregateRootId, amount, transactionId) { }
+        public AccountDebitPrepareFailed(object aggregateRootId, TransactionInfo transaction, string reason)
+            : base(aggregateRootId, transaction)
+        {
+            Reason = reason;
+        }
+
+        public string Reason { get; protected set; }
+        public override object ErrorCode { get; set; } = BankErrorCode.AccountDebitPrepareFailed;
+    }
+
+    public class AccountCreditPrepareFailed : AccountTransactionException
+    {
+        public AccountCreditPrepareFailed(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
+
+        public override object ErrorCode { get; set; } = BankErrorCode.AccountCreditPrepareFailed;
     }
 
     public class AccountCreated : AggregateRootEvent
