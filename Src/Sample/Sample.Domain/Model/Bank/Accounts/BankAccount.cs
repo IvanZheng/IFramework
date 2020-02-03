@@ -2,7 +2,7 @@
 using Sample.Command;
 using Sample.DomainEvents.Banks;
 
-namespace Sample.Domain.Model.BankAccounts
+namespace Sample.Domain.Model.Bank.Accounts
 {
     public class BankAccount : EventSourcingAggregateRoot
     {
