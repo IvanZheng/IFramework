@@ -7,22 +7,37 @@ namespace Sample.Command
     {
         public TransactionInfo() { }
 
-        public TransactionInfo(string transactionId, string fromAccountId, string accountId, decimal amount, DateTime time)
+        public TransactionInfo(string transactionId, string debitAccountId, string creditAccountId, decimal amount, DateTime time)
         {
-            if (FromAccountId == ToAccountId)
+            if (DebitAccountId == CreditAccountId)
             {
                 throw new Exception("From Account and To Account can't be the same.");
             }
+
             TransactionId = transactionId;
-            FromAccountId = fromAccountId;
-            ToAccountId = accountId;
+            DebitAccountId = debitAccountId;
+            CreditAccountId = creditAccountId;
             Amount = amount;
             Time = time;
         }
+
         public string TransactionId { get; protected set; }
-        public string FromAccountId { get; protected set; }
-        public string ToAccountId { get; protected set; }
-        public decimal Amount { get; protected set; }
+
+        /// <summary>
+        ///     出账帐号标识
+        /// </summary>
+        public string DebitAccountId { get; protected set; }
+
+        /// <summary>
+        ///     入账帐号标识
+        /// </summary>
+        public string CreditAccountId { get; protected set; }
+
         public DateTime Time { get; protected set; }
+
+        /// <summary>
+        ///     转账金额
+        /// </summary>
+        public decimal Amount { get; protected set; }
     }
 }

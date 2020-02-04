@@ -22,7 +22,6 @@ using Sample.Command.Community;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
-using Sample.Domain.Model.BankAccounts;
 using Sample.Persistence;
 
 namespace Sample.CommandServiceCore.Controllers

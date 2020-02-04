@@ -59,7 +59,7 @@ namespace Sample.Domain.Model.Bank.Accounts
                 return;
             }
 
-            if (transaction.ToAccountId != Id)
+            if (transaction.CreditAccountId != Id)
             {
                 throw new Exception("Transaction's credit accountId is not the same as target's id.");
             }
@@ -88,7 +88,7 @@ namespace Sample.Domain.Model.Bank.Accounts
                 return;
             }
 
-            if (transaction.FromAccountId != Id)
+            if (transaction.DebitAccountId != Id)
             {
                 throw new Exception("Transaction's debit accountId is not the same as target's id.");
             }

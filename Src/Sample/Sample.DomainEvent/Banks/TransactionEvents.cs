@@ -4,59 +4,64 @@ namespace Sample.DomainEvents.Banks
 {
     public abstract class TransactionEvent : AggregateRootEvent
     {
-        protected TransactionEvent(object aggregateRootId, TransactionInfo info) : base(aggregateRootId)
+        protected TransactionEvent(object aggregateRootId, TransactionInfo transaction) : base(aggregateRootId)
         {
-            Info = info;
+            Transaction = transaction;
         }
 
-        public TransactionInfo Info { get; protected set; }
+        public TransactionInfo Transaction { get; protected set; }
     }
 
     public class TransactionSubmitted : TransactionEvent
     {
-        public TransactionSubmitted(object aggregateRootId, TransactionInfo info)
-            : base(aggregateRootId, info) { }
+        public TransactionSubmitted(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
     }
 
     public class TransactionFailed : TransactionEvent
     {
-        public TransactionFailed(object aggregateRootId, TransactionInfo info)
-            : base(aggregateRootId, info) { }
+        public string FailReason { get; protected set; }
+
+        public TransactionFailed(object aggregateRootId, TransactionInfo transaction, string failReason)
+            : base(aggregateRootId, transaction)
+        {
+            FailReason = failReason;
+        }
     }
 
     public class TransactionDebitPrepared : TransactionEvent
     {
-        public TransactionDebitPrepared(object aggregateRootId, TransactionInfo info)
-            : base(aggregateRootId, info) { }
+        public TransactionDebitPrepared(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
     }
 
     public class TransactionCreditPrepared : TransactionEvent
     {
-        public TransactionCreditPrepared(object aggregateRootId, TransactionInfo info)
-            : base(aggregateRootId, info) { }
+        public TransactionCreditPrepared(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
     }
 
     public class TransactionPrepared : TransactionEvent
     {
-        public TransactionPrepared(object aggregateRootId, TransactionInfo info)
-            : base(aggregateRootId, info) { }
+        public TransactionPrepared(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
     }
 
     public class TransactionDebitCommitted : TransactionEvent
     {
-        public TransactionDebitCommitted(object aggregateRootId, TransactionInfo info)
-            : base(aggregateRootId, info) { }
+        public TransactionDebitCommitted(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
     }
 
     public class TransactionCreditCommitted : TransactionEvent
     {
-        public TransactionCreditCommitted(object aggregateRootId, TransactionInfo info)
-            : base(aggregateRootId, info) { }
+        public TransactionCreditCommitted(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
     }
 
     public class TransactionCompleted : TransactionEvent
     {
-        public TransactionCompleted(object aggregateRootId, TransactionInfo info)
-            : base(aggregateRootId, info) { }
+        public TransactionCompleted(object aggregateRootId, TransactionInfo transaction)
+            : base(aggregateRootId, transaction) { }
     }
 }

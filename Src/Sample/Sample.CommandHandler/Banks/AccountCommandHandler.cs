@@ -6,7 +6,6 @@ using IFramework.Infrastructure.EventSourcing.Repositories;
 using IFramework.Message;
 using Sample.Command;
 using Sample.Domain.Model.Bank.Accounts;
-using Sample.Domain.Model.BankAccounts;
 using ErrorCode = Sample.DTO.ErrorCode;
 
 namespace Sample.CommandHandler.Banks
