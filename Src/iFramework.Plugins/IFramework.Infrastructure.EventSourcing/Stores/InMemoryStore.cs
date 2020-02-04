@@ -40,8 +40,7 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
 
         private string FormatStoreKey<TAggregateRoot>(string id)
         {
-            var key = $"{typeof(TAggregateRoot).Name}.{id}";
-            return key;
+            return FormatStoreKey(typeof(TAggregateRoot), id);
         }
 
         public void Set(IEventSourcingAggregateRoot ag)
