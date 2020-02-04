@@ -44,7 +44,7 @@ namespace Sample.Domain.Model.Bank.Accounts
 
         private void Handle(AccountCreated accountCreated)
         {
-            Id = accountCreated.Id;
+            Id = accountCreated.AggregateRootId.ToString();
             Name = accountCreated.Name;
             CardId = accountCreated.CardId;
             AvailableBalance = accountCreated.Amount;
@@ -70,7 +70,7 @@ namespace Sample.Domain.Model.Bank.Accounts
             }
             else
             {
-                OnException(new AccountCreditPrepareFailed(Id, transaction));
+                OnException(new AccountCreditPrepareFailed(Id, transaction, "Credit account status is not available."));
             }
         }
 
@@ -152,17 +152,29 @@ namespace Sample.Domain.Model.Bank.Accounts
 
         public void RevertDebitPreparation(TransactionInfo transaction)
         {
-            if (TransactionStatements.TryGetValue(transaction.TransactionId)?.Type != TransactionType.Debit)
+            if (TransactionStatements.TryGetValue(transaction.TransactionId)?.Type == TransactionType.Debit)
             {
-                throw new Exception("Invalid transaction revert debit command for the target account.");
+                OnEvent(new AccountDebitPreparationReverted(Id, transaction, AvailableBalance + transaction.Amount));
             }
-            OnEvent(new DebitPreparationReverted(Id, transaction, AvailableBalance + transaction.Amount));
         }
 
-        private void Handle(DebitPreparationReverted @event)
+        private void Handle(AccountDebitPreparationReverted @event)
         {
             TransactionStatements.TryRemove(@event.Transaction.TransactionId);
             AvailableBalance = @event.AvailableBalance;
+        }
+        
+        public void RevertCreditPreparation(TransactionInfo transaction)
+        {
+            if (TransactionStatements.TryGetValue(transaction.TransactionId)?.Type == TransactionType.Credit)
+            {
+                OnEvent(new AccountCreditPreparationReverted(Id, transaction));
+            }
+        }
+
+        private void Handle(AccountCreditPreparationReverted @event)
+        {
+            TransactionStatements.TryRemove(@event.Transaction.TransactionId);
         }
     }
 }

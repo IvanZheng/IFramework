@@ -79,6 +79,10 @@ namespace IFramework.Infrastructure.EventSourcing
                                                _eventBus.GetEvents()
                                                         .ToArray())
                                  .ConfigureAwait(false);
+                if (expectedVersion >= 0 && aggregateRoot != null)
+                {
+                    _inMemoryStore.Set(aggregateRoot);
+                }
                 _eventBus.Publish(aggregateEvents);
             }
             catch (DBConcurrencyException)
@@ -86,9 +90,8 @@ namespace IFramework.Infrastructure.EventSourcing
                 Rollback();
                 if (aggregateRoot != null)
                 {
-                    _inMemoryStore.Remove(aggregateRoot.Id);
+                    _inMemoryStore.Remove(aggregateRoot);
                 }
-
                 throw;
             }
             catch (AddDuplicatedAggregateRoot ex)

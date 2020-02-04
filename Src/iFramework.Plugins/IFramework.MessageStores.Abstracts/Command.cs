@@ -37,7 +37,7 @@ namespace IFramework.MessageStores.Abstracts
                 {
                     if (!string.IsNullOrEmpty(Result) && !string.IsNullOrEmpty(ResultType))
                     {
-                        reply = Result.ToJsonObject(System.Type.GetType(ResultType));
+                        reply = Result.ToJsonObject(System.Type.GetType(ResultType), true);
                     }
                 }
                 catch (Exception)

@@ -9,9 +9,9 @@ namespace Sample.Domain.Model.Bank.Transactions
     {
         public Transaction() { }
 
-        public Transaction(string id, string debitAccountId, string creditAccountId, decimal amount)
+        public Transaction(string id, TransactionInfo transactionInfo)
         {
-            Initialize(id, debitAccountId, creditAccountId, amount);
+            Initialize(id, transactionInfo);
         }
 
         public TransactionInfo Info { get; protected set; }
@@ -46,18 +46,14 @@ namespace Sample.Domain.Model.Bank.Transactions
         /// </summary>
         public string Remark { get; protected set; }
 
-        private void Initialize(string id, string debitAccountId, string creditAccountId, decimal amount)
+        private void Initialize(string id, TransactionInfo transactionInfo)
         {
-            OnEvent(new TransactionSubmitted(id, new TransactionInfo(id,
-                                                                     debitAccountId,
-                                                                     creditAccountId,
-                                                                     amount,
-                                                                     DateTime.Now)));
+            OnEvent(new TransactionSubmitted(id, transactionInfo));
         }
 
         private void Handle(TransactionSubmitted @event)
         {
-            Id = @event.Id;
+            Id = @event.AggregateRootId.ToString();
             Info = @event.Transaction;
             Status = BankTransactionStatus.Initialized;
         }

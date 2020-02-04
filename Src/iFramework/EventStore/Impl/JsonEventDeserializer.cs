@@ -14,7 +14,7 @@ namespace IFramework.EventStore.Impl
 
         public object Deserialize(ReadOnlySpan<byte> data, Type type)
         {
-            return Encoding.UTF8.GetString(data.ToArray()).ToJsonObject(type);
+            return Encoding.UTF8.GetString(data.ToArray()).ToJsonObject(type, true);
         }
     }
 }

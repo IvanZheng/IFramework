@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using IFramework.Infrastructure.EventSourcing.Domain;
 
@@ -12,9 +13,10 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
             _aggregateRootSet = new ConcurrentLimitedSizeDictionary<string, string>(maxCapacity);
         }
 
-        public void Remove(string id)
+        public void Remove(IEventSourcingAggregateRoot aggregateRoot)
         {
-            _aggregateRootSet.Remove(id);
+            var key = FormatStoreKey(aggregateRoot.GetType(), aggregateRoot.Id);
+            _aggregateRootSet.Remove(key);
         }
 
         public TAggregateRoot Get<TAggregateRoot>(string id) where TAggregateRoot : class
@@ -30,15 +32,21 @@ namespace IFramework.Infrastructure.EventSourcing.Stores
             return aggregateRoot;
         }
 
-        private string FormatStoreKey<TAggregateRoot>(string id) where TAggregateRoot : class
+        private string FormatStoreKey(Type aggregateRootType, string id)
+        {
+            var key = $"{aggregateRootType.Name}.{id}";
+            return key;
+        }
+
+        private string FormatStoreKey<TAggregateRoot>(string id)
         {
             var key = $"{typeof(TAggregateRoot).Name}.{id}";
             return key;
         }
 
-        public void Set<TAggregateRoot>(TAggregateRoot ag) where TAggregateRoot : class, IEventSourcingAggregateRoot, new()
+        public void Set(IEventSourcingAggregateRoot ag)
         {
-            var key = FormatStoreKey<TAggregateRoot>(ag.Id);
+            var key = FormatStoreKey(ag.GetType() , ag.Id);
             _aggregateRootSet[key] = ag.ToJson();
         }
     }

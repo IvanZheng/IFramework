@@ -107,9 +107,9 @@ namespace IFramework.EventStore.Redis
                                    .ConfigureAwait(false);
             return results?.SelectMany(r => r.Element
                                              .ToString()
-                                             .ToJsonObject<ObjectPayload[]>()
+                                             .ToJsonObject<ObjectPayload[]>(true)
                                              .Select(ep => ep.Payload
-                                                             .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent))
+                                                             .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code), true) as IEvent))
                           .ToArray();
         }
 
@@ -143,29 +143,29 @@ namespace IFramework.EventStore.Redis
             _logger.LogDebug($"redisResult:{redisResult} aggregateRootId: {id} expectedVersion: {expectedVersion} correlationId: {correlationId} aggregateRootEvents: {parameters.aggregateRootEvents}");
             if (!redisResult.IsNull && (redisResult.Type == ResultType.BulkString || redisResult.Type == ResultType.SimpleString))
             {
-                var commandResult = ((string) redisResult).ToJsonObject<CommandResult>();
+                var commandResult = ((string) redisResult).ToJsonObject<CommandResult>(true);
                 if (!string.IsNullOrWhiteSpace(commandResult.Result?.Payload))
                 {
                     result = commandResult.Result
                                           .Payload
-                                          .ToJsonObject(_messageTypeProvider.GetMessageType(commandResult.Result.Code));
+                                          .ToJsonObject(_messageTypeProvider.GetMessageType(commandResult.Result.Code), true);
                 }
 
                 if (!string.IsNullOrWhiteSpace(commandResult.SagaResult?.Payload))
                 {
                     sagaResult = commandResult.SagaResult
                                                   .Payload
-                                                  .ToJsonObject(_messageTypeProvider.GetMessageType(commandResult.SagaResult.Code));
+                                                  .ToJsonObject(_messageTypeProvider.GetMessageType(commandResult.SagaResult.Code), true);
                 }
 
                 aggregateRootEvents = commandResult.AggregateRootEventPayloads
                                                        ?.Select(ep => ep.Payload
-                                                                        .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
+                                                                        .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code), true) as IEvent)
                                                        .ToArray();
 
                 applicationEvents = commandResult.ApplicationEventPayloads
                                                      ?.Select(ep => ep.Payload
-                                                                      .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
+                                                                      .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code), true) as IEvent)
                                                      .ToArray();
 
 
@@ -194,12 +194,12 @@ namespace IFramework.EventStore.Redis
                                                                 commandId
                                                             })
                                        .ConfigureAwait(false);
-            var commandResult = ((string) redisResult).ToJsonObject<CommandResult>();
+            var commandResult = ((string) redisResult).ToJsonObject<CommandResult>(true);
           
             List<IEvent> events = new List<IEvent>();
             var aggregateRootEvents = commandResult.AggregateRootEventPayloads
                                                ?.Select(ep => ep.Payload
-                                                                .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
+                                                                .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code), true) as IEvent)
                                                .ToArray();
             if (aggregateRootEvents != null && aggregateRootEvents.Length > 0)
             {
@@ -207,7 +207,7 @@ namespace IFramework.EventStore.Redis
             }
             var applicationEvents = commandResult.ApplicationEventPayloads
                                              ?.Select(ep => ep.Payload
-                                                              .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
+                                                              .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code), true) as IEvent)
                                              .ToArray();
             if (applicationEvents != null && applicationEvents.Length > 0)
             {
@@ -243,22 +243,22 @@ namespace IFramework.EventStore.Redis
 
             if (redisResult.Type == ResultType.SimpleString || redisResult.Type == ResultType.BulkString)
             {
-                var handledEventMessages = ((string) redisResult).ToJsonObject<HandledEventMessages>();
+                var handledEventMessages = ((string) redisResult).ToJsonObject<HandledEventMessages>(true);
 
                 commands = handledEventMessages.Commands
                                                .ToJsonObject<ObjectPayload[]>()
                                                .Select(ep => ep.Payload
-                                                               .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as ICommand)
+                                                               .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code), true) as ICommand)
                                                .ToArray();
 
                 events = handledEventMessages.Events
                                              .ToJsonObject<ObjectPayload[]>()
                                              .Select(ep => ep.Payload
-                                                             .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code)) as IEvent)
+                                                             .ToJsonObject(_messageTypeProvider.GetMessageType(ep.Code), true) as IEvent)
                                              .ToArray();
                 var sagaResultPayload = handledEventMessages.SagaResult
                                                             .ToJsonObject<ObjectPayload>();
-                sagaResult = sagaResultPayload.Payload.ToJsonObject(_messageTypeProvider.GetMessageType(sagaResultPayload.Code));
+                sagaResult = sagaResultPayload.Payload.ToJsonObject(_messageTypeProvider.GetMessageType(sagaResultPayload.Code), true);
             }
 
 

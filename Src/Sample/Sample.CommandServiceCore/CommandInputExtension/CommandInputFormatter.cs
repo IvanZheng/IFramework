@@ -78,7 +78,7 @@ namespace Sample.CommandServiceCore.CommandInputExtension
                     var memory = new byte[request.ContentLength??0];
                     await request.Body.ReadAsync(memory);
                     var part = encoding.GetString(memory);
-                    command = part.ToJsonObject(commandType);
+                    command = part.ToJsonObject(commandType, true);
                 }
                 return command != null ? InputFormatterResult.Success(command) : InputFormatterResult.Failure();
             }

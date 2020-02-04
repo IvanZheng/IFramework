@@ -10,47 +10,36 @@ using ErrorCode = Sample.DTO.ErrorCode;
 
 namespace Sample.CommandHandler.Banks
 {
-    public class AccountCommandHandler : ICommandAsyncHandler<CreateAccount>,
+    public class AccountCommandHandler : BankCommandHandler<BankAccount>,
+                                         ICommandAsyncHandler<CreateAccount>,
                                          ICommandAsyncHandler<PrepareAccountCredit>,
                                          ICommandAsyncHandler<PrepareAccountDebit>,
                                          ICommandAsyncHandler<CommitAccountCredit>,
-                                         ICommandAsyncHandler<CommitAccountDebit>
+                                         ICommandAsyncHandler<CommitAccountDebit>,
+                                         ICommandAsyncHandler<RevertAccountDebitPreparation>,
+                                         ICommandAsyncHandler<RevertAccountCreditPreparation>
     {
-        private readonly IMessageContext _commandContext;
-        private readonly IEventSourcingRepository<BankAccount> _repository;
-
-        protected async Task<BankAccount> GetAccountAsync(string accountId, bool throwExceptionIfNotExists = true)
+        public AccountCommandHandler(IMessageContext commandContext, 
+                                     IEventSourcingRepository<BankAccount> repository)
+            :base(commandContext, repository)
         {
-            var account = await _repository.GetByKeyAsync(accountId)
-                                           .ConfigureAwait(false);
-            if (account == null && throwExceptionIfNotExists)
-            {
-                throw new DomainException(ErrorCode.ObjectNotExists, new object[] {accountId});
-            }
-
-            return account;
         }
 
-
-        public AccountCommandHandler(IMessageContext commandContext, IEventSourcingRepository<BankAccount> repository)
+        public async Task Handle(CommitAccountCredit message)
         {
-            _commandContext = commandContext;
-            _repository = repository;
+            var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
+            account.CommitCredit(message.TransactionInfo);
         }
 
-        public Task Handle(CommitAccountCredit message)
+        public async Task Handle(CommitAccountDebit message)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task Handle(CommitAccountDebit message)
-        {
-            throw new NotImplementedException();
+            var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
+            account.CommitDebit(message.TransactionInfo);
         }
 
         public async Task Handle(CreateAccount message)
         {
-            var account = await GetAccountAsync(message.AccountId, 
+            var account = await GetAggregateRootAsync(message.AccountId, 
                                                 false).ConfigureAwait(false);
 
             if (account != null)
@@ -61,18 +50,31 @@ namespace Sample.CommandHandler.Banks
                                           message.Name,
                                           message.CardId,
                                           message.Amount);
-            _repository.Add(account);
+            Repository.Add(account);
         }
 
         public async Task Handle(PrepareAccountCredit message)
         {
-            var account = await GetAccountAsync(message.AccountId).ConfigureAwait(false);
+            var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
             account.PrepareCredit(message.TransactionInfo);
         }
 
-        public Task Handle(PrepareAccountDebit message)
+        public async Task Handle(PrepareAccountDebit message)
         {
-            throw new NotImplementedException();
+            var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
+            account.PrepareDebit(message.TransactionInfo);
+        }
+
+        public async Task Handle(RevertAccountDebitPreparation message)
+        {
+            var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
+            account.RevertDebitPreparation(message.TransactionInfo);
+        }
+
+        public async Task Handle(RevertAccountCreditPreparation message)
+        {
+            var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
+            account.RevertCreditPreparation(message.TransactionInfo);
         }
     }
 }

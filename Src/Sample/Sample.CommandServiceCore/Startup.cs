@@ -64,6 +64,7 @@ namespace Sample.CommandServiceCore
         private static IMessageProcessor _domainEventProcessor;
         private static IMessageProcessor _applicationEventProcessor;
         private static IMessageProcessor _eventSourcingCommandConsumer;
+        private static IMessageProcessor _eventSourcingEventProcessor;
         public static string PathBase;
         private static string _app = "uat";
         private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
@@ -293,6 +294,14 @@ namespace Sample.CommandServiceCore
                                                                               new[] { "DomainEventSubscriber" });
             _domainEventProcessor.Start();
 
+            _eventSourcingEventProcessor = EventSourcingFactory.CreateEventSubscriber(new[]
+                                                                                      {
+                                                                                          new TopicSubscription($"{TopicPrefix}BankDomainEvent")
+                                                                                      }, 
+                                                                                      "BankDomainEventSubscriber",
+                                                                                      Environment.MachineName,
+                                                                                      new[] {"BankDomainEventSubscriber"});
+            _eventSourcingEventProcessor.Start();
             #endregion
 
             #region application event subscriber init

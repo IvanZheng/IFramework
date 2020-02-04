@@ -1,8 +1,10 @@
 ﻿using IFramework.Event;
+using IFramework.Message;
 using Sample.Command;
 using BankErrorCode = Sample.DTO.ErrorCode;
 namespace Sample.DomainEvents.Banks
 {
+    [Topic("BankDomainEvent")]
     public abstract class AccountTransactionEvent : AggregateRootEvent
     {
         protected AccountTransactionEvent(object aggregateRootId, TransactionInfo transaction)
@@ -63,14 +65,19 @@ namespace Sample.DomainEvents.Banks
         }
     }
 
-    public class DebitPreparationReverted : AccountTransactionEvent
+    public class AccountDebitPreparationReverted : AccountTransactionEvent
     {
         public decimal AvailableBalance { get; protected set; }
-        public DebitPreparationReverted(object aggregateRootId, TransactionInfo transaction, decimal availableBalance) 
+        public AccountDebitPreparationReverted(object aggregateRootId, TransactionInfo transaction, decimal availableBalance) 
             : base(aggregateRootId, transaction)
         {
             AvailableBalance = availableBalance;
         }
+    }
+
+    public class AccountCreditPreparationReverted : AccountTransactionEvent
+    {
+        public AccountCreditPreparationReverted(object aggregateRootId, TransactionInfo transaction) : base(aggregateRootId, transaction) { }
     }
 
     public class AccountDebitPrepareFailed : AccountTransactionException
@@ -87,8 +94,13 @@ namespace Sample.DomainEvents.Banks
 
     public class AccountCreditPrepareFailed : AccountTransactionException
     {
-        public AccountCreditPrepareFailed(object aggregateRootId, TransactionInfo transaction)
-            : base(aggregateRootId, transaction) { }
+        public string Reason { get; protected set; }
+
+        public AccountCreditPrepareFailed(object aggregateRootId, TransactionInfo transaction, string reason)
+            : base(aggregateRootId, transaction)
+        {
+            Reason = reason;
+        }
 
         public override object ErrorCode { get; set; } = BankErrorCode.AccountCreditPrepareFailed;
     }

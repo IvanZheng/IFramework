@@ -1,7 +1,9 @@
-﻿using Sample.Command;
+﻿using IFramework.Message;
+using Sample.Command;
 
 namespace Sample.DomainEvents.Banks
 {
+    [Topic("BankDomainEvent")]
     public abstract class TransactionEvent : AggregateRootEvent
     {
         protected TransactionEvent(object aggregateRootId, TransactionInfo transaction) : base(aggregateRootId)
