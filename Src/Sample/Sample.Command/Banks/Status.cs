@@ -4,6 +4,11 @@ using System.Text;
 
 namespace Sample.Command
 {
+    public enum TransactionType
+    {
+        Debit,
+        Credit
+    }
     public enum AccountStatus
     {
         Normal,

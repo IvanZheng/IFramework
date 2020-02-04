@@ -24,13 +24,13 @@ namespace Sample.DomainEvents.Banks
 
     public class AccountDebitPrepared : AccountTransactionEvent
     {
-        public AccountDebitPrepared(object aggregateRootId, TransactionInfo transaction, decimal availableFund)
+        public AccountDebitPrepared(object aggregateRootId, TransactionInfo transaction, decimal availableBalance)
             : base(aggregateRootId, transaction)
         {
-            AvailableFund = availableFund;
+            AvailableBalance = availableBalance;
         }
 
-        public decimal AvailableFund { get; protected set; }
+        public decimal AvailableBalance { get; protected set; }
     }
 
     public class AccountCreditPrepared : AccountTransactionEvent
@@ -41,35 +41,35 @@ namespace Sample.DomainEvents.Banks
 
     public class AccountDebitCommitted : AccountTransactionEvent
     {
-        public decimal TotalFund { get; protected set; }
+        public decimal CurrentBalance { get; protected set; }
 
-        public AccountDebitCommitted(object aggregateRootId, TransactionInfo transaction, decimal totalFund)
+        public AccountDebitCommitted(object aggregateRootId, TransactionInfo transaction, decimal currentBalance)
             : base(aggregateRootId, transaction)
         {
-            TotalFund = totalFund;
+            CurrentBalance = currentBalance;
         }
     }
 
     public class AccountCreditCommitted : AccountTransactionEvent
     {
-        public decimal AvailableFund { get; protected set; }
-        public decimal TotalFund { get; protected set; }
+        public decimal AvailableBalance { get; protected set; }
+        public decimal CurrentBalance { get; protected set; }
 
-        public AccountCreditCommitted(object aggregateRootId, TransactionInfo transaction, decimal availableFund, decimal totalFund)
+        public AccountCreditCommitted(object aggregateRootId, TransactionInfo transaction, decimal availableBalance, decimal currentBalance)
             : base(aggregateRootId, transaction)
         {
-            AvailableFund = availableFund;
-            TotalFund = totalFund;
+            AvailableBalance = availableBalance;
+            CurrentBalance = currentBalance;
         }
     }
 
     public class DebitPreparationReverted : AccountTransactionEvent
     {
-        public decimal AvailableFund { get; protected set; }
-        public DebitPreparationReverted(object aggregateRootId, TransactionInfo transaction, decimal availableFund) 
+        public decimal AvailableBalance { get; protected set; }
+        public DebitPreparationReverted(object aggregateRootId, TransactionInfo transaction, decimal availableBalance) 
             : base(aggregateRootId, transaction)
         {
-            AvailableFund = availableFund;
+            AvailableBalance = availableBalance;
         }
     }
 

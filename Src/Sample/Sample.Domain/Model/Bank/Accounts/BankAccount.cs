@@ -1,6 +1,9 @@
-﻿using IFramework.Infrastructure.EventSourcing.Domain;
+﻿using System;
+using System.Collections.Generic;
+using IFramework.Infrastructure.EventSourcing.Domain;
 using Sample.Command;
 using Sample.DomainEvents.Banks;
+using IFramework.Infrastructure;
 
 namespace Sample.Domain.Model.Bank.Accounts
 {
@@ -13,18 +16,20 @@ namespace Sample.Domain.Model.Bank.Accounts
             Initialize(id, name, cardId, amount);
         }
 
+        public Dictionary<string, TransactionStatement> TransactionStatements { get; protected set; } = new Dictionary<string, TransactionStatement>();
+
         public string Name { get; private set; }
         public string CardId { get; private set; }
 
         /// <summary>
         ///     可用余额
         /// </summary>
-        public decimal AvailableFund { get; private set; }
+        public decimal AvailableBalance { get; private set; }
 
         /// <summary>
-        ///     总金额
+        ///     当前余额
         /// </summary>
-        public decimal TotalFund { get; private set; }
+        public decimal CurrentBalance { get; private set; }
 
         /// <summary>
         ///     账户状态
@@ -42,13 +47,23 @@ namespace Sample.Domain.Model.Bank.Accounts
             Id = accountCreated.Id;
             Name = accountCreated.Name;
             CardId = accountCreated.CardId;
-            AvailableFund = accountCreated.Amount;
-            TotalFund = accountCreated.Amount;
+            AvailableBalance = accountCreated.Amount;
+            CurrentBalance = accountCreated.Amount;
             Status = AccountStatus.Normal;
         }
 
         public void PrepareCredit(TransactionInfo transaction)
         {
+            if (TransactionStatements.ContainsKey(transaction.TransactionId))
+            {
+                return;
+            }
+
+            if (transaction.ToAccountId != Id)
+            {
+                throw new Exception("Transaction's credit accountId is not the same as target's id.");
+            }
+
             if (Status == AccountStatus.Normal)
             {
                 OnEvent(new AccountCreditPrepared(Id, transaction));
@@ -59,54 +74,95 @@ namespace Sample.Domain.Model.Bank.Accounts
             }
         }
 
-        public void CommitDebit(TransactionInfo transaction)
+        private void Handle(AccountCreditPrepared @event)
         {
-            OnEvent(new AccountDebitCommitted(Id, transaction, TotalFund - transaction.Amount));
-        }
-
-
-        public void CommitCredit(TransactionInfo transaction)
-        {
-            OnEvent(new AccountCreditCommitted(Id, 
-                                               transaction, 
-                                               AvailableFund + transaction.Amount,
-                                               TotalFund + transaction.Amount));
-        }
-        private void Handle(AccountCreditCommitted @event)
-        {
-            AvailableFund = @event.AvailableFund;
-            TotalFund = @event.TotalFund;
+            TransactionStatements.Add(@event.Transaction.TransactionId,
+                                      new TransactionStatement(@event.Transaction,
+                                                               TransactionType.Credit));
         }
 
         public void PrepareDebit(TransactionInfo transaction)
         {
+            if (TransactionStatements.ContainsKey(transaction.TransactionId))
+            {
+                return;
+            }
+
+            if (transaction.FromAccountId != Id)
+            {
+                throw new Exception("Transaction's debit accountId is not the same as target's id.");
+            }
             if (Status != AccountStatus.Normal)
             {
                 OnException(new AccountDebitPrepareFailed(Id, transaction, "Debit account status is not available."));
             }
-            else if (AvailableFund < transaction.Amount)
+            else if (AvailableBalance < transaction.Amount)
             {
                 OnException(new AccountDebitPrepareFailed(Id, transaction, "Debit account is without enough funds."));
             }
             else
             {
-                OnEvent(new AccountDebitPrepared(Id, transaction, AvailableFund - transaction.Amount));
+                OnEvent(new AccountDebitPrepared(Id, transaction, AvailableBalance - transaction.Amount));
             }
         }
 
         private void Handle(AccountDebitPrepared @event)
         {
-            AvailableFund = @event.AvailableFund;
+            TransactionStatements.Add(@event.Transaction.TransactionId,
+                                      new TransactionStatement(@event.Transaction,
+                                                               TransactionType.Debit));
+            AvailableBalance = @event.AvailableBalance;
+        }
+
+
+        public void CommitDebit(TransactionInfo transaction)
+        {
+            if (TransactionStatements.TryGetValue(transaction.TransactionId)?.Type != TransactionType.Debit)
+            {
+                throw new Exception("Invalid transaction debit command for the target account.");
+            }
+            OnEvent(new AccountDebitCommitted(Id, transaction, CurrentBalance - transaction.Amount));
+        }
+
+        private void Handle(AccountDebitCommitted @event)
+        {
+            TransactionStatements.TryRemove(@event.Transaction.TransactionId);
+            CurrentBalance = @event.CurrentBalance;
+        }
+
+
+        public void CommitCredit(TransactionInfo transaction)
+        {
+            if (TransactionStatements.TryGetValue(transaction.TransactionId)?.Type != TransactionType.Credit)
+            {
+                throw new Exception("Invalid transaction credit command for the target account.");
+            }
+            OnEvent(new AccountCreditCommitted(Id,
+                                               transaction,
+                                               AvailableBalance + transaction.Amount,
+                                               CurrentBalance + transaction.Amount));
+        }
+
+        private void Handle(AccountCreditCommitted @event)
+        {
+            TransactionStatements.TryRemove(@event.Transaction.TransactionId);
+            AvailableBalance = @event.AvailableBalance;
+            CurrentBalance = @event.CurrentBalance;
         }
 
         public void RevertDebitPreparation(TransactionInfo transaction)
         {
-            OnEvent(new DebitPreparationReverted(Id, transaction, AvailableFund + transaction.Amount));
+            if (TransactionStatements.TryGetValue(transaction.TransactionId)?.Type != TransactionType.Debit)
+            {
+                throw new Exception("Invalid transaction revert debit command for the target account.");
+            }
+            OnEvent(new DebitPreparationReverted(Id, transaction, AvailableBalance + transaction.Amount));
         }
 
         private void Handle(DebitPreparationReverted @event)
         {
-            AvailableFund = @event.AvailableFund;
+            TransactionStatements.TryRemove(@event.Transaction.TransactionId);
+            AvailableBalance = @event.AvailableBalance;
         }
     }
 }

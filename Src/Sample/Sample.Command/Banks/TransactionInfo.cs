@@ -9,6 +9,10 @@ namespace Sample.Command
 
         public TransactionInfo(string transactionId, string fromAccountId, string accountId, decimal amount, DateTime time)
         {
+            if (FromAccountId == ToAccountId)
+            {
+                throw new Exception("From Account and To Account can't be the same.");
+            }
             TransactionId = transactionId;
             FromAccountId = fromAccountId;
             ToAccountId = accountId;
