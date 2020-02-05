@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Command;
@@ -137,10 +138,11 @@ namespace IFramework.EventStore.Redis
                 result = commandResultJson,
                 aggregateRootEvents = aggregateRootEventPayloads.ToJson(useCamelCase: true)
             };
+            var watch = Stopwatch.StartNew();
             var redisResult = await _db.ScriptEvaluateAsync(_appendEventsLuaScript,
                                                             parameters)
                                        .ConfigureAwait(false);
-            _logger.LogDebug($"redisResult:{redisResult} aggregateRootId: {id} expectedVersion: {expectedVersion} correlationId: {correlationId} aggregateRootEvents: {parameters.aggregateRootEvents}");
+            _logger.LogDebug($"redisResult:{redisResult} cost: {watch.ElapsedMilliseconds}ms aggregateRootId: {id} expectedVersion: {expectedVersion} correlationId: {correlationId} aggregateRootEvents: {parameters.aggregateRootEvents}");
             if (!redisResult.IsNull && (redisResult.Type == ResultType.BulkString || redisResult.Type == ResultType.SimpleString))
             {
                 var commandResult = ((string) redisResult).ToJsonObject<CommandResult>(true);
