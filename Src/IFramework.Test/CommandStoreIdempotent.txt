@@ -1,0 +1,42 @@
+﻿
+1. 判断命令是否已被执行以及是否产生事件 
+// Status
+{
+	UnDo,
+	Processing,
+	Done
+}
+
+// HSETNX key field value 
+// 只有在字段 field 不存在时，设置哈希表字段的值。
+// result =  HSETNX AggregateId commandId Processing
+// if (result == 0) status = HMGET AggregateId commandId  
+// result为0, 说明已经保存过commandId, 取出command的执行状态
+// 否则返回UnDo Status
+var status = CommandStore.CommandHandled(command);
+
+
+ if (status == UnDo) //说明命令从未被执行
+ {
+	events = CommandHandler.Do(command);
+	EventStore.AppendEvents(events);
+ }
+ else
+ {
+	if (status == Processing) // 可能处理过也可能没处理
+	{
+		events = EventStore.GetAllEvents(aggregateId);
+		events = events.Where(e => e.Metadata.CommitId == commandId) //查找聚合事件中由commandId产生的事件
+					   .ToArray();
+		if (events.Length == 0) //说明command未被执行
+		{
+			events = CommandHandler.Do(command);
+			EventStore.AppendEvents(events);
+		}
+	}
+ }
+ if (status != Done)
+ {
+	EventBus.Publish(events);
+	CommandStore.Complete(command);// HSET aggregateId commandId Done  
+ }

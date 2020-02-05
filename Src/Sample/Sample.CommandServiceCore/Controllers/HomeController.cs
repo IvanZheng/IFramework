@@ -12,6 +12,7 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.EventSourcing.Repositories;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,7 @@ using Sample.Command.Community;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
+using Sample.Domain.Model.Bank.Accounts;
 using Sample.Persistence;
 
 namespace Sample.CommandServiceCore.Controllers
@@ -35,7 +37,7 @@ namespace Sample.CommandServiceCore.Controllers
         private readonly ILogger _logger;
         private readonly IObjectProvider _objectProvider;
         private readonly IUnitOfWork _unitOfWork;
-
+        private readonly IEventSourcingRepository<BankAccount> _bankAccountRepository;
         public HomeController(IConcurrencyProcessor concurrencyProcessor,
                               ILogger<HomeController> logger,
                               IObjectProvider objectProvider,
@@ -43,8 +45,10 @@ namespace Sample.CommandServiceCore.Controllers
                               ICommunityRepository domainRepository,
                               SampleModelContext dbContext,
                               ICommunityService communityService,
-                              IMailboxProcessor mailboxProcessor)
+                              IMailboxProcessor mailboxProcessor,
+                              IEventSourcingRepository<BankAccount> bankAccountRepository)
         {
+            _bankAccountRepository = bankAccountRepository;
             _concurrencyProcessor = concurrencyProcessor;
             _objectProvider = objectProvider;
             _unitOfWork = unitOfWork;
@@ -68,6 +72,11 @@ namespace Sample.CommandServiceCore.Controllers
 
             var version = await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
             return $"{DateTime.Now} version:{version} DoApi Done! sameProvider:{sameProvider} ";
+        }
+        [Route("home/getBankAccount/{accountId}")]
+        public Task<BankAccount> GetBankAccount(string accountId)
+        {
+            return _bankAccountRepository.GetByKeyAsync(accountId);
         }
 
         public IActionResult Test()

@@ -191,7 +191,7 @@ namespace IFramework.MessageStores.Abstracts
                 {
                     try
                     {
-                        if (message.MessageBody.ToJsonObject(Type.GetType(message.Type)) is IMessage rawMessage)
+                        if (message.MessageBody.ToJsonObject(Type.GetType(message.Type), true) is IMessage rawMessage)
                         {
                             messageContexts.Add(wrapMessage(message.Id, rawMessage, message.Topic, message.CorrelationId,
                                                             message.ReplyToEndPoint, message.SagaInfo, message.Producer));

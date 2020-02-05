@@ -9,7 +9,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
     {
         public TValue Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
         {
-            return  Encoding.UTF8.GetString(data.ToArray()).ToJsonObject<TValue>();
+            return  Encoding.UTF8.GetString(data.ToArray()).ToJsonObject<TValue>(true);
         }
     }
 }

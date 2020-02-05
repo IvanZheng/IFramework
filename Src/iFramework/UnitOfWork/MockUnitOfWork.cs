@@ -9,7 +9,7 @@ namespace IFramework.UnitOfWork
         public void Dispose() { }
 
         public void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                           TransactionScopeOption scopOption = TransactionScopeOption.Required) { }
+                           TransactionScopeOption scopeOption = TransactionScopeOption.Required) { }
 
         public void Rollback() { }
 

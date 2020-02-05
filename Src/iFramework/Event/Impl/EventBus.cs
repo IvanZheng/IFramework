@@ -13,7 +13,7 @@ namespace IFramework.Event.Impl
 
         protected List<ICommand> CommandQueue;
         protected List<IEvent> EventQueue;
-        protected List<object> SagaResultQueue;
+        protected object SagaResult;
         protected List<IEvent> ToPublishAnywayEventQueue;
 
         //protected IEventSubscriberProvider EventSubscriberProvider { get; set; }
@@ -23,7 +23,6 @@ namespace IFramework.Event.Impl
             EventSubscriberProvider = eventSubscriberProvider;
             EventQueue = new List<IEvent>();
             CommandQueue = new List<ICommand>();
-            SagaResultQueue = new List<object>();
             ToPublishAnywayEventQueue = new List<IEvent>();
         }
 
@@ -59,14 +58,14 @@ namespace IFramework.Event.Impl
             return EventQueue;
         }
 
-        public IEnumerable<object> GetSagaResults()
+        public object GetSagaResult()
         {
-            return SagaResultQueue;
+            return SagaResult;
         }
 
         public void ClearMessages(bool clearPublishAnywayMessages = true)
         {
-            SagaResultQueue.Clear();
+            SagaResult = null;
             EventQueue.Clear();
             CommandQueue.Clear();
             if (clearPublishAnywayMessages)
@@ -98,7 +97,7 @@ namespace IFramework.Event.Impl
 
         public void FinishSaga(object sagaResult)
         {
-            SagaResultQueue.Add(sagaResult);
+            SagaResult = sagaResult;
         }
     }
 }

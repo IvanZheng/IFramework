@@ -19,7 +19,7 @@ namespace Sample.DomainEvents.Products
 
         }
         public ProductCountNotEnough(Guid aggregateRootId, int reduceCount, int count)
-            : base(aggregateRootId, Sample.DTO.ErrorCode.CountNotEnougth)
+            : base(aggregateRootId, Sample.DTO.ErrorCode.CountNotEnough)
         {
             ReduceCount = reduceCount;
             Count = count;

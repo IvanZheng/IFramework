@@ -6,9 +6,7 @@ using Sample.DomainEvents.Community;
 
 namespace Sample.Domain.Model
 {
-    public abstract class People : VersionedAggregateRoot,
-                                   IEventSubscriber<PeopleRegisted>,
-                                   IEventSubscriber<ItemRegisted>
+    public abstract class People : VersionedAggregateRoot
     {
         protected People() { }
 
@@ -22,12 +20,12 @@ namespace Sample.Domain.Model
         public string Password { get; protected set; }
         public DateTime RegisterTime { get; protected set; }
 
-        void IMessageHandler<ItemRegisted>.Handle(ItemRegisted @event)
+        protected virtual void Handle(ItemRegisted @event)
         {
             Console.Write(@event.ToString());
         }
 
-        void IMessageHandler<PeopleRegisted>.Handle(PeopleRegisted @event)
+        protected virtual void Handle(PeopleRegisted @event)
         {
             Id = (Guid) @event.AggregateRootId;
             UserName = @event.UserName;

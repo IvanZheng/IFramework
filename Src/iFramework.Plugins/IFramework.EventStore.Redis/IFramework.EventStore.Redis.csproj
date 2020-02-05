@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+    <ProjectReference Include="..\IFramework.Infrastructure.EventSourcing\IFramework.Infrastructure.EventSourcing.csproj" />
+  </ItemGroup>
+
+</Project>

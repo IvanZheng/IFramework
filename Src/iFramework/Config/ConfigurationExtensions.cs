@@ -5,6 +5,8 @@ using System.Text;
 using IFramework.DependencyInjection;
 using IFramework.Event;
 using IFramework.Event.Impl;
+using IFramework.EventStore;
+using IFramework.EventStore.Impl;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.Caching;
 using IFramework.Infrastructure.Caching.Impl;
@@ -24,7 +26,8 @@ namespace IFramework.Config
         public static IServiceCollection AddConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             Configuration.Instance.ConfigurationCore = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            services.AddSingleton(typeof(Configuration), Configuration.Instance);
+            services.AddSingleton(typeof(Configuration), Configuration.Instance)
+                    .AddSingleton<IConfiguration>(Configuration.Instance);
             return services;
         }
 
@@ -41,7 +44,9 @@ namespace IFramework.Config
                     .AddMessageQueue(app)
                     .MessageQueueUseMachineNameFormat()
                     .AddMessageTypeProvider<MessageTypeProvider>()
-                    .AddMailbox<MailboxProcessor, DefaultProcessingMessageScheduler>();
+                    .AddMailbox<MailboxProcessor, DefaultProcessingMessageScheduler>()
+                    .AddSingleton<IEventSerializer, JsonEventSerializer>()
+                    .AddSingleton<IEventDeserializer, JsonEventDeserializer>();
             return services;
         }
         

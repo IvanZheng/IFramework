@@ -58,7 +58,7 @@
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.1.0" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.1.0" />
     <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.17" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.6.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,6 +66,8 @@
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EventStore.Redis\IFramework.EventStore.Redis.csproj" />
+    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Infrastructure.EventSourcing\IFramework.Infrastructure.EventSourcing.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.Log4Net\IFramework.Logging.Log4Net.csproj" />
     <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj" />

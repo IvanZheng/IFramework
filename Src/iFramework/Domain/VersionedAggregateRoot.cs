@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using IFramework.Event;
 
 namespace IFramework.Domain
 {
