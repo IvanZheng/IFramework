@@ -45,7 +45,7 @@ namespace IFramework.MessageStores.Relational
                                                        Exception e,
                                                        params IMessageContext[] messageContexts)
         {
-            HandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now, e));
+            FailHandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now, e));
 
             messageContexts.ForEach(messageContext =>
             {

@@ -14,11 +14,8 @@ namespace IFramework.MessageQueue.RabbitMQ
             Configuration.Instance.SetCommitPerMessage(true);
             var constructInjection = new ConstructInjection(new ParameterInjection("connectionFactory", connectionFactory));
 
-            ObjectProviderFactory.Instance
-                                 .ObjectProviderBuilder
-                                 .Register<IMessageQueueClientProvider, RabbitMQClientProvider>(ServiceLifetime.Singleton,
-                                                                                                constructInjection)
-                                 .Register<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
+            services.AddSingleton<IMessageQueueClientProvider, RabbitMQClientProvider>(constructInjection)
+                    .AddSingleton<IMessageQueueClient, MessageQueueClient>();
             return services;
         }
     }
