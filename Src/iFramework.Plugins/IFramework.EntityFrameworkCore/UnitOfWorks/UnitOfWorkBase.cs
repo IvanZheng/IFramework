@@ -126,7 +126,6 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                 {
                     foreach (var dbContext in DbContexts)
                     {
-                        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                         dbContext.ChangeTracker.Entries()
                                  .ForEach(e =>
                                  {
@@ -136,6 +135,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                          root.ClearDomainEvents();
                                      }
                                  });
+                        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                     }
                     await BeforeCommitAsync().ConfigureAwait(false);
                 }
