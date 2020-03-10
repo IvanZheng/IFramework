@@ -9,7 +9,7 @@ namespace IFramework.DependencyInjection.Autofac
 {
     public static class ConfigurationExtension
     {
-        public static Assembly[] GetAssemblies(Func<Assembly, bool> assemblyNameExpression)
+        public static Assembly[] GetAssemblies(Func<string, bool> assemblyNameExpression)
         {
             var assemblyFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory)
                                          .Select(f => new FileInfo(f))
@@ -18,22 +18,22 @@ namespace IFramework.DependencyInjection.Autofac
             var assemblies = assemblyFiles.Where(f => f.Name.EndsWith(".dll")
                                                       && !f.Name.EndsWith(".PrecompiledViews.dll")
                                                       && !f.Name.EndsWith(".Views.dll"))
+                                          .Where(f => assemblyNameExpression(f.Name))
                                           .Select(f => Assembly.Load(f.Name.Remove(f.Name.Length - 4)))
-                                          .Where(assemblyNameExpression)
                                           .ToArray();
 
             var loadedAssemblies = AppDomain.CurrentDomain
                                             .GetAssemblies()
                                             .Where(assembly => !assembly.GetName().Name.EndsWith(".PrecompiledViews")
                                                                && !assembly.GetName().Name.EndsWith(".Views"))
-                                            .Where(assemblyNameExpression);
+                                            .Where(assembly => assemblyNameExpression(assembly.GetName().Name));
 
             return loadedAssemblies.Union(assemblies)
                                    .ToArray();
         }
 
         public static IServiceCollection AddAutofacContainer(this IServiceCollection services,
-                                                             Func<Assembly, bool> assemblyNameExpression)
+                                                             Func<string, bool> assemblyNameExpression)
         {
             return services.AddAutofacContainer(GetAssemblies(assemblyNameExpression));
         }

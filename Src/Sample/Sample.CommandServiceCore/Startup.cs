@@ -74,7 +74,7 @@ namespace Sample.CommandServiceCore
                 Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
             };
             services//.AddUnityContainer()
-                    .AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+                    .AddAutofacContainer(assemblyName => assemblyName.StartsWith("Sample"))
                     .AddConfiguration(_configuration)
                     .AddLog4Net()
                     .AddCommonComponents(_app)

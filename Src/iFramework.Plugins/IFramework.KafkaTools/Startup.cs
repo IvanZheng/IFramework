@@ -34,7 +34,7 @@ namespace IFramework.KafkaTools
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAutofacContainer(a => a.GetName().Name.StartsWith("IFramework.KafkaTools"))
+            services.AddAutofacContainer(assemblyName => assemblyName.StartsWith("IFramework.KafkaTools"))
                     .AddConfiguration(_configuration)
                     .AddCommonComponents()
                     .AddJsonNet();
