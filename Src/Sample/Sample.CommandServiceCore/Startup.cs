@@ -41,6 +41,7 @@ using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Logging.Log4Net;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
@@ -99,13 +100,15 @@ namespace Sample.CommandServiceCore
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
             services.AddCustomOptions<FrameworkConfiguration>();
-            services.AddMvc(options =>
-                    {
-                        options.EnableEndpointRouting = false;
-                        options.InputFormatters.Insert(0, new CommandInputFormatter());
-                        options.InputFormatters.Add(new FormDataInputFormatter());
-                        options.Filters.Add<ExceptionFilter>();
-                    })
+
+            services.AddHealthChecks();
+            services.AddControllersWithViews(options =>
+            {
+                options.InputFormatters.Insert(0, new CommandInputFormatter());
+                options.InputFormatters.Add(new FormDataInputFormatter());
+                options.Filters.Add<ExceptionFilter>();
+            });
+            services.AddRazorPages()
                     .AddControllersAsServices()
                     .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
             services.AddHttpContextAccessor();
@@ -226,11 +229,19 @@ namespace Sample.CommandServiceCore
             //    endpoints.MapRazorPages();
             //});
 
-            app.UseMvc(routes =>
+            app.UseRouting();
+ 
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("default",
-                                "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHealthChecks("/health");
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute("default",
+            //                    "{controller=Home}/{action=Index}/{id?}");
+            //});
 
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();
