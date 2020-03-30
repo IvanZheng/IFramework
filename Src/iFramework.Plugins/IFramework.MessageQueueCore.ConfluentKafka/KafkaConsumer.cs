@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumeResult<TKey, TValue> message);
+    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumeResult<TKey, TValue> message, CancellationToken cancellationToken);
 
     public class KafkaConsumer<TKey, TValue> : MessageConsumer
     {
@@ -63,7 +63,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             var consumeResult = _consumer.Consume(cancellationToken);
             if (consumeResult != null)
             {
-                _consumer_OnMessage(_consumer, consumeResult);
+                _consumer_OnMessage(_consumer, consumeResult, cancellationToken);
             }
         }
 
@@ -77,13 +77,13 @@ namespace IFramework.MessageQueue.ConfluentKafka
         }
 
 
-        private void _consumer_OnMessage(object sender, ConsumeResult<TKey, TValue> message)
+        private void _consumer_OnMessage(object sender, ConsumeResult<TKey, TValue> message, CancellationToken cancellationToken)
         {
             try
             {
                 Logger.LogDebug($"consume message: {message.Topic}.{message.Partition}.{message.Offset}");
                 AddMessageOffset(message.Topic, message.Partition, message.Offset);
-                OnMessageReceived(this, message);
+                OnMessageReceived(this, message, cancellationToken);
             }
             catch (OperationCanceledException) { }
             catch (ThreadAbortException) { }

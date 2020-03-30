@@ -68,7 +68,7 @@ namespace IFramework.MessageQueue.InMemory
                 try
                 {
                     var messageContext = _messageQueue.Take(cancellationTokenSource.Token);
-                    _onMessagesReceived(messageContext);
+                    _onMessagesReceived(cancellationTokenSource.Token, messageContext);
                 }
                 catch (OperationCanceledException)
                 {
