@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.Event;
@@ -28,7 +29,7 @@ namespace Sample.CommandHandler.Banks
             _eventBus = eventBus;
         }
 
-        public async Task Handle(CommitTransactionCredit message)
+        public async Task Handle(CommitTransactionCredit message, CancellationToken cancellationToken)
         {
             var transaction = await GetAggregateRootAsync(message.TransactionId).ConfigureAwait(false);
             transaction.CommitCredit();
@@ -38,7 +39,7 @@ namespace Sample.CommandHandler.Banks
             }
         }
 
-        public async Task Handle(CommitTransactionDebit message)
+        public async Task Handle(CommitTransactionDebit message, CancellationToken cancellationToken)
         {
             var transaction = await GetAggregateRootAsync(message.TransactionId).ConfigureAwait(false);
             transaction.CommitDebit();
@@ -48,26 +49,26 @@ namespace Sample.CommandHandler.Banks
             }
         }
 
-        public async Task Handle(FailTransactionPreparation message)
+        public async Task Handle(FailTransactionPreparation message, CancellationToken cancellationToken)
         {
             var transaction = await GetAggregateRootAsync(message.TransactionId).ConfigureAwait(false);
             transaction.FailPrepare(message.FailReason);
             _eventBus.FinishSaga(new TransactionResult(false, message.FailReason));
         }
 
-        public async Task Handle(PrepareTransactionCredit message)
+        public async Task Handle(PrepareTransactionCredit message, CancellationToken cancellationToken)
         {
             var transaction = await GetAggregateRootAsync(message.TransactionId).ConfigureAwait(false);
             transaction.PrepareCredit();
         }
 
-        public async Task Handle(PrepareTransactionDebit message)
+        public async Task Handle(PrepareTransactionDebit message, CancellationToken cancellationToken)
         {
             var transaction = await GetAggregateRootAsync(message.TransactionId).ConfigureAwait(false);
             transaction.PrepareDebit();
         }
 
-        public Task Handle(SubmitTransaction message)
+        public Task Handle(SubmitTransaction message, CancellationToken cancellationToken)
         {
             var transaction = new Transaction(message.TransactionId,
                                               new TransactionInfo(message.TransactionId,

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Event;
 using IFramework.Message;
@@ -26,7 +27,7 @@ namespace Sample.AsyncDomainEventSubscriber.Banks
             _eventContext = eventContext;
         }
 
-        public Task Handle(TransactionSubmitted message)
+        public Task Handle(TransactionSubmitted message, CancellationToken cancellationToken)
         {
             _eventBus.SendCommand(new PrepareAccountCredit(message.Transaction.CreditAccountId,
                                                            message.Transaction));
@@ -35,21 +36,21 @@ namespace Sample.AsyncDomainEventSubscriber.Banks
             return Task.CompletedTask;
         }
 
-        public Task Handle(AccountDebitPrepared message)
+        public Task Handle(AccountDebitPrepared message, CancellationToken cancellationToken)
         {
             _eventBus.SendCommand(new PrepareTransactionDebit(message.Transaction.TransactionId,
                                                               message.Transaction));
             return Task.CompletedTask;
         }
 
-        public Task Handle(AccountCreditPrepared message)
+        public Task Handle(AccountCreditPrepared message, CancellationToken cancellationToken)
         {
             _eventBus.SendCommand(new PrepareTransactionCredit(message.Transaction.TransactionId,
                                                                message.Transaction));
             return Task.CompletedTask;
         }
 
-        public Task Handle(AccountDebitPrepareFailed message)
+        public Task Handle(AccountDebitPrepareFailed message, CancellationToken cancellationToken)
         {
             _eventBus.SendCommand(new FailTransactionPreparation(message.Transaction.TransactionId,
                                                                  message.Transaction,
@@ -59,7 +60,7 @@ namespace Sample.AsyncDomainEventSubscriber.Banks
             return Task.CompletedTask;
         }
 
-        public Task Handle(AccountCreditPrepareFailed message)
+        public Task Handle(AccountCreditPrepareFailed message, CancellationToken cancellationToken)
         {
             _eventBus.SendCommand(new FailTransactionPreparation(message.Transaction.TransactionId,
                                                                  message.Transaction,
@@ -69,7 +70,7 @@ namespace Sample.AsyncDomainEventSubscriber.Banks
             return Task.CompletedTask;
         }
 
-        public Task Handle(TransactionPrepared message)
+        public Task Handle(TransactionPrepared message, CancellationToken cancellationToken)
         {
             _eventBus.SendCommand(new CommitAccountCredit(message.Transaction.CreditAccountId,
                                                           message.Transaction));
@@ -78,14 +79,14 @@ namespace Sample.AsyncDomainEventSubscriber.Banks
             return Task.CompletedTask;
         }
 
-        public Task Handle(AccountCreditCommitted message)
+        public Task Handle(AccountCreditCommitted message, CancellationToken cancellationToken)
         {
             _eventBus.SendCommand(new CommitTransactionCredit(message.Transaction.TransactionId,
                                                               message.Transaction));
             return Task.CompletedTask;
         }
 
-        public Task Handle(AccountDebitCommitted message)
+        public Task Handle(AccountDebitCommitted message, CancellationToken cancellationToken)
         {
             _eventBus.SendCommand(new CommitTransactionDebit(message.Transaction.TransactionId,
                                                              message.Transaction));

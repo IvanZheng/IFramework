@@ -40,7 +40,7 @@ namespace IFramework.Infrastructure.EventSourcing
             _eventStore = eventStore;
         }
 
-        protected override async Task ConsumeMessage(IMessageContext eventContext)
+        protected override async Task ConsumeMessage(IMessageContext eventContext, CancellationToken cancellationToken)
         {
             try
             {
@@ -86,7 +86,7 @@ namespace IFramework.Infrastructure.EventSourcing
 
                         if (messageHandlerType.IsAsync)
                         {
-                            await ((dynamic) messageHandler).Handle((dynamic) message)
+                            await ((dynamic) messageHandler).Handle((dynamic) message, cancellationToken)
                                                             .ConfigureAwait(false);
                         }
                         else

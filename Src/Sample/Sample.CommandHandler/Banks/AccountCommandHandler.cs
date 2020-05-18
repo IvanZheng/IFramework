@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.Exceptions;
@@ -25,19 +26,19 @@ namespace Sample.CommandHandler.Banks
         {
         }
 
-        public async Task Handle(CommitAccountCredit message)
+        public async Task Handle(CommitAccountCredit message, CancellationToken cancellationToken)
         {
             var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
             account.CommitCredit(message.TransactionInfo);
         }
 
-        public async Task Handle(CommitAccountDebit message)
+        public async Task Handle(CommitAccountDebit message, CancellationToken cancellationToken)
         {
             var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
             account.CommitDebit(message.TransactionInfo);
         }
 
-        public async Task Handle(CreateAccount message)
+        public async Task Handle(CreateAccount message, CancellationToken cancellationToken)
         {
             var account = await GetAggregateRootAsync(message.AccountId, 
                                                 false).ConfigureAwait(false);
@@ -53,25 +54,25 @@ namespace Sample.CommandHandler.Banks
             Repository.Add(account);
         }
 
-        public async Task Handle(PrepareAccountCredit message)
+        public async Task Handle(PrepareAccountCredit message, CancellationToken cancellationToken)
         {
             var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
             account.PrepareCredit(message.TransactionInfo);
         }
 
-        public async Task Handle(PrepareAccountDebit message)
+        public async Task Handle(PrepareAccountDebit message, CancellationToken cancellationToken)
         {
             var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
             account.PrepareDebit(message.TransactionInfo);
         }
 
-        public async Task Handle(RevertAccountDebitPreparation message)
+        public async Task Handle(RevertAccountDebitPreparation message, CancellationToken cancellationToken)
         {
             var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
             account.RevertDebitPreparation(message.TransactionInfo);
         }
 
-        public async Task Handle(RevertAccountCreditPreparation message)
+        public async Task Handle(RevertAccountCreditPreparation message, CancellationToken cancellationToken)
         {
             var account = await GetAggregateRootAsync(message.AccountId).ConfigureAwait(false);
             account.RevertCreditPreparation(message.TransactionInfo);
