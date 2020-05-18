@@ -17,7 +17,12 @@ namespace IFramework.DependencyInjection.Unity
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
         private readonly IUnityContainer _container;
-
+        private readonly List<Action<IObjectProviderBuilder>> _registerActions = new List<Action<IObjectProviderBuilder>>();
+        public IObjectProviderBuilder AddRegisterAction(Action<IObjectProviderBuilder> action)
+        {
+            _registerActions.Add(action);
+            return this;
+        }
         public ObjectProviderBuilder(IUnityContainer container = null)
         {
             _container = container ?? new UnityContainer();
@@ -30,6 +35,8 @@ namespace IFramework.DependencyInjection.Unity
             {
                 _container.BuildServiceProvider(serviceCollection);
             }
+            _registerActions.ForEach(action => action(this));
+            _registerActions.Clear();
 
             Register(context => context, ServiceLifetime.Scoped);
             Register<IServiceProvider>(context => context, ServiceLifetime.Scoped);

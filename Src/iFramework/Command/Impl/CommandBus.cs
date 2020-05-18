@@ -251,7 +251,7 @@ namespace IFramework.Command.Impl
             }
         }
 
-        protected void OnMessagesReceived(params IMessageContext[] replies)
+        protected void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] replies)
         {
             replies.ForEach(reply => { _messageProcessor.Process(reply.Key, () => ConsumeReply(reply));});
         }

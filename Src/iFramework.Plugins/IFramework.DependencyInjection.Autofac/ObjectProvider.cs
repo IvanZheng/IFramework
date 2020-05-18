@@ -93,7 +93,7 @@ namespace IFramework.DependencyInjection.Autofac
 
         public override T GetService<T>(params Parameter[] parameters)
         {
-            return _componentContext.ResolveOptional<T>(GetResolvedParameters(parameters));
+            return ResolutionExtensions.ResolveOptional<T>(_componentContext, GetResolvedParameters(parameters));
         }
         public override object GetService(Type t, string name, params Parameter[] parameters)
         {
@@ -102,7 +102,7 @@ namespace IFramework.DependencyInjection.Autofac
 
         public override T GetService<T>(string name, params Parameter[] parameters)
         {
-            return _componentContext.ResolveOptionalNamed<T>(name, GetResolvedParameters(parameters));
+            return ResolutionExtensions.ResolveOptionalNamed<T>(_componentContext, name, GetResolvedParameters(parameters));
         }
 
         public  override IEnumerable<object> GetAllServices(Type type, params Parameter[] parameters)
@@ -113,7 +113,7 @@ namespace IFramework.DependencyInjection.Autofac
 
         public  override IEnumerable<T> GetAllServices<T>(params Parameter[] parameters)
         {
-            return _componentContext.ResolveOptional<IEnumerable<T>>(GetResolvedParameters(parameters));
+            return ResolutionExtensions.ResolveOptional<IEnumerable<T>>(_componentContext, GetResolvedParameters(parameters));
         }
 
         public  override object GetService(Type serviceType)

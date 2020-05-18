@@ -36,11 +36,13 @@ using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 using System.Collections.Generic;
+using IFramework.Infrastructure;
 using IFramework.Event;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Logging.Log4Net;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
@@ -81,8 +83,8 @@ namespace Sample.CommandServiceCore
             {
                 Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
             };
-            services.AddUnityContainer()
-                    //.AddAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
+            services//.AddUnityContainer()
+                    .AddAutofacContainer(assemblyName => assemblyName.StartsWith("Sample"))
                     .AddConfiguration(_configuration)
                     .AddLog4Net()
                     .AddCommonComponents(_app)
@@ -108,46 +110,46 @@ namespace Sample.CommandServiceCore
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
             services.AddCustomOptions<FrameworkConfiguration>();
-            services.AddMvc(options =>
-                    {
-                        options.EnableEndpointRouting = false;
-                        options.InputFormatters.Insert(0, new CommandInputFormatter());
-                        options.InputFormatters.Add(new FormDataInputFormatter());
-                        options.Filters.Add<ExceptionFilter>();
-                    })
+
+            services.AddHealthChecks();
+            services.AddControllersWithViews(options =>
+            {
+                options.InputFormatters.Insert(0, new CommandInputFormatter());
+                options.InputFormatters.Add(new FormDataInputFormatter());
+                options.Filters.Add<ExceptionFilter>();
+            });
+            services.AddRazorPages()
                     .AddControllersAsServices()
                     .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
             services.AddHttpContextAccessor();
             services.AddControllersWithViews();
             services.AddRazorPages();
-
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
             services.AddSingleton<IApiResultWrapAttribute, ApiResultWrapAttribute>();
+
+            services.AddScoped<HomeController, HomeController>(new VirtualMethodInterceptorInjection(),
+                                                               new InterceptionBehaviorInjection());
+            services.AddSingleton<IAuthorizationHandler, AppAuthorizationHandler>();
+            services.AddScoped<ICommunityRepository, CommunityRepository>();
+            services.AddScoped<ICommunityService, CommunityService>(new InterfaceInterceptorInjection(),
+                                                                    new InterceptionBehaviorInjection());
+            services.RegisterMessageHandlers(new []{"CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber"});
+
             //services.AddMiniProfiler()
             //        .AddEntityFramework();
         }
 
-        public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
-        {
-            var lifetime = ServiceLifetime.Scoped;
-            // TODO: register other components or services
-            providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
-            providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
-            providerBuilder.Register<ICommunityService, CommunityService>(lifetime,
-                                                                          new InterfaceInterceptorInjection(),
-                                                                          new InterceptionBehaviorInjection());
-            providerBuilder.Register<HomeController, HomeController>(lifetime,
-                                                                     new VirtualMethodInterceptorInjection(),
-                                                                     new InterceptionBehaviorInjection());
-            providerBuilder.RegisterMessageHandlers(new []{"CommandHandlers", 
-                "DomainEventSubscriber",
-                "ApplicationEventSubscriber"
-            }, lifetime);
-        }
+        //public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
+        //{
+        //    var lifetime = ServiceLifetime.Scoped;
+        //    providerBuilder.Register<HomeController, HomeController>(lifetime,
+        //                                                             new VirtualMethodInterceptorInjection(),
+        //                                                             new InterceptionBehaviorInjection());
+        //  }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
@@ -238,11 +240,19 @@ namespace Sample.CommandServiceCore
             //    endpoints.MapRazorPages();
             //});
 
-            app.UseMvc(routes =>
+            app.UseRouting();
+ 
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("default",
-                                "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHealthChecks("/health");
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute("default",
+            //                    "{controller=Home}/{action=Index}/{id?}");
+            //});
 
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();

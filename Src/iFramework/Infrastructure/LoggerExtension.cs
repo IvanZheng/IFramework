@@ -150,7 +150,7 @@ namespace Microsoft.Extensions.Logging
                                 ?.GetValue(logger) as Array;
             if (loggers == null)
             {
-                throw new Exception("Can't get MessageLoggers");
+                throw new Exception("Can't get loggerInformation");
             }
 
             LoggerInfo loggerInfo = new LoggerInfo();
@@ -185,7 +185,7 @@ namespace Microsoft.Extensions.Logging
                                 ?.GetValue(logger) as Array;
             if (loggers == null)
             {
-                throw new Exception("Can't get loggerInformations");
+                throw new Exception("Can't get loggerInformation");
             }
             for (int i = 0;  i < loggers.Length; i ++)
             {

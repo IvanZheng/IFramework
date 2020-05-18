@@ -10,7 +10,7 @@ using EQueueConsumers = EQueue.Clients.Consumers;
 
 namespace IFramework.MessageQueue.EQueue
 {
-    public delegate void OnEQueueMessageReceived(EQueueConsumer consumer, EQueueMessages.QueueMessage message);
+    public delegate void OnEQueueMessageReceived(EQueueConsumer consumer, EQueueMessages.QueueMessage message, CancellationToken cancellationToken);
 
     public class EQueueConsumer : MessageConsumer
     {
@@ -64,7 +64,7 @@ namespace IFramework.MessageQueue.EQueue
             messages.ForEach(message =>
             {
                 AddMessageOffset(message.Topic, message.QueueId, message.QueueOffset);
-                _onMessageReceived(this, message);
+                _onMessageReceived(this, message, cancellationToken);
             });
         }
 

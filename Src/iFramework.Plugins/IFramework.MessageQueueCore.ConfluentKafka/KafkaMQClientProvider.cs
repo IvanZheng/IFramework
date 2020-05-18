@@ -95,11 +95,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         private OnKafkaMessageReceived<string, KafkaMessage> BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)
         {
-            return (consumer, message) =>
+            return (consumer, message, cancellationToken) =>
             {
                 var kafkaMessage = message.Message;
                 var messageContext = new MessageContext(kafkaMessage.Value, message.Topic, message.Partition, message.Offset);
-                onMessagesReceived(messageContext);
+                onMessagesReceived(cancellationToken, messageContext);
             };
         }
 

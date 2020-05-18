@@ -11,7 +11,7 @@ namespace IFramework.MessageQueue.InMemory
     {
         public static IServiceCollection AddInMemoryMessageQueue(this IServiceCollection services)
         {
-            services.RegisterType<IMessageQueueClient, InMemoryClient>(ServiceLifetime.Singleton);
+            services.AddService<IMessageQueueClient, InMemoryClient>(ServiceLifetime.Singleton);
             return services;
         }
     }

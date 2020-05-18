@@ -29,7 +29,13 @@ namespace IFramework.AspNet
         /// <param name="name"></param>
         public static void RemoveCookie(this HttpContext httpContext, string name)
         {
-            httpContext.Response.Cookies.Delete(name);
+            CookieOptions option = new CookieOptions();
+            string domain = httpContext.Request.GetServerDomain();
+            string urlHost = httpContext.Request.GetUri().Host.ToLower();
+            if (domain != urlHost)
+                option.Domain = domain;
+
+            httpContext.Response.Cookies.Delete(name, option);
         }
 
 

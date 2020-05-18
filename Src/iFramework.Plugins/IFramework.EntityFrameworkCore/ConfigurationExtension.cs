@@ -31,7 +31,7 @@ namespace IFramework.EntityFrameworkCore
         public static IServiceCollection AddUnitOfWork(this IServiceCollection services,
                                                        ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            services.RegisterType<IUnitOfWork, UnitOfWorks.UnitOfWork>(lifetime);
+            services.AddService<IUnitOfWork, UnitOfWorks.UnitOfWork>(lifetime);
             return services;
         }
 
@@ -39,8 +39,8 @@ namespace IFramework.EntityFrameworkCore
                                                          Type repositoryType,
                                                          ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            services.RegisterType(typeof(IRepository<>), repositoryType, lifetime);
-            services.RegisterType<IDomainRepository, DomainRepository>(lifetime);
+            services.AddService(typeof(IRepository<>), repositoryType, lifetime);
+            services.AddService<IDomainRepository, DomainRepository>(lifetime);
             return services;
         }
     }

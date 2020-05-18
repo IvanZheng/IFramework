@@ -101,7 +101,7 @@ namespace IFramework.Event.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected virtual async Task ConsumeMessage(IMessageContext eventContext)
+        protected virtual async Task ConsumeMessage(IMessageContext eventContext, CancellationToken cancellationToken)
         {
             await Task.Yield();
             try
@@ -160,7 +160,7 @@ namespace IFramework.Event.Impl
                                     {
                                         if (messageHandlerType.IsAsync)
                                         {
-                                            await ((dynamic) messageHandler).Handle((dynamic) message)
+                                            await ((dynamic) messageHandler).Handle((dynamic)message, cancellationToken)
                                                                             .ConfigureAwait(false);
                                         }
                                         else
@@ -300,7 +300,7 @@ namespace IFramework.Event.Impl
             }
         }
 
-        protected void OnMessagesReceived(params IMessageContext[] messageContexts)
+        protected void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] messageContexts)
         {
             messageContexts.ForEach(messageContext =>
             {
@@ -309,7 +309,7 @@ namespace IFramework.Event.Impl
                 {
                     if (tagFilter(messageContext.Tags))
                     {
-                        MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
+                        MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
                         MessageCount++;
                     }
                     else
@@ -319,7 +319,7 @@ namespace IFramework.Event.Impl
                 }
                 else
                 {
-                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
+                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
                     MessageCount++;
                 }
             });

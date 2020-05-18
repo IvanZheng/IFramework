@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.DependencyInjection;
@@ -48,7 +49,8 @@ namespace Sample.CommandHandler.Community
         ///     and no need to enter the domain layer!
         /// </summary>
         /// <param name="command"></param>
-        public virtual async Task Handle(Login command)
+        /// <param name="cancellationToken"></param>
+        public virtual async Task Handle(Login command, CancellationToken cancellationToken)
         {
             //_logger.LogDebug($"Handle Login command enter.");
             var account = await _domainRepository.FindAsync<Account>(a => a.UserName.Equals(command.UserName)
@@ -70,7 +72,7 @@ namespace Sample.CommandHandler.Community
         }
 
         [ConcurrentProcess(IxAccountsEmail)]
-        public virtual async Task Handle(Modify command)
+        public virtual async Task Handle(Modify command, CancellationToken cancellationToken)
         {
             var account = await _domainRepository.FindAsync<Account>(a => a.UserName == command.UserName);
             if (account == null)

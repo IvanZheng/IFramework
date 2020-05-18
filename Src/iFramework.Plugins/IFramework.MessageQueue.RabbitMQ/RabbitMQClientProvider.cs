@@ -151,11 +151,11 @@ namespace IFramework.MessageQueue.RabbitMQ
 
         private OnRabbitMQMessageReceived BuildOnRabbitMQMessageReceived(OnMessagesReceived onMessagesReceived)
         {
-            return (consumer, args) =>
+            return (consumer, args, cancellationToken) =>
             {
                 var message = Encoding.UTF8.GetString(args.Body).ToJsonObject<RabbitMQMessage>();
                 var messageContext = new MessageContext(message, new MessageOffset(string.Empty, args.Exchange, 0, (long) args.DeliveryTag));
-                onMessagesReceived(messageContext);
+                onMessagesReceived(cancellationToken, messageContext);
             };
         }
     }

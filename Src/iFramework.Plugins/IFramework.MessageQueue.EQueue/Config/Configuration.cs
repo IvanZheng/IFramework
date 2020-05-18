@@ -33,13 +33,10 @@ namespace IFramework.Config
         {
             InitializeEqueue();
 
-            ObjectProviderFactory.Instance
-                      .ObjectProviderBuilder
-                      .Register<IMessageQueueClientProvider, EQueueClientProvider>(ServiceLifetime.Singleton,
-                                                                                   new ConstructInjection(new ParameterInjection("clusterName", clusterName),
-                                                                                                          new ParameterInjection("nameServerList", nameServerAddresses),
-                                                                                                          new ParameterInjection("nameServerPort", nameServerPort)))
-                      .Register<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
+            services.AddSingleton<IMessageQueueClientProvider, EQueueClientProvider>(new ConstructInjection(new ParameterInjection("clusterName", clusterName),
+                                                                                               new ParameterInjection("nameServerList", nameServerAddresses),
+                                                                                               new ParameterInjection("nameServerPort", nameServerPort)))
+                      .AddSingleton<IMessageQueueClient, MessageQueueClient>();
 
             return services;
         }

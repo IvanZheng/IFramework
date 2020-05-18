@@ -23,7 +23,6 @@ namespace IFramework.Command.Impl
     public class CommandProcessor : IMessageProcessor
     {
         private string _producer;
-        protected CancellationTokenSource CancellationTokenSource;
         protected string CommandQueueName;
         protected ConsumerConfig ConsumerConfig;
         protected string ConsumerId;
@@ -46,7 +45,6 @@ namespace IFramework.Command.Impl
             HandlerProvider = handlerProvider;
             MessagePublisher = messagePublisher;
             ConsumerId = consumerId;
-            CancellationTokenSource = new CancellationTokenSource();
             MessageQueueClient = messageQueueClient;
             var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
             MessageProcessor = new MailboxProcessor(new DefaultProcessingMessageScheduler(),
@@ -93,11 +91,11 @@ namespace IFramework.Command.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected void OnMessageReceived(params IMessageContext[] messageContexts)
+        protected void OnMessageReceived(CancellationToken cancellationToken, params IMessageContext[] messageContexts)
         {
             messageContexts.ForEach(messageContext =>
             {
-                MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
+                MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
                 MessageCount++;
             });
         }
@@ -122,7 +120,7 @@ namespace IFramework.Command.Impl
             }
         }
 
-        protected virtual async Task ConsumeMessage(IMessageContext commandContext)
+        protected virtual async Task ConsumeMessage(IMessageContext commandContext, CancellationToken cancellationToken)
         {
             await Task.Yield();
             Stopwatch watch = Stopwatch.StartNew();
@@ -191,8 +189,8 @@ namespace IFramework.Command.Impl
                                     {
                                         if (messageHandlerType.IsAsync)
                                         {
-                                            await ((dynamic)messageHandler).Handle((dynamic)command)
-                                                                           .ConfigureAwait(false);
+                                            await ((dynamic)messageHandler).Handle((dynamic)command, cancellationToken)
+                                                                            .ConfigureAwait(false);
                                         }
                                         else
                                         {

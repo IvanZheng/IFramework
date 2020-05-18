@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Command;
 using IFramework.Message;
@@ -31,7 +32,7 @@ namespace Sample.CommandHandler.Products
             // _EventBus = eventBus;
         }
 
-        public async Task Handle(ReduceProduct command)
+        public async Task Handle(ReduceProduct command, CancellationToken cancellationToken)
         {
             var product = await _domainRepository.GetByKeyAsync<Product>(command.ProductId)
                                                  .ConfigureAwait(false);
