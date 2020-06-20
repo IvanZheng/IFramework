@@ -33,7 +33,7 @@ namespace IFramework.AspNet
                 var ex = OnException(context.Exception);
                 if (ex is DomainException domainException)
                 {
-                    exceptionResult = hostEnvironmenet.IsDevelopment() ? new ApiResult(domainException.ErrorCode, $"Message: {domainException.Message} StackTrace:{ex.GetBaseException().StackTrace}") : new ApiResult(domainException.ErrorCode, domainException.Message);
+                    exceptionResult = new ApiResult(domainException.ErrorCode, domainException.Message);
                     logger.LogWarning(ex, $"action failed due to domain exception");
                 }
                 else
