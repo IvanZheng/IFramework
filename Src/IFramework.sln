@@ -107,6 +107,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventSourcing", "EventSourc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Infrastructure.EventSourcing", "iFramework.Plugins\IFramework.Infrastructure.EventSourcing\IFramework.Infrastructure.EventSourcing.csproj", "{7FB6CF4D-771D-446D-B483-CFE18BC5AA91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Logging.Serilog", "iFramework.Plugins\IFramework.Logging.Serilog\IFramework.Logging.Serilog.csproj", "{30A29D5A-5210-4FAC-973B-5750145B6830}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -768,6 +770,24 @@ Global
 		{7FB6CF4D-771D-446D-B483-CFE18BC5AA91}.Release|x64.Build.0 = Release|Any CPU
 		{7FB6CF4D-771D-446D-B483-CFE18BC5AA91}.Release|x86.ActiveCfg = Release|Any CPU
 		{7FB6CF4D-771D-446D-B483-CFE18BC5AA91}.Release|x86.Build.0 = Release|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Debug|x64.Build.0 = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Debug|x86.Build.0 = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Integration|Any CPU.ActiveCfg = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Integration|Any CPU.Build.0 = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Integration|x64.ActiveCfg = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Integration|x64.Build.0 = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Integration|x86.ActiveCfg = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Integration|x86.Build.0 = Debug|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Release|x64.ActiveCfg = Release|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Release|x64.Build.0 = Release|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Release|x86.ActiveCfg = Release|Any CPU
+		{30A29D5A-5210-4FAC-973B-5750145B6830}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -811,9 +831,10 @@ Global
 		{65DAB7BB-5A9A-472C-951A-DFCDE74418DC} = {EB8C136A-91E3-412F-BF99-3AD71E8A8EB5}
 		{A27349BF-396D-4318-82C6-790897F58AA3} = {EB8C136A-91E3-412F-BF99-3AD71E8A8EB5}
 		{7FB6CF4D-771D-446D-B483-CFE18BC5AA91} = {E7CE7286-5FF6-4D40-8F5F-4A1EBA06531D}
+		{30A29D5A-5210-4FAC-973B-5750145B6830} = {D85A2D0B-5D20-4C0F-B06F-D688EFAD1624}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal

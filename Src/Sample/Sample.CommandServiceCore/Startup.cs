@@ -52,6 +52,7 @@ using IFramework.EventStore.Redis;
 using IFramework.Infrastructure.EventSourcing;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using IFramework.Infrastructure.EventSourcing.Stores;
+using IFramework.Logging.Serilog;
 using Sample.DomainEvents.Banks;
 
 namespace Sample.CommandServiceCore
@@ -86,7 +87,8 @@ namespace Sample.CommandServiceCore
             services//.AddUnityContainer()
                     .AddAutofacContainer(assemblyName => assemblyName.StartsWith("Sample"))
                     .AddConfiguration(_configuration)
-                    .AddLog4Net()
+                    //.AddLog4Net()
+                    .AddSerilog()
                     .AddCommonComponents(_app)
                     .AddJsonNet()
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
