@@ -105,12 +105,15 @@ namespace Sample.CommandServiceCore.Controllers
         {
             _logger.SetMinLevel(LogLevel.Debug);
             _logger.LogDebug("index test");
+            using (_logger.BeginScope("scopes"))
             using (_logger.BeginScope(new Dictionary<string, object> { { "needGc", needGc } }))
             {
                 var profile = Configuration.Instance.Get("Debug");
                 var member = Configuration.Instance.Get("Member:A");
-                _logger.LogDebug(new { profile, member });
+                _logger.LogInformation(new { profile, member });
             }
+            _logger.LogWarning("index test");
+
             return View();
         }
 
