@@ -2,6 +2,7 @@
 using Blueshift.EntityFrameworkCore.MongoDB.Metadata.Conventions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
@@ -30,9 +31,9 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Metadata.Builders
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual ConventionSet AddConventions(ConventionSet conventionSet)
+        public virtual ConventionSet CreateConventionSet()
         {
-            Check.NotNull(conventionSet, nameof(conventionSet));
+            var conventionSet = new ConventionSet();
 
             DatabaseGeneratedAttributeConvention databaseGeneratedAttributeConvention
                 = new MongoDbDatabaseGeneratedAttributeConvention();

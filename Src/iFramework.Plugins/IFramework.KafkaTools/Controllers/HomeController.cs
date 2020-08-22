@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using IFramework.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using IFramework.KafkaTools.Models;
 
@@ -10,6 +11,15 @@ namespace IFramework.KafkaTools.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IObjectProvider _objectProvider;
+        private readonly IServiceProvider _serviceProvider;
+
+        public HomeController(IObjectProvider objectProvider, IServiceProvider serviceProvider)
+        {
+            _objectProvider = objectProvider;
+            _serviceProvider = serviceProvider;
+        }
+
         public IActionResult Index()
         {
             return View();

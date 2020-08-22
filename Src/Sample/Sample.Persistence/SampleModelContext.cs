@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Sample.DTO.Exceptions;

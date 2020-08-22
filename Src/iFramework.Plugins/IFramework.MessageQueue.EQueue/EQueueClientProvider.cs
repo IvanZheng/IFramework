@@ -152,14 +152,14 @@ namespace IFramework.MessageQueue.EQueue
 
         private OnEQueueMessageReceived BuildOnEQueueMessageReceived(OnMessagesReceived onMessagesReceived)
         {
-            return (consumer, message) =>
+            return (consumer, message, cancellationToken) =>
             {
                 var equeueMessage = Encoding.UTF8
                                             .GetString(message.Body)
                                             .ToJsonObject<EQueueMessage>();
                 var messageContext = new MessageContext(equeueMessage,
                                                         new MessageOffset(message.BrokerName, message.Topic, message.QueueId, message.QueueOffset));
-                onMessagesReceived(messageContext);
+                onMessagesReceived(cancellationToken, messageContext);
             };
         }
     }

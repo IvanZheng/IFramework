@@ -53,7 +53,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
         }
 
         public virtual void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                   TransactionScopeOption scopOption = TransactionScopeOption.Required)
+                                   TransactionScopeOption scopeOption = TransactionScopeOption.Required)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                 }
                 else
                 {
-                    using (var scope = new TransactionScope(scopOption,
+                    using (var scope = new TransactionScope(scopeOption,
                                                             new TransactionOptions { IsolationLevel = isolationLevel },
                                                             TransactionScopeAsyncFlowOption.Enabled))
                     {
@@ -126,7 +126,6 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                 {
                     foreach (var dbContext in DbContexts)
                     {
-                        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                         dbContext.ChangeTracker.Entries()
                                  .ForEach(e =>
                                  {
@@ -136,6 +135,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
                                          root.ClearDomainEvents();
                                      }
                                  });
+                        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                     }
                     await BeforeCommitAsync().ConfigureAwait(false);
                 }

@@ -1,13 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using IFramework.Event;
 using IFramework.Exceptions;
+using IFramework.Infrastructure;
 
 namespace IFramework.Domain
 {
     public abstract class AggregateRoot : Entity, IAggregateRoot
     {
-        private string _aggreagetRootType;
+        private string _aggregateRootType;
 
         private Queue<IAggregateRootEvent> _eventQueue;
         private Queue<IAggregateRootEvent> EventQueue => _eventQueue ?? (_eventQueue = new Queue<IAggregateRootEvent>());
@@ -16,16 +19,16 @@ namespace IFramework.Domain
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(_aggreagetRootType))
+                if (string.IsNullOrWhiteSpace(_aggregateRootType))
                 {
                     var aggreagetRootType = GetType();
                     if ("EntityProxyModule" == GetType().Module.ToString() && aggreagetRootType.BaseType != null)
                     {
                         aggreagetRootType = aggreagetRootType.BaseType;
                     }
-                    _aggreagetRootType = aggreagetRootType.FullName;
+                    _aggregateRootType = aggreagetRootType.FullName;
                 }
-                return _aggreagetRootType;
+                return _aggregateRootType;
             }
         }
 
@@ -41,7 +44,7 @@ namespace IFramework.Domain
 
         public virtual void Rollback()
         {
-            EventQueue.Clear();
+            ClearDomainEvents();
         }
 
         protected virtual void OnEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IAggregateRootEvent
@@ -57,10 +60,15 @@ namespace IFramework.Domain
             throw new DomainException(exception);
         }
 
-        private void HandleEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IAggregateRootEvent
+        protected void HandleEvent<TDomainEvent>(TDomainEvent @event) where TDomainEvent : class, IAggregateRootEvent
         {
-            var subscriber = this as IEventSubscriber<TDomainEvent>;
-            subscriber?.Handle(@event);
+            var args = new object[] {@event};
+            var handler = GetType().GetMethodInfo("Handle", args);
+            if (handler != null)
+            {
+                handler.Invoke(this, args);
+            }
+            
             //else no need to call parent event handler, let client decide it!
             //{
             //    var eventSubscriberInterfaces = this.GetType().GetInterfaces()
@@ -75,5 +83,7 @@ namespace IFramework.Domain
             //        });
             //}
         }
+
+      
     }
 }

@@ -7,8 +7,7 @@ using Sample.DomainEvents.Products;
 
 namespace Sample.Domain.Model
 {
-    public class Product : TimestampedAggregateRoot,
-                           IEventSubscriber<ProductCreated>
+    public class Product : TimestampedAggregateRoot
     {
         public Product() { }
 
@@ -22,7 +21,7 @@ namespace Sample.Domain.Model
         public int Count { get; protected set; }
         public DateTime CreateTime { get; protected set; }
 
-        void IMessageHandler<ProductCreated>.Handle(ProductCreated @event)
+        void Handle(ProductCreated @event)
         {
             Id = (Guid) @event.AggregateRootId;
             Name = @event.Name;

@@ -6,13 +6,13 @@ namespace IFramework.MessageStores.Abstracts
 {
     public static class ConfigurationExtension
     {
-        public static Configuration UseRelationalMessageStore<TMessageStore, TMessageStoreDaemon>(this Configuration configuration,
-                                                                             ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public static IServiceCollection AddRelationalMessageStore<TMessageStore, TMessageStoreDaemon>(this IServiceCollection services,
+                                                                                                       ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TMessageStore : class, IMessageStore
             where TMessageStoreDaemon: class, IMessageStoreDaemon
         {
-            return configuration.UseMessageStore<TMessageStore>(lifetime)
-                                .UseMessageStoreDaemon<TMessageStoreDaemon>();
+            return services.AddMessageStore<TMessageStore>(lifetime)
+                           .AddMessageStoreDaemon<TMessageStoreDaemon>();
         }
     }
 }

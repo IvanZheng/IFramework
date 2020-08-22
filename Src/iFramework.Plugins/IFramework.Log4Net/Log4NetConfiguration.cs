@@ -10,24 +10,6 @@ namespace IFramework.Log4Net
 {
     public static class Log4NetConfiguration
     {
-        public static Configuration UseLog4Net(this Configuration configuration,
-                                               Log4NetProviderOptions options = null)
-        {
-            ObjectProviderFactory.Instance.Populate(AddLog4Net(new ServiceCollection(),
-                                                               options));
-            return configuration;
-        }
-
-        public static Configuration UseLog4Net(this Configuration configuration,
-                                               LogLevel logLevel,
-                                               Log4NetProviderOptions options = null)
-        {
-            ObjectProviderFactory.Instance.Populate(AddLog4Net(new ServiceCollection(),
-                                                    logLevel,
-                                                    options));
-            return configuration;
-        }
-
         public static IServiceCollection AddLog4Net(this IServiceCollection services,
                                                     LogLevel logLevel,
                                                     Log4NetProviderOptions options = null)
@@ -63,7 +45,7 @@ namespace IFramework.Log4Net
             return services;
         }
 
-        public static void AddLog4Net(this ILoggerFactory loggerFactory, Log4NetProviderOptions options = null)
+        public static void AddLog4NetProvider(this ILoggerFactory loggerFactory, Log4NetProviderOptions options = null)
         {
             loggerFactory.AddProvider(new Log4NetProvider(options ?? Log4NetProviderOptions.Default));
         }

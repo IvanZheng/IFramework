@@ -23,7 +23,6 @@ namespace IFramework.Command.Impl
     public class CommandProcessor : IMessageProcessor
     {
         private string _producer;
-        protected CancellationTokenSource CancellationTokenSource;
         protected string CommandQueueName;
         protected ConsumerConfig ConsumerConfig;
         protected string ConsumerId;
@@ -46,7 +45,6 @@ namespace IFramework.Command.Impl
             HandlerProvider = handlerProvider;
             MessagePublisher = messagePublisher;
             ConsumerId = consumerId;
-            CancellationTokenSource = new CancellationTokenSource();
             MessageQueueClient = messageQueueClient;
             var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
             MessageProcessor = new MailboxProcessor(new DefaultProcessingMessageScheduler(),
@@ -93,40 +91,38 @@ namespace IFramework.Command.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected void OnMessageReceived(params IMessageContext[] messageContexts)
+        protected void OnMessageReceived(CancellationToken cancellationToken, params IMessageContext[] messageContexts)
         {
             messageContexts.ForEach(messageContext =>
             {
-                MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
+                MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
                 MessageCount++;
             });
         }
 
-        private List<MessageState> GetSagaReplyMessageStates(SagaInfo sagaInfo, IEventBus eventBus)
+        protected void GetSagaReplyMessageState(List<MessageState> messageStates, SagaInfo sagaInfo, IEventBus eventBus)
         {
             var eventMessageStates = new List<MessageState>();
-            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            var sagaResult = eventBus.GetSagaResult();
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId) && sagaResult != null)
             {
-                eventBus.GetSagaResults()
-                        .ForEach(sagaResult =>
-                        {
+                
                             var topic = sagaInfo.ReplyEndPoint;
                             if (!string.IsNullOrEmpty(topic))
                             {
                                 var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
                                                                                topic: topic,
                                                                                messageId: ObjectId.GenerateNewId().ToString(),
-                                                                               sagaInfo: sagaInfo, producer: Producer);
-                                eventMessageStates.Add(new MessageState(sagaReply));
+                                                                               sagaInfo: sagaInfo, 
+                                                                               producer: Producer);
+                                messageStates.Add(new MessageState(sagaReply));
                             }
-                        });
             }
-
-            return eventMessageStates;
         }
 
-        protected virtual async Task ConsumeMessage(IMessageContext commandContext)
+        protected virtual async Task ConsumeMessage(IMessageContext commandContext, CancellationToken cancellationToken)
         {
+            await Task.Yield();
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
@@ -193,13 +189,13 @@ namespace IFramework.Command.Impl
                                     {
                                         if (messageHandlerType.IsAsync)
                                         {
-                                            await ((dynamic)messageHandler).Handle((dynamic)command)
+                                            await ((dynamic)messageHandler).Handle((dynamic)command, cancellationToken)
                                                                             .ConfigureAwait(false);
                                         }
                                         else
                                         {
                                             var handler = messageHandler;
-                                            await Task.Run(() => { ((dynamic)handler).Handle((dynamic)command); }).ConfigureAwait(false);
+                                            ((dynamic)handler).Handle((dynamic)command);
                                         }
 
                                         if (needReply)
@@ -237,7 +233,7 @@ namespace IFramework.Command.Impl
                                                     eventMessageStates.Add(new MessageState(eventContext));
                                                 });
 
-                                        eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                        GetSagaReplyMessageState(eventMessageStates, sagaInfo, eventBus);
 
                                         await messageStore.SaveCommandAsync(commandContext, commandContext.Reply,
                                                                  eventMessageStates.Select(s => s.MessageContext).ToArray())
@@ -299,7 +295,7 @@ namespace IFramework.Command.Impl
                                         }
                                     }
 
-                                    eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                    GetSagaReplyMessageState(eventMessageStates, sagaInfo, eventBus);
                                     await messageStore.SaveFailedCommandAsync(commandContext, e,
                                                                    eventMessageStates.Select(s => s.MessageContext)
                                                                                      .ToArray())

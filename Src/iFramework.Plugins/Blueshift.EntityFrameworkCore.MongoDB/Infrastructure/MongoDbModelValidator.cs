@@ -5,6 +5,7 @@ using System.Reflection;
 using Blueshift.EntityFrameworkCore.MongoDB.Metadata;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -36,9 +37,9 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Infrastructure
         ///     Validates a model, throwing an exception if any errors are found.
         /// </summary>
         /// <param name="model">The <see cref="Model"/> to validate.</param>
-        public override void Validate(IModel model)
+        public override void Validate(IModel model, DiagnosticsLoggers loggers)
         {
-            base.Validate(Check.NotNull(model, nameof(model)));
+            base.Validate(Check.NotNull(model, nameof(model)), loggers);
 
             EnsureKnownTypes(model);
             EnsureDistinctCollectionNames(model);
@@ -46,7 +47,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Infrastructure
         }
 
         /// <inheritdoc />
-        protected override void ValidateNoShadowKeys(IModel model)
+        protected override void ValidateNoShadowKeys(IModel model, DiagnosticsLoggers loggers)
         {
             Check.NotNull(model, nameof(model));
 
@@ -58,7 +59,7 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Infrastructure
             {
                 foreach (var key in entityType.GetDeclaredKeys())
                 {
-                    if (key.Properties.Any(p => p.IsShadowProperty)
+                    if (key.Properties.Any(p => p.IsShadowProperty())
                         && key is Key concreteKey
                         && ConfigurationSource.Convention.Overrides(concreteKey.GetConfigurationSource())
                         && !key.IsPrimaryKey())
@@ -77,28 +78,28 @@ namespace Blueshift.EntityFrameworkCore.MongoDB.Infrastructure
                                     (referencingFk.PrincipalToDependent == null
                                         ? ""
                                         : "." + referencingFk.PrincipalToDependent.Name),
-                                    Property.Format(referencingFk.Properties, includeTypes: true),
-                                    Property.Format(entityType.FindPrimaryKey().Properties, includeTypes: true)));
+                                    Property.Format(referencingFk.Properties.Select(p => p.Name)),
+                                    Property.Format(entityType.FindPrimaryKey().Properties.Select(p => p.Name))));
                         }
                     }
                 }
             }        }
 
         /// <inheritdoc />
-        protected override void ValidateOwnership(IModel model)
+        protected override void ValidateOwnership(IModel model, DiagnosticsLoggers loggers)
         {
             Check.NotNull(model, nameof(model));
 
             foreach (IEntityType entityType in model.GetEntityTypes())
             {
                 List<IForeignKey> ownerships = entityType.GetForeignKeys().Where(fk => fk.IsOwnership).ToList();
-                if (ownerships.Count == 0
-                    && entityType.HasClrType()
-                        ? model.ShouldBeOwnedType(entityType.ClrType)
-                        : model.ShouldBeOwnedType(entityType.Name))
-                {
-                    throw new InvalidOperationException(CoreStrings.OwnerlessOwnedType(entityType.DisplayName()));
-                }
+                //if (ownerships.Count == 0
+                //    && entityType.HasClrType()
+                //        ? model.ShouldBeOwnedType(entityType.ClrType)
+                //        : model.ShouldBeOwnedType(entityType.Name))
+                //{
+                //    throw new InvalidOperationException(CoreStrings.OwnerlessOwnedType(entityType.DisplayName()));
+                //}
 
                 foreach (IForeignKey ownership in ownerships)
                 {

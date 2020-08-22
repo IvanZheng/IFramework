@@ -12,6 +12,7 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
+using IFramework.Infrastructure.EventSourcing.Repositories;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,7 @@ using Sample.Command.Community;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
+using Sample.Domain.Model.Bank.Accounts;
 using Sample.Persistence;
 
 namespace Sample.CommandServiceCore.Controllers
@@ -35,7 +37,7 @@ namespace Sample.CommandServiceCore.Controllers
         private readonly ILogger _logger;
         private readonly IObjectProvider _objectProvider;
         private readonly IUnitOfWork _unitOfWork;
-
+        private readonly IEventSourcingRepository<BankAccount> _bankAccountRepository;
         public HomeController(IConcurrencyProcessor concurrencyProcessor,
                               ILogger<HomeController> logger,
                               IObjectProvider objectProvider,
@@ -43,8 +45,10 @@ namespace Sample.CommandServiceCore.Controllers
                               ICommunityRepository domainRepository,
                               SampleModelContext dbContext,
                               ICommunityService communityService,
-                              IMailboxProcessor mailboxProcessor)
+                              IMailboxProcessor mailboxProcessor,
+                              IEventSourcingRepository<BankAccount> bankAccountRepository)
         {
+            _bankAccountRepository = bankAccountRepository;
             _concurrencyProcessor = concurrencyProcessor;
             _objectProvider = objectProvider;
             _unitOfWork = unitOfWork;
@@ -62,12 +66,17 @@ namespace Sample.CommandServiceCore.Controllers
         [LogInterceptor(Order = 2)]
         public virtual async Task<object> DoApi()
         {
-            //var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
+            var sameProvider = _objectProvider.GetService<SampleModelContext>().GetHashCode() == HttpContext.RequestServices.GetService(typeof(SampleModelContext)).GetHashCode();
             //var userId = new Guid("4ED7460E-C914-45A6-B1C9-4DC97C5D52D0");
             //await _communityService.ModifyUserEmailAsync(userId, $"{DateTime.Now.Ticks}");
 
             var version = await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
-            return $"{DateTime.Now} version:{version} DoApi Done! ";
+            return $"{DateTime.Now} version:{version} DoApi Done! sameProvider:{sameProvider} ";
+        }
+        [Route("home/getBankAccount/{accountId}")]
+        public Task<BankAccount> GetBankAccount(string accountId)
+        {
+            return _bankAccountRepository.GetByKeyAsync(accountId);
         }
 
         public IActionResult Test()
@@ -94,14 +103,18 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Index([FromQuery] bool needGc)
         {
-            using (_logger.BeginScope(new Dictionary<string, object> {{"needGc", needGc}}))
+            _logger.SetMinLevel(LogLevel.Debug);
+            _logger.LogDebug("index test");
+            using (_logger.BeginScope("scopes"))
+            using (_logger.BeginScope(new Dictionary<string, object> { { "needGc", needGc } }))
             {
                 var profile = Configuration.Instance.Get("Debug");
                 var member = Configuration.Instance.Get("Member:A");
-                _logger.LogDebug(new {profile, member});
-                _logger.LogDebug("index test");
-                return View();
+                _logger.LogInformation(new { profile, member });
             }
+            _logger.LogWarning("index test");
+
+            return View();
         }
 
         public IActionResult About()

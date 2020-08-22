@@ -6,7 +6,7 @@ using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue
 {
-    public delegate void OnMessagesReceived(params IMessageContext[] messageContext);
+    public delegate void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] messageContext);
 
     public interface IMessageQueueClient: IDisposable
     {

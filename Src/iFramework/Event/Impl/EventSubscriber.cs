@@ -101,8 +101,9 @@ namespace IFramework.Event.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected async Task ConsumeMessage(IMessageContext eventContext)
+        protected virtual async Task ConsumeMessage(IMessageContext eventContext, CancellationToken cancellationToken)
         {
+            await Task.Yield();
             try
             {
                 Logger.LogDebug($"start handle event {ConsumerId} {eventContext.Message.ToJson()}");
@@ -159,7 +160,7 @@ namespace IFramework.Event.Impl
                                     {
                                         if (messageHandlerType.IsAsync)
                                         {
-                                            await ((dynamic) messageHandler).Handle((dynamic) message)
+                                            await ((dynamic) messageHandler).Handle((dynamic)message, cancellationToken)
                                                                             .ConfigureAwait(false);
                                         }
                                         else
@@ -192,7 +193,7 @@ namespace IFramework.Event.Impl
                                                                                                                            sagaInfo: sagaInfo, producer: Producer)));
                                                 });
 
-                                        eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                       GetSagaReplyMessageStates(eventMessageStates, sagaInfo, eventBus);
 
                                         await messageStore.HandleEventAsync(eventContext,
                                                                             subscriptionName,
@@ -256,7 +257,7 @@ namespace IFramework.Event.Impl
                                                                                                                    producer: Producer)));
                                         });
 
-                                eventMessageStates.AddRange(GetSagaReplyMessageStates(sagaInfo, eventBus));
+                                GetSagaReplyMessageStates(eventMessageStates, sagaInfo, eventBus);
 
                                 await messageStore.SaveFailHandledEventAsync(eventContext, subscriptionName, e,
                                                                              eventMessageStates.Select(s => s.MessageContext).ToArray())
@@ -281,31 +282,25 @@ namespace IFramework.Event.Impl
         }
 
 
-        private List<MessageState> GetSagaReplyMessageStates(SagaInfo sagaInfo, IEventBus eventBus)
+        private void GetSagaReplyMessageStates(List<MessageState> messageStates, SagaInfo sagaInfo, IEventBus eventBus)
         {
-            var eventMessageStates = new List<MessageState>();
-            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            var sagaResult = eventBus.GetSagaResult();
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId) && sagaResult != null)
             {
-                eventBus.GetSagaResults()
-                        .ForEach(sagaResult =>
-                        {
-                            var topic = sagaInfo.ReplyEndPoint;
-                            if (!string.IsNullOrEmpty(topic))
-                            {
-                                var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
-                                                                               topic: topic,
-                                                                               messageId: ObjectId.GenerateNewId().ToString(),
-                                                                               sagaInfo: sagaInfo,
-                                                                               producer: Producer);
-                                eventMessageStates.Add(new MessageState(sagaReply));
-                            }
-                        });
+                 var topic = sagaInfo.ReplyEndPoint;
+                 if (!string.IsNullOrEmpty(topic))
+                 {
+                     var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
+                                                                    topic: topic,
+                                                                    messageId: ObjectId.GenerateNewId().ToString(),
+                                                                    sagaInfo: sagaInfo,
+                                                                    producer: Producer);
+                     messageStates.Add(new MessageState(sagaReply));
+                 }
             }
-
-            return eventMessageStates;
         }
 
-        protected void OnMessagesReceived(params IMessageContext[] messageContexts)
+        protected void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] messageContexts)
         {
             messageContexts.ForEach(messageContext =>
             {
@@ -314,7 +309,7 @@ namespace IFramework.Event.Impl
                 {
                     if (tagFilter(messageContext.Tags))
                     {
-                        MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
+                        MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
                         MessageCount++;
                     }
                     else
@@ -324,7 +319,7 @@ namespace IFramework.Event.Impl
                 }
                 else
                 {
-                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext));
+                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
                     MessageCount++;
                 }
             });

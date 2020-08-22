@@ -6,6 +6,7 @@ using IFramework.Domain;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,14 +26,15 @@ namespace IFramework.Test
 
     public class AClass : AValueObject<AClass>
     {
+        public AClass(){}
         public AClass(string id, string name)
         {
             Id = id;
             Name = name;
         }
 
-        public string Id { get; }
-        public string Name { get; }
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 
     public class AException : Exception
@@ -45,6 +47,12 @@ namespace IFramework.Test
     {
         public JsonTests(ITestOutputHelper output)
         {
+            var services = new ServiceCollection();
+            services.AddAutofacContainer()
+                    .AddMicrosoftJson();
+
+            ObjectProviderFactory.Instance
+                                 .Build(services);
             _output = output;
         }
 
@@ -53,13 +61,6 @@ namespace IFramework.Test
         [Fact]
         public void CloneTest()
         {
-            Configuration.Instance
-                         .UseAutofacContainer()
-                         .UseJsonNet();
-
-            ObjectProviderFactory.Instance
-                                 .Build();
-
             var a = new AClass("ddd", "name");
             var cloneObject = a.Clone();
             Assert.True(a.Name == cloneObject.Name);
@@ -70,12 +71,6 @@ namespace IFramework.Test
         [Fact]
         public void SerializeReadonlyObject()
         {
-            Configuration.Instance
-                         .UseAutofacContainer()
-                         .UseJsonNet();
-
-            ObjectProviderFactory.Instance
-                                 .Build();
             //var ex = new Exception("test");
             //var json = ex.ToJson();
             //var ex2 = json.ToObject<Exception>();

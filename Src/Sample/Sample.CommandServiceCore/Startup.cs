@@ -8,7 +8,6 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.DependencyInjection.Unity;
 using IFramework.EntityFrameworkCore;
 using IFramework.JsonNet;
-using IFramework.Log4Net;
 using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.ConfluentKafka;
@@ -36,15 +35,25 @@ using Sample.Domain;
 using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
-using System.Net;
-using IFramework.Infrastructure;
 using System.Collections.Generic;
+using IFramework.Infrastructure;
+using IFramework.Event;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
-using IFramework.MessageStores.MongoDb;
-using Microsoft.AspNetCore.Http.Internal;
+using IFramework.Logging.Log4Net;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
+using IFramework.Infrastructure.EventSourcing.Configurations;
+using IFramework.EventStore.Redis;
+using IFramework.Infrastructure.EventSourcing;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using IFramework.Infrastructure.EventSourcing.Stores;
+using IFramework.Logging.Serilog;
+using Sample.DomainEvents.Banks;
 
 namespace Sample.CommandServiceCore
 {
@@ -57,98 +66,111 @@ namespace Sample.CommandServiceCore
         private static IMessageProcessor _commandConsumer3;
         private static IMessageProcessor _domainEventProcessor;
         private static IMessageProcessor _applicationEventProcessor;
+        private static IMessageProcessor _eventSourcingCommandConsumer;
+        private static IMessageProcessor _eventSourcingEventProcessor;
         public static string PathBase;
         private static string _app = "uat";
         private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        private readonly IConfiguration _configuration;
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            var kafkaBrokerList = new[]
-            {
-                //new IPEndPoint(Utility.GetLocalIpv4(), 9092).ToString()
-                "10.100.7.46:9092"
-            };
+         
+            _configuration = configuration;
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
             var rabbitConnectionFactory = new ConnectionFactory
             {
                 Endpoint = new AmqpTcpEndpoint("10.100.7.46", 9012)
             };
-            Configuration.Instance
-                         //.UseUnityContainer()
-                         .UseAutofacContainer(a => a.GetName().Name.StartsWith("Sample"))
-                         .UseConfiguration(configuration)
-                         .UseCommonComponents(_app)
-                         .UseJsonNet()
-                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>))
-                         .UseRelationalMessageStore<SampleModelContext>()
-                         //.UseMongoDbMessageStore<SampleModelContext>()
-                         .UseInMemoryMessageQueue()
-                         //.UseRabbitMQ(rabbitConnectionFactory)
-                         //.UseConfluentKafka(string.Join(",", kafkaBrokerList))
-                         //.UseEQueue()
-                         .UseCommandBus(Environment.MachineName, linerCommandManager: new LinearCommandManager())
-                         .UseMessagePublisher("eventTopic")
-                         .UseDbContextPool<SampleModelContext>(options =>
-                         {
-                             //options.EnableSensitiveDataLogging();
-                             options.UseLazyLoadingProxies();
-                             //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                             //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
-                             //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                             options.UseInMemoryDatabase(nameof(SampleModelContext));
-                         });
-        }
-
-        public IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            services.AddLog4Net(new Log4NetProviderOptions { EnableScope = true });
+            services//.AddUnityContainer()
+                    .AddAutofacContainer(assemblyName => assemblyName.StartsWith("Sample"))
+                    .AddConfiguration(_configuration)
+                    //.AddLog4Net()
+                    .AddSerilog()
+                    .AddCommonComponents(_app)
+                    .AddJsonNet()
+                    .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
+                    .AddRelationalMessageStore<SampleModelContext>()
+                    //.AddConfluentKafka()
+                    .AddInMemoryMessageQueue()
+                    //.AddRabbitMQ(rabbitConnectionFactory)
+                    .AddMessagePublisher("eventTopic")
+                    .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
+                    .AddDbContextPool<SampleModelContext>(options =>
+                    {
+                        //options.EnableSensitiveDataLogging();
+                        //options.UseLazyLoadingProxies();
+                        options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                        //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
+                        //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
+                        //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                    })
+                    .AddEventSourcing()
+                    ;
+            //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
             services.AddCustomOptions<FrameworkConfiguration>();
-            services.AddMvc(options =>
-                    {
-                        options.InputFormatters.Insert(0, new CommandInputFormatter());
-                        options.InputFormatters.Add(new FormDataInputFormatter());
-                        options.Filters.Add<ExceptionFilter>();
-                    })
-                    .AddControllersAsServices()
-                ;
 
+            services.AddHealthChecks();
+            services.AddControllersWithViews(options =>
+            {
+                options.InputFormatters.Insert(0, new CommandInputFormatter());
+                options.InputFormatters.Add(new FormDataInputFormatter());
+                options.Filters.Add<ExceptionFilter>();
+            });
+            services.AddRazorPages()
+                    .AddControllersAsServices()
+                    .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+            services.AddHttpContextAccessor();
+            services.AddControllersWithViews();
+            services.AddRazorPages();
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("AppAuthorization",
                                   policyBuilder => { policyBuilder.Requirements.Add(new AppAuthorizationRequirement()); });
             });
             services.AddSingleton<IApiResultWrapAttribute, ApiResultWrapAttribute>();
-            services.AddMiniProfiler()
-                    .AddEntityFramework();
 
-            return ObjectProviderFactory.Instance
-                                        .Populate(services)
-                                        .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
-                                        .Build();
+            services.AddScoped<HomeController, HomeController>(new VirtualMethodInterceptorInjection(),
+                                                               new InterceptionBehaviorInjection());
+            services.AddSingleton<IAuthorizationHandler, AppAuthorizationHandler>();
+            services.AddScoped<ICommunityRepository, CommunityRepository>();
+            services.AddScoped<ICommunityService, CommunityService>(new InterfaceInterceptorInjection(),
+                                                                    new InterceptionBehaviorInjection());
+            services.RegisterMessageHandlers(new []{"CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber"});
+
+            //services.AddMiniProfiler()
+            //        .AddEntityFramework();
         }
 
-        private static void RegisterComponents(IObjectProviderBuilder providerBuilder, ServiceLifetime lifetime)
-        {
-            // TODO: register other components or services
-            providerBuilder.Register<IAuthorizationHandler, AppAuthorizationHandler>(ServiceLifetime.Singleton);
-            providerBuilder.Register<ICommunityRepository, CommunityRepository>(lifetime);
-            providerBuilder.Register<ICommunityService, CommunityService>(lifetime,
-                                                                          new InterfaceInterceptorInjection(),
-                                                                          new InterceptionBehaviorInjection());
-            providerBuilder.Register<HomeController, HomeController>(lifetime,
-                                                                     new VirtualMethodInterceptorInjection(),
-                                                                     new InterceptionBehaviorInjection());
-            providerBuilder.RegisterMessageHandlers(new []{"CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber"}, lifetime);
-        }
+        //public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
+        //{
+        //    var lifetime = ServiceLifetime.Scoped;
+        //    providerBuilder.Register<HomeController, HomeController>(lifetime,
+        //                                                             new VirtualMethodInterceptorInjection(),
+        //                                                             new InterceptionBehaviorInjection());
+        //  }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
-                              IHostingEnvironment env,
+                              IHostEnvironment env,
                               ILoggerFactory loggerFactory,
                               IMessageTypeProvider messageTypeProvider,
                               IOptions<FrameworkConfiguration> frameworkConfigOptions,
                               IMailboxProcessor mailboxProcessor,
-                              IApplicationLifetime applicationLifetime)
+                              IHostApplicationLifetime applicationLifetime,
+                              IEventStore eventStore,
+                              ISnapshotStore snapshotStore)
         {
+            eventStore.Connect()
+                      .GetAwaiter()
+                      .GetResult();
+            snapshotStore.Connect()
+                         .GetAwaiter()
+                         .GetResult();
+
             applicationLifetime.ApplicationStopping.Register(() =>
             {
                 _commandConsumer1?.Stop();
@@ -165,7 +187,9 @@ namespace Sample.CommandServiceCore
                                {
                                    ["Login"] = "Sample.Command.Login, Sample.Command"
                                })
-                               .Register("Modify", typeof(Modify));
+                               .Register("Modify", typeof(Modify))
+                               .Register(nameof(CreateAccount), typeof(CreateAccount))
+                               .Register(nameof(AccountCreated), typeof(AccountCreated));
            
             StartMessageQueueComponents();
 
@@ -189,7 +213,7 @@ namespace Sample.CommandServiceCore
 
             app.Use(next => context =>
             {
-                context.Request.EnableRewind();
+                context.Request.EnableBuffering();
                 context.Response.EnableRewind();
                 return next(context);
             });
@@ -209,15 +233,33 @@ namespace Sample.CommandServiceCore
             });
 
             app.UseStaticFiles();
-            app.UseMvc(routes =>
+            //app.UseRouting();
+            app.UseCors("default");
+            //app.UseEndpoints(endpoints =>
+            //{
+            //    endpoints.MapControllerRoute("default",
+            //                    "{controller=Home}/{action=Index}/{id?}");
+            //    endpoints.MapRazorPages();
+            //});
+
+            app.UseRouting();
+ 
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("default",
-                                "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHealthChecks("/health");
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute("default",
+            //                    "{controller=Home}/{action=Index}/{id?}");
+            //});
 
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();
 
+            //loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             var logger = loggerFactory.CreateLogger<Startup>(); 
             logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
@@ -226,6 +268,16 @@ namespace Sample.CommandServiceCore
         private void StartMessageQueueComponents()
         {
             #region Command Consuemrs init
+
+            _eventSourcingCommandConsumer = EventSourcingFactory.CreateCommandConsumer($"{TopicPrefix}BankCommandQueue",
+                                                                                       "0",
+                                                                                       new[]
+                                                                                       {
+                                                                                           "BankAccountCommandHandlers",
+                                                                                           "BankTransactionCommandHandlers"
+                                                                                       });
+
+            _eventSourcingCommandConsumer.Start();
 
             var commandQueueName = $"{TopicPrefix}commandqueue";
             _commandConsumer1 =
@@ -254,6 +306,14 @@ namespace Sample.CommandServiceCore
                                                                               new[] { "DomainEventSubscriber" });
             _domainEventProcessor.Start();
 
+            _eventSourcingEventProcessor = EventSourcingFactory.CreateEventSubscriber(new[]
+                                                                                      {
+                                                                                          new TopicSubscription($"{TopicPrefix}BankDomainEvent")
+                                                                                      }, 
+                                                                                      "BankDomainEventSubscriber",
+                                                                                      Environment.MachineName,
+                                                                                      new[] {"BankDomainEventSubscriber"});
+            _eventSourcingEventProcessor.Start();
             #endregion
 
             #region application event subscriber init

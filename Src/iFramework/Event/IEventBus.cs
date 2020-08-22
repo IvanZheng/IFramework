@@ -10,7 +10,7 @@ namespace IFramework.Event
         void PublishAnyway(params IEvent[] events);
         IEnumerable<ICommand> GetCommands();
         IEnumerable<IEvent> GetEvents();
-        IEnumerable<object> GetSagaResults();
+        object GetSagaResult();
         IEnumerable<IEvent> GetToPublishAnywayMessages();
         void FinishSaga(object sagaResult);
         void ClearMessages(bool clearPublishAnywayMessages = true);

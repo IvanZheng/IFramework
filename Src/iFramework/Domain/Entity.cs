@@ -68,7 +68,6 @@ namespace IFramework.Domain
             {
                 throw new NullReferenceException(nameof(DomainContext));
             }
-
             await DbContext.ReloadAsync(this)
                            .ConfigureAwait(false);
             (this as AggregateRoot)?.Rollback();

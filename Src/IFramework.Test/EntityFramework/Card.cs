@@ -6,7 +6,6 @@ using IFramework.Infrastructure;
 
 namespace IFramework.Test.EntityFramework
 {
-    [ComplexType]
     public class Card
     {
         public string Id { get; protected set; }

@@ -8,7 +8,7 @@ namespace IFramework.DependencyInjection
 {
     public static class ServiceCollectionExtension
     {
-        public static IServiceCollection RegisterType(this IServiceCollection serviceCollection, Type from, Func<IServiceProvider, object> implementationFactory, ServiceLifetime lifetime = ServiceLifetime.Transient)
+        public static IServiceCollection AddService(this IServiceCollection serviceCollection, Type from, Func<IServiceProvider, object> implementationFactory, ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             if (lifetime == ServiceLifetime.Scoped)
             {
@@ -29,7 +29,7 @@ namespace IFramework.DependencyInjection
             return serviceCollection;
         }
 
-        public static IServiceCollection RegisterType(this IServiceCollection serviceCollection, Type from, Type to, ServiceLifetime lifetime = ServiceLifetime.Transient)
+        public static IServiceCollection AddService(this IServiceCollection serviceCollection, Type from, Type to, ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             if (lifetime == ServiceLifetime.Scoped)
             {
@@ -50,7 +50,7 @@ namespace IFramework.DependencyInjection
             return serviceCollection;
         }
 
-        public static IServiceCollection RegisterType<TService, TImplementation>(this IServiceCollection serviceCollection, Func<IServiceProvider, TImplementation> implementationFactory, ServiceLifetime lifetime = ServiceLifetime.Transient)
+        public static IServiceCollection AddService<TService, TImplementation>(this IServiceCollection serviceCollection, Func<IServiceProvider, TImplementation> implementationFactory, ServiceLifetime lifetime = ServiceLifetime.Transient)
             where TService : class where TImplementation : class, TService
         {
             if (lifetime == ServiceLifetime.Scoped)
@@ -72,28 +72,36 @@ namespace IFramework.DependencyInjection
             return serviceCollection;
         }
 
-        public static IServiceCollection RegisterType<TService, TImplementation>(this IServiceCollection serviceCollection, ServiceLifetime lifetime = ServiceLifetime.Transient)
+        public static IServiceCollection AddService<TService, TImplementation>(this IServiceCollection serviceCollection, 
+                                                                               ServiceLifetime lifetime = ServiceLifetime.Transient,
+                                                                               params Injection[] injections)
             where TService : class where TImplementation : class, TService
         {
-            if (lifetime == ServiceLifetime.Scoped)
+            if (injections.Length > 0)
             {
-                serviceCollection.AddScoped<TService, TImplementation>();
-            }
-            else if (lifetime == ServiceLifetime.Singleton)
-            {
-                serviceCollection.AddSingleton<TService, TImplementation>();
-            }
-            else if (lifetime == ServiceLifetime.Transient)
-            {
-                serviceCollection.AddTransient<TService, TImplementation>();
+                ObjectProviderFactory.Instance.ObjectProviderBuilder.AddRegisterAction(builder => builder.Register<TService, TImplementation>(lifetime, injections));
             }
             else
             {
-                throw new InvalidEnumArgumentException(nameof(lifetime));
+                if (lifetime == ServiceLifetime.Scoped)
+                {
+                    ServiceCollectionServiceExtensions.AddScoped<TService, TImplementation>(serviceCollection);
+                }
+                else if (lifetime == ServiceLifetime.Singleton)
+                {
+                    ServiceCollectionServiceExtensions.AddSingleton<TService, TImplementation>(serviceCollection);
+                }
+                else if (lifetime == ServiceLifetime.Transient)
+                {
+                    ServiceCollectionServiceExtensions.AddTransient<TService, TImplementation>(serviceCollection);
+                }
+                else
+                {
+                    throw new InvalidEnumArgumentException(nameof(lifetime));
+                }
             }
             return serviceCollection;
         }
-
 
         public static IServiceCollection AddCustomOptions<TOptions>(this IServiceCollection services, Action<TOptions> optionAction = null, string sectionName = null)
             where TOptions: class, new()
@@ -117,6 +125,38 @@ namespace IFramework.DependencyInjection
                     return new OptionsWrapper<TOptions>(options);
                 });
             }
+            return services;
+        }
+        
+
+        #region AOP register extensions
+
+        public static IServiceCollection AddScoped<TFrom, TTo>(this IServiceCollection services, params Injection[] injections)
+            where TFrom : class
+            where TTo : class, TFrom
+        {
+            return services.AddService<TFrom, TTo>(ServiceLifetime.Scoped, injections);
+        }
+
+        public static IServiceCollection AddSingleton<TFrom, TTo>(this IServiceCollection services, params Injection[] injections)
+            where TFrom : class
+            where TTo : class, TFrom
+        {
+            return services.AddService<TFrom, TTo>(ServiceLifetime.Singleton, injections);
+        }
+        public static IServiceCollection AddTransient<TFrom, TTo>(this IServiceCollection services, params Injection[] injections)
+            where TFrom : class
+            where TTo : class, TFrom
+        {
+            return services.AddService<TFrom, TTo>(ServiceLifetime.Transient, injections);
+        }
+        #endregion
+
+        public static IServiceCollection RegisterMessageHandlers(this IServiceCollection services,
+                                                                 string[] handlerProviderNames,
+                                                                 ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        {
+            ObjectProviderFactory.Instance.ObjectProviderBuilder.RegisterMessageHandlers(handlerProviderNames, lifetime);
             return services;
         }
     }

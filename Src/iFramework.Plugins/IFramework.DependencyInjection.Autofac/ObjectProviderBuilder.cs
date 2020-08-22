@@ -14,7 +14,7 @@ namespace IFramework.DependencyInjection.Autofac
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
         private readonly ContainerBuilder _containerBuilder;
-
+      
         public ObjectProviderBuilder(ContainerBuilder builder = null)
         {
             _containerBuilder = builder ?? new ContainerBuilder();
@@ -39,7 +39,14 @@ namespace IFramework.DependencyInjection.Autofac
                              .InstanceLifetime(lifetime);
             return this;
         }
-        
+
+        private readonly List<Action<IObjectProviderBuilder>> _registerActions = new List<Action<IObjectProviderBuilder>>();
+        public IObjectProviderBuilder AddRegisterAction(Action<IObjectProviderBuilder> action)
+        {
+            _registerActions.Add(action);
+            return this;
+        }
+
         public IObjectProvider Build(IServiceCollection serviceCollection = null)
         {
             if (serviceCollection != null)
@@ -47,6 +54,9 @@ namespace IFramework.DependencyInjection.Autofac
                 Populate(serviceCollection);
             }
            
+            _registerActions.ForEach(action => action(this));
+            _registerActions.Clear();
+
             _containerBuilder.Register<IObjectProvider>(context =>
                              {
                                  var serviceProvider = context.Resolve<IServiceProvider>() as AutofacServiceProvider;

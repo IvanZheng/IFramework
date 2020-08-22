@@ -12,66 +12,36 @@ namespace IFramework.EntityFrameworkCore
 {
     public static class ConfigurationExtension
     {
-        public static Configuration UseDbContext<TDbContext>(this Configuration configuration, Action<DbContextOptionsBuilder> optionsAction)
-            where TDbContext : DbContext
-        {
-            var services = new ServiceCollection();
-            services.AddDbContext<TDbContext>(optionsAction);
-            ObjectProviderFactory.Instance.Populate(services);
-            return configuration;
-        }
-        public static Configuration UseDbContextPool<TDbContext>(this Configuration configuration, Action<DbContextOptionsBuilder> optionsAction, int poolSize = 128)
-            where TDbContext : DbContext
-        {
-            var services = new ServiceCollection();
-            services.AddDbContextPool<TDbContext>(optionsAction, poolSize);
-            ObjectProviderFactory.Instance.Populate(services);
-            return configuration;
-        }
-
         /// <summary>
         ///     TDbContext is the default type for Repository<TEntity />'s dbContext injected paramter
         /// </summary>
-        /// <param name="configuration"></param>
+        /// <param name="services"></param>
         /// <param name="builder"></param>
         /// <param name="defaultRepositoryType"></param>
         /// <param name="lifetime"></param>
         /// <returns></returns>
-        public static Configuration UseEntityFrameworkComponents(this Configuration configuration,
-                                                                 IObjectProviderBuilder builder,
-                                                                 Type defaultRepositoryType,
-                                                                 ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public static IServiceCollection AddEntityFrameworkComponents(this IServiceCollection services,
+                                                                      Type defaultRepositoryType,
+                                                                      ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
-            return configuration.RegisterUnitOfWork(builder, lifetime)
-                                .RegisterRepositories(defaultRepositoryType, builder, lifetime);
+            return services.AddUnitOfWork(lifetime)
+                                .AddRepositories(defaultRepositoryType,  lifetime);
         }
 
-        public static Configuration UseEntityFrameworkComponents(this Configuration configuration,
-                                                                 Type defaultRepositoryType,
-                                                                 ServiceLifetime lifetime = ServiceLifetime.Scoped)
-        {
-            return configuration.UseEntityFrameworkComponents(null, defaultRepositoryType, lifetime);
-        }
-
-        public static Configuration RegisterUnitOfWork(this Configuration configuration,
-                                                       IObjectProviderBuilder builder,
+        public static IServiceCollection AddUnitOfWork(this IServiceCollection services,
                                                        ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
-            builder.Register<IUnitOfWork, UnitOfWorks.UnitOfWork>(lifetime);
-            return configuration;
+            services.AddService<IUnitOfWork, UnitOfWorks.UnitOfWork>(lifetime);
+            return services;
         }
 
-        public static Configuration RegisterRepositories(this Configuration configuration,
+        public static IServiceCollection AddRepositories(this IServiceCollection services,
                                                          Type repositoryType,
-                                                         IObjectProviderBuilder builder,
                                                          ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
-            builder.Register(typeof(IRepository<>), repositoryType, lifetime);
-            builder.Register<IDomainRepository, DomainRepository>(lifetime);
-            return configuration;
+            services.AddService(typeof(IRepository<>), repositoryType, lifetime);
+            services.AddService<IDomainRepository, DomainRepository>(lifetime);
+            return services;
         }
     }
 }

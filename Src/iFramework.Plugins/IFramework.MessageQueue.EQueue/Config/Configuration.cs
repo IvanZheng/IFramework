@@ -26,22 +26,19 @@ namespace IFramework.Config
                                 .BuildContainer();
         }
 
-        public static Configuration UseEQueue(this Configuration configuration,
+        public static IServiceCollection AddEQueue(this IServiceCollection services,
                                               string nameServerAddresses = null,
                                               string clusterName = "DefaultCluster",
                                               int nameServerPort = 9493)
         {
             InitializeEqueue();
 
-            ObjectProviderFactory.Instance
-                      .ObjectProviderBuilder
-                      .Register<IMessageQueueClientProvider, EQueueClientProvider>(ServiceLifetime.Singleton,
-                                                                                   new ConstructInjection(new ParameterInjection("clusterName", clusterName),
-                                                                                                          new ParameterInjection("nameServerList", nameServerAddresses),
-                                                                                                          new ParameterInjection("nameServerPort", nameServerPort)))
-                      .Register<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
+            services.AddSingleton<IMessageQueueClientProvider, EQueueClientProvider>(new ConstructInjection(new ParameterInjection("clusterName", clusterName),
+                                                                                               new ParameterInjection("nameServerList", nameServerAddresses),
+                                                                                               new ParameterInjection("nameServerPort", nameServerPort)))
+                      .AddSingleton<IMessageQueueClient, MessageQueueClient>();
 
-            return configuration;
+            return services;
         }
     }
 }

@@ -3,18 +3,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using IFramework.Domain;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace IFramework.EntityFrameworkCore
 {
     public class ExtensionEntityMaterializerSource : EntityMaterializerSource
     {
-        public override Expression CreateMaterializeExpression(IEntityType entityType, Expression materializationExpression, int[] indexMap = null)
+        public override Expression CreateMaterializeExpression(IEntityType entityType,
+                                                               string entityInstanceName,
+                                                               Expression materializationExpression)
         {
-            var expression = base.CreateMaterializeExpression(entityType, materializationExpression, indexMap);
+            var expression = base.CreateMaterializeExpression(entityType, entityInstanceName, materializationExpression);
             if (typeof(Entity).IsAssignableFrom(entityType.ClrType) && expression is BlockExpression blockExpression)
             {
                 var property = Expression.Property(blockExpression.Variables[0],
@@ -27,6 +29,10 @@ namespace IFramework.EntityFrameworkCore
                 expression = Expression.Block(blockExpression.Variables, list);
             }
             return expression;
+        }
+
+        public ExtensionEntityMaterializerSource(EntityMaterializerSourceDependencies dependencies) : base(dependencies)
+        {
         }
     }
 }

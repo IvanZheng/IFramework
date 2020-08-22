@@ -29,12 +29,12 @@ namespace IFramework.MessageQueue
 
         public static IMessageProcessor CreateCommandConsumer(string commandQueue,
                                                               string consumerId,
-                                                              string[] handlerProvierNames,
+                                                              string[] handlerProviderNames,
                                                               ConsumerConfig consumerConfig = null)
         {
             var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
-            var handlerProvider = new CommandHandlerProvider(handlerProvierNames);
+            var handlerProvider = new CommandHandlerProvider(handlerProviderNames);
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
             var commandConsumer = new CommandProcessor(messageQueueClient,
                                                        messagePublisher,
@@ -45,7 +45,7 @@ namespace IFramework.MessageQueue
             MessageProcessors.Add(commandConsumer);
             return commandConsumer;
         }
-
+       
         public static IMessageProcessor CreateEventSubscriber(string topic,
                                                               string subscription,
                                                               string consumerId,

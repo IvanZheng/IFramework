@@ -10,38 +10,38 @@ namespace IFramework.Command.Impl
 {
   
 
-    public class LinearCommandManager : ILinearCommandManager
+    public class SerialCommandManager : ISerialCommandManager
     {
-        private readonly ConcurrentDictionary<Type, MemberInfo> _commandLinerKeys =
+        private readonly ConcurrentDictionary<Type, MemberInfo> _commandSerialKeys =
             new ConcurrentDictionary<Type, MemberInfo>();
 
-        private readonly Hashtable _linearFuncs = new Hashtable();
+        private readonly Hashtable _serialFunctions = new Hashtable();
 
         public object GetLinearKey(ILinearCommand command)
         {
             return this.InvokeGenericMethod("GetLinearKeyImpl", new object[] {command}, command.GetType());
         }
 
-        public void RegisterLinearCommand<TLinearCommand>(Func<TLinearCommand, object> func)
+        public void RegisterSerialCommand<TLinearCommand>(Func<TLinearCommand, object> func)
             where TLinearCommand : ILinearCommand
         {
-            _linearFuncs.Add(typeof(TLinearCommand), func);
+            _serialFunctions.Add(typeof(TLinearCommand), func);
         }
 
         public object GetLinearKeyImpl<TLinearCommand>(TLinearCommand command) where TLinearCommand : ILinearCommand
         {
             object linearKey = null;
-            if (_linearFuncs[typeof(TLinearCommand)] is Func<TLinearCommand, object> func)
+            if (_serialFunctions[typeof(TLinearCommand)] is Func<TLinearCommand, object> func)
             {
                 linearKey = func(command);
             }
             else
             {
-                var propertyWithKeyAttribute = _commandLinerKeys.GetOrAdd(command.GetType(), type =>
+                var propertyWithKeyAttribute = _commandSerialKeys.GetOrAdd(command.GetType(), type =>
                 {
                     var keyProperty = command.GetType()
                                              .GetProperties()
-                                             .FirstOrDefault(p => p.GetCustomAttribute<LinearKeyAttribute>() != null) as MemberInfo;
+                                             .FirstOrDefault(p => p.GetCustomAttribute<SerialKeyAttribute>() != null) as MemberInfo;
                     return keyProperty;
                 });
 

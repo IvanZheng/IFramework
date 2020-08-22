@@ -3,14 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Autofac;
-using IFramework.Config;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.DependencyInjection.Autofac
 {
     public static class ConfigurationExtension
     {
-        public static Assembly[] GetAssemblies(Func<Assembly, bool> assemblyNameExpression)
+        public static Assembly[] GetAssemblies(Func<string, bool> assemblyNameExpression)
         {
             var assemblyFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory)
                                          .Select(f => new FileInfo(f))
@@ -19,66 +18,59 @@ namespace IFramework.DependencyInjection.Autofac
             var assemblies = assemblyFiles.Where(f => f.Name.EndsWith(".dll")
                                                       && !f.Name.EndsWith(".PrecompiledViews.dll")
                                                       && !f.Name.EndsWith(".Views.dll"))
+                                          .Where(f => assemblyNameExpression(f.Name))
                                           .Select(f => Assembly.Load(f.Name.Remove(f.Name.Length - 4)))
-                                          .Where(assemblyNameExpression)
                                           .ToArray();
 
             var loadedAssemblies = AppDomain.CurrentDomain
                                             .GetAssemblies()
                                             .Where(assembly => !assembly.GetName().Name.EndsWith(".PrecompiledViews")
                                                                && !assembly.GetName().Name.EndsWith(".Views"))
-                                            .Where(assemblyNameExpression);
+                                            .Where(assembly => assemblyNameExpression(assembly.GetName().Name));
 
             return loadedAssemblies.Union(assemblies)
                                    .ToArray();
         }
 
-        public static Configuration UseAutofacContainer(this Configuration configuration,
-                                                        Func<Assembly, bool> assemblyNameExpression)
+        public static IServiceCollection AddAutofacContainer(this IServiceCollection services,
+                                                             Func<string, bool> assemblyNameExpression)
         {
-            return configuration.UseAutofacContainer(GetAssemblies(assemblyNameExpression));
+            return services.AddAutofacContainer(GetAssemblies(assemblyNameExpression));
         }
 
-        public static Configuration UseAutofacContainer(this Configuration configuration)
+        public static IServiceCollection AddAutofacContainer(this IServiceCollection services)
         {
-            return configuration.UseAutofacContainer((Assembly[]) null);
+            return services.AddAutofacContainer((Assembly[]) null);
         }
 
-        public static Configuration UseAutofacContainer(this Configuration configuration,
-                                                        params string[] assemblies)
+        public static IServiceCollection AddAutofacContainer(this IServiceCollection services, ContainerBuilder builder, params Assembly[] assemblies)
         {
-            return configuration.UseAutofacContainer(assemblies.Select(Assembly.Load).ToArray());
+            if (assemblies?.Length > 0)
+            {
+                builder.RegisterAssemblyTypes(assemblies);
+            }
+
+            ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
+            return services;
         }
 
-        public static Configuration UseAutofacContainer(this Configuration configuration,
-                                                        params Assembly[] assemblies)
+        public static IServiceCollection AddAutofacContainer(this IServiceCollection services,
+                                                             params string[] assemblies)
+        {
+            return services.AddAutofacContainer(assemblies.Select(Assembly.Load).ToArray());
+        }
+
+        public static IServiceCollection AddAutofacContainer(this IServiceCollection services,
+                                                             params Assembly[] assemblies)
         {
             var builder = new ContainerBuilder();
             if (assemblies?.Length > 0)
             {
                 builder.RegisterAssemblyTypes(assemblies);
             }
+
             ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
-            return configuration;
-        }
-
-
-        public static Configuration UseAutofacContainer(this Configuration configuration,
-                                                        ContainerBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-            ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(builder));
-            return configuration;
-        }
-
-        public static Configuration UseAutofacContainer(this Configuration configuration,
-                                                        IServiceCollection serviceCollection)
-        {
-            ObjectProviderFactory.Instance.SetProviderBuilder(new ObjectProviderBuilder(serviceCollection));
-            return configuration;
+            return services;
         }
     }
 }

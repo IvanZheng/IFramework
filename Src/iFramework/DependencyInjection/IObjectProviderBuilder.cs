@@ -5,6 +5,7 @@ namespace IFramework.DependencyInjection
 {
     public interface IObjectProviderBuilder
     {
+        IObjectProviderBuilder AddRegisterAction(Action<IObjectProviderBuilder> action);
         IObjectProvider Build(IServiceCollection serviceCollection = null);
         IObjectProviderBuilder Populate(IServiceCollection serviceCollection);
 

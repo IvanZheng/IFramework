@@ -6,9 +6,7 @@ using Sample.DomainEvents.Community;
 
 namespace Sample.Domain.Model
 {
-    public class Account : People,
-                           IEventSubscriber<AccountRegistered>,
-                           IEventSubscriber<AccountModified>
+    public class Account : People
     {
         protected Account()
         {
@@ -25,15 +23,14 @@ namespace Sample.Domain.Model
 
         public virtual ICollection<ProductId> ProductIds { get; protected set; } = new HashSet<ProductId>();
 
-        void IMessageHandler<AccountModified>.Handle(AccountModified @event)
+        protected void Handle(AccountModified @event)
         {
             Email = @event.Email;
         }
 
-        void IMessageHandler<AccountRegistered>.Handle(AccountRegistered @event)
+        void Handle(AccountRegistered @event)
         {
-            (this as IMessageHandler<ItemRegisted>).Handle(@event);
-            (this as IMessageHandler<PeopleRegisted>).Handle(@event);
+            base.Handle(@event);
             RegisterTime = @event.RegisterTime;
         }
 

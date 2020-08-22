@@ -6,6 +6,7 @@ using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
 using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
+using Microsoft.Extensions.Options;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
@@ -13,9 +14,9 @@ namespace IFramework.MessageQueue.ConfluentKafka
     {
         private readonly string _brokerList;
 
-        public KafkaMQClientProvider(string brokerList)
+        public KafkaMQClientProvider(IOptions<KafkaClientOptions> options)
         {
-            _brokerList = brokerList;
+            _brokerList = options.Value.BrokerList;
         }
 
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
@@ -94,11 +95,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         private OnKafkaMessageReceived<string, KafkaMessage> BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)
         {
-            return (consumer, message) =>
+            return (consumer, message, cancellationToken) =>
             {
                 var kafkaMessage = message.Message;
                 var messageContext = new MessageContext(kafkaMessage.Value, message.Topic, message.Partition, message.Offset);
-                onMessagesReceived(messageContext);
+                onMessagesReceived(cancellationToken, messageContext);
             };
         }
 

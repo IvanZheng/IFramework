@@ -33,17 +33,15 @@ namespace IFramework.Test.EntityFramework
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
-            Configuration.Instance
-                         .UseAutofacContainer(new ContainerBuilder())
-                         .UseConfiguration(builder.Build())
-                         .UseLog4Net()
-                         .UseCommonComponents()
-                         .UseEntityFrameworkComponents(typeof(RepositoryBase<>));
-
+            var services = new ServiceCollection();
+            services.AddAutofacContainer(new ContainerBuilder())
+                    .AddConfiguration(builder.Build())
+                    .AddLog4Net()
+                    .AddEntityFrameworkComponents(typeof(RepositoryBase<>));
           
             ObjectProviderFactory.Instance
                                  .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
-                                 .Build();
+                                 .Build(services);
         }
         public RepositoryTests(ITestOutputHelper output)
         {

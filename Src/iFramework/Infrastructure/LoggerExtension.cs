@@ -146,28 +146,28 @@ namespace Microsoft.Extensions.Logging
         {
             logger = logger.GetInternalLogger();
             var loggers = logger.GetType()
-                                .GetProperty("Loggers")
+                                .GetProperty("MessageLoggers")
                                 ?.GetValue(logger) as Array;
             if (loggers == null)
             {
-                throw new Exception("Can't get loggerInformations");
+                throw new Exception("Can't get loggerInformation");
             }
 
             LoggerInfo loggerInfo = new LoggerInfo();
             for (int i = 0;  i < loggers.Length; i ++)
             {
-                var loggerInformation = loggers.GetValue(i);
-                if (loggerInformation != null)
+                var messageLogger = loggers.GetValue(i);
+                if (messageLogger != null)
                 {
-                    var value = loggerInformation.GetType()
+                    var value = messageLogger.GetType()
                                      .GetProperty("MinLevel")
-                                     ?.GetValue(loggerInformation) ?? LogLevel.None;
+                                     ?.GetValue(messageLogger) ?? LogLevel.None;
                     var currentLevel = (LogLevel)value;
                     if (currentLevel < loggerInfo.MinLevel)
                     {
-                        loggerInfo = new LoggerInfo(loggerInformation.GetType()
+                        loggerInfo = new LoggerInfo(messageLogger.GetType()
                                                                      .GetProperty("Category")
-                                                                     ?.GetValue(loggerInformation)
+                                                                     ?.GetValue(messageLogger)
                                                                      ?.ToString(),
                                                     currentLevel);
                     }
@@ -181,21 +181,23 @@ namespace Microsoft.Extensions.Logging
         {
             logger = logger.GetInternalLogger();
             var loggers = logger.GetType()
-                                .GetProperty("Loggers")
+                                .GetProperty("MessageLoggers")
                                 ?.GetValue(logger) as Array;
             if (loggers == null)
             {
-                throw new Exception("Can't get loggerInformations");
+                throw new Exception("Can't get loggerInformation");
             }
             for (int i = 0;  i < loggers.Length; i ++)
             {
-                var loggerInformation = loggers.GetValue(i);
-                if (loggerInformation != null)
+                var messageLogger = loggers.GetValue(i);
+                if (messageLogger != null)
                 {
-                    loggerInformation.GetType()
-                                     .GetProperty("MinLevel")
-                                     ?.SetValue(loggerInformation, minLevel);
-                    loggers.SetValue(loggerInformation, i);
+                    var minLevelField = messageLogger.GetType().GetRuntimeFields().FirstOrDefault(f => f.Name.StartsWith("<MinLevel>"));
+                    if (minLevelField != null)
+                    {
+                        minLevelField.SetValue(messageLogger, minLevel);
+                        loggers.SetValue(messageLogger, i);
+                    }
                 }
             }
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Event;
 using IFramework.Exceptions;
@@ -30,7 +31,7 @@ namespace Sample.ApplicationEventSubscriber.Community
             _concurrencyProcessor = concurrencyProcessor;
         }
 
-        public Task Handle(AccountLogined @event)
+        public Task Handle(AccountLogined @event, CancellationToken cancellationToken)
         {
             //await _concurrencyProcessor.ProcessAsync(async () =>
             //{

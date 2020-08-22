@@ -29,7 +29,7 @@ namespace IFramework.Config
 
         }
 
-        public bool NeedMessageStore { get; protected set; }
+        public bool NeedMessageStore { get; internal set; }
 
         private bool CommitPerMessage { get; set; }
 
@@ -55,107 +55,20 @@ namespace IFramework.Config
             set => Instance.ConfigurationCore[key] = value;
         }
 
+      
 
-        public Configuration UseConfiguration(IConfiguration configuration)
-        {
-            ConfigurationCore = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            ObjectProviderFactory.Instance.RegisterInstance(typeof(Configuration), this);
-            return this;
-        }
-
-        public Configuration UseCommonComponents(string app = null)
-        {
-            UseNullLogger();
-            UseMemoryCahce();
-            UserDataContractJson();
-            UseMessageStore<MockMessageStore>();
-            UseMessageStoreDaemon<MockMessageStoreDaemon>();
-            this.UseMockMessageQueueClient();
-            this.UseMockMessagePublisher();
-            RegisterDefaultEventBus();
-            RegisterConcurrencyProcessor<ConcurrencyProcessor, UniqueConstrainExceptionParser>();
-            this.UseMessageQueue(app);
-            this.MessageQueueUseMachineNameFormat();
-            UseMessageTypeProvider<MessageTypeProvider>();
-            UseMailbox<MailboxProcessor, DefaultProcessingMessageScheduler>();
-            return this;
-        }
-
-        private Configuration UseMailbox<TMailboxProcessor, TProcessingMessageScheduler>() 
-            where TMailboxProcessor : class, IMailboxProcessor
-            where TProcessingMessageScheduler: class, IProcessingMessageScheduler
-        {
-            ObjectProviderFactory.Instance.RegisterType<IProcessingMessageScheduler, TProcessingMessageScheduler>(ServiceLifetime.Singleton);
-            ObjectProviderFactory.Instance.RegisterType<IMailboxProcessor, TMailboxProcessor>(ServiceLifetime.Singleton);
-            return this;
-        }
-
-        public Configuration UseMessageTypeProvider<TMessageTypeProvider>()
-        where TMessageTypeProvider :class, IMessageTypeProvider
-        {
-            ObjectProviderFactory.Instance.RegisterType<IMessageTypeProvider, TMessageTypeProvider>(ServiceLifetime.Singleton);
-            return this;
-        }
-
-        public Configuration UseMessageStoreDaemon<TMessageStoreDaemon>() where TMessageStoreDaemon : class, IMessageStoreDaemon
-        {
-            ObjectProviderFactory.Instance.RegisterType<IMessageStoreDaemon, TMessageStoreDaemon>(ServiceLifetime.Singleton);
-            return this;
-
-        }
-
-        public Configuration UseNullLogger()
+        public Configuration UseDataContractJson()
         {
             ObjectProviderFactory.Instance
-                      .RegisterType<ILoggerFactory, NullLoggerFactory>(ServiceLifetime.Singleton);
+                                 .RegisterInstance(typeof(IJsonConvert),
+                                                   new DataContractJsonConvert());
             return this;
         }
 
-        public Configuration RegisterConcurrencyProcessor<TConcurrencyProcessor, TUniqueConstrainExceptionParser>() 
-            where TConcurrencyProcessor : class, IConcurrencyProcessor
-            where TUniqueConstrainExceptionParser : class, IUniqueConstrainExceptionParser
-        {
-            ObjectProviderFactory.Instance
-                      .RegisterType<IConcurrencyProcessor, TConcurrencyProcessor>(ServiceLifetime.Singleton)
-                      .Register<IUniqueConstrainExceptionParser, TUniqueConstrainExceptionParser>(ServiceLifetime.Singleton);
-            return this;
-        }
+       
 
-        private Configuration UserDataContractJson()
-        {
-            ObjectProviderFactory.Instance
-                      .RegisterInstance(typeof(IJsonConvert)
-                                        , new DataContractJsonConvert());
-            return this;
-        }
+       
 
-        public Configuration UseMemoryCahce(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        {
-            ObjectProviderFactory.Instance.RegisterType<ICacheManager, MemoryCacheManager>(lifetime);
-            return this;
-        }
-
-        /// <summary>
-        /// if sameIntanceAsBusinessDbContext is true, TMessageStore must be registerd before object provider to be built!
-        /// </summary>
-        /// <typeparam name="TMessageStore"></typeparam>
-        /// <param name="lifetime"></param>
-        /// <returns></returns>
-        public Configuration UseMessageStore<TMessageStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TMessageStore : class, IMessageStore
-        {
-            NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
-            if (NeedMessageStore)
-            {
-                ObjectProviderFactory.Instance.RegisterType<TMessageStore, TMessageStore>(lifetime);
-                ObjectProviderFactory.Instance.RegisterType<IMessageStore>(provider => provider.GetService<TMessageStore>(), lifetime);
-            }
-            else
-            {
-                ObjectProviderFactory.Instance.RegisterType<IMessageStore, MockMessageStore>(lifetime);
-            }
-            return this;
-        }
 
         //public Configuration UseNoneLogger()
         //{
@@ -165,10 +78,7 @@ namespace IFramework.Config
         //    return this;
         //}
 
-        public Configuration RegisterDefaultEventBus(ServiceLifetime lifetime = ServiceLifetime.Scoped)
-        {
-            return RegisterDefaultEventBus(null, lifetime);
-        }
+        
 
         /// <summary>
         ///     should use after RegisterCommonComponents
@@ -182,15 +92,7 @@ namespace IFramework.Config
             return this;
         }
 
-        public Configuration RegisterDefaultEventBus(IObjectProviderBuilder builder, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-        {
-            builder = builder ?? ObjectProviderFactory.Instance.ObjectProviderBuilder;
-            builder.RegisterInstance(new SyncEventSubscriberProvider());
-            builder.Register<IEventBus, EventBus>(lifetime);
-            builder.Register<IMessageContext, EmptyMessageContext>(lifetime);
-            return this;
-        }
-
+        
         public bool GetCommitPerMessage()
         {
             return CommitPerMessage;
