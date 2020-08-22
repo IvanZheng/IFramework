@@ -38,6 +38,7 @@ using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAt
 using System.Collections.Generic;
 using IFramework.Infrastructure;
 using IFramework.Event;
+using IFramework.EventStore;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Logging.Log4Net;
@@ -160,16 +161,17 @@ namespace Sample.CommandServiceCore
                               IMessageTypeProvider messageTypeProvider,
                               IOptions<FrameworkConfiguration> frameworkConfigOptions,
                               IMailboxProcessor mailboxProcessor,
-                              IHostApplicationLifetime applicationLifetime,
-                              IEventStore eventStore,
-                              ISnapshotStore snapshotStore)
+                              IHostApplicationLifetime applicationLifetime
+                              //IEventStore eventStore,
+                              //ISnapshotStore snapshotStore
+            )
         {
-            eventStore.Connect()
-                      .GetAwaiter()
-                      .GetResult();
-            snapshotStore.Connect()
-                         .GetAwaiter()
-                         .GetResult();
+            //eventStore.Connect()
+            //          .GetAwaiter()
+            //          .GetResult();
+            //snapshotStore.Connect()
+            //             .GetAwaiter()
+            //             .GetResult();
 
             applicationLifetime.ApplicationStopping.Register(() =>
             {

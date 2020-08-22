@@ -7,6 +7,7 @@ using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
 using Microsoft.Extensions.Logging;
@@ -118,31 +119,34 @@ namespace IFramework.MessageStores.Abstracts
         {
             base.OnModelCreating(modelBuilder);
 
+
             modelBuilder.Entity<Command>()
                         .OwnsOne(m => m.SagaInfo);
 
             modelBuilder.Entity<Command>()
                         .Ignore(c => c.Reply)
-                        .Property(c => c.CorrelationId)
-                        .HasMaxLength(200);
+                        //.Property(c => c.CorrelationId)
+                        //.HasMaxLength(200)
+                ;
 
             modelBuilder.Entity<HandledEvent>()
                         .HasKey(e => new {e.Id, e.SubscriptionName});
 
             modelBuilder.Entity<HandledEvent>()
-                        .Property(handledEvent => handledEvent.SubscriptionName)
-                        .HasMaxLength(322);
+                        //.Property(handledEvent => handledEvent.SubscriptionName)
+                        //.HasMaxLength(322)
+                ;
 
             modelBuilder.Entity<HandledEvent>()
                         .OwnsOne(e => e.MessageOffset);
 
-            modelBuilder.Entity<Command>()
-                        .Property(c => c.Name)
-                        .HasMaxLength(200);
+            //modelBuilder.Entity<Command>()
+            //            .Property(c => c.Name)
+            //            .HasMaxLength(200);
 
-            modelBuilder.Entity<Command>()
-                        .Property(c => c.Topic)
-                        .HasMaxLength(200);
+            //modelBuilder.Entity<Command>()
+            //            .Property(c => c.Topic)
+            //            .HasMaxLength(200);
 
 
             var eventEntityBuilder = modelBuilder.Entity<Event>();
