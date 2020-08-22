@@ -28,7 +28,7 @@ namespace IFramework.AspNet
                 var whiteList = GetWhileList(option);
                 if (clientIp != "127.0.0.1" && clientIp != "::1" && !whiteList.Contains(clientIp))
                 {
-                    throw new HttpException(HttpStatusCode.Forbidden, "Client IP is not allowed!");
+                    throw new HttpException(HttpStatusCode.Forbidden, $"Client IP {clientIp} is not allowed!");
                 }
             }
         }

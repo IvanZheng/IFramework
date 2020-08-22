@@ -103,15 +103,18 @@ namespace Sample.CommandServiceCore.Controllers
 
         public IActionResult Index([FromQuery] bool needGc)
         {
-            using (_logger.BeginScope(new Dictionary<string, object> {{"needGc", needGc}}))
+            _logger.SetMinLevel(LogLevel.Debug);
+            _logger.LogDebug("index test");
+            using (_logger.BeginScope("scopes"))
+            using (_logger.BeginScope(new Dictionary<string, object> { { "needGc", needGc } }))
             {
-                _logger.SetMinLevel(LogLevel.Debug);
                 var profile = Configuration.Instance.Get("Debug");
                 var member = Configuration.Instance.Get("Member:A");
-                _logger.LogDebug(new {profile, member});
-                _logger.LogDebug("index test");
-                return View();
+                _logger.LogInformation(new { profile, member });
             }
+            _logger.LogWarning("index test");
+
+            return View();
         }
 
         public IActionResult About()
