@@ -21,7 +21,7 @@ namespace IFramework.AspNet
             base.OnActionExecuted(context);
             if (context.Exception != null)
             {
-                var hostEnvironmenet = context.HttpContext
+                var hostEnvironment = context.HttpContext
                                               .RequestServices
                                               .GetService<IHostingEnvironment>();
                 var logger = context.HttpContext
@@ -29,20 +29,24 @@ namespace IFramework.AspNet
                                     .GetService<ILoggerFactory>()
                                     .CreateLogger(context.Controller
                                                          .GetType());
-                ApiResult exceptionResult;
                 var ex = OnException(context.Exception);
-                if (ex is DomainException domainException)
+
+                if (!(ex is HttpException))
                 {
-                    exceptionResult = new ApiResult(domainException.ErrorCode, domainException.Message);
-                    logger.LogWarning(ex, $"action failed due to domain exception");
+                    ApiResult exceptionResult;
+                    if (ex is DomainException domainException)
+                    {
+                        exceptionResult = new ApiResult(domainException.ErrorCode, domainException.Message);
+                        logger.LogWarning(ex, $"action failed due to domain exception");
+                    }
+                    else
+                    {
+                        exceptionResult = hostEnvironment.IsDevelopment() ? new ApiResult(ErrorCode.UnknownError, $"Message: {ex.GetBaseException().Message} StackTrace:{ex.GetBaseException().StackTrace}") : new ApiResult(ErrorCode.UnknownError, ServerInternalError);
+                        logger.LogError(ex, $"action failed due to exception");
+                    }
+                    context.Result = new JsonResult(exceptionResult);
+                    context.Exception = null;
                 }
-                else
-                {
-                    exceptionResult = hostEnvironmenet.IsDevelopment() ? new ApiResult(ErrorCode.UnknownError, $"Message: {ex.GetBaseException().Message} StackTrace:{ex.GetBaseException().StackTrace}") : new ApiResult(ErrorCode.UnknownError, ServerInternalError);
-                    logger.LogError(ex, $"action failed due to exception");
-                }
-                context.Result = new JsonResult(exceptionResult);
-                context.Exception = null;
             }
             else
             {
