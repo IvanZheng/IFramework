@@ -47,6 +47,10 @@ namespace IFramework.AspNet
                     context.Result = new JsonResult(exceptionResult);
                     context.Exception = null;
                 }
+                else
+                {
+                    logger.LogError(ex);
+                }
             }
             else
             {
