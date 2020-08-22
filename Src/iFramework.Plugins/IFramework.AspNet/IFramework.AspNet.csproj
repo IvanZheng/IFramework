@@ -4,11 +4,11 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Authors>Ivan</Authors>
     <Company>Ivan</Company>
-    <Description>Supports netcore standard2.0</Description>
+    <Description>add fobidden ip info in ipfilter error log</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>Support ConcurrentProcess for unique constrain validation.</PackageReleaseNotes>
-    <Version>3.1.1</Version>
+    <Version>3.1.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
