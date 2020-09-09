@@ -37,7 +37,7 @@ namespace Sample.CommandServiceCore.Controllers
         private readonly ILogger _logger;
         private readonly IObjectProvider _objectProvider;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IEventSourcingRepository<BankAccount> _bankAccountRepository;
+        //private readonly IEventSourcingRepository<BankAccount> _bankAccountRepository;
         public HomeController(IConcurrencyProcessor concurrencyProcessor,
                               ILogger<HomeController> logger,
                               IObjectProvider objectProvider,
@@ -45,10 +45,11 @@ namespace Sample.CommandServiceCore.Controllers
                               ICommunityRepository domainRepository,
                               SampleModelContext dbContext,
                               ICommunityService communityService,
-                              IMailboxProcessor mailboxProcessor,
-                              IEventSourcingRepository<BankAccount> bankAccountRepository)
+                              IMailboxProcessor mailboxProcessor
+                              //IEventSourcingRepository<BankAccount> bankAccountRepository
+            )
         {
-            _bankAccountRepository = bankAccountRepository;
+            //_bankAccountRepository = bankAccountRepository;
             _concurrencyProcessor = concurrencyProcessor;
             _objectProvider = objectProvider;
             _unitOfWork = unitOfWork;
@@ -73,11 +74,11 @@ namespace Sample.CommandServiceCore.Controllers
             var version = await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
             return $"{DateTime.Now} version:{version} DoApi Done! sameProvider:{sameProvider} ";
         }
-        [Route("home/getBankAccount/{accountId}")]
-        public Task<BankAccount> GetBankAccount(string accountId)
-        {
-            return _bankAccountRepository.GetByKeyAsync(accountId);
-        }
+        //[Route("home/getBankAccount/{accountId}")]
+        //public Task<BankAccount> GetBankAccount(string accountId)
+        //{
+        //    return _bankAccountRepository.GetByKeyAsync(accountId);
+        //}
 
         public IActionResult Test()
         {
