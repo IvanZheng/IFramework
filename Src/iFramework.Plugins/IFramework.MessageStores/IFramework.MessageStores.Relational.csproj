@@ -9,7 +9,7 @@
     <RootNamespace>IFramework.MessageStores.Relational</RootNamespace>
     <Description>Supports netcore standard2.0</Description>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <Version>5.0.0-preview002</Version>
+    <Version>5.0.0-preview003</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
