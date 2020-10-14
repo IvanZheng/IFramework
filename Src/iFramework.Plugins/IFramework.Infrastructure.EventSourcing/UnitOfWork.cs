@@ -41,17 +41,17 @@ namespace IFramework.Infrastructure.EventSourcing
 
         public void Dispose() { }
 
-        public void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, TransactionScopeOption scopeOption = TransactionScopeOption.Required)
+        public void Commit()
         {
-            CommitAsync(isolationLevel, scopeOption).GetAwaiter().GetResult();
+            CommitAsync().GetAwaiter().GetResult();
         }
 
-        public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, TransactionScopeOption scopeOption = TransactionScopeOption.Required)
+        public Task CommitAsync()
         {
-            return CommitAsync(CancellationToken.None, isolationLevel, scopeOption);
+            return CommitAsync(CancellationToken.None);
         }
 
-        public async Task CommitAsync(CancellationToken cancellationToken, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, TransactionScopeOption scopeOption = TransactionScopeOption.Required)
+        public async Task CommitAsync(CancellationToken cancellationToken)
         {
             var aggregateRoots = Repositories.SelectMany(r => r.GetEntries()
                                                                .Where(e => e.EntityState == EntityState.Added || e.EntityState == EntityState.Modified))

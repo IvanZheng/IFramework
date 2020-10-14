@@ -182,7 +182,6 @@ namespace IFramework.Command.Impl
                                 try
                                 {
                                     var messageHandler = scope.GetRequiredService(messageHandlerType.Type);
-
                                     using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
                                                                                        new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
                                                                                        TransactionScopeAsyncFlowOption.Enabled))
