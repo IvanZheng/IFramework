@@ -12,7 +12,7 @@ namespace IFramework.Infrastructure
         public ApiResult()
         {
             Success = true;
-            ErrorCode = 0;
+            ErrorCode = Exceptions.ErrorCode.NoError;
         }
 
         public ApiResult(object errorCode, string message = null)
@@ -47,12 +47,14 @@ namespace IFramework.Infrastructure
     {
         public ApiResult()
         {
+            ErrorCode = Exceptions.ErrorCode.NoError;
             Success = true;
         }
 
         public ApiResult(TResult result)
             : this()
         {
+            ErrorCode = Exceptions.ErrorCode.NoError;
             Result = result;
         }
 
