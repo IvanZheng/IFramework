@@ -3,12 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>Supports netcore standard2.0</Description>
+    <Description>use dbcontext.begintransaction instead of TransactionScope</Description>
     <Authors>Ivan</Authors>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>Add InnerException for DomainException</PackageReleaseNotes>
-    <Version>5.0.0-preview002</Version>
+    <Version>5.0.0-preview004</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

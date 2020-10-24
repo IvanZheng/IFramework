@@ -83,7 +83,7 @@ namespace Sample.CommandHandler.Community
             var emailExists = await _domainRepository.ExistsAsync<Account>(a => a.Email == command.Email && a.Id != account.Id);
 
             account.Modify(emailExists ? $"{command.Email}.{DateTime.Now.Ticks}" : command.Email);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
             //_DomainRepository.Update(account);
         }
         

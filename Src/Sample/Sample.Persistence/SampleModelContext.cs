@@ -51,6 +51,14 @@ namespace Sample.Persistence
             modelBuilder.Entity<Account>()
                         .HasKey(a => a.Id);
 
+            modelBuilder.Entity<Account>(b =>
+            {
+                b.HasMany(a => a.Profiles)
+                 .WithOne()
+                 .HasForeignKey("AccountId");
+            });
+
+
             modelBuilder.Entity<Account>()
                         //.ToTable("Accounts")
                         .HasMany(a => a.ProductIds)

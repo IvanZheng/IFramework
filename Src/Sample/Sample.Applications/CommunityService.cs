@@ -70,7 +70,7 @@ namespace Sample.Applications
 
             account.Modify(email);
             await _unitOfWork.CommitAsync();
-            return account.Version.ToString();
+            return account.Id.ToString();
         }
     }
 }

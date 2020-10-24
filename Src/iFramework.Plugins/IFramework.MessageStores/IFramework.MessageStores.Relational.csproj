@@ -7,9 +7,9 @@
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <AssemblyName>IFramework.MessageStores.Relational</AssemblyName>
     <RootNamespace>IFramework.MessageStores.Relational</RootNamespace>
-    <Description>Supports netcore standard2.0</Description>
+    <Description>use dbcontext.begintransaction instead of TransactionScope</Description>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <Version>5.0.0-preview003</Version>
+    <Version>5.0.0-preview004</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

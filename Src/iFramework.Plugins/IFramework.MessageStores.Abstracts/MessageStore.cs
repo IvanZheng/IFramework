@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.DependencyInjection;
 using IFramework.EntityFrameworkCore;
@@ -114,6 +115,42 @@ namespace IFramework.MessageStores.Abstracts
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
 
+        public void ExecuteByStrategy(Action action)
+        {
+            var strategy = Database.CreateExecutionStrategy();
+
+            strategy.Execute(action);
+        }
+
+     
+
+        public Task ExecuteByStrategyAsync(Func<CancellationToken, Task> task, CancellationToken cancellationToken)
+        {
+            var strategy = Database.CreateExecutionStrategy();
+            return strategy.ExecuteAsync(task, cancellationToken);
+        }
+
+        public void ExecuteInTransactionAsync(Action action)
+        { 
+            ExecuteByStrategy(() =>
+            { 
+                using var transaction = Database.BeginTransaction();
+                action();
+                transaction.Commit();
+            });
+        }
+
+        public Task ExecuteInTransactionAsync(Func<Task> task, CancellationToken cancellationToken)
+        {
+            return ExecuteByStrategyAsync(async c =>
+            {
+                await using var transaction = await Database.BeginTransactionAsync(c)
+                                                            .ConfigureAwait(false);
+                await task().ConfigureAwait(false);
+                await transaction.CommitAsync(c)
+                                 .ConfigureAwait(false);
+            },cancellationToken);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -104,8 +104,10 @@ namespace Sample.CommandServiceCore
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
                         //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                        options.UseMySql(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"),
-                                         b => b.EnableRetryOnFailure());
+                        options.UseMySql(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql")
+                                         ,b => b.EnableRetryOnFailure()
+                                         )
+                               .AddInterceptors(new ReadCommittedTransactionInterceptor());
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                         //options.UseInMemoryDatabase(nameof(SampleModelContext));
                     })
