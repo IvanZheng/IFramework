@@ -9,7 +9,6 @@
     <RootNamespace>IFramework.MessageStores.Relational</RootNamespace>
     <Description>use dbcontext.begintransaction instead of TransactionScope</Description>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <Version>5.0.0-preview004</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

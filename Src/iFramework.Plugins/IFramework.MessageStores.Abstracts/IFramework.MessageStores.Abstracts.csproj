@@ -4,7 +4,6 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Authors>Ivan</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>5.0.0-preview004</Version>
     <Description>use dbcontext.begintransaction instead of TransactionScope</Description>
   </PropertyGroup>
 

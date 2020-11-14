@@ -9,8 +9,7 @@
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>1. Add IRepository.AddAsync method
 2. Support ConcurrentProcess for unique constrain validation.</PackageReleaseNotes>
-    <Description>Supports netcore standard2.0</Description>
-    <Version>5.0.0-preview003</Version>
+    <Description>EFCore 5.0</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
