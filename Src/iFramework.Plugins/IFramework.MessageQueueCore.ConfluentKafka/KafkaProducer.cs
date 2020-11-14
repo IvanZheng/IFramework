@@ -89,7 +89,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                               new Message<TKey, TValue>{
                                                                   Key = key,
                                                                   Value = message
-                                                              })
+                                                              }, cancellationToken)
                                                 .ConfigureAwait(false);
                     return result;
                 }
