@@ -46,7 +46,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 BootstrapServers = brokerList,
                 Acks = (Acks)(Config["request.required.acks"] ?? 1),
-                SocketNagleDisable = true
+                SocketNagleDisable = true,
+                SecurityProtocol = Config["security.protocol"]?.ToString().ToEnum<SecurityProtocol>(),
+                SaslMechanism = Config["sasl.mechanism"]?.ToString().ToEnum<SaslMechanism>(),
+                SaslUsername = Config["sasl.username"]?.ToString(),
+                SaslPassword = Config["sasl.password"]?.ToString()
                 //{"socket.blocking.max.ms", Config["socket.blocking.max.ms"] ?? 50},
                 //{"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
             };
