@@ -7,15 +7,11 @@ namespace IFramework.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {
-        void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                    TransactionScopeOption scopeOption = TransactionScopeOption.Required);
+        void Commit();
 
-        Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                         TransactionScopeOption scopeOption = TransactionScopeOption.Required);
+        Task CommitAsync();
 
-        Task CommitAsync(CancellationToken cancellationToken,
-                         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                         TransactionScopeOption scopeOption = TransactionScopeOption.Required);
+        Task CommitAsync(CancellationToken cancellationToken);
 
         void Rollback();
     }

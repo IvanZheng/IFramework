@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Message.Impl;
 
@@ -36,5 +37,12 @@ namespace IFramework.Message
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage);
 
         void Rollback();
+
+        void ExecuteByStrategy(Action action);
+        Task ExecuteByStrategyAsync(Func<CancellationToken, Task> task, CancellationToken cancellationToken = default);
+
+        void ExecuteInTransactionAsync(Action action);
+        Task ExecuteInTransactionAsync(Func<Task> task, CancellationToken cancellationToken = default);
+
     }
 }

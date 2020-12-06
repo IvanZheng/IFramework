@@ -61,13 +61,15 @@ namespace IFramework.Test.EntityFramework
                     .AddLog4Net()
                     .AddDbContextPool<DemoDbContext>(options =>
                     {
+                        var connectionString = Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName);
                         options.UseLazyLoadingProxies();
                         options.EnableSensitiveDataLogging();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
                         //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
-                        //options.UseMySql(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
+                        options.UseMySql(connectionString,
+                                         ServerVersion.AutoDetect(connectionString));
                         //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                        options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
+                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
                     });
 
             ObjectProviderFactory.Instance.Build(services);

@@ -24,10 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ecommon.autofac" Version="2.5.1" />
+    <PackageReference Include="ecommon.autofac" Version="2.5.2" />
     <PackageReference Include="ecommon.jsonnet" Version="2.5.1" />
     <PackageReference Include="ecommon.log4net" Version="2.5.3" />
-    <PackageReference Include="EQueue" Version="2.6.1" />
+    <PackageReference Include="EQueue" Version="2.6.2" />
     <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>

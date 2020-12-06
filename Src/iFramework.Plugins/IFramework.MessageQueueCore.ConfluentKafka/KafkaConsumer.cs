@@ -51,7 +51,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 //{"statistics.interval.ms", 60000},
                 //{"retry.backoff.ms", ConsumerConfig.BackOffIncrement.ToString()},
                 BootstrapServers = BrokerList,
-                AutoOffsetReset = (Confluent.Kafka.AutoOffsetReset) ConsumerConfig.AutoOffsetReset
+                AutoOffsetReset = (Confluent.Kafka.AutoOffsetReset) ConsumerConfig.AutoOffsetReset,
+                SecurityProtocol = ConsumerConfig["security.protocol"]?.ToString().ToEnum<SecurityProtocol>(),
+                SaslMechanism = ConsumerConfig["sasl.mechanism"]?.ToString().ToEnum<SaslMechanism>(),
+                SaslUsername = ConsumerConfig["sasl.username"]?.ToString(),
+                SaslPassword = ConsumerConfig["sasl.password"]?.ToString()
             };
         }
 

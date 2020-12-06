@@ -442,11 +442,11 @@ namespace IFramework.Infrastructure
         }
         
 
-        public static T ToEnum<T>(this string val)
+        public static T ToEnum<T>(this string val, bool ignoreCase = true)
         {
             try
             {
-                return (T)Enum.Parse(typeof(T), val);
+                return (T)Enum.Parse(typeof(T), val, ignoreCase);
             }
             catch (Exception)
             {

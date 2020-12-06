@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IFramework.Message.Impl
@@ -40,8 +41,26 @@ namespace IFramework.Message.Impl
         }
 
         public void Rollback() { }
+        public void ExecuteByStrategy(Action action)
+        {
+            
+        }
 
-      
+        public Task ExecuteByStrategyAsync(Func<CancellationToken, Task> task, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public void ExecuteInTransactionAsync(Action action)
+        {
+        }
+
+
+        public Task ExecuteInTransactionAsync(Func<Task> task, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
 
         public Task SaveFailedCommandAsync(IMessageContext commandContext,
                                            Exception ex = null,

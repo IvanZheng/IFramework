@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Confluent.Kafka;
 using IFramework.Infrastructure;
 using IFramework.Message;
@@ -13,19 +15,31 @@ namespace IFramework.MessageQueue.ConfluentKafka
     public class KafkaMQClientProvider : IMessageQueueClientProvider
     {
         private readonly string _brokerList;
-
+        private readonly KafkaClientOptions _options;
         public KafkaMQClientProvider(IOptions<KafkaClientOptions> options)
         {
             _brokerList = options.Value.BrokerList;
+            _options = options.Value;
+
         }
 
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
+            config = config ?? new ProducerConfig();
+            if (_options.Extensions.Count > 0)
+            {
+                _options.Extensions.ForEach(p => config.Extensions[p.Key] = p.Value);
+            }
             return new KafkaProducer(queue, _brokerList, config);
         }
 
         public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
         {
+            config = config ?? new ProducerConfig();
+            if (_options.Extensions.Count > 0)
+            {
+                _options.Extensions.ForEach(p => config.Extensions[p.Key] = p.Value);
+            }
             return new KafkaProducer(topic, _brokerList, config);
         }
 
@@ -66,6 +80,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                     ConsumerConfig consumerConfig,
                                                     bool start = true)
         {
+            consumerConfig = consumerConfig ?? new ConsumerConfig();
+            if (_options.Extensions.Count > 0)
+            {
+                _options.Extensions.ForEach(p => consumerConfig.Extensions[p.Key] = p.Value);
+            }
             var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, new []{queue}, $"{queue}.consumer", consumerId,
                                                                    BuildOnKafkaMessageReceived(onMessagesReceived),
                                                                    consumerConfig);
@@ -83,6 +102,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                         ConsumerConfig consumerConfig,
                                                         bool start = true)
         {
+            consumerConfig = consumerConfig ?? new ConsumerConfig();
+            if (_options.Extensions.Count > 0)
+            {
+                _options.Extensions.ForEach(p => consumerConfig.Extensions[p.Key] = p.Value);
+            }
             var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, topics, subscriptionName, consumerId,
                                                                    BuildOnKafkaMessageReceived(onMessagesReceived),
                                                                    consumerConfig);
