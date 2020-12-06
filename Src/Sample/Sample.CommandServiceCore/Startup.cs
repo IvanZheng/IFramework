@@ -108,7 +108,8 @@ namespace Sample.CommandServiceCore
                         options.UseMySql(connectionString,
                                          ServerVersion.AutoDetect(connectionString),
                                          b => b.EnableRetryOnFailure())
-                               .AddInterceptors(new ReadCommittedTransactionInterceptor());
+                               .AddInterceptors(new ReadCommittedTransactionInterceptor())
+                               .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                         //options.UseInMemoryDatabase(nameof(SampleModelContext));
                     })
