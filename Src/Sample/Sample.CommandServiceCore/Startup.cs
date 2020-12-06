@@ -160,16 +160,17 @@ namespace Sample.CommandServiceCore
                               IMessageTypeProvider messageTypeProvider,
                               IOptions<FrameworkConfiguration> frameworkConfigOptions,
                               IMailboxProcessor mailboxProcessor,
-                              IHostApplicationLifetime applicationLifetime,
-                              IEventStore eventStore,
-                              ISnapshotStore snapshotStore)
+                              IHostApplicationLifetime applicationLifetime
+                                //IEventStore eventStore,
+                              //ISnapshotStore snapshotStore
+                              )
         {
-            eventStore.Connect()
-                      .GetAwaiter()
-                      .GetResult();
-            snapshotStore.Connect()
-                         .GetAwaiter()
-                         .GetResult();
+            //eventStore.Connect()
+            //          .GetAwaiter()
+            //          .GetResult();
+            //snapshotStore.Connect()
+            //             .GetAwaiter()
+            //             .GetResult();
 
             applicationLifetime.ApplicationStopping.Register(() =>
             {
