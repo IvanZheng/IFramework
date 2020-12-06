@@ -7,5 +7,6 @@ namespace IFramework.MessageQueue.ConfluentKafka
     public class KafkaClientOptions
     {
         public string BrokerList { get; set; }
+        public Dictionary<string, object> Extensions { get; set; }
     }
 }

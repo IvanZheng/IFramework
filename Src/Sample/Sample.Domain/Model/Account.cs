@@ -26,6 +26,7 @@ namespace Sample.Domain.Model
         protected void Handle(AccountModified @event)
         {
             Email = @event.Email;
+            RegisterTime = DateTime.Now;
         }
 
         void Handle(AccountRegistered @event)
@@ -36,8 +37,11 @@ namespace Sample.Domain.Model
 
         public void Modify(string email)
         {
+            Profiles.Add(new AacountProfile(UserName, Email));
             OnEvent(new AccountModified(Id, email));
         }
+
+        public virtual ICollection<AacountProfile> Profiles { get; protected set; } = new HashSet<AacountProfile>();
     }
 
     public class ProductId

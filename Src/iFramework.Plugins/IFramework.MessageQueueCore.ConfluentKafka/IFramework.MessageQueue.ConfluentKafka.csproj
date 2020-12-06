@@ -6,7 +6,7 @@
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>Add Message Processor Status</PackageReleaseNotes>
-    <Description>Supports netcore standard2.0</Description>
+    <Description>add sasl plain auth for kafka client</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="1.3.0" />
+    <PackageReference Include="Confluent.Kafka" Version="1.5.2" />
   </ItemGroup>
 
   <ItemGroup>

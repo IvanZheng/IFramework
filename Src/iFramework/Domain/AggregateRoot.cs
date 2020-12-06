@@ -21,12 +21,12 @@ namespace IFramework.Domain
             {
                 if (string.IsNullOrWhiteSpace(_aggregateRootType))
                 {
-                    var aggreagetRootType = GetType();
-                    if ("EntityProxyModule" == GetType().Module.ToString() && aggreagetRootType.BaseType != null)
+                    var aggregateRootType = GetType();
+                    if ("Castle.Proxies" == aggregateRootType.Namespace && aggregateRootType.BaseType != null)
                     {
-                        aggreagetRootType = aggreagetRootType.BaseType;
+                        aggregateRootType = aggregateRootType.BaseType;
                     }
-                    _aggregateRootType = aggreagetRootType.FullName;
+                    _aggregateRootType = aggregateRootType.FullName;
                 }
                 return _aggregateRootType;
             }

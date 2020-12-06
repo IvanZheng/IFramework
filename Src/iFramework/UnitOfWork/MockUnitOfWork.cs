@@ -8,20 +8,16 @@ namespace IFramework.UnitOfWork
     {
         public void Dispose() { }
 
-        public void Commit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                           TransactionScopeOption scopeOption = TransactionScopeOption.Required) { }
+        public void Commit() { }
 
         public void Rollback() { }
 
-        public Task CommitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                TransactionScopeOption scopOption = TransactionScopeOption.Required)
+        public Task CommitAsync()
         {
             return Task.FromResult<object>(null);
         }
 
-        public Task CommitAsync(CancellationToken cancellationToken,
-                                IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-                                TransactionScopeOption scopeOption = TransactionScopeOption.Required)
+        public Task CommitAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult<object>(null);
         }

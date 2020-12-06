@@ -25,6 +25,13 @@ namespace IFramework.Infrastructure
                        uniqueConstrainNames.Any(dbException.Message.Contains);
             });
 
+            RegisterUniqueConstrainHandler("MySqlConnector", (dbException, uniqueConstrainNames) =>
+            {
+                var number = dbException.GetPropertyValue<int>("Number");
+                return number == 1062 &&
+                       uniqueConstrainNames.Any(dbException.Message.Contains);
+            });
+
             RegisterUniqueConstrainHandler("Npgsql", (dbException, uniqueConstrainNames) =>
             {
                 var code = dbException.GetPropertyValue<string>("Code");

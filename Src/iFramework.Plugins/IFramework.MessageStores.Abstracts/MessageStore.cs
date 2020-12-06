@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.DependencyInjection;
 using IFramework.EntityFrameworkCore;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
+using IFramework.MessageQueue;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
 using Microsoft.Extensions.Logging;
@@ -113,10 +115,47 @@ namespace IFramework.MessageStores.Abstracts
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
 
+        public void ExecuteByStrategy(Action action)
+        {
+            var strategy = Database.CreateExecutionStrategy();
+
+            strategy.Execute(action);
+        }
+
+     
+
+        public Task ExecuteByStrategyAsync(Func<CancellationToken, Task> task, CancellationToken cancellationToken)
+        {
+            var strategy = Database.CreateExecutionStrategy();
+            return strategy.ExecuteAsync(task, cancellationToken);
+        }
+
+        public void ExecuteInTransactionAsync(Action action)
+        { 
+            ExecuteByStrategy(() =>
+            { 
+                using var transaction = Database.BeginTransaction();
+                action();
+                transaction.Commit();
+            });
+        }
+
+        public Task ExecuteInTransactionAsync(Func<Task> task, CancellationToken cancellationToken)
+        {
+            return ExecuteByStrategyAsync(async c =>
+            {
+                await using var transaction = await Database.BeginTransactionAsync(c)
+                                                            .ConfigureAwait(false);
+                await task().ConfigureAwait(false);
+                await transaction.CommitAsync(c)
+                                 .ConfigureAwait(false);
+            },cancellationToken);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
 
             modelBuilder.Entity<Command>()
                         .OwnsOne(m => m.SagaInfo);
@@ -124,14 +163,16 @@ namespace IFramework.MessageStores.Abstracts
             modelBuilder.Entity<Command>()
                         .Ignore(c => c.Reply)
                         .Property(c => c.CorrelationId)
-                        .HasMaxLength(200);
+                        .HasMaxLength(200)
+                ;
 
             modelBuilder.Entity<HandledEvent>()
                         .HasKey(e => new {e.Id, e.SubscriptionName});
 
-            modelBuilder.Entity<HandledEvent>()
-                        .Property(handledEvent => handledEvent.SubscriptionName)
-                        .HasMaxLength(322);
+            //modelBuilder.Entity<HandledEvent>()
+            //            .Property(handledEvent => handledEvent.SubscriptionName)
+            //            .HasMaxLength(322)
+            //  ;
 
             modelBuilder.Entity<HandledEvent>()
                         .OwnsOne(e => e.MessageOffset);

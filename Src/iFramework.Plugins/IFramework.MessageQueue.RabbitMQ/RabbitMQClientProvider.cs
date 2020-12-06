@@ -153,7 +153,7 @@ namespace IFramework.MessageQueue.RabbitMQ
         {
             return (consumer, args, cancellationToken) =>
             {
-                var message = Encoding.UTF8.GetString(args.Body).ToJsonObject<RabbitMQMessage>();
+                var message = Encoding.UTF8.GetString(args.Body.ToArray()).ToJsonObject<RabbitMQMessage>();
                 var messageContext = new MessageContext(message, new MessageOffset(string.Empty, args.Exchange, 0, (long) args.DeliveryTag));
                 onMessagesReceived(cancellationToken, messageContext);
             };

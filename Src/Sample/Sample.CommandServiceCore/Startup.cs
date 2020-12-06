@@ -38,6 +38,7 @@ using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAt
 using System.Collections.Generic;
 using IFramework.Infrastructure;
 using IFramework.Event;
+using IFramework.EventStore;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.Logging.Log4Net;
@@ -100,10 +101,15 @@ namespace Sample.CommandServiceCore
                     .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
                     .AddDbContextPool<SampleModelContext>(options =>
                     {
+                        var connectionString = Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql");
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
-                        options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                        //options.UseMySQL(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql"));
+                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                        options.UseMySql(connectionString,
+                                         ServerVersion.AutoDetect(connectionString),
+                                         b => b.EnableRetryOnFailure())
+                               .AddInterceptors(new ReadCommittedTransactionInterceptor())
+                               .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                         //options.UseInMemoryDatabase(nameof(SampleModelContext));
                     })
