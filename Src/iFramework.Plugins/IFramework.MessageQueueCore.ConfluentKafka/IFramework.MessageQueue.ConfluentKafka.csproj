@@ -7,6 +7,7 @@
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>Add Message Processor Status</PackageReleaseNotes>
     <Description>add sasl plain auth for kafka client</Description>
+    <Version>3.2.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
