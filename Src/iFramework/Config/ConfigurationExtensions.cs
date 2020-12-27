@@ -109,6 +109,7 @@ namespace IFramework.Config
         /// if sameIntanceAsBusinessDbContext is true, TMessageStore must be registerd before object provider to be built!
         /// </summary>
         /// <typeparam name="TMessageStore"></typeparam>
+        /// <param name="services"></param>
         /// <param name="lifetime"></param>
         /// <returns></returns>
         public static IServiceCollection AddMessageStore<TMessageStore>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
