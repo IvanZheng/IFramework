@@ -100,11 +100,11 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
 
         public object Message
         {
-            get => _message ?? (_message = this.GetMessage(Encoding.UTF8.GetString(EqueueMessage.Payload)));
+            get => _message ?? (_message = this.GetMessage(EqueueMessage.Payload));
             protected set
             {
                 _message = value;
-                EqueueMessage.Payload = Encoding.UTF8.GetBytes(value.ToJson());
+                EqueueMessage.Payload = value;
                 if (value != null)
                 {
                     Headers["MessageType"] = this.GetMessageCode(value.GetType());

@@ -100,11 +100,11 @@ namespace IFramework.MessageQueue.RabbitMQ.MessageFormat
 
         public object Message
         {
-            get => _message ?? (_message = this.GetMessage(Encoding.UTF8.GetString(RabbitMQMessage.Payload)));
+            get => _message ?? (_message = this.GetMessage(RabbitMQMessage.Payload));
             protected set
             {
                 _message = value;
-                RabbitMQMessage.Payload = Encoding.UTF8.GetBytes(value.ToJson());
+                RabbitMQMessage.Payload = value;
                 if (value != null)
                 {
                     Headers["MessageType"] = this.GetMessageCode(value.GetType());
