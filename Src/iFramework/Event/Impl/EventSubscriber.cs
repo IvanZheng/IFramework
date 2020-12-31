@@ -309,23 +309,31 @@ namespace IFramework.Event.Impl
         {
             messageContexts.ForEach(messageContext =>
             {
-                var tagFilter = TagFilters.TryGetValue(messageContext.Topic);
-                if (tagFilter != null)
+                try
                 {
-                    if (tagFilter(messageContext.Tags))
+                    var tagFilter = TagFilters.TryGetValue(messageContext.Topic);
+                    if (tagFilter != null)
+                    {
+                        if (tagFilter(messageContext.Tags))
+                        {
+                            MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
+                            MessageCount++;
+                        }
+                        else
+                        {
+                            InternalConsumer.CommitOffset(messageContext);
+                        }
+                    }
+                    else
                     {
                         MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
                         MessageCount++;
                     }
-                    else
-                    {
-                        InternalConsumer.CommitOffset(messageContext);
-                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
-                    MessageCount++;
+                    InternalConsumer.CommitOffset(messageContext);
+                    Logger.LogError(e, $"failed to process event: {messageContext.MessageOffset.ToJson()}");
                 }
             });
         }

@@ -66,7 +66,7 @@ namespace IFramework.Command.Impl
                 {
                     InternalConsumer = MessageQueueClient.StartQueueClient(CommandQueueName,
                                                                            ConsumerId,
-                                                                           OnMessageReceived,
+                                                                           OnMessagesReceived,
                                                                            ConsumerConfig);
                 }
 
@@ -91,12 +91,20 @@ namespace IFramework.Command.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected void OnMessageReceived(CancellationToken cancellationToken, params IMessageContext[] messageContexts)
+        protected void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] messageContexts)
         {
             messageContexts.ForEach(messageContext =>
             {
-                MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
-                MessageCount++;
+                try
+                {
+                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
+                    MessageCount++;
+                }
+                catch (Exception e)
+                {
+                    InternalConsumer.CommitOffset(messageContext);
+                    Logger.LogError(e, $"failed to process command: {messageContext.MessageOffset.ToJson()}");
+                }
             });
         }
 
