@@ -8,7 +8,7 @@ namespace IFramework.DependencyInjection.Microsoft
     public class ObjectProvider : ObjectProviderBase
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly IServiceScope _serviceScope;
+        private IServiceScope _serviceScope;
 
         public ObjectProvider(IServiceProvider provider)
         {
@@ -36,9 +36,8 @@ namespace IFramework.DependencyInjection.Microsoft
         public override  void Dispose()
         {
             _serviceScope?.Dispose();
+            _serviceScope = null;
         }
-
-        public override  IObjectProvider Parent { get; }
 
         public override  IObjectProvider CreateScope()
         {

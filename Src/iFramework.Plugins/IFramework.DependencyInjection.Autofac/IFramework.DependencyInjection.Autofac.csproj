@@ -5,8 +5,9 @@
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>Supports netcore standard2.0</Description>
+    <Description>Fix Memory leak for ObjectProvider</Description>
     <PackageReleaseNotes>Add workaround for Castle.Core async invocation. Currently  don't use DefaultInterceptor with VirtualMethodInterceptorInjection.</PackageReleaseNotes>
+    <Version>3.2.4.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

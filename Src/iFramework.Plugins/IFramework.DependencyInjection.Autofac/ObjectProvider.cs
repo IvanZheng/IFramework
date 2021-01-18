@@ -41,9 +41,10 @@ namespace IFramework.DependencyInjection.Autofac
         public override void Dispose()
         {
             Scope?.Dispose();
+            _componentContext = null;
+            Parent = null;
         }
 
-        public override IObjectProvider Parent { get; }
         public override IObjectProvider CreateScope()
         {
             var objectProvider = new ObjectProvider(this);
