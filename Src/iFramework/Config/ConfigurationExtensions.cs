@@ -144,5 +144,10 @@ namespace IFramework.Config
         {
             return services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
         }
+
+        public static T Get<T>(this IConfiguration configuration, string key)
+        {
+            return configuration.GetSection(key).Get<T>();
+        }
     }
 }
