@@ -74,6 +74,13 @@ namespace Sample.CommandServiceCore.Controllers
             var version = await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
             return $"{DateTime.Now} version:{version} DoApi Done! sameProvider:{sameProvider} ";
         }
+
+        public string Gc()
+        {
+            GC.Collect();
+            return "Gc done!";
+        }
+
         //[Route("home/getBankAccount/{accountId}")]
         //public Task<BankAccount> GetBankAccount(string accountId)
         //{

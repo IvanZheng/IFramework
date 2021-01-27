@@ -35,7 +35,7 @@ namespace IFramework.DependencyInjection.Autofac
 
         public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime)
         {
-            _containerBuilder.Register(componentContext => implementationFactory(new ObjectProvider(componentContext)))
+            _containerBuilder.Register(componentContext => implementationFactory(new ObjectProvider(componentContext.Resolve<IComponentContext>())))
                              .InstanceLifetime(lifetime);
             return this;
         }

@@ -87,7 +87,8 @@ namespace IFramework.Test
 
     public class C : IC
     {
-        public C(int id)
+
+        public C(int id = 0)
         {
             Id = id;
         }
@@ -304,16 +305,34 @@ namespace IFramework.Test
             var builder = GetAutofacBuilder();
             builder.Register<IB, B>(ServiceLifetime.Scoped);
             var objectProvider = builder.Build();
-
-            while (true)
+           
+            Task.Run(() =>
             {
-                using (var scope = objectProvider.CreateScope())
+                while (true)
                 {
-                    var b = scope.GetService<IB>();
+                    using (var scope = objectProvider.CreateScope(b => b.RegisterInstance<IC>(new C())))
+                    {
+                        var serviceProvider = scope.GetService<IObjectProvider>();
+                        var b = serviceProvider.GetService<IB>();
+                        var c1 = serviceProvider.GetService<IC>();
+                    }
                 }
+            });
 
-                GC.Collect();
-            }
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    using (var scope = objectProvider.CreateScope(b => b.RegisterInstance<IC>(new C())))
+                    {
+                        var serviceProvider = scope.GetService<IObjectProvider>();
+                        var b = serviceProvider.GetService<IB>();
+                        var c1 = serviceProvider.GetService<IC>();
+                    }
+                }
+            });
+            Task.Delay(10000000).Wait();
+            //GC.Collect();
         }
 
 
