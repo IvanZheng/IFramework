@@ -54,6 +54,7 @@ using IFramework.Infrastructure.EventSourcing;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using IFramework.Infrastructure.EventSourcing.Stores;
 using IFramework.Logging.Serilog;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Sample.DomainEvents.Banks;
 
 namespace Sample.CommandServiceCore
@@ -105,13 +106,17 @@ namespace Sample.CommandServiceCore
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
                         //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                        options.UseMySql(connectionString,
-                                         ServerVersion.AutoDetect(connectionString),
-                                         b => b.EnableRetryOnFailure())
-                               .AddInterceptors(new ReadCommittedTransactionInterceptor())
-                               .UseLazyLoadingProxies();
+                        //options.UseMySql(connectionString,
+                        //                 ServerVersion.AutoDetect(connectionString),
+                        //                 b => b.EnableRetryOnFailure())
+                        //       .AddInterceptors(new ReadCommittedTransactionInterceptor())
+                        //       .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                        //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        options.ConfigureWarnings(b =>
+                        {
+                            b.Ignore(InMemoryEventId.TransactionIgnoredWarning);
+                        });
                     })
                     .AddEventSourcing()
                     ;
