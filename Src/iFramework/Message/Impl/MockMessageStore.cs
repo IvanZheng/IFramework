@@ -43,22 +43,23 @@ namespace IFramework.Message.Impl
         public void Rollback() { }
         public void ExecuteByStrategy(Action action)
         {
-            
+            action?.Invoke();
         }
 
         public Task ExecuteByStrategyAsync(Func<CancellationToken, Task> task, CancellationToken cancellationToken = default)
         {
-            return Task.CompletedTask;
+            return task?.Invoke(cancellationToken);
         }
 
         public void ExecuteInTransactionAsync(Action action)
         {
+            action?.Invoke();
         }
 
 
         public Task ExecuteInTransactionAsync(Func<Task> task, CancellationToken cancellationToken)
         {
-            return Task.CompletedTask;
+            return task?.Invoke();
         }
 
 
