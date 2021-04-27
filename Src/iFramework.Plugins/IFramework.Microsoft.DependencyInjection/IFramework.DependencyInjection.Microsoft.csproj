@@ -7,7 +7,6 @@
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>Fix bug that missing registion of IObjectProvider</PackageReleaseNotes>
     <Description>Fix Memory leak for ObjectProvider</Description>
-    <Version>3.2.4.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

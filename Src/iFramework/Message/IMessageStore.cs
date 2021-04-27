@@ -41,7 +41,7 @@ namespace IFramework.Message
         void ExecuteByStrategy(Action action);
         Task ExecuteByStrategyAsync(Func<CancellationToken, Task> task, CancellationToken cancellationToken = default);
 
-        void ExecuteInTransactionAsync(Action action);
+        void ExecuteInTransaction(Action action);
         Task ExecuteInTransactionAsync(Func<Task> task, CancellationToken cancellationToken = default);
 
     }

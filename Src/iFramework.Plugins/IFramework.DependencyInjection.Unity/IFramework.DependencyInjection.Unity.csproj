@@ -6,7 +6,6 @@
     <Description>Fix Memory leak for ObjectProvider</Description>
     <Authors>Ivan</Authors>
     <PackageReleaseNotes>update unity packages</PackageReleaseNotes>
-    <Version>3.2.4.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

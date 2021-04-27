@@ -51,7 +51,7 @@ namespace IFramework.Message.Impl
             return task?.Invoke(cancellationToken);
         }
 
-        public void ExecuteInTransactionAsync(Action action)
+        public void ExecuteInTransaction(Action action)
         {
             action?.Invoke();
         }
