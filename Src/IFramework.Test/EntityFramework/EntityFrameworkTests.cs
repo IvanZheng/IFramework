@@ -31,9 +31,10 @@ namespace IFramework.Test.EntityFramework
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
-            var configuratoin = builder.Build();
+            var configuration = builder.Build();
             var optionsBuilder = new DbContextOptionsBuilder<DemoDbContext>();
-            optionsBuilder.UseMySQL(configuratoin.GetConnectionString(MySqlConnectionStringName));
+            var connectionString = configuration.GetConnectionString(MySqlConnectionStringName);
+            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
             //optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
             //optionsBuilder.UseMongoDb(configuratoin.GetConnectionString(MongoDbConnectionStringName));
             return new DemoDbContext(optionsBuilder.Options);
