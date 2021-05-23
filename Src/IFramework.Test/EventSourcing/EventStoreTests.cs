@@ -13,7 +13,7 @@ using IFramework.Exceptions;
 using IFramework.Infrastructure.EventSourcing.Repositories;
 using IFramework.Infrastructure.EventSourcing.Stores;
 using IFramework.JsonNet;
-using IFramework.Log4Net;
+using IFramework.Logging.Log4Net;
 using IFramework.Message;
 using IFramework.Test.Commands;
 using IFramework.Test.EventSourcing;
@@ -183,7 +183,7 @@ namespace IFramework.Test
         [Fact]
         public async Task TestEventHandle()
         {
-            var subscriber = "subscriber1";
+            //var subscriber = "subscriber1";
             var eventId = "eventId3";
             var correlationId = $"cmd{DateTime.Now.Ticks}";
             var name = "ivan";

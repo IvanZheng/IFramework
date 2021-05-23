@@ -57,17 +57,13 @@ namespace IFramework.Config
 
       
 
-        public Configuration UseDataContractJson()
-        {
-            ObjectProviderFactory.Instance
-                                 .RegisterInstance(typeof(IJsonConvert),
-                                                   new DataContractJsonConvert());
-            return this;
-        }
-
-       
-
-       
+        //public Configuration UseDataContractJson()
+        //{
+        //    ObjectProviderFactory.Instance
+        //                         .RegisterInstance(typeof(IJsonConvert),
+        //                                           new DataContractJsonConvert());
+        //    return this;
+        //}
 
 
         //public Configuration UseNoneLogger()

@@ -25,7 +25,6 @@
     <ProjectReference Include="..\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj" />
     <ProjectReference Include="..\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
-    <ProjectReference Include="..\IFramework.Log4Net\IFramework.Log4Net.csproj" />
     <ProjectReference Include="..\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj" />
   </ItemGroup>
 

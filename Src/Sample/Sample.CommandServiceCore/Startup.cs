@@ -64,8 +64,8 @@ namespace Sample.CommandServiceCore
         private static IMessagePublisher _messagePublisher;
         private static ICommandBus _commandBus;
         private static IMessageProcessor _commandConsumer1;
-        private static IMessageProcessor _commandConsumer2;
-        private static IMessageProcessor _commandConsumer3;
+        //private static IMessageProcessor _commandConsumer2;
+        //private static IMessageProcessor _commandConsumer3;
         private static IMessageProcessor _domainEventProcessor;
         private static IMessageProcessor _applicationEventProcessor;
         private static IMessageProcessor _eventSourcingCommandConsumer;
@@ -190,8 +190,8 @@ namespace Sample.CommandServiceCore
             applicationLifetime.ApplicationStopping.Register(() =>
             {
                 _commandConsumer1?.Stop();
-                _commandConsumer2?.Stop();
-                _commandConsumer3?.Stop();
+                //_commandConsumer2?.Stop();
+                //_commandConsumer3?.Stop();
                 _domainEventProcessor?.Stop();
                 _applicationEventProcessor?.Stop();
                 _messagePublisher?.Stop();

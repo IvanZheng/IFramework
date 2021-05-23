@@ -23,7 +23,9 @@ namespace IFramework.MessageStores.Abstracts
             : base(options)
         {
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+#pragma warning disable EF1001 // Internal EF Core API usage.
             InMemoryStore = options.FindExtension<InMemoryOptionsExtension>() != null;
+#pragma warning restore EF1001 // Internal EF Core API usage.
         }
 
         public DbSet<Command> Commands { get; set; }

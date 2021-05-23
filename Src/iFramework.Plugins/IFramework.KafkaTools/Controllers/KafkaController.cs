@@ -124,9 +124,9 @@ namespace IFramework.KafkaTools.Controllers
             var producer = GetProducer(request.Broker);
             var produceResult = await producer.ProduceAsync(request.Topic, new Message<string, string>
             {
-                Key = consumeResult.Key,
-                Value = consumeResult.Value,
-                Headers = consumeResult.Headers
+                Key = consumeResult.Message.Key,
+                Value = consumeResult.Message.Value,
+                Headers = consumeResult.Message.Headers
             });
             return produceResult;
         }

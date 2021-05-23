@@ -81,23 +81,23 @@ namespace IFramework.MessageQueue.ConfluentKafka
         }
 
 
-        private void _consumer_OnMessage(object sender, ConsumeResult<TKey, TValue> message, CancellationToken cancellationToken)
+        private void _consumer_OnMessage(object sender, ConsumeResult<TKey, TValue> consumeResult, CancellationToken cancellationToken)
         {
             try
             {
-                Logger.LogDebug($"consume message: {message.Topic}.{message.Partition}.{message.Offset}");
-                AddMessageOffset(message.Topic, message.Partition, message.Offset);
-                OnMessageReceived(this, message, cancellationToken);
+                Logger.LogDebug($"consume message: {consumeResult.Topic}.{consumeResult.Partition}.{consumeResult.Offset}");
+                AddMessageOffset(consumeResult.Topic, consumeResult.Partition, consumeResult.Offset);
+                OnMessageReceived(this, consumeResult, cancellationToken);
             }
             catch (OperationCanceledException) { }
             catch (ThreadAbortException) { }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "{0} topic:{1} partition:{2} offset:{3} _consumer_OnMessage failed!",
-                                Id, message.Topic, message.Partition, message.Offset);
-                if (message.Value != null)
+                                Id, consumeResult.Topic, consumeResult.Partition, consumeResult.Offset);
+                if (consumeResult.Message.Value != null)
                 {
-                    FinishConsumingMessage(new MessageOffset(null, message.Topic, message.Partition, message.Offset));
+                    FinishConsumingMessage(new MessageOffset(null, consumeResult.Topic, consumeResult.Partition, consumeResult.Offset));
                 }
             }
         }

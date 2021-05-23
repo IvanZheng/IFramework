@@ -143,7 +143,9 @@ namespace IFramework.EntityFrameworkCore
 
         public virtual void Rollback()
         {
+#pragma warning disable EF1001 // Internal EF Core API usage.
             var stateManager = (this as IDbContextDependencies).StateManager;
+#pragma warning restore EF1001 // Internal EF Core API usage.
             stateManager?.ResetState();
 
             //do

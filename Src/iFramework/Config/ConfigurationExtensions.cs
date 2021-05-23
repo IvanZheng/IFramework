@@ -34,7 +34,7 @@ namespace IFramework.Config
         public static IServiceCollection AddCommonComponents(this IServiceCollection services, string app = null)
         {
             services.AddMemoryCache()
-                    .AddMicrosoftJson()
+                    //.AddMicrosoftJson()
                     .AddMessageStore<MockMessageStore>()
                     .AddMessageStoreDaemon<MockMessageStoreDaemon>()
                     .AddMockMessageQueueClient()
@@ -128,11 +128,11 @@ namespace IFramework.Config
             return services;
         }
 
-        public static IServiceCollection AddMicrosoftJson(this IServiceCollection services)
-        {
-            services.AddSingleton<IJsonConvert>(new MicrosoftJsonConvert());
-            return services;
-        }
+        //public static IServiceCollection AddMicrosoftJson(this IServiceCollection services)
+        //{
+        //    services.AddSingleton<IJsonConvert>(new MicrosoftJsonConvert());
+        //    return services;
+        //}
 
         public static IServiceCollection AddMemoryCache(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
         {

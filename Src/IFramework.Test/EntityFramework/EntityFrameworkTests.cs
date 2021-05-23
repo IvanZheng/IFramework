@@ -10,7 +10,7 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
-using IFramework.Log4Net;
+using IFramework.Logging.Log4Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;

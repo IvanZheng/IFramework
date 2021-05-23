@@ -130,7 +130,7 @@ namespace Sample.Persistence
 
                 return new UniqueConstraintException(ex, returnError, entityDisplayName, indexName, duplicatedValue);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new UniqueConstraintException(ex);
             }

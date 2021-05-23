@@ -49,7 +49,7 @@ namespace IFramework.Test
         {
             var services = new ServiceCollection();
             services.AddAutofacContainer()
-                    .AddMicrosoftJson();
+                    .AddJsonNet();
 
             ObjectProviderFactory.Instance
                                  .Build(services);
