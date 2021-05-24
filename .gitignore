@@ -9,6 +9,7 @@ obj
 *.user
 *.sln.cache
 *.nupkg
+*.snupkg
 *.vsmdi
 /Src/Sample/Sample.CommandService/log
 /Src/Sample/Sample.CommandService/log.txt
