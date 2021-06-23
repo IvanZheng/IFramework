@@ -11,22 +11,6 @@ namespace IFramework.Domain
     {
         public static T Empty => Activator.CreateInstance<T>();
 
-        public virtual T Clone(object newValues = null, bool deSerializeNonPublic = true)
-        {
-            //var cloned = default(T);
-            //using (var ms = new MemoryStream())
-            //{
-            //    var formatter = new BinaryFormatter();
-            //    formatter.Serialize(ms, this);
-            //    ms.Position = 0;
-            //    cloned = (T) formatter.Deserialize(ms);
-            //}
-            var cloned = this.ToJson().ToJsonObject<T>(deSerializeNonPublic);
-            newValues?.GetType().GetProperties().ForEach(p => { cloned.SetValueByKey(p.Name, p.GetValue(newValues)); });
-            return cloned;
-        }
-
-
         public static bool operator !=(ValueObject<T> a, ValueObject<T> b)
         {
             return NotEqualOperator(a, b);

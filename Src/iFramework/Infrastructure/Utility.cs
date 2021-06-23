@@ -30,6 +30,14 @@ namespace IFramework.Infrastructure
         private const string KBase36Digits = "0123456789abcdefghijklmnopqrstuvwxyz";
         private static readonly uint[] Lookup32 = CreateLookup32();
         private static readonly ILogger Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(nameof(Utility));
+        
+        public static T Clone<T>(this T obj, object newValues = null, bool deSerializeNonPublic = true) where T: class
+        {
+            var cloned = obj.ToJson().ToJsonObject<T>(deSerializeNonPublic);
+            newValues?.GetType().GetProperties().ForEach(p => { cloned.SetValueByKey(p.Name, p.GetValue(newValues)); });
+            return cloned;
+        }
+        
         public static string GetFullNameWithAssembly(this Type type)
         {
             return $"{type.FullName}, {type.Assembly.GetName().Name}";
