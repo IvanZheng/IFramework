@@ -186,7 +186,6 @@ namespace Sample.CommandServiceCore
             //snapshotStore.Connect()
             //             .GetAwaiter()
             //             .GetResult();
-            //loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             var logger = loggerFactory.CreateLogger<Startup>(); 
             logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
@@ -282,8 +281,6 @@ namespace Sample.CommandServiceCore
 
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();
-
-           
         }
 
         private void StartMessageQueueComponents()
