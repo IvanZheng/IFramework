@@ -19,11 +19,7 @@ namespace IFramework.AspNet
         /// <param name="hostingEnv">The <see cref="T:Microsoft.AspNetCore.Hosting.IHostingEnvironment" /> used by this middleware.</param>
         /// <param name="loggerFactory"></param>
         public MessageProcessorDashboardMiddleware(RequestDelegate next, 
-#if NET5
-                                                   IWebHostEnvironment hostingEnv,
-#else
                                                    IHostingEnvironment hostingEnv,
-#endif
                                                    ILoggerFactory loggerFactory)
         {
             if (hostingEnv == null)
