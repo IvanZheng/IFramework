@@ -98,7 +98,7 @@ namespace IFramework.Domain
         }
     }
 
-    public abstract class ValueObject<T> : ValueObject where T: class
+    public abstract class ValueObject<T> : ValueObject where T: ValueObject
     {
         public static T Empty => Activator.CreateInstance<T>();
     }

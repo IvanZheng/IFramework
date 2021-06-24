@@ -13,8 +13,8 @@ using Xunit.Abstractions;
 
 namespace IFramework.Test
 {
-    public class AValueObject<T> : ValueObject<T>
-        where T : class
+    public class AValueObject<T> : ValueObject<T> 
+        where T : ValueObject
     {
         public AValueObject()
         {
@@ -71,6 +71,7 @@ namespace IFramework.Test
 
             var list = new List<AClass>{a};
             var listClone = list.Clone();
+            Assert.True(listClone[0] == a);
         }
 
         [Fact]
