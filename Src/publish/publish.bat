@@ -1,1 +1,1 @@
-nuget push *.nupkg -Source https://www.nuget.org
+nuget push *.snupkg -Source https://www.nuget.org

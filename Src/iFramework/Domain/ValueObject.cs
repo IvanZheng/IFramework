@@ -7,16 +7,14 @@ using IFramework.Infrastructure;
 
 namespace IFramework.Domain
 {
-    public abstract class ValueObject<T> where T: class
+    public abstract class ValueObject
     {
-        public static T Empty => Activator.CreateInstance<T>();
-
-        public static bool operator !=(ValueObject<T> a, ValueObject<T> b)
+        public static bool operator !=(ValueObject a, ValueObject b)
         {
             return NotEqualOperator(a, b);
         }
 
-        public static bool operator ==(ValueObject<T> a, ValueObject<T> b)
+        public static bool operator ==(ValueObject a, ValueObject b)
         {
             return EqualOperator(a, b);
         }
@@ -27,7 +25,7 @@ namespace IFramework.Domain
         /// <param name="left">Left-hand side object.</param>
         /// <param name="right">Right-hand side object.</param>
         /// <returns></returns>
-        protected static bool EqualOperator(ValueObject<T> left, ValueObject<T> right)
+        protected static bool EqualOperator(ValueObject left, ValueObject right)
         {
             if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null))
             {
@@ -42,7 +40,7 @@ namespace IFramework.Domain
         /// <param name="left">Left-hand side object.</param>
         /// <param name="right">Right-hand side object.</param>
         /// <returns></returns>
-        protected static bool NotEqualOperator(ValueObject<T> left, ValueObject<T> right)
+        protected static bool NotEqualOperator(ValueObject left, ValueObject right)
         {
             return !EqualOperator(left, right);
         }
@@ -68,21 +66,23 @@ namespace IFramework.Domain
             {
                 return false;
             }
-            var other = (ValueObject<T>) obj;
-            var thisValues = GetAtomicValues().GetEnumerator();
-            var otherValues = other.GetAtomicValues().GetEnumerator();
-            while (thisValues.MoveNext() && otherValues.MoveNext())
+            var other = (ValueObject) obj;
+            using (var thisValues = GetAtomicValues().GetEnumerator())
+            using (var otherValues = other.GetAtomicValues().GetEnumerator())
             {
-                if (ReferenceEquals(thisValues.Current, null) ^ ReferenceEquals(otherValues.Current, null))
+                while (thisValues.MoveNext() && otherValues.MoveNext())
                 {
-                    return false;
+                    if (ReferenceEquals(thisValues.Current, null) ^ ReferenceEquals(otherValues.Current, null))
+                    {
+                        return false;
+                    }
+                    if (thisValues.Current != null && !thisValues.Current.Equals(otherValues.Current))
+                    {
+                        return false;
+                    }
                 }
-                if (thisValues.Current != null && !thisValues.Current.Equals(otherValues.Current))
-                {
-                    return false;
-                }
+                return !thisValues.MoveNext() && !otherValues.MoveNext();
             }
-            return !thisValues.MoveNext() && !otherValues.MoveNext();
         }
 
         /// <summary>
@@ -96,5 +96,10 @@ namespace IFramework.Domain
                 .Select(x => x != null ? x.GetHashCode() : 0)
                 .Aggregate((x, y) => x ^ y);
         }
+    }
+
+    public abstract class ValueObject<T> : ValueObject where T: class
+    {
+        public static T Empty => Activator.CreateInstance<T>();
     }
 }

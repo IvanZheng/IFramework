@@ -67,9 +67,9 @@ namespace IFramework.Infrastructure
             }
             try
             {
-                if (typeof(T) == typeof(List<dynamic>))
+                if (typeof(T) == typeof(IEnumerable<dynamic>))
                 {
-                    return (T)(object)json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
+                    return (T)json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
                 }
                 if (typeof(T) == typeof(object))
                 {
@@ -92,7 +92,7 @@ namespace IFramework.Infrastructure
             return JsonConvert.DeserializeDynamicObject(json, serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public static List<dynamic> ToDynamicObjects(this string json,
+        public static IEnumerable<dynamic> ToDynamicObjects(this string json,
                                                      bool serializeNonPublic = false,
                                                      bool loopSerialize = false,
                                                      bool useCamelCase = false)

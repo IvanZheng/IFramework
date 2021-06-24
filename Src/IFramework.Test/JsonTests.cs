@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
@@ -33,8 +34,8 @@ namespace IFramework.Test
             Name = name;
         }
 
-        public string Id { get; set; }
-        public string Name { get; set; }
+        public string Id { get; protected set; }
+        public string Name { get; protected set;}
     }
 
     public class AException : Exception
@@ -63,9 +64,13 @@ namespace IFramework.Test
         {
             var a = new AClass("ddd", "name");
             var cloneObject = a.Clone();
-            Assert.True(a.Name == cloneObject.Name);
+            Assert.True(a == cloneObject);
+            
             cloneObject = a.Clone(new {Name = "ivan"});
             Assert.True("ivan" == cloneObject.Name);
+
+            var list = new List<AClass>{a};
+            var listClone = list.Clone();
         }
 
         [Fact]
