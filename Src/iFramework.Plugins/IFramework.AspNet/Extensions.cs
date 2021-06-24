@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Localization;
+#if !NET5_0_OR_GREATER
 using Microsoft.AspNetCore.Http.Internal;
+#endif
 #endif
 namespace IFramework.AspNet
 {
@@ -104,7 +106,7 @@ namespace IFramework.AspNet
 
         public static T GetHeaderValueAs<T>(HttpContext httpContext, string headerName)
         {
-            if (httpContext?.Request?.Headers?.TryGetValue(headerName, out var values) ?? false)
+            if (httpContext.Request.Headers.TryGetValue(headerName, out var values))
             {
                 var rawValues = values.ToString(); // writes out as Csv when there are multiple.
 
@@ -113,6 +115,7 @@ namespace IFramework.AspNet
                     return (T) Convert.ChangeType(values.ToString(), typeof(T));
                 }
             }
+            
             return default(T);
         }
 
@@ -151,7 +154,7 @@ namespace IFramework.AspNet
         public static IApplicationBuilder UseEnableRewind(this IApplicationBuilder app)
         {
             app.Use(next => context => {
-                context.Request.EnableRewind();
+                context.Request.EnableBuffering();
                 return next(context);
             });
             return app;
@@ -209,6 +212,7 @@ namespace IFramework.AspNet
 
         public static bool TryGetFormValue(this HttpRequest request, string key, out StringValues value)
         {
+            value = default;
             return request.HasFormContentType && request.Form.TryGetValue(key, out value);
         }
 
