@@ -31,7 +31,7 @@ namespace IFramework.Config
             return services;
         }
 
-        public static IServiceCollection AddCommonComponents(this IServiceCollection services, string app = null)
+        public static IServiceCollection AddCommonComponents(this IServiceCollection services, string app = null, string queueNameSplit = ".")
         {
             services.AddMemoryCache()
                     //.AddMicrosoftJson()
@@ -41,7 +41,7 @@ namespace IFramework.Config
                     .AddMockMessagePublisher()
                     .AddDefaultEventBus()
                     .AddConcurrencyProcessor<ConcurrencyProcessor, UniqueConstrainExceptionParser>()
-                    .AddMessageQueue(app)
+                    .AddMessageQueue(app, queueNameSplit)
                     .MessageQueueUseMachineNameFormat()
                     .AddMessageTypeProvider<MessageTypeProvider>()
                     .AddMailbox<MailboxProcessor, DefaultProcessingMessageScheduler>()
