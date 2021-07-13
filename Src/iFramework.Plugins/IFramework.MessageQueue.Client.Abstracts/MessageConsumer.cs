@@ -98,7 +98,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
                     if (!cancellationTokenSource.IsCancellationRequested)
                     {
                         Task.Delay(1000).Wait();
-                        Logger.LogError(ex, $"{Id} ReceiveMessages failed!");
+                        Logger.LogError(ex, $"{Id} topic:{string.Join(",", Topics)} ReceiveMessages failed!");
                     }
                 }
             }

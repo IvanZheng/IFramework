@@ -72,7 +72,7 @@ namespace Sample.CommandServiceCore
         private static IMessageProcessor _eventSourcingEventProcessor;
         public static string PathBase;
         private static string _app = "uat";
-        private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}_";
+        private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
         private readonly IConfiguration _configuration;
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
@@ -91,7 +91,7 @@ namespace Sample.CommandServiceCore
                     .AddConfiguration(_configuration)
                     //.AddLog4Net()
                     .AddSerilog()
-                    .AddCommonComponents(_app, "_")
+                    .AddCommonComponents(_app)
                     .AddJsonNet()
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                     .AddRelationalMessageStore<SampleModelContext>()
@@ -106,13 +106,13 @@ namespace Sample.CommandServiceCore
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
                         //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                        options.UseMySql(connectionString,
-                                         ServerVersion.AutoDetect(connectionString),
-                                         b => b.EnableRetryOnFailure())
-                               .AddInterceptors(new ReadCommittedTransactionInterceptor())
-                               .UseLazyLoadingProxies();
+                        //options.UseMySql(connectionString,
+                        //                 ServerVersion.AutoDetect(connectionString),
+                        //                 b => b.EnableRetryOnFailure())
+                        //       .AddInterceptors(new ReadCommittedTransactionInterceptor())
+                        //       .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                        //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        options.UseInMemoryDatabase(nameof(SampleModelContext));
                         options.ConfigureWarnings(b =>
                         {
                             b.Ignore(InMemoryEventId.TransactionIgnoredWarning);

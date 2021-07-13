@@ -40,7 +40,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
             OnMessageReceived = onMessageReceived;
 
-            ConsumerConfiguration = new Confluent.Kafka.ConsumerConfig
+            ConsumerConfiguration = new Confluent.Kafka.ConsumerConfig(ConsumerConfig.ToStringExtensions())
             {
                 GroupId = GroupId,
                 ClientId = consumerId,
@@ -52,10 +52,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 //{"retry.backoff.ms", ConsumerConfig.BackOffIncrement.ToString()},
                 BootstrapServers = BrokerList,
                 AutoOffsetReset = (Confluent.Kafka.AutoOffsetReset) ConsumerConfig.AutoOffsetReset,
-                SecurityProtocol = ConsumerConfig["security.protocol"]?.ToString().ToEnum<SecurityProtocol>(),
-                SaslMechanism = ConsumerConfig["sasl.mechanism"]?.ToString().ToEnum<SaslMechanism>(),
-                SaslUsername = ConsumerConfig["sasl.username"]?.ToString(),
-                SaslPassword = ConsumerConfig["sasl.password"]?.ToString()
+                //SecurityProtocol = ConsumerConfig["security.protocol"]?.ToString().ToEnum<SecurityProtocol>(),
+                //SaslMechanism = ConsumerConfig["sasl.mechanism"]?.ToString().ToEnum<SaslMechanism>(),
+                //SaslUsername = ConsumerConfig["sasl.username"]?.ToString(),
+                //SaslPassword = ConsumerConfig["sasl.password"]?.ToString()
             };
         }
 
