@@ -77,13 +77,25 @@ namespace IFramework.Test
         [Fact]
         public void SerializeReadonlyObject()
         {
+
+            var str = "abc";
+            var json = str.ToJson();
+            var str2 = json.ToJsonObject<string>();
+            Assert.Equal(str, str2);
+
+            var id = Guid.NewGuid();
+            json = id.ToJson();
+            var id2 = json.ToJsonObject<Guid>();
+            var id3 = json.ToJsonObject();
+            Assert.Equal(id, id2);
+
             //var ex = new Exception("test");
             //var json = ex.ToJson();
             //var ex2 = json.ToObject<Exception>();
             //Assert.Equal(ex.Message, ex2.Message);
             var a = new AClass("ddd", "name");
             var aJson = a.ToJson();
-            var b = aJson.ToJsonObject<AClass>();
+            var b = aJson.ToJsonObject<AClass>(true);
             Assert.NotNull(aJson);
             Assert.NotNull(b.Name);
             Assert.Equal(a.CreatedTime, b.CreatedTime);
@@ -96,7 +108,7 @@ namespace IFramework.Test
             Assert.Equal(de.ErrorCode, de2.ErrorCode);
 
             var e = new AException("test");
-            var json = e.ToJson();
+            json = e.ToJson();
             var e2 = json.ToJsonObject<AException>();
             Assert.Equal(e.Message, e2.Message);
 
