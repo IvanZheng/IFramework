@@ -57,12 +57,16 @@ namespace IFramework.MessageQueue.Client.Abstracts
 
         public virtual void Stop()
         {
-            CancellationTokenSource?.Cancel(true);
-            ConsumerTask?.Wait();
-            ConsumerTask?.Dispose();
-            SlidingDoors.Clear();
-            ConsumerTask = null;
-            CancellationTokenSource = null;
+            if (ConsumerTask != null)
+            {
+                CancellationTokenSource.Cancel(true);
+                ConsumerTask.Wait();
+                ConsumerTask.Dispose();
+                SlidingDoors.Clear();
+                ConsumerTask = null;
+                CancellationTokenSource = null;
+            }
+            
         }
 
         public virtual void CommitOffset(IMessageContext messageContext)

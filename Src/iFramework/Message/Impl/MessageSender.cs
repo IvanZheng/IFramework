@@ -37,11 +37,6 @@ namespace IFramework.Message.Impl
 
         public virtual void Start()
         {
-            if (NeedMessageStore)
-            {
-                ObjectProviderFactory.GetService<IMessageStoreDaemon>().Start();
-                GetAllUnSentMessages().ForEach(eventContext => MessageStateQueue.Add(new MessageState(eventContext)));
-            }
             var cancellationTokenSource = new CancellationTokenSource();
             SendMessageTask = Task.Factory.StartNew(cs => SendMessages(cs as CancellationTokenSource),
                                                      cancellationTokenSource,
@@ -54,13 +49,10 @@ namespace IFramework.Message.Impl
         {
             if (SendMessageTask != null)
             {
-                if (NeedMessageStore)
-                { 
-                    ObjectProviderFactory.GetService<IMessageStoreDaemon>().Stop();
-                }
                 var cancellationSource = SendMessageTask.AsyncState as CancellationTokenSource;
                 cancellationSource?.Cancel(true);
                 Task.WaitAll(SendMessageTask);
+                SendMessageTask = null;
             }
         }
         

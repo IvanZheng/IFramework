@@ -199,6 +199,7 @@ namespace Sample.CommandServiceCore
                 _messagePublisher?.Stop();
                 _commandBus?.Stop();
                 _eventSourcingCommandConsumer?.Stop();
+                _eventSourcingEventProcessor?.Stop();
                 mailboxProcessor.Stop();
             });
             mailboxProcessor.Start();
