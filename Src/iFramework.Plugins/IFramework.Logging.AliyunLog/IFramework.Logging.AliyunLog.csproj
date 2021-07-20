@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
+	  <IncludeSymbols>true</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat> 
+  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Aliyun.Api.LogService" Version="1.1.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="5.0.0" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+		<ProjectReference Include="..\IFramework.Logging.Abastracts\IFramework.Logging.Abstracts.csproj" />
+	</ItemGroup>
+</Project>

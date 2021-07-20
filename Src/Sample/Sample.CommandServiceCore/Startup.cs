@@ -53,6 +53,7 @@ using IFramework.EventStore.Redis;
 using IFramework.Infrastructure.EventSourcing;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using IFramework.Infrastructure.EventSourcing.Stores;
+using IFramework.Logging.AliyunLog;
 using IFramework.Logging.Serilog;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Sample.DomainEvents.Banks;
@@ -91,12 +92,13 @@ namespace Sample.CommandServiceCore
                     .AddConfiguration(_configuration)
                     //.AddLog4Net()
                     .AddSerilog()
+                    .AddAliyunLog()
                     .AddCommonComponents(_app)
                     .AddJsonNet()
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                     .AddRelationalMessageStore<SampleModelContext>()
-                    .AddConfluentKafka()
-                    //.AddInMemoryMessageQueue()
+                    //.AddConfluentKafka()
+                    .AddInMemoryMessageQueue()
                     //.AddRabbitMQ(rabbitConnectionFactory)
                     .AddMessagePublisher("eventTopic")
                     .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
@@ -196,6 +198,7 @@ namespace Sample.CommandServiceCore
                 _applicationEventProcessor?.Stop();
                 _messagePublisher?.Stop();
                 _commandBus?.Stop();
+                _eventSourcingCommandConsumer?.Stop();
                 mailboxProcessor.Stop();
             });
             mailboxProcessor.Start();
