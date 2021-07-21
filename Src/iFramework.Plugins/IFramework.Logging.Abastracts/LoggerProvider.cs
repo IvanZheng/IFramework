@@ -14,7 +14,7 @@ namespace IFramework.Logging.Abstracts
         private readonly AsyncLocal<LoggerScope> _value = new AsyncLocal<LoggerScope>();
         private readonly BlockingCollection<LogEvent> _logQueue = new BlockingCollection<LogEvent>();
         protected CancellationTokenSource CancellationTokenSource;
-
+        protected bool Disposed = false;
         private Task _processLogTask;
         public bool AsyncLog { get; }
         protected LoggerProvider(LogLevel minLevel = LogLevel.Debug, bool asyncLog = true)
@@ -76,8 +76,9 @@ namespace IFramework.Logging.Abstracts
 
         public virtual void Dispose()
         {
-            if (CancellationTokenSource != null)
+            if (CancellationTokenSource != null && !Disposed)
             {
+                Disposed = true;
                 CancellationTokenSource.Cancel(true);
                 CancellationTokenSource = null;
                 _processLogTask.Wait();
@@ -95,6 +96,10 @@ namespace IFramework.Logging.Abstracts
 
         internal void ProcessLog(LogEvent logEvent)
         {
+            if (Disposed)
+            {
+                return;
+            }
             if (AsyncLog)
             {
                 _logQueue.Add(logEvent);

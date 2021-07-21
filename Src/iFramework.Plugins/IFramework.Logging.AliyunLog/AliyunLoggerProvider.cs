@@ -33,6 +33,10 @@ namespace IFramework.Logging.AliyunLog
 
         protected override void Log(LogEvent logEvent)
         {
+            if (Disposed)
+            {
+                return;
+            }
             var logInfo = new LogGroupInfo
             {
                 Logs = new List<LogInfo>{new LogInfo
@@ -48,9 +52,9 @@ namespace IFramework.Logging.AliyunLog
                                                                               logInfo))
                                    .GetAwaiter()
                                    .GetResult();
-            if (!response.IsSuccess)
+            if (!response.IsSuccess && !Disposed)
             {
-                Trace.WriteLine($"log event failed {logEvent.ToJson()} {response.ToJson()}");
+                Trace.WriteLine($"log event failed {response.Error.ErrorCode} {response.Error.ErrorMessage}");
             }
         }
     }
