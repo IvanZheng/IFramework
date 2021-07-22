@@ -10,6 +10,7 @@ namespace IFramework.Logging.AliyunLog
     public static class Extension
     {
         public static IServiceCollection AddAliyunLog(this IServiceCollection services, 
+                                                      LogLevel minLevel = LogLevel.Warning,
                                                       Action<AliyunLogOptions> options = null,
                                                       IConfiguration configuration = null)
         {
@@ -32,7 +33,7 @@ namespace IFramework.Logging.AliyunLog
                     }
                 }
 
-                config.AddProvider(new AliyunLoggerProvider(providerOptions));
+                config.AddProvider(new AliyunLoggerProvider(providerOptions, minLevel));
             });
             return services;
         }
