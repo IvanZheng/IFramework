@@ -36,10 +36,25 @@ namespace IFramework.Logging.Abstracts
             {
                 foreach (var scope in Scope)
                 {
-                    contents[scope.Key] = scope.Value?.ToString() ?? string.Empty;
+                    contents[scope.Key] = scope.Value.ToJson() ?? string.Empty;
                 }
             }
             return contents;
+        }
+
+        public string SerializeScopeValue(object val)
+        {
+            if (val == null)
+            {
+                return null;
+            }
+
+            if (val is string || val.GetType().IsPrimitive || val is Guid)
+            {
+                return val.ToString();
+            }
+
+            return val.ToJson();
         }
 
         private string FormatState(object state)
