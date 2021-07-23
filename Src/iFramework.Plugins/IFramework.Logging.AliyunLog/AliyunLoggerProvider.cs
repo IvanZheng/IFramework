@@ -14,10 +14,12 @@ namespace IFramework.Logging.AliyunLog
 {
     public class AliyunLoggerProvider :LoggerProvider
     {
+        private readonly Func<LogEvent, LogGroupInfo> _getLogGroupInfo;
         private readonly HttpLogServiceClient _client;
-        public AliyunLoggerProvider(AliyunLogOptions options, LogLevel minLevel = LogLevel.Information, bool asyncLog = true)
+        public AliyunLoggerProvider(AliyunLogOptions options, LogLevel minLevel = LogLevel.Information, bool asyncLog = true, Func<LogEvent, LogGroupInfo> getLogGroupInfo = null)
             :base(minLevel, asyncLog)
         {
+            _getLogGroupInfo = getLogGroupInfo ?? GetLogGroupInfo;
             Options = options;
 
             _client = LogServiceClientBuilders.HttpBuilder
@@ -31,13 +33,9 @@ namespace IFramework.Logging.AliyunLog
             return new DefaultLogger(this, categoryName, minLevel);
         }
 
-        protected override void Log(LogEvent logEvent)
+        private LogGroupInfo GetLogGroupInfo(LogEvent logEvent)
         {
-            if (Disposed)
-            {
-                return;
-            }
-            var logInfo = new LogGroupInfo
+            return new LogGroupInfo
             {
                 Logs = new List<LogInfo>{new LogInfo
                 {
@@ -47,7 +45,16 @@ namespace IFramework.Logging.AliyunLog
                 Topic = logEvent.Logger,
                 Source = Utility.GetLocalIpv4().ToString()
             };
+        }
 
+        protected override void Log(LogEvent logEvent)
+        {
+            if (Disposed)
+            {
+                return;
+            }
+
+            var logInfo = _getLogGroupInfo(logEvent);
             var response =  _client.PostLogStoreLogsAsync(new PostLogsRequest(Options.LogStore,
                                                                               logInfo))
                                    .GetAwaiter()

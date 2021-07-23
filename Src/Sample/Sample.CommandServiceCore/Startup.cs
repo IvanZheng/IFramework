@@ -92,7 +92,7 @@ namespace Sample.CommandServiceCore
                     .AddConfiguration(_configuration)
                     //.AddLog4Net()
                     .AddSerilog()
-                    .AddAliyunLog()
+                    //.AddAliyunLog()
                     .AddCommonComponents(_app)
                     .AddJsonNet()
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
@@ -107,14 +107,15 @@ namespace Sample.CommandServiceCore
                         var connectionString = Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql");
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
-                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
+                        options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)))
+                               .ConfigureWarnings(w => w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
                         //options.UseMySql(connectionString,
                         //                 ServerVersion.AutoDetect(connectionString),
                         //                 b => b.EnableRetryOnFailure())
                         //       .AddInterceptors(new ReadCommittedTransactionInterceptor())
                         //       .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                        options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        //options.UseInMemoryDatabase(nameof(SampleModelContext));
                         options.ConfigureWarnings(b =>
                         {
                             b.Ignore(InMemoryEventId.TransactionIgnoredWarning);
