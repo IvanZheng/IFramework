@@ -114,7 +114,7 @@ namespace IFramework.DependencyInjection
             {
                 services.AddSingleton<IOptions<TOptions>>(provider =>
                 {
-                    var configuration = provider.GetService<IConfiguration>().GetSection(sectionName ?? typeof(TOptions).Name);
+                    var configuration = provider.GetService<IConfiguration>()?.GetSection(sectionName ?? typeof(TOptions).Name);
                     if (!configuration.Exists())
                     {
                         throw new ArgumentNullException($"{nameof(TOptions)}");

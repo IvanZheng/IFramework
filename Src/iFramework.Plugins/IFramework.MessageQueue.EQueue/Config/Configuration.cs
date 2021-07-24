@@ -1,7 +1,9 @@
-﻿using ECommon.Configurations;
+﻿using System;
+using ECommon.Configurations;
 using EQueue.Clients.Producers;
 using EQueue.Configurations;
 using IFramework.DependencyInjection;
+using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
 using IFramework.MessageQueue.EQueue;
@@ -29,8 +31,22 @@ namespace IFramework.Config
         public static IServiceCollection AddEQueue(this IServiceCollection services,
                                               string nameServerAddresses = null,
                                               string clusterName = "DefaultCluster",
-                                              int nameServerPort = 9493)
+                                              int nameServerPort = 9493,
+                                              Action<MessageQueueOptions> mqOptions = null)
         {
+            if (mqOptions == null)
+            {
+                services.AddCustomOptions<MessageQueueOptions>(o =>
+                {
+                    o.EnableIdempotent = true;
+                    o.EnsureArrival = true;
+                    o.PersistEvent = true;
+                });
+            }
+            else
+            {
+                services.AddCustomOptions(mqOptions);
+            }
             InitializeEqueue();
 
             services.AddSingleton<IMessageQueueClientProvider, EQueueClientProvider>(new ConstructInjection(new ParameterInjection("clusterName", clusterName),

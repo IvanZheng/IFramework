@@ -8,7 +8,9 @@ using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.DependencyInjection;
 using IFramework.MessageQueue;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace IFramework.Message.Impl
 {
@@ -17,16 +19,14 @@ namespace IFramework.Message.Impl
         protected string DefaultTopic;
         protected ILogger Logger;
         protected IMessageQueueClient MessageQueueClient;
-        protected static bool NeedMessageStore;
+        protected bool EnsureArrival;
         protected Task SendMessageTask;
 
-        static MessageSender()
-        {
-            NeedMessageStore = Configuration.Instance.NeedMessageStore;
-        }
+      
 
         protected MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null)
         {
+            EnsureArrival = ObjectProviderFactory.GetService<IOptions<MessageQueueOptions>>().Value.EnsureArrival;
             MessageQueueClient = messageQueueClient;
             DefaultTopic = defaultTopic;
             MessageStateQueue = new BlockingCollection<MessageState>();

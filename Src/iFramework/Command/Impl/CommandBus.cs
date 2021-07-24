@@ -242,7 +242,7 @@ namespace IFramework.Command.Impl
                                                   messageState.ReplyTaskCompletionSource?.Task,
                                                   messageState.NeedReply));
 
-            if (NeedMessageStore && messageState != null)
+            if (EnsureArrival && messageState != null)
             {
                 ObjectProviderFactory.Instance
                                      .ObjectProvider

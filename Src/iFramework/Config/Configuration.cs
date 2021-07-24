@@ -29,8 +29,6 @@ namespace IFramework.Config
 
         }
 
-        public bool NeedMessageStore { get; internal set; }
-
         private bool CommitPerMessage { get; set; }
 
 

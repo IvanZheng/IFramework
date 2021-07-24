@@ -12,7 +12,7 @@ namespace IFramework.Message.Impl
     {
         public override void Start()
         {
-            if (NeedMessageStore)
+            if (EnsureArrival)
             {
                 ObjectProviderFactory.GetService<IMessageStoreDaemon>().Start();
                 GetAllUnSentMessages().ForEach(eventContext => MessageStateQueue.Add(new MessageState(eventContext)));
@@ -23,7 +23,7 @@ namespace IFramework.Message.Impl
 
         public override void Stop()
         {
-            if (NeedMessageStore)
+            if (EnsureArrival)
             { 
                 ObjectProviderFactory.GetService<IMessageStoreDaemon>().Stop();
             }
@@ -67,7 +67,7 @@ namespace IFramework.Message.Impl
                 .TrySetResult(new MessageResponse(messageState.MessageContext,
                                                   null,
                                                   false));
-            if (NeedMessageStore)
+            if (EnsureArrival)
             {
                 ObjectProviderFactory.Instance
                                      .ObjectProvider

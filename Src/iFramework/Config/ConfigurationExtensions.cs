@@ -115,8 +115,8 @@ namespace IFramework.Config
         public static IServiceCollection AddMessageStore<TMessageStore>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TMessageStore : class, IMessageStore
         {
-            Configuration.Instance.NeedMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
-            if (Configuration.Instance.NeedMessageStore)
+            var needMessageStore = typeof(TMessageStore) != typeof(MockMessageStore);
+            if (needMessageStore)
             {
                 services.AddService<TMessageStore, TMessageStore>(lifetime);
                 services.AddService(typeof(IMessageStore),provider => provider.GetService<TMessageStore>(), lifetime);
