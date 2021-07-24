@@ -74,6 +74,13 @@ namespace Sample.CommandServiceCore.Controllers
             var version = await _communityService.ModifyUserEmailAsync(Guid.Empty, $"{DateTime.Now.Ticks}");
             return $"{DateTime.Now} version:{version} DoApi Done! sameProvider:{sameProvider} ";
         }
+
+        public string Gc()
+        {
+            GC.Collect();
+            return "Gc done!";
+        }
+
         //[Route("home/getBankAccount/{accountId}")]
         //public Task<BankAccount> GetBankAccount(string accountId)
         //{
@@ -105,15 +112,17 @@ namespace Sample.CommandServiceCore.Controllers
         public IActionResult Index([FromQuery] bool needGc)
         {
             _logger.SetMinLevel(LogLevel.Debug);
-            _logger.LogDebug("index test");
-            using (_logger.BeginScope("scopes"))
+            _logger.LogDebug("index test start");
+            using (_logger.BeginScope("scope1"))
+            using (_logger.BeginScope("scope2"))
+                using (_logger.BeginScope(new Dictionary<string, object>{ {"name",  "scope1"}}))
             using (_logger.BeginScope(new Dictionary<string, object> { { "needGc", needGc } }))
             {
                 var profile = Configuration.Instance.Get("Debug");
                 var member = Configuration.Instance.Get("Member:A");
                 _logger.LogInformation(new { profile, member });
             }
-            _logger.LogWarning("index test");
+            _logger.LogWarning(new {text = "index test end"});
 
             return View();
         }

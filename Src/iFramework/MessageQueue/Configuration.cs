@@ -11,13 +11,13 @@ namespace IFramework.Config
 {
     public static class FrameworkConfigurationExtension
     {
-        private static string _MessageQueueNameFormat = string.Empty;
+        private static string _messageQueueNameFormat = string.Empty;
         private static string _appNameFormat = string.Empty;
-        private static TimeSpan _ReceiveMessageTimeout = new TimeSpan(0, 0, 10);
+        private static TimeSpan _receiveMessageTimeout = new TimeSpan(0, 0, 10);
 
         private static string _defaultTopic = string.Empty;
         public static string AppName { get; private set; }
-
+        public static string QueueNameSplit { get; private set; } = ".";
         public static Configuration SetDefaultTopic(this Configuration configuration, string defaultTopic)
         {
             _defaultTopic = defaultTopic;
@@ -30,10 +30,11 @@ namespace IFramework.Config
         }
 
 
-        public static IServiceCollection AddMessageQueue(this IServiceCollection services, string appName = null)
+        public static IServiceCollection AddMessageQueue(this IServiceCollection services, string appName = null, string queueNameSplit = ".")
         {
             AppName = appName;
-            var appNameFormat = string.IsNullOrEmpty(appName) ? "{0}" : appName + ".{0}";
+            QueueNameSplit = queueNameSplit;
+            var appNameFormat = string.IsNullOrEmpty(appName) ? "{0}" : appName + QueueNameSplit + "{0}";
             services.SetAppNameFormat(appNameFormat)
                     .AddMockCommandBus()
                     .AddMockMessagePublisher();
@@ -94,13 +95,13 @@ namespace IFramework.Config
 
         public static TimeSpan GetMessageQueueReceiveMessageTimeout(this Configuration configuration)
         {
-            return _ReceiveMessageTimeout;
+            return _receiveMessageTimeout;
         }
 
         public static Configuration SetMessageQueueReceiveMessageTimeout(this Configuration configuration,
                                                                          TimeSpan timeout)
         {
-            _ReceiveMessageTimeout = timeout;
+            _receiveMessageTimeout = timeout;
             return configuration;
         }
 
@@ -112,7 +113,7 @@ namespace IFramework.Config
 
         public static IServiceCollection SetMessageQueueNameFormat(this IServiceCollection services, string format)
         {
-            _MessageQueueNameFormat = format;
+            _messageQueueNameFormat = format;
             return services;
         }
 
@@ -122,7 +123,7 @@ namespace IFramework.Config
             var debug = Configuration.Instance.Get<bool>("Debug");
             if (!onlyInDebug || debug)
             {
-                services.SetMessageQueueNameFormat(Environment.MachineName + ".{0}");
+                services.SetMessageQueueNameFormat(Environment.MachineName + QueueNameSplit + "{0}");
             }
             return services;
         }
@@ -134,7 +135,7 @@ namespace IFramework.Config
 
         public static string FormatMessageQueueName(this Configuration configuration, string name)
         {
-            return string.IsNullOrEmpty(_MessageQueueNameFormat) ? name : string.Format(_MessageQueueNameFormat, name);
+            return string.IsNullOrEmpty(_messageQueueNameFormat) ? name : string.Format(_messageQueueNameFormat, name);
         }
     }
 }

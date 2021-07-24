@@ -21,7 +21,6 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
         protected IEventBus EventBus;
         protected Exception Exception;
         protected ILogger Logger;
-        protected bool InTransaction => Transaction.Current != null;
         protected MsDbContext DbContext => DbContexts.FirstOrDefault();
 
         protected UnitOfWorkBase(IEventBus eventBus,
@@ -45,7 +44,7 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
 
         #region IUnitOfWork Members
 
-        protected virtual Task BeforeCommitAsync()
+        protected virtual Task CommittingAsync()
         {
             return Task.CompletedTask;
         }
@@ -55,26 +54,29 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             return Task.CompletedTask;
         }
 
+        protected virtual void DoCommit()
+        {
+            DbContexts.ForEach(dbContext =>
+            {
+                dbContext.SaveChanges();
+                dbContext.ChangeTracker.Entries()
+                         .ForEach(e =>
+                         {
+                             if (e.Entity is AggregateRoot root)
+                             {
+                                 EventBus.Publish(root.GetDomainEvents());
+                                 root.ClearDomainEvents();
+                             }
+                         });
+            });
+            CommittingAsync().Wait();
+        }
+
         public virtual void Commit()
         {
             try
             {
-               
-                    DbContexts.ForEach(dbContext =>
-                    {
-                        dbContext.SaveChanges();
-                        dbContext.ChangeTracker.Entries()
-                                 .ForEach(e =>
-                                 {
-                                     if (e.Entity is AggregateRoot root)
-                                     {
-                                         EventBus.Publish(root.GetDomainEvents());
-                                         root.ClearDomainEvents();
-                                     }
-                                 });
-                    });
-                    BeforeCommitAsync().Wait();
-               
+                DbContext.ExecuteInTransaction(DoCommit);
             }
             catch (Exception ex)
             {
@@ -101,24 +103,30 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             return CommitAsync(CancellationToken.None);
         }
 
+        protected virtual async Task DoCommitAsync(CancellationToken cancellationToken)
+        {
+            foreach (var dbContext in DbContexts)
+            {
+                dbContext.ChangeTracker.Entries()
+                         .ForEach(e =>
+                         {
+                             if (e.Entity is AggregateRoot root)
+                             {
+                                 EventBus.Publish(root.GetDomainEvents());
+                                 root.ClearDomainEvents();
+                             }
+                         });
+                await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+            await CommittingAsync().ConfigureAwait(false);
+        }
+
         public virtual async Task CommitAsync(CancellationToken cancellationToken)
         {
             try
             {
-                 foreach (var dbContext in DbContexts)
-                 {
-                     dbContext.ChangeTracker.Entries()
-                              .ForEach(e =>
-                              {
-                                  if (e.Entity is AggregateRoot root)
-                                  {
-                                      EventBus.Publish(root.GetDomainEvents());
-                                      root.ClearDomainEvents();
-                                  }
-                              });
-                     await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                 }
-                 await BeforeCommitAsync().ConfigureAwait(false);
+                await DbContext.ExecuteInTransactionAsync(() => DoCommitAsync(cancellationToken), cancellationToken)
+                               .ConfigureAwait(false);
             }
             catch (Exception ex)
             {

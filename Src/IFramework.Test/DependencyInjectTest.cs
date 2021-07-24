@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac.Core.Registration;
+using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Unity;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,7 @@ namespace IFramework.Test
         string Id { get; set; }
     }
 
-    public class B : IB
+    public class B : IB, IDisposable
     {
         public B()
         {
@@ -33,6 +34,12 @@ namespace IFramework.Test
 
         public static int ConstructedCount { get; set; }
         public string Id { get; set; }
+
+
+        public void Dispose()
+        {
+            Console.WriteLine("disposed!");
+        }
     }
 
     public class B2 : IB
@@ -80,7 +87,8 @@ namespace IFramework.Test
 
     public class C : IC
     {
-        public C(int id)
+
+        public C(int id = 0)
         {
             Id = id;
         }
@@ -289,6 +297,42 @@ namespace IFramework.Test
 
                 Assert.Equal(b1.GetHashCode(), b2.GetHashCode());
             }
+        }
+
+        [Fact]
+        public void CycleDetectedTest()
+        {
+            var builder = GetAutofacBuilder();
+            builder.Register<IB, B>(ServiceLifetime.Scoped);
+            var objectProvider = builder.Build();
+           
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    using (var scope = objectProvider.CreateScope(b => b.RegisterInstance<IC>(new C())))
+                    {
+                        var serviceProvider = scope.GetService<IObjectProvider>();
+                        var b = serviceProvider.GetService<IB>();
+                        var c1 = serviceProvider.GetService<IC>();
+                    }
+                }
+            });
+
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    using (var scope = objectProvider.CreateScope(b => b.RegisterInstance<IC>(new C())))
+                    {
+                        var serviceProvider = scope.GetService<IObjectProvider>();
+                        var b = serviceProvider.GetService<IB>();
+                        var c1 = serviceProvider.GetService<IC>();
+                    }
+                }
+            });
+            Task.Delay(10000000).Wait();
+            //GC.Collect();
         }
 
 

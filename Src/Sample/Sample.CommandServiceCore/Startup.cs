@@ -53,7 +53,9 @@ using IFramework.EventStore.Redis;
 using IFramework.Infrastructure.EventSourcing;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using IFramework.Infrastructure.EventSourcing.Stores;
+using IFramework.Logging.AliyunLog;
 using IFramework.Logging.Serilog;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Sample.DomainEvents.Banks;
 
 namespace Sample.CommandServiceCore
@@ -63,8 +65,8 @@ namespace Sample.CommandServiceCore
         private static IMessagePublisher _messagePublisher;
         private static ICommandBus _commandBus;
         private static IMessageProcessor _commandConsumer1;
-        private static IMessageProcessor _commandConsumer2;
-        private static IMessageProcessor _commandConsumer3;
+        //private static IMessageProcessor _commandConsumer2;
+        //private static IMessageProcessor _commandConsumer3;
         private static IMessageProcessor _domainEventProcessor;
         private static IMessageProcessor _applicationEventProcessor;
         private static IMessageProcessor _eventSourcingCommandConsumer;
@@ -90,6 +92,7 @@ namespace Sample.CommandServiceCore
                     .AddConfiguration(_configuration)
                     //.AddLog4Net()
                     .AddSerilog()
+                    //.AddAliyunLog()
                     .AddCommonComponents(_app)
                     .AddJsonNet()
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
@@ -104,14 +107,19 @@ namespace Sample.CommandServiceCore
                         var connectionString = Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql");
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
-                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                        options.UseMySql(connectionString,
-                                         ServerVersion.AutoDetect(connectionString),
-                                         b => b.EnableRetryOnFailure())
-                               .AddInterceptors(new ReadCommittedTransactionInterceptor())
-                               .UseLazyLoadingProxies();
+                        options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)))
+                               .ConfigureWarnings(w => w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
+                        //options.UseMySql(connectionString,
+                        //                 ServerVersion.AutoDetect(connectionString),
+                        //                 b => b.EnableRetryOnFailure())
+                        //       .AddInterceptors(new ReadCommittedTransactionInterceptor())
+                        //       .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                         //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        options.ConfigureWarnings(b =>
+                        {
+                            b.Ignore(InMemoryEventId.TransactionIgnoredWarning);
+                        });
                     })
                     .AddEventSourcing()
                     ;
@@ -177,16 +185,22 @@ namespace Sample.CommandServiceCore
             //snapshotStore.Connect()
             //             .GetAwaiter()
             //             .GetResult();
-
+            //loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
+            var logger = loggerFactory.CreateLogger<Startup>(); 
+            logger.SetMinLevel(LogLevel.Information); 
+            logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
+            
             applicationLifetime.ApplicationStopping.Register(() =>
             {
                 _commandConsumer1?.Stop();
-                _commandConsumer2?.Stop();
-                _commandConsumer3?.Stop();
+                //_commandConsumer2?.Stop();
+                //_commandConsumer3?.Stop();
                 _domainEventProcessor?.Stop();
                 _applicationEventProcessor?.Stop();
                 _messagePublisher?.Stop();
                 _commandBus?.Stop();
+                _eventSourcingCommandConsumer?.Stop();
+                _eventSourcingEventProcessor?.Stop();
                 mailboxProcessor.Stop();
             });
             mailboxProcessor.Start();
@@ -266,10 +280,7 @@ namespace Sample.CommandServiceCore
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();
 
-            //loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
-            var logger = loggerFactory.CreateLogger<Startup>(); 
-            logger.SetMinLevel(LogLevel.Information); 
-            logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
+           
         }
 
         private void StartMessageQueueComponents()

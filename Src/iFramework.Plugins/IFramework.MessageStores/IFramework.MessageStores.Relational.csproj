@@ -7,8 +7,10 @@
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <AssemblyName>IFramework.MessageStores.Relational</AssemblyName>
     <RootNamespace>IFramework.MessageStores.Relational</RootNamespace>
-    <Description>use dbcontext.begintransaction instead of TransactionScope</Description>
-    <PackageReleaseNotes></PackageReleaseNotes>
+	  <PackageReleaseNotes>Enable SourceLink.</PackageReleaseNotes>
+	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
+	  <IncludeSymbols>true</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>      	
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -24,6 +26,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

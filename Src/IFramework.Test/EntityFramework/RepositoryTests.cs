@@ -9,7 +9,7 @@ using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.EntityFrameworkCore;
 using IFramework.EntityFrameworkCore.Repositories;
-using IFramework.Log4Net;
+using IFramework.Logging.Log4Net;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

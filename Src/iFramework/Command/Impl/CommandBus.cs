@@ -253,7 +253,18 @@ namespace IFramework.Command.Impl
 
         protected void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] replies)
         {
-            replies.ForEach(reply => { _messageProcessor.Process(reply.Key, () => ConsumeReply(reply));});
+            replies.ForEach(reply =>
+            {
+                try
+                {
+                    _messageProcessor.Process(reply.Key, () => ConsumeReply(reply));
+                }
+                catch (Exception e)
+                {
+                    _internalConsumer.CommitOffset(reply);
+                    Logger.LogError(e, $"failed to process command: {reply.MessageOffset.ToJson()}");
+                }
+            });
         }
 
         protected Task ConsumeReply(IMessageContext reply)

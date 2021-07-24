@@ -3,11 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>use dbcontext.begintransaction instead of TransactionScope</Description>
     <Authors>Ivan</Authors>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
-    <PackageReleaseNotes>Add InnerException for DomainException</PackageReleaseNotes>
+	<PackageReleaseNotes>Enable SourceLink.</PackageReleaseNotes>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<Description>add ValueObject class without generic type defination</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -36,6 +39,7 @@
     <Compile Remove="DependencyInjection\IoCServiceBehavior.cs" />
     <Compile Remove="DependencyInjection\LogInterceptionAttribute.cs" />
     <Compile Remove="DependencyInjection\LogInterceptionBehavior.cs" />
+    <Compile Remove="Infrastructure\DataContractJsonConvert.cs" />
     <Compile Remove="Infrastructure\Mailboxes\IMessageProcessor.cs" />
     <Compile Remove="Infrastructure\Mailboxes\Impl\MessageProcessor.cs" />
     <Compile Remove="Infrastructure\Mailboxes\Impl\ProcessingMailbox.cs" />
@@ -48,12 +52,15 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
-    <PackageReference Include="System.Text.Json" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

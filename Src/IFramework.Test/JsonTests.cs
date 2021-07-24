@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
@@ -12,8 +13,8 @@ using Xunit.Abstractions;
 
 namespace IFramework.Test
 {
-    public class AValueObject<T> : ValueObject<T>
-        where T : class
+    public class AValueObject<T> : ValueObject<T> 
+        where T : ValueObject
     {
         public AValueObject()
         {
@@ -33,8 +34,8 @@ namespace IFramework.Test
             Name = name;
         }
 
-        public string Id { get; set; }
-        public string Name { get; set; }
+        public string Id { get; protected set; }
+        public string Name { get; protected set;}
     }
 
     public class AException : Exception
@@ -49,7 +50,7 @@ namespace IFramework.Test
         {
             var services = new ServiceCollection();
             services.AddAutofacContainer()
-                    .AddMicrosoftJson();
+                    .AddJsonNet();
 
             ObjectProviderFactory.Instance
                                  .Build(services);
@@ -63,21 +64,38 @@ namespace IFramework.Test
         {
             var a = new AClass("ddd", "name");
             var cloneObject = a.Clone();
-            Assert.True(a.Name == cloneObject.Name);
+            Assert.True(a == cloneObject);
+            
             cloneObject = a.Clone(new {Name = "ivan"});
             Assert.True("ivan" == cloneObject.Name);
+
+            var list = new List<AClass>{a};
+            var listClone = list.Clone();
+            Assert.True(listClone[0] == a);
         }
 
         [Fact]
         public void SerializeReadonlyObject()
         {
+
+            var str = "abc";
+            var json = str.ToJson();
+            var str2 = json.ToJsonObject<string>();
+            Assert.Equal(str, str2);
+
+            var id = Guid.NewGuid();
+            json = id.ToJson();
+            var id2 = json.ToJsonObject<Guid>();
+            var id3 = json.ToJsonObject();
+            Assert.Equal(id, id2);
+
             //var ex = new Exception("test");
             //var json = ex.ToJson();
             //var ex2 = json.ToObject<Exception>();
             //Assert.Equal(ex.Message, ex2.Message);
             var a = new AClass("ddd", "name");
             var aJson = a.ToJson();
-            var b = aJson.ToJsonObject<AClass>();
+            var b = aJson.ToJsonObject<AClass>(true);
             Assert.NotNull(aJson);
             Assert.NotNull(b.Name);
             Assert.Equal(a.CreatedTime, b.CreatedTime);
@@ -90,7 +108,7 @@ namespace IFramework.Test
             Assert.Equal(de.ErrorCode, de2.ErrorCode);
 
             var e = new AException("test");
-            var json = e.ToJson();
+            json = e.ToJson();
             var e2 = json.ToJsonObject<AException>();
             Assert.Equal(e.Message, e2.Message);
 

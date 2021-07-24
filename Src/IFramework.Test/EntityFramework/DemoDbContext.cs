@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using MySql.Data.EntityFrameworkCore.Extensions;
 
 namespace IFramework.Test.EntityFramework
 {
@@ -71,8 +70,7 @@ namespace IFramework.Test.EntityFramework
             modelBuilder.Owned<Address>();
             //modelBuilder.Owned<UserProfile>();
             modelBuilder.Entity<Person>()
-                        .Property(e => e.Id)
-                        .UseMySQLAutoIncrementColumn(nameof(Person));
+                        .Property(e => e.Id);
         }
     }
 }

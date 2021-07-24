@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using IFramework.Command;
+using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
@@ -62,7 +63,7 @@ namespace IFramework.Event.Impl
             Logger = loggerFactory.CreateLogger(GetType());
         }
 
-        public string Producer => _producer ?? (_producer = $"{SubscriptionName}.{ConsumerId}");
+        public string Producer => _producer ?? (_producer = $"{SubscriptionName}{FrameworkConfigurationExtension.QueueNameSplit}{ConsumerId}");
 
 
         public void Start()
@@ -309,23 +310,31 @@ namespace IFramework.Event.Impl
         {
             messageContexts.ForEach(messageContext =>
             {
-                var tagFilter = TagFilters.TryGetValue(messageContext.Topic);
-                if (tagFilter != null)
+                try
                 {
-                    if (tagFilter(messageContext.Tags))
+                    var tagFilter = TagFilters.TryGetValue(messageContext.Topic);
+                    if (tagFilter != null)
+                    {
+                        if (tagFilter(messageContext.Tags))
+                        {
+                            MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
+                            MessageCount++;
+                        }
+                        else
+                        {
+                            InternalConsumer.CommitOffset(messageContext);
+                        }
+                    }
+                    else
                     {
                         MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
                         MessageCount++;
                     }
-                    else
-                    {
-                        InternalConsumer.CommitOffset(messageContext);
-                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
-                    MessageCount++;
+                    InternalConsumer.CommitOffset(messageContext);
+                    Logger.LogError(e, $"failed to process event: {messageContext.MessageOffset.ToJson()}");
                 }
             });
         }

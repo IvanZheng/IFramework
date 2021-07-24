@@ -10,13 +10,17 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace IFramework.EntityFrameworkCore
 {
+#pragma warning disable EF1001 // Internal EF Core API usage.
     public class ExtensionEntityMaterializerSource : EntityMaterializerSource
+#pragma warning restore EF1001 // Internal EF Core API usage.
     {
         public override Expression CreateMaterializeExpression(IEntityType entityType,
                                                                string entityInstanceName,
                                                                Expression materializationExpression)
         {
+#pragma warning disable EF1001 // Internal EF Core API usage.
             var expression = base.CreateMaterializeExpression(entityType, entityInstanceName, materializationExpression);
+#pragma warning restore EF1001 // Internal EF Core API usage.
             if (typeof(Entity).IsAssignableFrom(entityType.ClrType) && expression is BlockExpression blockExpression)
             {
                 var property = Expression.Property(blockExpression.Variables[0],
@@ -31,7 +35,9 @@ namespace IFramework.EntityFrameworkCore
             return expression;
         }
 
+#pragma warning disable EF1001 // Internal EF Core API usage.
         public ExtensionEntityMaterializerSource(EntityMaterializerSourceDependencies dependencies) : base(dependencies)
+#pragma warning restore EF1001 // Internal EF Core API usage.
         {
         }
     }

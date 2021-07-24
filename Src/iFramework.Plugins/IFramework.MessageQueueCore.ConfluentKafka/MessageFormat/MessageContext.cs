@@ -125,7 +125,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             protected set
             {
                 _message = value;
-                KafkaMessage.Payload = value.ToJson();
+                KafkaMessage.Payload = value;
                 if (value != null)
                 {
                     Headers["MessageType"] = this.GetMessageCode(value.GetType());;

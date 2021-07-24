@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Event;
 using IFramework.Exceptions;
@@ -56,7 +57,7 @@ namespace IFramework.Command.Impl
             Logger = loggerFactory.CreateLogger(GetType());
         }
 
-        public string Producer => _producer ?? (_producer = $"{CommandQueueName}.{ConsumerId}");
+        public string Producer => _producer ?? (_producer = $"{CommandQueueName}{FrameworkConfigurationExtension.QueueNameSplit}{ConsumerId}");
 
         public void Start()
         {
@@ -66,7 +67,7 @@ namespace IFramework.Command.Impl
                 {
                     InternalConsumer = MessageQueueClient.StartQueueClient(CommandQueueName,
                                                                            ConsumerId,
-                                                                           OnMessageReceived,
+                                                                           OnMessagesReceived,
                                                                            ConsumerConfig);
                 }
 
@@ -91,12 +92,20 @@ namespace IFramework.Command.Impl
 
         public decimal MessageCount { get; set; }
 
-        protected void OnMessageReceived(CancellationToken cancellationToken, params IMessageContext[] messageContexts)
+        protected void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] messageContexts)
         {
             messageContexts.ForEach(messageContext =>
             {
-                MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
-                MessageCount++;
+                try
+                {
+                    MessageProcessor.Process(messageContext.Key, () => ConsumeMessage(messageContext, cancellationToken));
+                    MessageCount++;
+                }
+                catch (Exception e)
+                {
+                    InternalConsumer.CommitOffset(messageContext);
+                    Logger.LogError(e, $"failed to process command: {messageContext.MessageOffset.ToJson()}");
+                }
             });
         }
 

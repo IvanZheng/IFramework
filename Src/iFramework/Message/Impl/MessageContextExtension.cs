@@ -14,7 +14,7 @@ namespace IFramework.Message.Impl
             return MessageTypeProvider.Value.GetMessageCode(type) ?? type.GetFullNameWithAssembly();
         }
 
-        public static object GetMessage(this IMessageContext messageContext, string messageBody)
+        public static object GetMessage(this IMessageContext messageContext, object messageBody)
         {
             object message = null;
             if (messageContext == null)
@@ -28,7 +28,7 @@ namespace IFramework.Message.Impl
                 var type = MessageTypeProvider.Value.GetMessageType(messageType.ToString());
                 if (type != null)
                 {
-                    message = messageBody.ToJsonObject(type);
+                    message = messageBody is string stringBody ? stringBody.ToJsonObject(type) : messageBody.ToJson().ToJsonObject(type);
                 }
             }
             return message;

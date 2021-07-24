@@ -31,17 +31,17 @@ namespace IFramework.Config
             return services;
         }
 
-        public static IServiceCollection AddCommonComponents(this IServiceCollection services, string app = null)
+        public static IServiceCollection AddCommonComponents(this IServiceCollection services, string app = null, string queueNameSplit = ".")
         {
             services.AddMemoryCache()
-                    .AddMicrosoftJson()
+                    //.AddMicrosoftJson()
                     .AddMessageStore<MockMessageStore>()
                     .AddMessageStoreDaemon<MockMessageStoreDaemon>()
                     .AddMockMessageQueueClient()
                     .AddMockMessagePublisher()
                     .AddDefaultEventBus()
                     .AddConcurrencyProcessor<ConcurrencyProcessor, UniqueConstrainExceptionParser>()
-                    .AddMessageQueue(app)
+                    .AddMessageQueue(app, queueNameSplit)
                     .MessageQueueUseMachineNameFormat()
                     .AddMessageTypeProvider<MessageTypeProvider>()
                     .AddMailbox<MailboxProcessor, DefaultProcessingMessageScheduler>()
@@ -128,11 +128,11 @@ namespace IFramework.Config
             return services;
         }
 
-        public static IServiceCollection AddMicrosoftJson(this IServiceCollection services)
-        {
-            services.AddSingleton<IJsonConvert>(new MicrosoftJsonConvert());
-            return services;
-        }
+        //public static IServiceCollection AddMicrosoftJson(this IServiceCollection services)
+        //{
+        //    services.AddSingleton<IJsonConvert>(new MicrosoftJsonConvert());
+        //    return services;
+        //}
 
         public static IServiceCollection AddMemoryCache(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
         {
@@ -143,6 +143,11 @@ namespace IFramework.Config
         public static IServiceCollection AddNullLogger(this IServiceCollection services)
         {
             return services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+        }
+
+        public static T Get<T>(this IConfiguration configuration, string key)
+        {
+            return configuration.GetSection(key).Get<T>();
         }
     }
 }

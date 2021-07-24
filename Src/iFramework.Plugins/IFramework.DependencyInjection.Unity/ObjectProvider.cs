@@ -22,8 +22,6 @@ namespace IFramework.DependencyInjection.Unity
 
         public IUnityContainer UnityContainer { get; private set; }
 
-        public override IObjectProvider Parent { get; }
-
         public override object GetService(Type serviceType)
         {
             return UnityContainer.Resolve(serviceType);
@@ -42,6 +40,7 @@ namespace IFramework.DependencyInjection.Unity
         public override void Dispose()
         {
             UnityContainer.Dispose();
+            UnityContainer = null;
         }
 
         public override IObjectProvider CreateScope()

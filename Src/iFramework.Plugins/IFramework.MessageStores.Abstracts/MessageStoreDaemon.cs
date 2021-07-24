@@ -59,6 +59,7 @@ namespace IFramework.MessageStores.Abstracts
             {
                 _cancellationTokenSource.Cancel(true);
                 _task.Wait();
+                _task = null;
             }
         }
 
@@ -96,16 +97,15 @@ namespace IFramework.MessageStores.Abstracts
                     ToRemoveMessage toRemoveMessage = null;
                     do
                     {
-                        _toRemoveMessages.TryDequeue(out toRemoveMessage);
-                        if (toRemoveMessage != null)
+                        if (_toRemoveMessages.TryDequeue(out toRemoveMessage))
                         {
                             toRemoveMessages.Add(toRemoveMessage);
                         }
-                    } while (toRemoveMessages.Count < 10 && toRemoveMessage != null);
+                    } while (toRemoveMessages.Count < 10 && toRemoveMessage != null && !cancellationTokenSource.IsCancellationRequested);
 
-                    if (toRemoveMessages.Count == 0)
+                    if (toRemoveMessages.Count == 0 && !cancellationTokenSource.IsCancellationRequested)
                     {
-                        Task.Delay(1000).Wait();
+                        Task.Delay(1000, cancellationTokenSource.Token).Wait();
                     }
                     else
                     {

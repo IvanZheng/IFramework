@@ -23,7 +23,9 @@ namespace IFramework.MessageStores.Abstracts
             : base(options)
         {
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+#pragma warning disable EF1001 // Internal EF Core API usage.
             InMemoryStore = options.FindExtension<InMemoryOptionsExtension>() != null;
+#pragma warning restore EF1001 // Internal EF Core API usage.
         }
 
         public DbSet<Command> Commands { get; set; }
@@ -113,43 +115,6 @@ namespace IFramework.MessageStores.Abstracts
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
         {
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
-        }
-
-        public void ExecuteByStrategy(Action action)
-        {
-            var strategy = Database.CreateExecutionStrategy();
-
-            strategy.Execute(action);
-        }
-
-     
-
-        public Task ExecuteByStrategyAsync(Func<CancellationToken, Task> task, CancellationToken cancellationToken)
-        {
-            var strategy = Database.CreateExecutionStrategy();
-            return strategy.ExecuteAsync(task, cancellationToken);
-        }
-
-        public void ExecuteInTransactionAsync(Action action)
-        { 
-            ExecuteByStrategy(() =>
-            { 
-                using var transaction = Database.BeginTransaction();
-                action();
-                transaction.Commit();
-            });
-        }
-
-        public Task ExecuteInTransactionAsync(Func<Task> task, CancellationToken cancellationToken)
-        {
-            return ExecuteByStrategyAsync(async c =>
-            {
-                await using var transaction = await Database.BeginTransactionAsync(c)
-                                                            .ConfigureAwait(false);
-                await task().ConfigureAwait(false);
-                await transaction.CommitAsync(c)
-                                 .ConfigureAwait(false);
-            },cancellationToken);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

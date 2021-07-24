@@ -12,7 +12,7 @@ namespace IFramework.DependencyInjection
         public abstract object GetService(Type serviceType);
         public abstract object GetRequiredService(Type serviceType);
         public abstract void Dispose();
-        public abstract IObjectProvider Parent { get; }
+        public IObjectProvider Parent { get; set; }
         public abstract IObjectProvider CreateScope();
         public abstract IObjectProvider CreateScope(IServiceCollection serviceCollection);
         public abstract IObjectProvider CreateScope(Action<IObjectProviderBuilder> buildAction);
