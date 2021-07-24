@@ -42,21 +42,22 @@ namespace IFramework.MessageQueue.ConfluentKafka
             Config = config ??  new ProducerConfig();
             
             _topic = topic;
-            var producerConfiguration = new Confluent.Kafka.ProducerConfig
+            var producerConfiguration = new Confluent.Kafka.ProducerConfig(Config.ToStringExtensions())
             {
                 BootstrapServers = brokerList,
-                Acks = (Acks)(Config["request.required.acks"] ?? 1),
                 SocketNagleDisable = true,
-                SecurityProtocol = Config["security.protocol"]?.ToString().ToEnum<SecurityProtocol>(),
-                SaslMechanism = Config["sasl.mechanism"]?.ToString().ToEnum<SaslMechanism>(),
-                SaslUsername = Config["sasl.username"]?.ToString(),
-                SaslPassword = Config["sasl.password"]?.ToString()
+                Acks = (Acks)(Config["request.required.acks"] ?? 1),
+                //SecurityProtocol = Config["security.protocol"]?.ToString().ToEnum<SecurityProtocol>(),
+                //SaslMechanism = Config["sasl.mechanism"]?.ToString().ToEnum<SaslMechanism>(),
+                //SaslUsername = Config["sasl.username"]?.ToString(),
+                //SaslPassword = Config["sasl.password"]?.ToString(),
+                //SslCaLocation = Config["ssl.ca.location"]?.ToString()
                 //{"socket.blocking.max.ms", Config["socket.blocking.max.ms"] ?? 50},
                 //{"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
             };
-
+            
             _producer = new ProducerBuilder<TKey, TValue>(producerConfiguration).SetValueSerializer(new KafkaMessageSerializer<TValue>())
-                                                                                .Build();
+                                                                                    .Build();
             //_producer.OnError += _producer_OnError;
         }
 

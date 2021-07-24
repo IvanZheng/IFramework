@@ -29,7 +29,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
-    <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.22" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.3.ci.20201114020548" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -45,7 +44,7 @@
     <ProjectReference Include="..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.EventStore.Redis\IFramework.EventStore.Redis.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
-    <ProjectReference Include="..\iFramework.Plugins\IFramework.Log4Net\IFramework.Log4Net.csproj" />
+    <ProjectReference Include="..\iFramework.Plugins\IFramework.Logging.Log4Net\IFramework.Logging.Log4Net.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.Microsoft.DependencyInjection\IFramework.DependencyInjection.Microsoft.csproj" />
     <ProjectReference Include="..\iFramework\IFramework.csproj" />
   </ItemGroup>

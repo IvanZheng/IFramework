@@ -3,12 +3,34 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IFramework.DependencyInjection;
+using IFramework.Infrastructure;
 using IFramework.MessageQueue;
 
 namespace IFramework.Message.Impl
 {
     public class MessagePublisher : MessageSender, IMessagePublisher
     {
+        public override void Start()
+        {
+            if (NeedMessageStore)
+            {
+                ObjectProviderFactory.GetService<IMessageStoreDaemon>().Start();
+                GetAllUnSentMessages().ForEach(eventContext => MessageStateQueue.Add(new MessageState(eventContext)));
+            }
+            base.Start();
+
+        }
+
+        public override void Stop()
+        {
+            if (NeedMessageStore)
+            { 
+                ObjectProviderFactory.GetService<IMessageStoreDaemon>().Stop();
+            }
+            base.Stop();
+        }
+
+
         public MessagePublisher(IMessageQueueClient messageQueueClient, string defaultTopic)
             : base(messageQueueClient, defaultTopic)
         {

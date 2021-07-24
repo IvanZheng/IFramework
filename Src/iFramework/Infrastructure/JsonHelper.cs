@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using IFramework.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -39,6 +40,11 @@ namespace IFramework.Infrastructure
             }
             try
             {
+                json = json.Trim();
+                if (jsonType == typeof(string) && (!json.StartsWith("\"") && !json.StartsWith("'") || !json.EndsWith("\"") && !json.EndsWith("'")))
+                {
+                    return json;
+                }
                 if (jsonType == typeof(List<dynamic>))
                 {
                     return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
@@ -46,6 +52,18 @@ namespace IFramework.Infrastructure
                 if (jsonType == typeof(object))
                 {
                     return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
+                }
+
+                if (jsonType.IsPrimitive || jsonType == typeof(Guid))
+                {
+                    if (!json.StartsWith("\"") && !json.StartsWith("'") || !json.EndsWith("\"") && !json.EndsWith("'"))
+                    {
+                        TypeConverter converter = TypeDescriptor.GetConverter(jsonType);
+                        if (converter.CanConvertFrom(typeof(string)))
+                        {
+                            return converter.ConvertFromInvariantString(json);
+                        }
+                    }
                 }
                 return JsonConvert.DeserializeObject(json, jsonType, serializeNonPublic, loopSerialize, useCamelCase);
             }
@@ -67,13 +85,30 @@ namespace IFramework.Infrastructure
             }
             try
             {
-                if (typeof(T) == typeof(List<dynamic>))
+                var jsonType = typeof(T);
+                json = json.Trim();
+                if (jsonType == typeof(string) && (!json.StartsWith("\"") && !json.StartsWith("'") || !json.EndsWith("\"") && !json.EndsWith("'")))
                 {
-                    return (T)(object)json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
+                    return (T)(object)json;
+                }
+                if (typeof(T) == typeof(IEnumerable<dynamic>))
+                {
+                    return (T)json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
                 }
                 if (typeof(T) == typeof(object))
                 {
                     return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
+                }
+                if (jsonType.IsPrimitive || jsonType == typeof(Guid))
+                {
+                    if (!json.StartsWith("\"") && !json.StartsWith("'") || !json.EndsWith("\"") && !json.EndsWith("'"))
+                    {
+                        TypeConverter converter = TypeDescriptor.GetConverter(jsonType);
+                        if (converter.CanConvertFrom(typeof(string)))
+                        {
+                            return (T)converter.ConvertFromInvariantString(json);
+                        }
+                    }
                 }
                 return JsonConvert.DeserializeObject<T>(json, serializeNonPublic, loopSerialize, useCamelCase);
             }
@@ -92,7 +127,7 @@ namespace IFramework.Infrastructure
             return JsonConvert.DeserializeDynamicObject(json, serializeNonPublic, loopSerialize, useCamelCase);
         }
 
-        public static List<dynamic> ToDynamicObjects(this string json,
+        public static IEnumerable<dynamic> ToDynamicObjects(this string json,
                                                      bool serializeNonPublic = false,
                                                      bool loopSerialize = false,
                                                      bool useCamelCase = false)

@@ -5,12 +5,12 @@ using Autofac;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
-using IFramework.Log4Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
+using IFramework.Logging.Log4Net;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.Test

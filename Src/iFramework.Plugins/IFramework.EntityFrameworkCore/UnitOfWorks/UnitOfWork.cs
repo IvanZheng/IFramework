@@ -36,13 +36,17 @@ namespace IFramework.EntityFrameworkCore.UnitOfWorks
             MessageQueueClient = messageQueueClient;
             EventMessageStates = new List<MessageState>();
             AnywayPublishEventMessageStates = new List<MessageState>();
+            if (messageStore is MsDbContext dbContext)
+            {
+                RegisterDbContext(dbContext);
+            }
         }
 
         protected bool HasMessageContext => !(_messageContext is EmptyMessageContext);
 
-        protected override async Task BeforeCommitAsync()
+        protected override async Task CommittingAsync()
         {
-            await base.BeforeCommitAsync().ConfigureAwait(false);
+            await base.CommittingAsync().ConfigureAwait(false);
             if (HasMessageContext)
             {
                 return;

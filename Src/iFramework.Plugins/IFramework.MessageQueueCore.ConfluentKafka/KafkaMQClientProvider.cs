@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using Confluent.Kafka;
+using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
@@ -84,7 +85,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             config = config ?? new ConsumerConfig();
             FillExtensions(config.Extensions);
-            var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, new []{queue}, $"{queue}.consumer", consumerId,
+            var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, new []{queue}, $"{queue}{FrameworkConfigurationExtension.QueueNameSplit}consumer", consumerId,
                                                                    BuildOnKafkaMessageReceived(onMessagesReceived),
                                                                    config);
             if (start)

@@ -112,6 +112,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
             {
                 _cancellationSource.Cancel(true);
                 Task.WaitAll(_processComandTask);
+                _processComandTask = null;
             }
         }
 

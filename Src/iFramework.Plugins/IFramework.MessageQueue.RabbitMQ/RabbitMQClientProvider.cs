@@ -78,7 +78,6 @@ namespace IFramework.MessageQueue.RabbitMQ
                                                     bool start = true)
         {
             var channel = _connection.CreateModel();
-            commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
 
             channel.QueueDeclare(commandQueueName, true, false, false, null);
             channel.BasicQos(0, (ushort) consumerConfig.FullLoadThreshold, false);
@@ -108,7 +107,6 @@ namespace IFramework.MessageQueue.RabbitMQ
 
             topics.ForEach(topic =>
             {
-                topic = Configuration.Instance.FormatMessageQueueName(topic);
                 channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
                 channel.QueueBind(queueName,
                                   topic,

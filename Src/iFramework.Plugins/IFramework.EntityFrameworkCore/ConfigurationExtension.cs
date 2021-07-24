@@ -16,7 +16,6 @@ namespace IFramework.EntityFrameworkCore
         ///     TDbContext is the default type for Repository<TEntity />'s dbContext injected paramter
         /// </summary>
         /// <param name="services"></param>
-        /// <param name="builder"></param>
         /// <param name="defaultRepositoryType"></param>
         /// <param name="lifetime"></param>
         /// <returns></returns>

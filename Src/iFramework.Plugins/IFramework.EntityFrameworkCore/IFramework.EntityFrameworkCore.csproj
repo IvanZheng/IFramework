@@ -7,14 +7,15 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Company>Ivan</Company>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
-    <PackageReleaseNotes>1. Add IRepository.AddAsync method
-2. Support ConcurrentProcess for unique constrain validation.</PackageReleaseNotes>
-    <Description>EFCore 5.0</Description>
+	<PackageReleaseNotes>Enable SourceLink.</PackageReleaseNotes>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\netstandard2.0\IFramework.EntityFrameworkCore.xml</DocumentationFile>
-    <NoWarn>1701;1702;1591;EF1000</NoWarn>
+    <NoWarn>1701;1702;1591;</NoWarn>
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
@@ -26,6 +27,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using IFramework.Command;
+using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
@@ -62,7 +63,7 @@ namespace IFramework.Event.Impl
             Logger = loggerFactory.CreateLogger(GetType());
         }
 
-        public string Producer => _producer ?? (_producer = $"{SubscriptionName}.{ConsumerId}");
+        public string Producer => _producer ?? (_producer = $"{SubscriptionName}{FrameworkConfigurationExtension.QueueNameSplit}{ConsumerId}");
 
 
         public void Start()

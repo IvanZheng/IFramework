@@ -143,7 +143,9 @@ namespace IFramework.EntityFrameworkCore
 
         public virtual void Rollback()
         {
+#pragma warning disable EF1001 // Internal EF Core API usage.
             var stateManager = (this as IDbContextDependencies).StateManager;
+#pragma warning restore EF1001 // Internal EF Core API usage.
             stateManager?.ResetState();
 
             //do
@@ -200,24 +202,57 @@ namespace IFramework.EntityFrameworkCore
             }
         }
 
-        //public virtual async Task DoInTransactionAsync(Func<Task> func, IsolationLevel level, 
-        //                                               CancellationToken cancellationToken = default(CancellationToken))
-        //{
-        //    using (var scope = await Database.BeginTransactionAsync(level,
-        //                                                             cancellationToken))
-        //    {
-        //        await func().ConfigureAwait(false);
-        //        scope.Commit();
-        //    }
-        //}
+        public void ExecuteByStrategy(Action action)
+        {
+            var strategy = Database.CreateExecutionStrategy();
 
-        //public virtual void DoInTransaction(Action action, IsolationLevel level)
-        //{
-        //    using (var scope = Database.BeginTransaction(level))
-        //    {
-        //        action();
-        //        scope.Commit();
-        //    }
-        //}
+            strategy.Execute(action);
+        }
+
+        public Task ExecuteByStrategyAsync(Func<CancellationToken, Task> task, CancellationToken cancellationToken)
+        {
+            var strategy = Database.CreateExecutionStrategy();
+            return strategy.ExecuteAsync(task, cancellationToken);
+        }
+
+        public void ExecuteInTransaction(Action action)
+        { 
+            ExecuteByStrategy(() =>
+            {
+                if (Database.CurrentTransaction == null)
+                {
+                    using (var transaction = Database.BeginTransaction())
+                    {
+                        action();
+                        transaction.Commit();
+                    }
+                }
+                else
+                {
+                    action();
+                }
+            });
+        }
+
+        public Task ExecuteInTransactionAsync(Func<Task> task, CancellationToken cancellationToken)
+        {
+            return ExecuteByStrategyAsync(async c =>
+            {
+                if (Database.CurrentTransaction == null)
+                {
+                    using (var transaction = await Database.BeginTransactionAsync(c)
+                                                           .ConfigureAwait(false))
+                    {
+                        await task().ConfigureAwait(false);
+                        await transaction.CommitAsync(c)
+                                         .ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    await task().ConfigureAwait(false);
+                }
+            },cancellationToken);
+        }
     }
 }

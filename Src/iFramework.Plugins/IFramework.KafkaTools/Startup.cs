@@ -7,7 +7,6 @@ using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.DependencyInjection.Unity;
 using IFramework.JsonNet;
-using IFramework.Log4Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -62,7 +61,6 @@ namespace IFramework.KafkaTools
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

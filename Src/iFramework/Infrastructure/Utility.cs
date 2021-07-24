@@ -18,7 +18,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.MessageQueue;
+using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure
 {
@@ -27,7 +29,15 @@ namespace IFramework.Infrastructure
         private static readonly ConcurrentDictionary<string, MethodInfo> MethodInfoDictionary = new ConcurrentDictionary<string, MethodInfo>();
         private const string KBase36Digits = "0123456789abcdefghijklmnopqrstuvwxyz";
         private static readonly uint[] Lookup32 = CreateLookup32();
-
+        private static readonly ILogger Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(nameof(Utility));
+        
+        public static T Clone<T>(this T obj, object newValues = null, bool deSerializeNonPublic = true) where T: class
+        {
+            var cloned = obj.ToJson().ToJsonObject<T>(deSerializeNonPublic);
+            newValues?.GetType().GetProperties().ForEach(p => { cloned.SetValueByKey(p.Name, p.GetValue(newValues)); });
+            return cloned;
+        }
+        
         public static string GetFullNameWithAssembly(this Type type)
         {
             return $"{type.FullName}, {type.Assembly.GetName().Name}";
@@ -67,9 +77,17 @@ namespace IFramework.Infrastructure
 
         public static IPAddress GetLocalIpv4()
         {
-            return Dns.GetHostEntry(Dns.GetHostName())
-                      .AddressList
-                      .First(x => x.AddressFamily == AddressFamily.InterNetwork);
+            try
+            {
+                return Dns.GetHostEntry(Dns.GetHostName())
+                          .AddressList
+                          .FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+                return null;
+            }
         }
 
         private static uint[] CreateLookup32()

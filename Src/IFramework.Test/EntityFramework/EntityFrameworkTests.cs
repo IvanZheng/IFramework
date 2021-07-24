@@ -10,7 +10,7 @@ using IFramework.DependencyInjection.Autofac;
 using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
-using IFramework.Log4Net;
+using IFramework.Logging.Log4Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -31,9 +31,10 @@ namespace IFramework.Test.EntityFramework
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
-            var configuratoin = builder.Build();
+            var configuration = builder.Build();
             var optionsBuilder = new DbContextOptionsBuilder<DemoDbContext>();
-            optionsBuilder.UseMySQL(configuratoin.GetConnectionString(MySqlConnectionStringName));
+            var connectionString = configuration.GetConnectionString(MySqlConnectionStringName);
+            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
             //optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
             //optionsBuilder.UseMongoDb(configuratoin.GetConnectionString(MongoDbConnectionStringName));
             return new DemoDbContext(optionsBuilder.Options);

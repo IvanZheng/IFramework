@@ -57,12 +57,16 @@ namespace IFramework.MessageQueue.Client.Abstracts
 
         public virtual void Stop()
         {
-            CancellationTokenSource?.Cancel(true);
-            ConsumerTask?.Wait();
-            ConsumerTask?.Dispose();
-            SlidingDoors.Clear();
-            ConsumerTask = null;
-            CancellationTokenSource = null;
+            if (ConsumerTask != null)
+            {
+                CancellationTokenSource.Cancel(true);
+                ConsumerTask.Wait();
+                ConsumerTask.Dispose();
+                SlidingDoors.Clear();
+                ConsumerTask = null;
+                CancellationTokenSource = null;
+            }
+            
         }
 
         public virtual void CommitOffset(IMessageContext messageContext)
@@ -98,7 +102,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
                     if (!cancellationTokenSource.IsCancellationRequested)
                     {
                         Task.Delay(1000).Wait();
-                        Logger.LogError(ex, $"{Id} ReceiveMessages failed!");
+                        Logger.LogError(ex, $"{Id} topic:{string.Join(",", Topics)} ReceiveMessages failed!");
                     }
                 }
             }
