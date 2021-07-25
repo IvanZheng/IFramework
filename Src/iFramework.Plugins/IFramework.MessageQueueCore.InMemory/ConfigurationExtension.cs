@@ -13,12 +13,8 @@ namespace IFramework.MessageQueue.InMemory
     {
         public static IServiceCollection AddInMemoryMessageQueue(this IServiceCollection services)
         {
-            services.AddCustomOptions<MessageQueueOptions>(options =>
-            {
-                options.EnableIdempotent = false;
-                options.EnsureArrival = false;
-                options.PersistEvent = false;
-            });
+            services.AddSingleton(new MessageQueueOptions(false, false, false));
+
             services.AddService<IMessageQueueClient, InMemoryClient>(ServiceLifetime.Singleton);
             return services;
         }

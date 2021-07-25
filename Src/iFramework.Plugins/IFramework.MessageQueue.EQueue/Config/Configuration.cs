@@ -32,21 +32,10 @@ namespace IFramework.Config
                                               string nameServerAddresses = null,
                                               string clusterName = "DefaultCluster",
                                               int nameServerPort = 9493,
-                                              Action<MessageQueueOptions> mqOptions = null)
+                                              MessageQueueOptions mqOptions = null)
         {
-            if (mqOptions == null)
-            {
-                services.AddCustomOptions<MessageQueueOptions>(o =>
-                {
-                    o.EnableIdempotent = true;
-                    o.EnsureArrival = true;
-                    o.PersistEvent = true;
-                });
-            }
-            else
-            {
-                services.AddCustomOptions(mqOptions);
-            }
+            services.AddSingleton(mqOptions ?? new MessageQueueOptions());
+
             InitializeEqueue();
 
             services.AddSingleton<IMessageQueueClientProvider, EQueueClientProvider>(new ConstructInjection(new ParameterInjection("clusterName", clusterName),

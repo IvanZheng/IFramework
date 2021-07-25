@@ -23,7 +23,7 @@ namespace IFramework.MessageStores.Abstracts
         protected MessageStore(DbContextOptions options)
             : base(options)
         {
-            Options = ObjectProviderFactory.GetService<IOptions<MessageQueueOptions>>().Value;
+            Options = ObjectProviderFactory.GetService<MessageQueueOptions>();
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
 #pragma warning disable EF1001 // Internal EF Core API usage.
             InMemoryStore = options.FindExtension<InMemoryOptionsExtension>() != null;
@@ -42,7 +42,7 @@ namespace IFramework.MessageStores.Abstracts
                                      params IMessageContext[] messageContexts)
         {
             var needSaveChanges = false;
-            if (commandContext != null && Options.EnableIdempotent)
+            if (commandContext != null && Options.EnsureIdempotent)
             {
                 var command = BuildCommand(commandContext, result);
                 Commands.Add(command);
@@ -76,7 +76,7 @@ namespace IFramework.MessageStores.Abstracts
         {
             var needSaveChanges = false;
 
-            if (commandContext != null && Options.EnableIdempotent)
+            if (commandContext != null && Options.EnsureIdempotent)
             {
                 var command = BuildCommand(commandContext, ex);
                 command.Status = MessageStatus.Failed;
@@ -120,7 +120,7 @@ namespace IFramework.MessageStores.Abstracts
         {
             CommandHandledInfo commandHandledInfo = null;
 
-            if (!Options.EnableIdempotent)
+            if (!Options.EnsureIdempotent)
             {
                 return null;
             }

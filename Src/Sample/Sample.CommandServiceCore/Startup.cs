@@ -98,7 +98,7 @@ namespace Sample.CommandServiceCore
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                     .AddRelationalMessageStore<SampleModelContext>()
                     //.AddEQueue()
-                    //.AddConfluentKafka()
+                    //.AddConfluentKafka(new MessageQueueOptions(false, false, false))
                     .AddInMemoryMessageQueue()
                     //.AddRabbitMQ(rabbitConnectionFactory)
                     .AddMessagePublisher("eventTopic")

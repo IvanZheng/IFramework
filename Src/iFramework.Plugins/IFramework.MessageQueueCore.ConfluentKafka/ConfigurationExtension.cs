@@ -11,23 +11,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
 {
     public static class ConfigurationExtension
     {
+        
         public static IServiceCollection AddConfluentKafka(this IServiceCollection services,
-                                                           Action<KafkaClientOptions> options = null,
-                                                           Action<MessageQueueOptions> mqOptions = null)
+                                                           MessageQueueOptions mqOptions = null,
+                                                           Action<KafkaClientOptions> options = null)
         {
-            if (mqOptions == null)
-            {
-                services.AddCustomOptions<MessageQueueOptions>(o =>
-                {
-                    o.EnableIdempotent = true;
-                    o.EnsureArrival = true;
-                    o.PersistEvent = true;
-                });
-            }
-            else
-            {
-                services.AddCustomOptions(mqOptions);
-            }
+            services.AddSingleton(mqOptions ?? new MessageQueueOptions());
             services.AddCustomOptions(options);
             services.AddService<IMessageQueueClientProvider, KafkaMQClientProvider>();
             services.AddService<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);

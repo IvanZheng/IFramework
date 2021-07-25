@@ -26,7 +26,7 @@ namespace IFramework.Message.Impl
 
         protected MessageSender(IMessageQueueClient messageQueueClient, string defaultTopic = null)
         {
-            EnsureArrival = ObjectProviderFactory.GetService<IOptions<MessageQueueOptions>>().Value.EnsureArrival;
+            EnsureArrival = ObjectProviderFactory.GetService<MessageQueueOptions>().EnsureArrival;
             MessageQueueClient = messageQueueClient;
             DefaultTopic = defaultTopic;
             MessageStateQueue = new BlockingCollection<MessageState>();

@@ -13,21 +13,10 @@ namespace IFramework.MessageQueue.RabbitMQ
     {
         public static IServiceCollection AddRabbitMQ(this IServiceCollection services,
                                                 ConnectionFactory connectionFactory,
-                                                Action<MessageQueueOptions> mqOptions = null)
+                                                MessageQueueOptions mqOptions = null)
         {
-            if (mqOptions == null)
-            {
-                services.AddCustomOptions<MessageQueueOptions>(o =>
-                {
-                    o.EnableIdempotent = true;
-                    o.EnsureArrival = true;
-                    o.PersistEvent = true;
-                });
-            }
-            else
-            {
-                services.AddCustomOptions(mqOptions);
-            }
+            services.AddSingleton(mqOptions ?? new MessageQueueOptions());
+
             Configuration.Instance.SetCommitPerMessage(true);
             var constructInjection = new ConstructInjection(new ParameterInjection("connectionFactory", connectionFactory));
 

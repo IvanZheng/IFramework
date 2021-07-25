@@ -21,7 +21,7 @@ namespace IFramework.MessageStores.Relational
                                               IEnumerable<IMessageContext> messageContexts)
         {
             var needSaveChanges = false;
-            if (Options.EnableIdempotent)
+            if (Options.EnsureIdempotent)
             {
                 HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now));
                 needSaveChanges = true;
@@ -59,7 +59,7 @@ namespace IFramework.MessageStores.Relational
 
         public override Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
-            if (!Options.EnableIdempotent)
+            if (!Options.EnsureIdempotent)
             {
                 return Task.FromResult(false);
             }
@@ -72,7 +72,7 @@ namespace IFramework.MessageStores.Relational
                                                        params IMessageContext[] messageContexts)
         {
             var needSaveChanges = false;
-            if (Options.EnableIdempotent)
+            if (Options.EnsureIdempotent)
             {
                 FailHandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now, e));
                 needSaveChanges = true;
