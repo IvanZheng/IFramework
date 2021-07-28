@@ -1,4 +1,6 @@
-﻿using IFramework.Config;
+﻿using System;
+using IFramework.Config;
+using IFramework.DependencyInjection;
 using IFramework.Message;
 using IFramework.MessageStores.Abstracts;
 using Microsoft.Extensions.DependencyInjection;

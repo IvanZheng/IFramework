@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.Message;
@@ -19,24 +20,49 @@ namespace IFramework.MessageStores.Relational
                                               IEnumerable<IMessageContext> commandContexts,
                                               IEnumerable<IMessageContext> messageContexts)
         {
-            HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now));
-            commandContexts.ForEach(commandContext =>
+            var needSaveChanges = false;
+            if (Options.EnsureIdempotent)
             {
-                commandContext.CorrelationId = eventContext.MessageId;
-                // don't save command here like event that would be published to other bounded context
-                UnSentCommands.Add(new UnSentCommand(commandContext));
-            });
+                HandledEvents.Add(new HandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now));
+                needSaveChanges = true;
+            }
+
+            if (Options.EnsureArrival)
+            {
+                commandContexts.ForEach(commandContext =>
+                {
+                    commandContext.CorrelationId = eventContext.MessageId;
+                    // don't save command here like event that would be published to other bounded context
+                    UnSentCommands.Add(new UnSentCommand(commandContext));
+                    needSaveChanges = true;
+                });
+            }
+           
             messageContexts.ForEach(messageContext =>
             {
                 messageContext.CorrelationId = eventContext.MessageId;
-                Events.Add(BuildEvent(messageContext));
-                UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
+                if (Options.PersistEvent)
+                {
+                    Events.Add(BuildEvent(messageContext));
+                    needSaveChanges = true;
+                }
+
+                if (Options.EnsureArrival)
+                {
+                    UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
+                    needSaveChanges = true;
+                }
             });
-            return SaveChangesAsync();
+
+            return needSaveChanges ? SaveChangesAsync() : Task.CompletedTask;
         }
 
         public override Task<bool> HasEventHandledAsync(string eventId, string subscriptionName)
         {
+            if (!Options.EnsureIdempotent)
+            {
+                return Task.FromResult(false);
+            }
             return HandledEvents.AnyAsync(@event => @event.Id == eventId && @event.SubscriptionName == subscriptionName);
         }
 
@@ -45,15 +71,30 @@ namespace IFramework.MessageStores.Relational
                                                        Exception e,
                                                        params IMessageContext[] messageContexts)
         {
-            FailHandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now, e));
+            var needSaveChanges = false;
+            if (Options.EnsureIdempotent)
+            {
+                FailHandledEvents.Add(new FailHandledEvent(eventContext.MessageId, subscriptionName, eventContext.MessageOffset, DateTime.Now, e));
+                needSaveChanges = true;
+            }
 
             messageContexts.ForEach(messageContext =>
             {
                 messageContext.CorrelationId = eventContext.MessageId;
-                Events.Add(BuildEvent(messageContext));
-                UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
+                if (Options.PersistEvent)
+                {
+                    Events.Add(BuildEvent(messageContext));
+                    needSaveChanges = true;
+                }
+
+                if (Options.EnsureArrival)
+                {
+                    UnPublishedEvents.Add(new UnPublishedEvent(messageContext));
+                    needSaveChanges = true;
+                }
             });
-            return SaveChangesAsync();
+
+            return  needSaveChanges ? SaveChangesAsync(): Task.CompletedTask;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

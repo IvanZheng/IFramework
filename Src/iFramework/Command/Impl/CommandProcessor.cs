@@ -111,7 +111,6 @@ namespace IFramework.Command.Impl
 
         protected void GetSagaReplyMessageState(List<MessageState> messageStates, SagaInfo sagaInfo, IEventBus eventBus)
         {
-            var eventMessageStates = new List<MessageState>();
             var sagaResult = eventBus.GetSagaResult();
             if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId) && sagaResult != null)
             {

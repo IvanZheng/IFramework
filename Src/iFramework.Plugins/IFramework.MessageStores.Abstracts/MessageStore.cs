@@ -12,16 +12,18 @@ using IFramework.MessageQueue;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace IFramework.MessageStores.Abstracts
 {
     public abstract class MessageStore : MsDbContext, IMessageStore
     {
         protected readonly ILogger Logger;
-
+        protected readonly MessageQueueOptions Options;
         protected MessageStore(DbContextOptions options)
             : base(options)
         {
+            Options = ObjectProviderFactory.GetService<MessageQueueOptions>();
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
 #pragma warning disable EF1001 // Internal EF Core API usage.
             InMemoryStore = options.FindExtension<InMemoryOptionsExtension>() != null;
@@ -39,39 +41,66 @@ namespace IFramework.MessageStores.Abstracts
                                      object result = null,
                                      params IMessageContext[] messageContexts)
         {
-            if (commandContext != null)
+            var needSaveChanges = false;
+            if (commandContext != null && Options.EnsureIdempotent)
             {
                 var command = BuildCommand(commandContext, result);
                 Commands.Add(command);
+                needSaveChanges = true;
             }
 
+            
             messageContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationId = commandContext?.MessageId;
-                Events.Add(BuildEvent(eventContext));
-                UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
+                if (Options.PersistEvent)
+                {
+                    Events.Add(BuildEvent(eventContext));
+                    needSaveChanges = true;
+                }
+
+                if (Options.EnsureArrival)
+                {
+                    UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
+                    needSaveChanges = true;
+                }
             });
-            return SaveChangesAsync();
+
+            
+            return needSaveChanges ? SaveChangesAsync() : Task.CompletedTask;
         }
 
         public Task SaveFailedCommandAsync(IMessageContext commandContext,
                                            Exception ex = null,
                                            params IMessageContext[] eventContexts)
         {
-            if (commandContext != null)
+            var needSaveChanges = false;
+
+            if (commandContext != null && Options.EnsureIdempotent)
             {
                 var command = BuildCommand(commandContext, ex);
                 command.Status = MessageStatus.Failed;
                 Commands.Add(command);
+                needSaveChanges = true;
             }
 
             eventContexts?.ForEach(eventContext =>
             {
                 eventContext.CorrelationId = commandContext?.MessageId;
-                Events.Add(BuildEvent(eventContext));
-                UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
+                if (Options.PersistEvent)
+                {
+                    Events.Add(BuildEvent(eventContext));
+                    needSaveChanges = true;
+                }
+
+                if (Options.EnsureArrival)
+                {
+                    UnPublishedEvents.Add(new UnPublishedEvent(eventContext));
+                    needSaveChanges = true;
+                }
             });
-            return SaveChangesAsync();
+
+            return needSaveChanges ? SaveChangesAsync() : Task.CompletedTask;
         }
 
 
@@ -90,6 +119,13 @@ namespace IFramework.MessageStores.Abstracts
         public virtual async Task<CommandHandledInfo> GetCommandHandledInfoAsync(string commandId)
         {
             CommandHandledInfo commandHandledInfo = null;
+
+            if (!Options.EnsureIdempotent)
+            {
+                return null;
+            }
+
+
             var command = await Commands.FirstOrDefaultAsync(c => c.Id == commandId)
                                         .ConfigureAwait(false);
             if (command != null)
@@ -108,12 +144,20 @@ namespace IFramework.MessageStores.Abstracts
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
         {
+            if (!Options.EnsureArrival)
+            {
+                return new IMessageContext[0];
+            }
             return GetAllUnSentMessages<UnSentCommand>(wrapMessage);
         }
 
         public IEnumerable<IMessageContext> GetAllUnPublishedEvents(
             Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
         {
+            if (!Options.EnsureArrival)
+            {
+                return new IMessageContext[0];
+            }
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
 
