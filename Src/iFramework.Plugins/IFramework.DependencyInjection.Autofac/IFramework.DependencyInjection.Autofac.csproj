@@ -8,8 +8,9 @@
 	<PackageReleaseNotes>Enable SourceLink.</PackageReleaseNotes>
 	<PublishRepositoryUrl>true</PublishRepositoryUrl>
 	<IncludeSymbols>true</IncludeSymbols>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-   </PropertyGroup>
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\netstandard2.0\IFramework.DependencyInjection.Autofac.xml</DocumentationFile>

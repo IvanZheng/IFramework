@@ -24,7 +24,8 @@ namespace IFramework.Logging.Abstracts
             var contents = new Dictionary<string, string>
             {
                 ["Message"] = FormatState(State),
-                ["Level"] = Level.ToString()
+                ["Level"] = Level.ToString(),
+                ["Logger"] = Logger
             };
             if (Exception != null)
             {

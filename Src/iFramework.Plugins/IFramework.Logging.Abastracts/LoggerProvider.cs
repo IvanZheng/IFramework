@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -10,15 +11,17 @@ namespace IFramework.Logging.Abstracts
 {
     public abstract class LoggerProvider : ILoggerProvider
     {
+        private readonly int _batchCount;
         private readonly ConcurrentDictionary<string, ILogger> _loggers = new ConcurrentDictionary<string, ILogger>();
         private readonly AsyncLocal<LoggerScope> _value = new AsyncLocal<LoggerScope>();
-        private readonly BlockingCollection<LogEvent> _logQueue = new BlockingCollection<LogEvent>();
+        private readonly ConcurrentQueue<LogEvent> _logQueue = new ConcurrentQueue<LogEvent>();
         protected CancellationTokenSource CancellationTokenSource;
         protected bool Disposed = false;
         private Task _processLogTask;
         public bool AsyncLog { get; }
-        protected LoggerProvider(LogLevel minLevel = LogLevel.Debug, bool asyncLog = true)
+        protected LoggerProvider(LogLevel minLevel = LogLevel.Debug, bool asyncLog = true, int batchCount = 100)
         {
+            _batchCount = batchCount;
             MinLevel = minLevel;
             AsyncLog = asyncLog;
             if (asyncLog)
@@ -38,8 +41,20 @@ namespace IFramework.Logging.Abstracts
             {
                 try
                 {
-                    var logEvent = _logQueue.Take(cs.Token); 
-                    Log(logEvent);
+                    var logEvents = new List<LogEvent>();
+                    while (logEvents.Count < _batchCount && _logQueue.TryDequeue(out var logEvent))
+                    {
+                        logEvents.Add(logEvent);
+                    }
+                   
+                    if (logEvents.Count == 0)
+                    {
+                        Task.Delay(100).Wait();
+                    }
+                    else
+                    {
+                        Log(logEvents.ToArray());
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -102,7 +117,7 @@ namespace IFramework.Logging.Abstracts
             }
             if (AsyncLog)
             {
-                _logQueue.Add(logEvent);
+                _logQueue.Enqueue(logEvent);
             }
             else
             {
@@ -110,6 +125,6 @@ namespace IFramework.Logging.Abstracts
             }
         }
 
-        protected abstract void Log(LogEvent logEvent);
+        protected abstract void Log(params LogEvent[] logEvents);
     }
 }

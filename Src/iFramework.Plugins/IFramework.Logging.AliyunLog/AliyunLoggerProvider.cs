@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Aliyun.Api.LogService;
@@ -14,10 +15,14 @@ namespace IFramework.Logging.AliyunLog
 {
     public class AliyunLoggerProvider :LoggerProvider
     {
-        private readonly Func<LogEvent, LogGroupInfo> _getLogGroupInfo;
+        private readonly Func<IEnumerable<LogEvent>, LogGroupInfo> _getLogGroupInfo;
         private readonly HttpLogServiceClient _client;
-        public AliyunLoggerProvider(AliyunLogOptions options, LogLevel minLevel = LogLevel.Information, bool asyncLog = true, Func<LogEvent, LogGroupInfo> getLogGroupInfo = null)
-            :base(minLevel, asyncLog)
+        public AliyunLoggerProvider(AliyunLogOptions options, 
+                                    LogLevel minLevel = LogLevel.Information, 
+                                    bool asyncLog = true, 
+                                    Func<IEnumerable<LogEvent>, LogGroupInfo> getLogGroupInfo = null,
+                                    int batchCount = 100)
+            :base(minLevel, asyncLog, batchCount)
         {
             _getLogGroupInfo = getLogGroupInfo ?? GetLogGroupInfo;
             Options = options;
@@ -33,28 +38,28 @@ namespace IFramework.Logging.AliyunLog
             return new DefaultLogger(this, categoryName, minLevel);
         }
 
-        private LogGroupInfo GetLogGroupInfo(LogEvent logEvent)
+        private LogGroupInfo GetLogGroupInfo(IEnumerable<LogEvent> logEvents)
         {
             return new LogGroupInfo
             {
-                Logs = new List<LogInfo>{new LogInfo
+                Logs = logEvents.Select(logEvent => new LogInfo
                 {
                     Time = logEvent.Timestamp,
                     Contents = logEvent.GetContents()
-                }},
-                Topic = logEvent.Logger,
+                }).ToList(),
+                Topic = Options.Topic,
                 Source = Utility.GetLocalIpv4().ToString()
             };
         }
 
-        protected override void Log(LogEvent logEvent)
+        protected override void Log(params LogEvent[] logEvents)
         {
             if (Disposed)
             {
                 return;
             }
 
-            var logInfo = _getLogGroupInfo(logEvent);
+            var logInfo = _getLogGroupInfo(logEvents);
             var response =  _client.PostLogStoreLogsAsync(new PostLogsRequest(Options.LogStore,
                                                                               logInfo))
                                    .GetAwaiter()

@@ -7,5 +7,6 @@
         public string AccessKey { get; set; }
         public string Project { get; set; }
         public string LogStore { get; set; }
+        public string Topic { get; set; }
     }
 }

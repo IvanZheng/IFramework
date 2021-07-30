@@ -6,6 +6,7 @@
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <AssemblyName>IFramework.JsonNet</AssemblyName>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <RootNamespace>IFramework.JsonNet</RootNamespace>
 	  <PackageReleaseNotes>Enable SourceLink.</PackageReleaseNotes>
 	  <PublishRepositoryUrl>true</PublishRepositoryUrl>

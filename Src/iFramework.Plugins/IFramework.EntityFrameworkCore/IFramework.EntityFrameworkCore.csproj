@@ -9,8 +9,9 @@
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
 	<PackageReleaseNotes>Enable SourceLink.</PackageReleaseNotes>
 	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	<IncludeSymbols>true</IncludeSymbols>
-	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

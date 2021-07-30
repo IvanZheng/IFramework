@@ -10,14 +10,15 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
+using IFramework.Logging.AliyunLog;
 using IFramework.Logging.Log4Net;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.Test
 {
-    public class AliyunLoggerTests
+    public class Log4NetLoggerTests
     {
-        public AliyunLoggerTests()
+        public Log4NetLoggerTests()
         {
         }
 
@@ -30,7 +31,7 @@ namespace IFramework.Test
             services.AddAutofacContainer(new ContainerBuilder())
                          .AddConfiguration(builder.Build())
                          .AddJsonNet()
-                         .AddLog4Net();
+                         .AddAliyunLog();
 
             ObjectProviderFactory.Instance.Build(services);
 
@@ -46,13 +47,15 @@ namespace IFramework.Test
             {
                 LogTest(logger, e);
             }
+
+            Task.Delay(1000000).Wait();
         }
 
         void LogTest(ILogger logger, Exception message)
         {
             logger.LogDebug(message);
             logger.LogInformation(message);
-            logger.LogWarning(message);
+            logger.LogWarning(message, "it's a test!");
             logger.LogError(message);
             logger.LogCritical(message);
         }

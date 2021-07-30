@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Aliyun.Api.LogService.Domain.Log;
 using IFramework.Config;
 using IFramework.Logging.Abstracts;
@@ -12,10 +13,11 @@ namespace IFramework.Logging.AliyunLog
     {
         public static IServiceCollection AddAliyunLog(this IServiceCollection services, 
                                                       LogLevel minLevel = LogLevel.Warning,
-                                                      Func<LogEvent, LogGroupInfo> getLogGroupInfo = null,
+                                                      Func<IEnumerable<LogEvent>, LogGroupInfo> getLogGroupInfo = null,
                                                       Action<AliyunLogOptions> options = null,
                                                       IConfiguration configuration = null,
-                                                      bool asyncLog = true)
+                                                      bool asyncLog = true,
+                                                      int batchCount = 100)
         {
             services.AddLogging(config =>
             {
@@ -36,7 +38,7 @@ namespace IFramework.Logging.AliyunLog
                     }
                 }
 
-                config.AddProvider(new AliyunLoggerProvider(providerOptions, minLevel, asyncLog, getLogGroupInfo));
+                config.AddProvider(new AliyunLoggerProvider(providerOptions, minLevel, asyncLog, getLogGroupInfo, batchCount));
             });
             return services;
         }

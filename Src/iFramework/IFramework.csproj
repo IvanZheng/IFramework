@@ -10,6 +10,7 @@
 	<PublishRepositoryUrl>true</PublishRepositoryUrl>
 	<IncludeSymbols>true</IncludeSymbols>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	<Description>add ValueObject class without generic type defination</Description>
   </PropertyGroup>
 
