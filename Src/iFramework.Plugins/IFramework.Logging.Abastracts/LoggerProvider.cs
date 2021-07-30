@@ -109,7 +109,7 @@ namespace IFramework.Logging.Abstracts
 
         protected abstract ILogger CreateLoggerImplement(LoggerProvider provider, string categoryName, LogLevel minLevel);
 
-        internal void ProcessLog(LogEvent logEvent)
+        public virtual void ProcessLog(LogEvent logEvent)
         {
             if (Disposed)
             {
