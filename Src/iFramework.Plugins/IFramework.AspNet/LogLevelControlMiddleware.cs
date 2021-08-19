@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -57,15 +58,19 @@ namespace IFramework.AspNet
                 }
                 else if (context.Request.Method.Equals(HttpMethods.Post, StringComparison.OrdinalIgnoreCase))
                 {
-                    var requestBody = await context.Request.GetRequestBodyStringAsync();
-                    var request = requestBody.ToJsonObject<SetLogLevelRequest>();
-                    if (request == null)
+                    using (var stream = new StreamReader(context.Request.Body))
                     {
-                        throw new Exception("request body is null!");
-                    }
+                        var requestBody = await stream.ReadToEndAsync();
+                    
+                        var request = requestBody.ToJsonObject<SetLogLevelRequest>();
+                        if (request == null)
+                        {
+                            throw new Exception("request body is null!");
+                        }
 
-                    var logger = _loggerFactory.CreateLogger(request.Name);
-                    logger.SetMinLevel(request.MinLevel);
+                        var logger = _loggerFactory.CreateLogger(request.Name);
+                        logger.SetMinLevel(request.MinLevel);
+                    }
                 }
                 else
                 {
