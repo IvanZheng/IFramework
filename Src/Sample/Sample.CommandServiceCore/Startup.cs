@@ -57,6 +57,7 @@ using IFramework.Logging.AliyunLog;
 using IFramework.Logging.Serilog;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Sample.DomainEvents.Banks;
+using Sample.Command.Community;
 
 namespace Sample.CommandServiceCore
 {
@@ -65,8 +66,8 @@ namespace Sample.CommandServiceCore
         private static IMessagePublisher _messagePublisher;
         private static ICommandBus _commandBus;
         private static IMessageProcessor _commandConsumer1;
-        //private static IMessageProcessor _commandConsumer2;
-        //private static IMessageProcessor _commandConsumer3;
+        private static IMessageProcessor _commandConsumer2;
+        private static IMessageProcessor _commandConsumer3;
         private static IMessageProcessor _domainEventProcessor;
         private static IMessageProcessor _applicationEventProcessor;
         private static IMessageProcessor _eventSourcingCommandConsumer;
@@ -98,8 +99,8 @@ namespace Sample.CommandServiceCore
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                     .AddRelationalMessageStore<SampleModelContext>()
                     //.AddEQueue()
-                    //.AddConfluentKafka(new MessageQueueOptions(false, false, false))
-                    .AddInMemoryMessageQueue()
+                    .AddConfluentKafka(new MessageQueueOptions(false, false, false))
+                    //.AddInMemoryMessageQueue()
                     //.AddRabbitMQ(rabbitConnectionFactory)
                     .AddMessagePublisher("eventTopic")
                     .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
@@ -194,8 +195,8 @@ namespace Sample.CommandServiceCore
             applicationLifetime.ApplicationStopping.Register(() =>
             {
                 _commandConsumer1?.Stop();
-                //_commandConsumer2?.Stop();
-                //_commandConsumer3?.Stop();
+                _commandConsumer2?.Stop();
+                _commandConsumer3?.Stop();
                 _domainEventProcessor?.Stop();
                 _applicationEventProcessor?.Stop();
                 _messagePublisher?.Stop();
@@ -211,6 +212,7 @@ namespace Sample.CommandServiceCore
                                })
                                .Register("Modify", typeof(Modify))
                                .Register(nameof(CreateAccount), typeof(CreateAccount))
+                               .Register(nameof(CommonCommand), typeof(CommonCommand))
                                .Register(nameof(AccountCreated), typeof(AccountCreated));
            
             StartMessageQueueComponents();
@@ -300,16 +302,28 @@ namespace Sample.CommandServiceCore
 
             var commandQueueName = $"{TopicPrefix}commandqueue";
             _commandConsumer1 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" }, new ConsumerConfig
+                {
+                    FullLoadThreshold = 1000,
+                    MailboxProcessBatchCount = 50
+                });
             _commandConsumer1.Start();
 
-            //_commandConsumer2 =
-            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
-            //_commandConsumer2.Start();
+            _commandConsumer2 =
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" }, new ConsumerConfig
+                {
+                    FullLoadThreshold = 1000,
+                    MailboxProcessBatchCount = 50
+                });
+            _commandConsumer2.Start();
 
-            //_commandConsumer3 =
-            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
-            //_commandConsumer3.Start();
+            _commandConsumer3 =
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" },new ConsumerConfig
+                {
+                    FullLoadThreshold = 1000,
+                    MailboxProcessBatchCount = 50
+                });
+            _commandConsumer3.Start();
 
             #endregion
 

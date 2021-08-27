@@ -20,6 +20,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             services.AddCustomOptions(options);
             services.AddService<IMessageQueueClientProvider, KafkaMQClientProvider>();
             services.AddService<IMessageQueueClient, MessageQueueClient>(ServiceLifetime.Singleton);
+            services.AddSingleton<KafkaManager>();
             return services;
         }
     }

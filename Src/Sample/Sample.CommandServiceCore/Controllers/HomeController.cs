@@ -14,6 +14,7 @@ using IFramework.Exceptions;
 using IFramework.Infrastructure;
 using IFramework.Infrastructure.EventSourcing.Repositories;
 using IFramework.Infrastructure.Mailboxes;
+using IFramework.MessageQueue.ConfluentKafka;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,7 @@ namespace Sample.CommandServiceCore.Controllers
         private readonly SampleModelContext _dbContext;
         private readonly ICommunityService _communityService;
         private readonly IMailboxProcessor _mailboxProcessor;
+        private readonly KafkaManager _kafkaManager;
         private readonly ICommunityRepository _domainRepository;
         private readonly ILogger _logger;
         private readonly IObjectProvider _objectProvider;
@@ -45,7 +47,8 @@ namespace Sample.CommandServiceCore.Controllers
                               ICommunityRepository domainRepository,
                               SampleModelContext dbContext,
                               ICommunityService communityService,
-                              IMailboxProcessor mailboxProcessor
+                              IMailboxProcessor mailboxProcessor,
+                              KafkaManager kafkaManager
                               //IEventSourcingRepository<BankAccount> bankAccountRepository
             )
         {
@@ -57,6 +60,7 @@ namespace Sample.CommandServiceCore.Controllers
             _dbContext = dbContext;
             _communityService = communityService;
             _mailboxProcessor = mailboxProcessor;
+            _kafkaManager = kafkaManager;
             _logger = logger;
         }
 
@@ -93,6 +97,19 @@ namespace Sample.CommandServiceCore.Controllers
             ViewBag.MailboxStatus = _mailboxProcessor.Status;
             return View();
         }
+
+        [HttpGet]
+        public object ConsumerOffsets(string topic, string group)
+        {
+            var offsets = _kafkaManager.GetTopicInfo(topic, group);
+            return new
+            {
+                TotalLag = offsets.Sum(o => o.Lag),
+                Offset = offsets.Sum(o => o.Offset < 0 ? 0 : o.Offset),
+                offsets
+            };
+        }
+
         [ApiResultWrap]
         public async Task<object> MailboxTest([FromBody] MailboxRequest request)
         {

@@ -7,6 +7,7 @@ using IFramework.AspNet;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.Infrastructure;
+using IFramework.Message;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -20,7 +21,6 @@ namespace Sample.CommandServiceCore.CommandInputExtension
         private const string ApplicationFormUrlEncodedFormMediaType = "application/x-www-form-urlencoded";
         private const string CommandTypeTemplate = nameof(CommandTypeTemplate);
         private readonly string _commandTypeTemplate;
-
         public CommandInputFormatter()
         {
             _commandTypeTemplate = Configuration.Instance.Get(CommandTypeTemplate);
@@ -47,7 +47,7 @@ namespace Sample.CommandServiceCore.CommandInputExtension
             }
 
             var logger = context.HttpContext.RequestServices.GetService<ILogger<CommandInputFormatter>>();
-
+            var messageTypeProvider = context.HttpContext.RequestServices.GetService<IMessageTypeProvider>();
             encoding = encoding ?? SelectCharacterEncoding(context);
             if (encoding == null)
             {
@@ -62,7 +62,8 @@ namespace Sample.CommandServiceCore.CommandInputExtension
                 var commandType = type;
                 if ((type.IsAbstract || type.IsInterface) && typeof(ICommand).IsAssignableFrom(type))
                 {
-                    commandType = GetCommandType(request.GetUri().Segments.Last());
+                    var typeCode = request.GetUri().Segments.Last();
+                    commandType = messageTypeProvider.GetMessageType(typeCode) ?? GetCommandType(typeCode);
                 }
                 var mediaType = request.ContentType.Split(';').FirstOrDefault();
                 object command = null;

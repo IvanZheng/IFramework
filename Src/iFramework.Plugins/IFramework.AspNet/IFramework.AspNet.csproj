@@ -11,7 +11,6 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	<IncludeSymbols>true</IncludeSymbols>
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	  <Version>3.2.7.1</Version>
 	  <Description>Fix Set LogLevel error</Description>
   </PropertyGroup>
 

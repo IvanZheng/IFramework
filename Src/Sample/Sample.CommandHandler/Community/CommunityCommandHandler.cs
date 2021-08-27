@@ -10,6 +10,7 @@ using IFramework.UnitOfWork;
 using Microsoft.Extensions.Logging;
 using Sample.ApplicationEvent;
 using Sample.Command;
+using Sample.Command.Community;
 using Sample.Domain;
 using Account = Sample.Domain.Model.Account;
 using ErrorCode = Sample.DTO.ErrorCode;
@@ -18,7 +19,8 @@ namespace Sample.CommandHandler.Community
 {
     public class CommunityCommandHandler : ICommandAsyncHandler<Login>,
                                            ICommandHandler<Register>,
-                                           ICommandAsyncHandler<Modify>
+                                           ICommandAsyncHandler<Modify>,
+                                           ICommandAsyncHandler<CommonCommand>
     {
         private const string IxAccountsEmail = "IX_Accounts_Email";
         private readonly IMessageContext _commandContext;
@@ -99,6 +101,12 @@ namespace Sample.CommandHandler.Community
             _domainRepository.Add(account);
             _unitOfWork.Commit();
             _commandContext.Reply = account.Id;
+        }
+
+        public Task Handle(CommonCommand message, CancellationToken cancellationToken = default)
+        {
+            //_commandContext.Reply = message.Message;
+            return Task.CompletedTask;
         }
     }
 }

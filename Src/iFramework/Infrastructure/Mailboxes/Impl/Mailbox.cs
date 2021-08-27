@@ -45,8 +45,7 @@ namespace IFramework.Infrastructure.Mailboxes.Impl
                     if (MessageQueue.TryDequeue(out processingMessage))
                     {
                         processedCount++;
-                        var task = await Task.Run<Task>(() => processingMessage.Task())
-                                             .ConfigureAwait(false);
+                        var task = processingMessage.Task();
                         await task.ConfigureAwait(false);
                         object returnValue = null;
                         if (processingMessage.HasReturnValue)

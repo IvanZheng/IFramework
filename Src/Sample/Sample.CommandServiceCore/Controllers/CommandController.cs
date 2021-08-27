@@ -53,7 +53,7 @@ namespace Sample.CommandServiceCore.Controllers
         {
             var sendResponse = await _commandBus.SendAsync(command)
                                                 .ConfigureAwait(false);
-            return sendResponse.MessageContext;
+            return sendResponse.MessageContext.MessageId;
         }
     }
 }
