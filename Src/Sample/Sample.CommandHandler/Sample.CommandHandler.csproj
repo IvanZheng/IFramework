@@ -13,16 +13,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
     <ProjectReference Include="..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj" />
     <ProjectReference Include="..\Sample.Command\Sample.Command.csproj" />
     <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj" />
     <ProjectReference Include="..\Sample.DTO\Sample.DTO.csproj" />
     <ProjectReference Include="..\Sample.Persistence\Sample.Persistence.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 
   </Project>
