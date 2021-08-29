@@ -8,7 +8,6 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Version>3.2.7.1</Version>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="5.0.0" />
