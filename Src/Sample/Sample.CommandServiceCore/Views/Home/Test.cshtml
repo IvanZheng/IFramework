@@ -10,6 +10,7 @@
     <meta name="viewport" content="width=device-width" />
     <title>Test</title>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.1.2/echarts.min.js"></script>
     <script>
         String.format = function () {
             var str = arguments[0];
@@ -208,6 +209,95 @@
                 };
                 doCommand("ReduceProduct", reduceProduct);
             });
+
+            var lastOffset = -1;
+            var updateInterval = 3;
+            var maxLength = 60;
+
+            // 指定图表的配置项和数据
+            var option = {
+                legend: {
+                    data: ['TPS']
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    splitLine: {
+                        show: true,
+                        lineStyle: {
+                            color: ['#b3ceda'],
+                            width: 1,
+                            type: 'solid'
+                        }
+                    },
+                    data: []
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        show: true,
+                        interval: 'auto',
+                        //formatter: function(value, index) {
+                        //    return value.toFixed(0);
+                        //}
+                    }
+                },
+                series: [
+                    {
+                        name: 'TPS',
+                        data: [],
+                        type: 'line',
+                        smooth: true,
+                        areaStyle: {
+                            normal: {
+                                color: '#d5e4eb'
+                            }
+                        },
+                        itemStyle: {
+                            normal: {
+                                color: '#d5e4eb', //改变折线点的颜色
+                                lineStyle: {
+                                    color: '#b3ceda' //改变折线颜色
+                                }
+                            }
+                        }
+                    }
+                ]
+            };
+
+            function updateTps() {
+                var topic = $("#topic").val();
+                var group = $("#group").val();
+                $.get("@Url.Content("~/Home/ConsumerOffsets")" + String.format("?group={0}&topic={1}", group, topic),
+                    null,
+                    function(result) {
+                        var processedTps = 0;
+                        if (lastOffset >= 0) {
+                            processedTps = parseInt((result.offset - lastOffset) / updateInterval);
+                            if (result.offset < 0) {
+                                processedTps = 0;
+                            }
+                        }
+                        var status = String.format("topic:{0} group:{1} offset:{4} lag: {2} tps: {3}", topic, group, result.totalLag, processedTps, result.offset);
+                        $("#consumerTps").text(status);
+                        if (option.xAxis.data.length >= maxLength) {
+                            option.xAxis.data.shift();
+                            option.series[0].data.shift();
+                        }
+                        option.series[0].data.push(processedTps);
+                        option.xAxis.data.push(new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds());
+                        myChart.setOption(option);
+                        lastOffset = result.offset;
+                    });
+            }
+
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main'));
+            
+            updateTps();
+
+            setInterval(updateTps, updateInterval * 1000);
+
         });
         var refreshCommandDistributorStatus = function() {
             $.get("@Url.Content("~/Test/CommandDistributorStatus")",
@@ -216,24 +306,8 @@
                     $("#commandDistributorStatus").html(result);
                 });
         };
-        var lastOffset = -1;
-        setInterval(function() {
-            var topic = $("#topic").val();
-            var group = $("#group").val();
-            $.get("@Url.Content("~/Home/ConsumerOffsets")" + String.format("?group={0}&topic={1}", group, topic),
-                null,
-                function(result) {
-                    if (lastOffset >= 0) {
-                        var processedTps = (result.offset - lastOffset) / 5;
-                        if (result.offset < 0) {
-                            processedTps = 0;
-                        }
-                        var status = String.format("topic:{0} group:{1} lag: {2} tps: {3}", topic, group, result.totalLag, processedTps);
-                        $("#consumerTps").text(status);
-                    }
-                    lastOffset = result.offset;
-                });
-        }, 5000);
+
+       
     </script>
 </head>
 <body>
@@ -245,9 +319,10 @@
     
 </div>
 <div>
-    <label>topic:</label><input type="text" id="topic" placeholder="topic" value="IVAN-PC.uat.commandqueue" />
-    <label>group:</label><input type="text" id="group" placeholder="group" value="IVAN-PC.uat.commandqueue.consumer"/>
+    <label>topic:</label><input type="text" id="topic" placeholder="topic" value="@(Environment.MachineName).uat.commandqueue" />
+    <label>group:</label><input type="text" id="group" placeholder="group" value="@(Environment.MachineName).uat.commandqueue.consumer"/>
     <div id="consumerTps"></div>
+    <div id="main" style="width: 400px;height:250px;"></div>
 </div>
    
     <br />

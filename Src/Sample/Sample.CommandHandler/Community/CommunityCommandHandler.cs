@@ -105,7 +105,6 @@ namespace Sample.CommandHandler.Community
 
         public Task Handle(CommonCommand message, CancellationToken cancellationToken = default)
         {
-            //_commandContext.Reply = message.Message;
             return Task.CompletedTask;
         }
     }

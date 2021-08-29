@@ -122,7 +122,7 @@ namespace Sample.CommandServiceCore
                         {
                             b.Ignore(InMemoryEventId.TransactionIgnoredWarning);
                         });
-                    })
+                    }, 5000)
                     .AddEventSourcing()
                     ;
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
@@ -304,26 +304,26 @@ namespace Sample.CommandServiceCore
             _commandConsumer1 =
                 MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" }, new ConsumerConfig
                 {
-                    FullLoadThreshold = 1000,
+                    FullLoadThreshold = 5000,
                     MailboxProcessBatchCount = 50
                 });
             _commandConsumer1.Start();
 
-            _commandConsumer2 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" }, new ConsumerConfig
-                {
-                    FullLoadThreshold = 1000,
-                    MailboxProcessBatchCount = 50
-                });
-            _commandConsumer2.Start();
+            //_commandConsumer2 =
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" }, new ConsumerConfig
+            //    {
+            //        FullLoadThreshold = 1000,
+            //        MailboxProcessBatchCount = 50
+            //    });
+            //_commandConsumer2.Start();
 
-            _commandConsumer3 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" },new ConsumerConfig
-                {
-                    FullLoadThreshold = 1000,
-                    MailboxProcessBatchCount = 50
-                });
-            _commandConsumer3.Start();
+            //_commandConsumer3 =
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" }, new ConsumerConfig
+            //    {
+            //        FullLoadThreshold = 1000,
+            //        MailboxProcessBatchCount = 50
+            //    });
+            //_commandConsumer3.Start();
 
             #endregion
 
