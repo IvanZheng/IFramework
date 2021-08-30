@@ -11,6 +11,7 @@ namespace IFramework.Test.Commands
         public string UserId { get; set; }
         public string Key { get; set; }
         public string[] Tags { get; set; }
+        public string Topic { get; set; }
 
         public string UserName { get; set; }
 

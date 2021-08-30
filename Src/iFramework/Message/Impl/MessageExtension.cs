@@ -7,16 +7,20 @@ namespace IFramework.Message.Impl
     {
         public static string GetTopic(this IMessage message)
         {
-            string topic = null;
-            var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
-            if (topicAttribute != null && !string.IsNullOrWhiteSpace(topicAttribute.Topic))
+            var topic = message.Topic;
+            if (string.IsNullOrWhiteSpace(topic))
             {
-                topic = topicAttribute.Topic;
+                var topicAttribute = message.GetCustomAttribute<TopicAttribute>();
+                if (!string.IsNullOrWhiteSpace(topicAttribute?.Topic))
+                {
+                    topic = topicAttribute.Topic;
+                }
+                if (string.IsNullOrWhiteSpace(topic))
+                {
+                    topic = Configuration.Instance.GetDefaultTopic();
+                }
             }
-            if (string.IsNullOrEmpty(topic))
-            {
-                topic = Configuration.Instance.GetDefaultTopic();
-            }
+            
             return topic;
         }
 

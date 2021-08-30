@@ -11,6 +11,7 @@ namespace IFramework.Test
         public string Id { get; set; }
         public string Key { get; set; }
         public string[] Tags { get; set; }
+        public string Topic { get; set; }
 
 
         public ApplicationUserEvent(string userId, string name)
@@ -32,6 +33,8 @@ namespace IFramework.Test
         public string Id { get; set; }
         public string Key { get; set; }
         public string[] Tags { get; set; }
+        public string Topic { get; set; }
+
         public object AggregateRootId { get; set; }
         public string AggregateRootName { get; set; }
         public int Version { get; set; }

@@ -29,6 +29,8 @@ namespace Sample.DomainEvents
 
         public virtual string Key { get; set; }
 
-        public  virtual string[] Tags { get; set; }
+        public virtual string[] Tags { get; set; }
+        public virtual string Topic { get; set; }
+
     }
 }

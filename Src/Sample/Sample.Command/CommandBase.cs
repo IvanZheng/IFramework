@@ -15,6 +15,7 @@ namespace Sample.Command
 
         public virtual string Key { get; set; }
         public virtual string[] Tags { get; set; }
+        public string Topic { get; set; }
     }
 
     public abstract class SerialCommandBase : CommandBase, ILinearCommand { }

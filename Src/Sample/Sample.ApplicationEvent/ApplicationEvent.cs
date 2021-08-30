@@ -16,5 +16,7 @@ namespace Sample.ApplicationEvent
 
         public string Key { get; set; }
         public string[] Tags { get; set; }
+        public string Topic { get; set; }
+
     }
 }
