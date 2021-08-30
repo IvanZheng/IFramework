@@ -9,7 +9,9 @@
 	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
 	  <IncludeSymbols>true</IncludeSymbols>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>      	
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <Version>3.2.8.2</Version>
+	  <Description>Fix options bug</Description>      	
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

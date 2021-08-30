@@ -11,19 +11,17 @@ namespace IFramework.MessageQueue.ConfluentKafka
 {
     public class KafkaManager:IDisposable
     {
-        public Lazy<IAdminClient> AdminClient => new Lazy<IAdminClient>(() => new AdminClientBuilder(new Confluent.Kafka.ConsumerConfig(OptionExtensions)
+        public Lazy<IAdminClient> AdminClient => new Lazy<IAdminClient>(() => new AdminClientBuilder(new Confluent.Kafka.ConsumerConfig(ToStringExtensions(ClientOptions.Extensions))
                                 {
                                     SocketNagleDisable = true,
                                     BootstrapServers = ClientOptions.BrokerList
                                 }).Build());
 
         public ConcurrentDictionary<string, IConsumer<string, string>> Consumers = new ConcurrentDictionary<string, IConsumer<string, string>>();
-        public Dictionary<string, string> OptionExtensions { get; }
         public KafkaClientOptions ClientOptions { get; }
         public KafkaManager(IOptions<KafkaClientOptions> options)
         {
             ClientOptions = options.Value;
-            OptionExtensions = ToStringExtensions(options.Value.Extensions);
         }
 
         private Dictionary<string, string> ToStringExtensions(Dictionary<string, object> objectExtensions)
@@ -41,7 +39,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             return Consumers.GetOrAdd(group, key =>
             {
-                var consumerConfiguration = new Confluent.Kafka.ConsumerConfig(OptionExtensions)
+                var consumerConfiguration = new Confluent.Kafka.ConsumerConfig(ToStringExtensions(ClientOptions.Extensions))
                 {
                     GroupId = group,
                     ClientId = $"KafkaTools.{group}",
