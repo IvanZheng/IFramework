@@ -48,8 +48,12 @@ namespace IFramework.Command.Impl
             _consumerId = consumerId;
             _commandStateQueues = new ConcurrentDictionary<string, MessageState>();
             _serialCommandManager = serialCommandManager;
-            _replyTopicName = Configuration.Instance.FormatAppName(replyTopicName);
-            _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
+            if (!string.IsNullOrWhiteSpace(replyTopicName))
+            {
+                _replyTopicName = Configuration.Instance.FormatAppName(replyTopicName);
+                _replySubscriptionName = Configuration.Instance.FormatAppName(replySubscriptionName);
+            }
+         
             // _commandQueueNames = commandQueueNames;
             _messageProcessor = new MailboxProcessor(new DefaultProcessingMessageScheduler(),
                                                      new OptionsWrapper<MailboxOption>(new MailboxOption
@@ -89,7 +93,7 @@ namespace IFramework.Command.Impl
         public override void Stop()
         {
             base.Stop();
-            _internalConsumer.Stop();
+            _internalConsumer?.Stop();
             _messageProcessor.Stop();
         }
 
@@ -261,7 +265,7 @@ namespace IFramework.Command.Impl
                 }
                 catch (Exception e)
                 {
-                    _internalConsumer.CommitOffset(reply);
+                    _internalConsumer?.CommitOffset(reply);
                     Logger.LogError(e, $"failed to process command: {reply.MessageOffset.ToJson()}");
                 }
             });
@@ -294,7 +298,7 @@ namespace IFramework.Command.Impl
             }
             finally
             {
-                _internalConsumer.CommitOffset(reply);
+                _internalConsumer?.CommitOffset(reply);
             }
             return Task.CompletedTask;
         }
