@@ -12,10 +12,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
     public class KafkaManager:IDisposable
     {
         public Lazy<IAdminClient> AdminClient => new Lazy<IAdminClient>(() => new AdminClientBuilder(new Confluent.Kafka.ConsumerConfig(ToStringExtensions(ClientOptions.Extensions))
-                                {
-                                    SocketNagleDisable = true,
-                                    BootstrapServers = ClientOptions.BrokerList
-                                }).Build());
+        {
+            SocketNagleDisable = true,
+            BootstrapServers = ClientOptions.BrokerList
+        }).Build());
 
         public ConcurrentDictionary<string, IConsumer<string, string>> Consumers = new ConcurrentDictionary<string, IConsumer<string, string>>();
         public KafkaClientOptions ClientOptions { get; }
@@ -27,11 +27,13 @@ namespace IFramework.MessageQueue.ConfluentKafka
         private Dictionary<string, string> ToStringExtensions(Dictionary<string, object> objectExtensions)
         {
             var extensions = new Dictionary<string, string>();
-            foreach (var keyValuePair in objectExtensions)
+            if (objectExtensions != null)
             {
-                extensions[keyValuePair.Key] = keyValuePair.Value?.ToString();
+                foreach (var keyValuePair in objectExtensions)
+                {
+                    extensions[keyValuePair.Key] = keyValuePair.Value?.ToString();
+                }
             }
-
             return extensions;
         }
 

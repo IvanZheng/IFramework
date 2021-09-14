@@ -10,8 +10,8 @@
 	  <IncludeSymbols>true</IncludeSymbols>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	  <Version>3.2.8.2</Version>
-	  <Description>Fix options bug</Description>      	
+	  <Version>3.2.8.3</Version>
+	  <Description>Fix kafka option null extensions bug</Description>      	
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
