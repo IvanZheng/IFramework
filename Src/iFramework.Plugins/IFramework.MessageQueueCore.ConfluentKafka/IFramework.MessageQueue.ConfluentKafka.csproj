@@ -10,8 +10,8 @@
 	  <IncludeSymbols>true</IncludeSymbols>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	  <Version>3.2.8.3</Version>
-	  <Description>Fix kafka option null extensions bug</Description>      	
+	  <Version>3.2.8.4</Version>
+	  <Description>update confluent kafka</Description>      	
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="1.5.2" />
+    <PackageReference Include="Confluent.Kafka" Version="1.8.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
