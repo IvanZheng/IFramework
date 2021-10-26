@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using IFramework.Domain;
 using IFramework.Event;
 using IFramework.Message;
@@ -18,7 +19,7 @@ namespace Sample.Domain.Model
         public Guid Id { get; protected set; }
         public string UserName { get; protected set; }
         public string Password { get; protected set; }
-        public DateTime RegisterTime { get; protected set; }
+        public DateTimeOffset RegisterTime { get; protected set; }
 
         protected virtual void Handle(ItemRegisted @event)
         {

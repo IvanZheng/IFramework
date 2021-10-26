@@ -36,6 +36,7 @@ using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 using System.Collections.Generic;
+using System.Reflection;
 using IFramework.Infrastructure;
 using IFramework.Event;
 using IFramework.EventStore;
@@ -58,6 +59,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Sample.DomainEvents.Banks;
+using Microsoft.EntityFrameworkCore.Dm;
+using Microsoft.Extensions.DependencyModel.Resolution;
 
 namespace Sample.CommandServiceCore
 {
@@ -108,13 +111,15 @@ namespace Sample.CommandServiceCore
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
                         //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                        options.UseMySql(connectionString,
-                                         ServerVersion.AutoDetect(connectionString),
-                                         b => b.EnableRetryOnFailure())
-                               .AddInterceptors(new ReadCommittedTransactionInterceptor())
-                               .UseLazyLoadingProxies();
+                        //options.UseMySql(connectionString,
+                        //                 ServerVersion.AutoDetect(connectionString),
+                        //                 b => b.EnableRetryOnFailure())
+                        //       .AddInterceptors(new ReadCommittedTransactionInterceptor())
+                        //       .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                         //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        options.UseDm(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.Dm"),
+                                      b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name));
                         options.ConfigureWarnings(b =>
                         {
                             b.Ignore(InMemoryEventId.TransactionIgnoredWarning);

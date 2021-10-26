@@ -20,7 +20,7 @@ namespace IFramework.MessageStores.Abstracts
 
         public string Id { get; set; }
         public string SubscriptionName { get; set; }
-        public DateTime HandledTime { get; set; }
+        public DateTimeOffset HandledTime { get; set; }
         public MessageOffset MessageOffset { get; set; }
     }
 

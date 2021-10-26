@@ -58,13 +58,23 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="EFCore.Dm" Version="5.0.1" />
 		<PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="5.0.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.11">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.11">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.2.22" />
 		<PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.2.22" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0" />
 		<PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
+		<PackageReference Include="Zny.DmProvider" Version="1.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
