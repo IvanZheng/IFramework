@@ -100,7 +100,7 @@ namespace Sample.CommandServiceCore
                     .AddRelationalMessageStore<SampleModelContext>()
                     //.AddEQueue()
                     .AddConfluentKafka(new MessageQueueOptions(false, false, false))
-                    //.AddInMemoryMessageQueue()
+                    .AddInMemoryMessageQueue()
                     //.AddRabbitMQ(rabbitConnectionFactory)
                     .AddMessagePublisher("eventTopic")
                     .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
