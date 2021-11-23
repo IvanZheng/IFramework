@@ -117,9 +117,9 @@ namespace Sample.CommandServiceCore
                         //       .AddInterceptors(new ReadCommittedTransactionInterceptor())
                         //       .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                        //options.UseInMemoryDatabase(nameof(SampleModelContext));
-                        options.UseDm(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.Dm"),
-                                      b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name));
+                        options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        //options.UseDm(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.Dm"),
+                        //              b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name));
                         options.ConfigureWarnings(b =>
                         {
                             b.Ignore(InMemoryEventId.TransactionIgnoredWarning);

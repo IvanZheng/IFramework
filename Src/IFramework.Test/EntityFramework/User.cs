@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using IFramework.Domain;
 using IFramework.Infrastructure;
@@ -42,6 +43,7 @@ namespace IFramework.Test.EntityFramework
         public string Name { get; protected set; }
         public string Gender { get; protected set; }
         private UserProfile _userProfile;
+        [Required]
         public virtual UserProfile UserProfile { get => _userProfile; protected set => _userProfile = value.Clone(); }
         public virtual ICollection<Card> Cards { get; set; } = new HashSet<Card>();
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29215.179
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.DependencyInjection.Microsoft", "iFramework.Plugins\IFramework.Microsoft.DependencyInjection\IFramework.DependencyInjection.Microsoft.csproj", "{FFD7041D-BA33-46D3-B3FE-C1A4816E12FD}"
 EndProject
@@ -104,7 +104,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Infrastructure.E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Logging.Serilog", "iFramework.Plugins\IFramework.Logging.Serilog\IFramework.Logging.Serilog.csproj", "{30A29D5A-5210-4FAC-973B-5750145B6830}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.CommandServiceCoreNet5", "Sample\Sample.CommandServiceCore\Sample.CommandServiceCoreNet5.csproj", "{2D58F485-5627-4574-A14A-6CC8E6C88F29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.CommandServiceCoreNet6", "Sample\Sample.CommandServiceCore\Sample.CommandServiceCoreNet6.csproj", "{2D58F485-5627-4574-A14A-6CC8E6C88F29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -812,7 +812,7 @@ Global
 		{2D58F485-5627-4574-A14A-6CC8E6C88F29} = {A9B2E731-E8B4-43A1-97B6-88517E1AA362}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
+		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
 	EndGlobalSection
 EndGlobal
