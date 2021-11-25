@@ -50,9 +50,9 @@ namespace IFramework.Test.EntityFramework
 
         protected User()
         {
-            Address = new Address(null, null, null);
+           
         }
-        public User(string name, string gender, UserProfile profile = null):this()
+        public User(string name, string gender, UserProfile profile = null)
         {
             Id = ObjectId.GenerateNewId()
                          .ToString();
