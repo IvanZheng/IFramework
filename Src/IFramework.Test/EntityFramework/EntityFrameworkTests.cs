@@ -315,6 +315,8 @@ namespace IFramework.Test.EntityFramework
                     Hobby = "basketball"
                 }));
                 //user.RemoveCards();
+
+                user.Address = new Address("china", "shanghai", "nanjing road1");
                 await dbContext.SaveChangesAsync()
                                .ConfigureAwait(false);
             }
