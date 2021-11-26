@@ -10,7 +10,6 @@
 	  <IncludeSymbols>true</IncludeSymbols>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	  <Version>3.2.8.4</Version>
 	  <Description>update confluent kafka</Description>      	
   </PropertyGroup>
 

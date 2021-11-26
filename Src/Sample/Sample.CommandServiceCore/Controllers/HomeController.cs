@@ -101,11 +101,11 @@ namespace Sample.CommandServiceCore.Controllers
         [HttpGet]
         public object ConsumerOffsets(string topic, string group)
         {
-            var offsets = _kafkaManager.GetTopicInfo(topic, group);
+            var offsets = _kafkaManager?.GetTopicInfo(topic, group);
             return new
             {
-                TotalLag = offsets.Sum(o => o.Lag),
-                Offset = offsets.Sum(o => o.Offset < 0 ? 0 : o.Offset),
+                TotalLag = offsets?.Sum(o => o.Lag),
+                Offset = offsets?.Sum(o => o.Offset < 0 ? 0 : o.Offset),
                 offsets
             };
         }
