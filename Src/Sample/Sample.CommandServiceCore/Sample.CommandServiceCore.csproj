@@ -1,93 +1,103 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<ServerGarbageCollection>false</ServerGarbageCollection>
+		<DockerfileContext>..\..</DockerfileContext>
+		<AssemblyName>Sample.CommandServiceCore</AssemblyName>
+		<RootNamespace>Sample.CommandServiceCore</RootNamespace>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<WarningLevel>1</WarningLevel>
+		<LangVersion>7.1</LangVersion>
+		<OutputPath></OutputPath>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-	  <ServerGarbageCollection>false</ServerGarbageCollection>
-    <DockerfileContext>..\..</DockerfileContext>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<LangVersion>7.1</LangVersion>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningLevel>0</WarningLevel>
-    <LangVersion>7.1</LangVersion>
-  </PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="log\**" />
+		<Content Remove="log\**" />
+		<EmbeddedResource Remove="log\**" />
+		<None Remove="log\**" />
+	</ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>7.1</LangVersion>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <Compile Remove="log\**" />
-    <Content Remove="log\**" />
-    <EmbeddedResource Remove="log\**" />
-    <None Remove="log\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="CommandInputExtension\FormDataExtension.cs" />
+		<Compile Remove="Controllers\ValuesController.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="CommandInputExtension\FormDataExtension.cs" />
-    <Compile Remove="Controllers\ValuesController.cs" />
-    <Compile Remove="StartupNet5.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Remove="appsettings.Development.json" />
+		<Content Remove="appsettings.json" />
+		<Content Remove="appsettings.Production.json" />
+		<Content Remove="log4net.config" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Remove="appsettings.Development.json" />
-    <Content Remove="appsettings.json" />
-    <Content Remove="appsettings.Production.json" />
-    <Content Remove="log4net.config" />
-  </ItemGroup>
+	<ItemGroup>
+		<DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="appsettings.Development.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="appsettings.Production.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="log4net.config">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="appsettings.Development.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="appsettings.Production.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="log4net.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="EFCore.Dm" Version="5.0.1" />
+		<PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.2.22" />
+		<PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.2.22" />
+		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.0" />
+		<PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" />
+		<PackageReference Include="Zny.DmProvider" Version="1.1.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.10" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
-    <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.2.22" />
-    <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.2.22" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.AspNet\IFramework.AspNet.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.EventStore.Redis\IFramework.EventStore.Redis.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Infrastructure.EventSourcing\IFramework.Infrastructure.EventSourcing.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.AliyunLog\IFramework.Logging.AliyunLog.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.Log4Net\IFramework.Logging.Log4Net.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.Serilog\IFramework.Logging.Serilog.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.RabbitMQ\IFramework.MessageQueue.RabbitMQ.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj" />
-    <ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.InMemory\IFramework.MessageQueue.InMemory.csproj" />
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
-    <ProjectReference Include="..\ApplicationEventSubscriber\Sample.ApplicationEventSubscriber.csproj" />
-    <ProjectReference Include="..\AsyncDomainEventSubscriber\Sample.AsyncDomainEventSubscriber.csproj" />
-    <ProjectReference Include="..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj" />
-    <ProjectReference Include="..\Sample.Applications\Sample.Applications.csproj" />
-    <ProjectReference Include="..\Sample.CommandHandler\Sample.CommandHandler.csproj" />
-    <ProjectReference Include="..\Sample.DomainEventHandler\Sample.DomainEventSubscriber.csproj" />
-    <ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj" />
-    <ProjectReference Include="..\Sample.Persistence\Sample.Persistence.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.AspNet\IFramework.AspNet.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.EntityFrameworkCore\IFramework.EntityFrameworkCore.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.EventStore.Redis\IFramework.EventStore.Redis.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.Infrastructure.EventSourcing\IFramework.Infrastructure.EventSourcing.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.JsonNetCore\IFramework.JsonNet.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.Log4Net\IFramework.Logging.Log4Net.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.Serilog\IFramework.Logging.Serilog.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.RabbitMQ\IFramework.MessageQueue.RabbitMQ.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.InMemory\IFramework.MessageQueue.InMemory.csproj" />
+		<ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+		<ProjectReference Include="..\ApplicationEventSubscriber\Sample.ApplicationEventSubscriber.csproj" />
+		<ProjectReference Include="..\AsyncDomainEventSubscriber\Sample.AsyncDomainEventSubscriber.csproj" />
+		<ProjectReference Include="..\Sample.ApplicationEvent\Sample.ApplicationEvent.csproj" />
+		<ProjectReference Include="..\Sample.Applications\Sample.Applications.csproj" />
+		<ProjectReference Include="..\Sample.CommandHandler\Sample.CommandHandler.csproj" />
+		<ProjectReference Include="..\Sample.DomainEventHandler\Sample.DomainEventSubscriber.csproj" />
+		<ProjectReference Include="..\Sample.Domain\Sample.Domain.csproj" />
+		<ProjectReference Include="..\Sample.Persistence\Sample.Persistence.csproj" />
+	</ItemGroup>
 </Project>

@@ -47,8 +47,8 @@ namespace Sample.CommandServiceCore.Controllers
                               ICommunityRepository domainRepository,
                               SampleModelContext dbContext,
                               ICommunityService communityService,
-                              IMailboxProcessor mailboxProcessor,
-                              KafkaManager kafkaManager
+                              IMailboxProcessor mailboxProcessor
+                              //KafkaManager kafkaManager
                               //IEventSourcingRepository<BankAccount> bankAccountRepository
             )
         {
@@ -60,7 +60,7 @@ namespace Sample.CommandServiceCore.Controllers
             _dbContext = dbContext;
             _communityService = communityService;
             _mailboxProcessor = mailboxProcessor;
-            _kafkaManager = kafkaManager;
+            //_kafkaManager = kafkaManager;
             _logger = logger;
         }
 

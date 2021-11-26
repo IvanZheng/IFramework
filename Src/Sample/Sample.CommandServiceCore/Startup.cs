@@ -36,6 +36,7 @@ using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 using System.Collections.Generic;
+using System.Reflection;
 using IFramework.Infrastructure;
 using IFramework.Event;
 using IFramework.EventStore;
@@ -53,11 +54,13 @@ using IFramework.EventStore.Redis;
 using IFramework.Infrastructure.EventSourcing;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using IFramework.Infrastructure.EventSourcing.Stores;
-using IFramework.Logging.AliyunLog;
 using IFramework.Logging.Serilog;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Sample.DomainEvents.Banks;
-using Sample.Command.Community;
+using Microsoft.EntityFrameworkCore.Dm;
+using Microsoft.Extensions.DependencyModel.Resolution;
 
 namespace Sample.CommandServiceCore
 {
@@ -93,13 +96,11 @@ namespace Sample.CommandServiceCore
                     .AddConfiguration(_configuration)
                     //.AddLog4Net()
                     .AddSerilog()
-                    //.AddAliyunLog()
                     .AddCommonComponents(_app)
                     .AddJsonNet()
                     .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                     .AddRelationalMessageStore<SampleModelContext>()
-                    //.AddEQueue()
-                    .AddConfluentKafka(new MessageQueueOptions(false, false, false))
+                    //.AddConfluentKafka()
                     .AddInMemoryMessageQueue()
                     //.AddRabbitMQ(rabbitConnectionFactory)
                     .AddMessagePublisher("eventTopic")
@@ -109,8 +110,7 @@ namespace Sample.CommandServiceCore
                         var connectionString = Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MySql");
                         //options.EnableSensitiveDataLogging();
                         //options.UseLazyLoadingProxies();
-                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)))
-                        //       .ConfigureWarnings(w => w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
+                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
                         //options.UseMySql(connectionString,
                         //                 ServerVersion.AutoDetect(connectionString),
                         //                 b => b.EnableRetryOnFailure())
@@ -118,11 +118,14 @@ namespace Sample.CommandServiceCore
                         //       .UseLazyLoadingProxies();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
                         options.UseInMemoryDatabase(nameof(SampleModelContext));
+                        //options.UseDm(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.Dm"),
+                        //              b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name));
                         options.ConfigureWarnings(b =>
                         {
                             b.Ignore(InMemoryEventId.TransactionIgnoredWarning);
                         });
-                    }, 5000)
+                    })
+                    .AddDatabaseDeveloperPageExceptionFilter()
                     .AddEventSourcing()
                     ;
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
@@ -135,6 +138,7 @@ namespace Sample.CommandServiceCore
                 options.InputFormatters.Insert(0, new CommandInputFormatter());
                 options.InputFormatters.Add(new FormDataInputFormatter());
                 options.Filters.Add<ExceptionFilter>();
+                options.ModelBinderProviders.RemoveType<DateTimeModelBinderProvider>();
             });
             services.AddRazorPages()
                     .AddControllersAsServices()
@@ -187,7 +191,6 @@ namespace Sample.CommandServiceCore
             //snapshotStore.Connect()
             //             .GetAwaiter()
             //             .GetResult();
-            //loggerFactory.AddLog4NetProvider(new Log4NetProviderOptions {EnableScope = true});
             var logger = loggerFactory.CreateLogger<Startup>(); 
             logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
@@ -201,8 +204,6 @@ namespace Sample.CommandServiceCore
                 _applicationEventProcessor?.Stop();
                 _messagePublisher?.Stop();
                 _commandBus?.Stop();
-                _eventSourcingCommandConsumer?.Stop();
-                _eventSourcingEventProcessor?.Stop();
                 mailboxProcessor.Stop();
             });
             mailboxProcessor.Start();
@@ -212,7 +213,6 @@ namespace Sample.CommandServiceCore
                                })
                                .Register("Modify", typeof(Modify))
                                .Register(nameof(CreateAccount), typeof(CreateAccount))
-                               .Register(nameof(CommonCommand), typeof(CommonCommand))
                                .Register(nameof(AccountCreated), typeof(AccountCreated));
            
             StartMessageQueueComponents();
@@ -220,6 +220,7 @@ namespace Sample.CommandServiceCore
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
             else
             {
@@ -231,7 +232,10 @@ namespace Sample.CommandServiceCore
 
             app.Use(next => context =>
             {
-                context.Request.Path = context.Request.Path.Value.Replace("//", "/");
+                if (!string.IsNullOrWhiteSpace(context.Request.Path.Value))
+                {
+                    context.Request.Path = context.Request.Path.Value.Replace("//", "/");
+                }
                 return next(context);
             });
 
@@ -282,8 +286,6 @@ namespace Sample.CommandServiceCore
 
             app.UseLogLevelController();
             app.UseMessageProcessorDashboardMiddleware();
-
-           
         }
 
         private void StartMessageQueueComponents()
@@ -302,27 +304,15 @@ namespace Sample.CommandServiceCore
 
             var commandQueueName = $"{TopicPrefix}commandqueue";
             _commandConsumer1 =
-                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" }, new ConsumerConfig
-                {
-                    FullLoadThreshold = 5000,
-                    MailboxProcessBatchCount = 50
-                });
+                MessageQueueFactory.CreateCommandConsumer(commandQueueName, "0", new[] { "CommandHandlers" });
             _commandConsumer1.Start();
 
             //_commandConsumer2 =
-            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" }, new ConsumerConfig
-            //    {
-            //        FullLoadThreshold = 1000,
-            //        MailboxProcessBatchCount = 50
-            //    });
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "1", new[] { "CommandHandlers" });
             //_commandConsumer2.Start();
 
             //_commandConsumer3 =
-            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" }, new ConsumerConfig
-            //    {
-            //        FullLoadThreshold = 1000,
-            //        MailboxProcessBatchCount = 50
-            //    });
+            //    MessageQueueFactory.CreateCommandConsumer(commandQueueName, "2", new[] { "CommandHandlers" });
             //_commandConsumer3.Start();
 
             #endregion

@@ -106,9 +106,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Logging.Serilog"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Logging.AliyunLog", "iFramework.Plugins\IFramework.Logging.AliyunLog\IFramework.Logging.AliyunLog.csproj", "{8800A7E1-E2DF-4093-91FA-48598C03D526}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Logging.Abstracts", "iFramework.Plugins\IFramework.Logging.Abastracts\IFramework.Logging.Abstracts.csproj", "{D8346805-96E9-4076-B0D1-2D38CD13DBD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Logging.Abstracts", "iFramework.Plugins\IFramework.Logging.Abastracts\IFramework.Logging.Abstracts.csproj", "{D8346805-96E9-4076-B0D1-2D38CD13DBD9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.CommandServiceCoreNet6", "Sample\Sample.CommandServiceCore\Sample.CommandServiceCoreNet6.csproj", "{2D58F485-5627-4574-A14A-6CC8E6C88F29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.CommandServiceCore", "Sample\Sample.CommandServiceCore\Sample.CommandServiceCore.csproj", "{2D58F485-5627-4574-A14A-6CC8E6C88F29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -789,6 +789,24 @@ Global
 		{D8346805-96E9-4076-B0D1-2D38CD13DBD9}.Release|x64.Build.0 = Release|Any CPU
 		{D8346805-96E9-4076-B0D1-2D38CD13DBD9}.Release|x86.ActiveCfg = Release|Any CPU
 		{D8346805-96E9-4076-B0D1-2D38CD13DBD9}.Release|x86.Build.0 = Release|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Debug|x64.Build.0 = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Debug|x86.Build.0 = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Integration|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Integration|Any CPU.Build.0 = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Integration|x64.ActiveCfg = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Integration|x64.Build.0 = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Integration|x86.ActiveCfg = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Integration|x86.Build.0 = Debug|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Release|x64.ActiveCfg = Release|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Release|x64.Build.0 = Release|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Release|x86.ActiveCfg = Release|Any CPU
+		{2D58F485-5627-4574-A14A-6CC8E6C88F29}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -835,7 +853,7 @@ Global
 		{D8346805-96E9-4076-B0D1-2D38CD13DBD9} = {D85A2D0B-5D20-4C0F-B06F-D688EFAD1624}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal
