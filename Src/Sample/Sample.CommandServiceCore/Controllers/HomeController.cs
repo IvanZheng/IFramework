@@ -18,11 +18,11 @@ using IFramework.MessageQueue.ConfluentKafka;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Sample.Applications;
 using Sample.Command.Community;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
+using Sample.Applications;
 using Sample.Domain.Model.Bank.Accounts;
 using Sample.Persistence;
 
