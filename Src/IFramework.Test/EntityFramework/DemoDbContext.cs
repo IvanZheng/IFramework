@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +8,9 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Domain;
 using IFramework.EntityFrameworkCore;
+using IFramework.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -71,6 +74,25 @@ namespace IFramework.Test.EntityFramework
             //modelBuilder.Owned<UserProfile>();
             modelBuilder.Entity<Person>()
                         .Property(e => e.Id);
+
+            modelBuilder.Entity<User>()
+                        .Property(u => u.Address)
+                        .HasJsonConversion();
+            //.HasJsonConversion(new ValueComparer<Address>((a1, a2) => a1.Street == a2.Street, 
+            //                                              a => a.Street.GetHashCode(),
+            //                                              a => a));
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            ChangeTracker.Entries().ToArray().ForEach(e =>
+            {
+                if (e.State == EntityState.Modified)
+                {
+                    Console.WriteLine(e.State);
+                }
+            });
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }

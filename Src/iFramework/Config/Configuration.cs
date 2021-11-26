@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
+using ConfigurationManager = System.Configuration.ConfigurationManager;
 
 namespace IFramework.Config
 {
@@ -147,7 +148,11 @@ namespace IFramework.Config
                     val = (T) Convert.ChangeType(appSetting, typeof(T));
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // ignored
+            }
+
             return val;
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using IFramework.Domain;
 using IFramework.Infrastructure;
@@ -16,9 +17,9 @@ namespace IFramework.Test.EntityFramework
             Street = street;
         }
 
-        public string Country { get; protected set; }
-        public string City { get;protected set; }
-        public string Street { get; protected set; }
+        public string Country { get; set; }
+        public string City { get; set; }
+        public string Street { get;  set; }
     }
     public class UserProfile:ValueObject<UserProfile>
     {
@@ -41,13 +42,15 @@ namespace IFramework.Test.EntityFramework
         public string Id { get; protected set; }
         public string Name { get; protected set; }
         public string Gender { get; protected set; }
+        public Address Address { get; set; }  
         private UserProfile _userProfile;
+        [Required]
         public virtual UserProfile UserProfile { get => _userProfile; protected set => _userProfile = value.Clone(); }
         public virtual ICollection<Card> Cards { get; set; } = new HashSet<Card>();
 
         protected User()
         {
-            
+           
         }
         public User(string name, string gender, UserProfile profile = null)
         {
