@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>IFramework.JsonNet</name>
+    </assembly>
+    <members>
+        <member name="M:IFramework.JsonNet.FrameworkConfigurationExtension.AddJsonNet(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+                Use Log4Net as the logger for the enode framework.
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

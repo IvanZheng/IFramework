@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>IFramework.EntityFrameworkCore</name>
+    </assembly>
+    <members>
+        <member name="M:IFramework.EntityFrameworkCore.ConfigurationExtension.AddEntityFrameworkComponents(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+                TDbContext is the default type for Repository<TEntity />'s dbContext injected paramter
+            </summary>
+            <param name="services"></param>
+            <param name="defaultRepositoryType"></param>
+            <param name="lifetime"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

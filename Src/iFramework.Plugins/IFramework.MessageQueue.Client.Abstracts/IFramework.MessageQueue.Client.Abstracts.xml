@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>IFramework.MessageQueue.Client.Abstracts</name>
+    </assembly>
+    <members>
+        <member name="M:IFramework.MessageQueue.Client.Abstracts.MessageConsumer.FinishConsumingMessage(IFramework.MessageQueue.MessageOffset)">
+            <summary>
+            </summary>
+            <param name="messageOffset"></param>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,1464 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>IFramework</name>
+    </assembly>
+    <members>
+        <member name="T:IFramework.Command.ICommandAsyncHandler`1">
+            <summary>
+                This interface defines a command handler interface.
+            </summary>
+            <typeparam name="TCommand"></typeparam>
+        </member>
+        <member name="T:IFramework.Command.ICommandHandler`1">
+            <summary>
+                This interface defines a command handler interface.
+            </summary>
+            <typeparam name="TCommand"></typeparam>
+        </member>
+        <member name="F:IFramework.Command.Impl.CommandBus._commandStateQueues">
+            <summary>
+                cache command states for command reply. When reply comes, make replyTaskCompletionSouce completed
+            </summary>
+        </member>
+        <member name="M:IFramework.Config.Configuration.UseSyncEventSubscriberProvider(System.String[])">
+            <summary>
+                should use after RegisterCommonComponents
+            </summary>
+            <param name="eventSubscriberProviders"></param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Config.ConfigurationExtensions.AddMessageStore``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            if sameIntanceAsBusinessDbContext is true, TMessageStore must be registerd before object provider to be built!
+            </summary>
+            <typeparam name="TMessageStore"></typeparam>
+            <param name="services"></param>
+            <param name="lifetime"></param>
+            <returns></returns>
+        </member>
+        <member name="P:IFramework.Config.FrameworkConfiguration.Handlers">
+            <summary>
+                Gets or sets the configuration settings for handlers.
+            </summary>
+        </member>
+        <member name="P:IFramework.Config.HandlerElement.Name">
+            <summary>
+            Handler Element Name
+            </summary>
+        </member>
+        <member name="P:IFramework.Config.HandlerElement.SourceType">
+            <summary>
+            SourceType 
+            </summary>
+        </member>
+        <member name="P:IFramework.Config.HandlerElement.Source">
+            <summary>
+            source name path
+            </summary>
+        </member>
+        <member name="F:IFramework.Config.HandlerSourceType.Type">
+            <summary>
+                Indicates that the configuration value represented by the Source
+                attribute is a type name.
+            </summary>
+        </member>
+        <member name="F:IFramework.Config.HandlerSourceType.Assembly">
+            <summary>
+                Indicates that the configuration value represented by the Source
+                attribute is an assembly name.
+            </summary>
+        </member>
+        <member name="P:IFramework.DependencyInjection.InterceptorAttribute.Order">
+            <summary>
+                the larger, the earlier processing
+            </summary>
+        </member>
+        <member name="M:IFramework.DependencyInjection.ObjectProviderBuilderExtension.RegisterMessageHandlers(IFramework.DependencyInjection.IObjectProviderBuilder,System.String[],Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+                Register MessageHandlers with AOP features
+            </summary>
+            <param name="builder"></param>
+            <param name="handlerProviderNames"></param>
+            <param name="lifetime"></param>
+            <returns></returns>
+        </member>
+        <member name="P:IFramework.DependencyInjection.ObjectProviderFactory.Instance">
+            <summary>
+                Get singleton instance of ObjectProviderFactory
+            </summary>
+        </member>
+        <member name="M:IFramework.DependencyInjection.ServiceProviderFactory.#ctor(System.Action{IFramework.DependencyInjection.IObjectProviderBuilder})">
+            <summary>
+            Initializes a new instance of the <see cref="T:IFramework.DependencyInjection.ServiceProviderFactory"/> class.
+            </summary>
+            <param name="configurationAction"></param>
+        </member>
+        <member name="M:IFramework.DependencyInjection.ServiceProviderFactory.CreateBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Creates a container builder from an <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.
+            </summary>
+            <param name="services">The collection of services.</param>
+            <returns>A container builder that can be used to create an <see cref="T:System.IServiceProvider" />.</returns>
+        </member>
+        <member name="M:IFramework.DependencyInjection.ServiceProviderFactory.CreateServiceProvider(IFramework.DependencyInjection.IObjectProviderBuilder)">
+            <summary>
+            Creates an <see cref="T:System.IServiceProvider" /> from the container builder.
+            </summary>
+            <param name="containerBuilder">The container builder.</param>
+            <returns>An <see cref="T:System.IServiceProvider" />.</returns>
+        </member>
+        <member name="M:IFramework.Domain.ValueObject.EqualOperator(IFramework.Domain.ValueObject,IFramework.Domain.ValueObject)">
+            <summary>
+                Helper function for implementing overloaded equality operator.
+            </summary>
+            <param name="left">Left-hand side object.</param>
+            <param name="right">Right-hand side object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Domain.ValueObject.NotEqualOperator(IFramework.Domain.ValueObject,IFramework.Domain.ValueObject)">
+            <summary>
+                Helper function for implementing overloaded inequality operator.
+            </summary>
+            <param name="left">Left-hand side object.</param>
+            <param name="right">Right-hand side object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Domain.ValueObject.GetAtomicValues">
+            <summary>
+                To be overridden in inheriting clesses for providing a collection of atomic values of
+                this Value Object.
+            </summary>
+            <returns>Collection of atomic values.</returns>
+        </member>
+        <member name="M:IFramework.Domain.ValueObject.Equals(System.Object)">
+            <summary>
+                Compares two Value Objects according to atomic values returned by <see cref="M:IFramework.Domain.ValueObject.GetAtomicValues" />.
+            </summary>
+            <param name="obj">Object to compare to.</param>
+            <returns>True if objects are considered equal.</returns>
+        </member>
+        <member name="M:IFramework.Domain.ValueObject.GetHashCode">
+            <summary>
+                Returns hashcode value calculated according to a collection of atomic values
+                returned by <see cref="M:IFramework.Domain.ValueObject.GetAtomicValues" />.
+            </summary>
+            <returns>Hashcode value.</returns>
+        </member>
+        <member name="M:IFramework.EventStore.IEventDeserializer.Deserialize``1(System.ReadOnlySpan{System.Byte})">
+            <summary>Deserialize a message key or value.</summary>
+            <param name="data">The data to deserialize.</param>
+            <returns>The deserialized value.</returns>
+        </member>
+        <member name="M:IFramework.EventStore.IEventSerializer.Serialize(System.Object)">
+            <summary>
+                Serialize the key or value of a <see cref="T:Confluent.Kafka.Message`2" />
+                instance.
+            </summary>
+            <param name="data">The value to serialize.</param>
+            <returns>The serialized value.</returns>
+        </member>
+        <member name="M:IFramework.Event.IEventStore.GetEvents(System.String,System.Int64,System.Nullable{System.Int64})">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <param name="start"></param>
+            <param name="end">if null, read to end</param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Event.IEventStore.AppendEvents(System.String,System.Int64,System.String,System.Object,System.Object,IFramework.Event.IEvent[],IFramework.Event.IEvent[])">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <param name="expectedVersion">The event version that you expect the stream to currently be at.</param>
+            <param name="correlationId"></param>
+            <param name="result"></param>
+            <param name="sagaResult"></param>
+            <param name="aggregateRootEvents"></param>
+            <param name="applicationEvents"></param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Event.IEventStore.GetEvents(System.String,System.String)">
+            <summary>
+            get aggregate's events by commandId
+            </summary>
+            <param name="id">aggregate id</param>
+            <param name="commandId">command id</param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Event.IEventStore.HandleEvent(System.String,System.String,IFramework.Command.ICommand[],IFramework.Event.IEvent[],System.Object,System.Object)">
+            <summary>
+            return commands that subscriber generated in the event handling,
+            if event has been handled before, return the last handling commands ignoring the current commands
+            </summary>
+            <param name="subscriber"></param>
+            <param name="eventId"></param>
+            <param name="commands"></param>
+            <param name="events"></param>
+            <param name="sagaResult"></param>
+            <param name="eventResult"></param>
+            <returns></returns>
+        </member>
+        <member name="F:IFramework.Exceptions.ErrorCode.NoError">
+            <summary>
+            成功
+            </summary>
+        </member>
+        <member name="F:IFramework.Exceptions.ErrorCode.DuplicatedObject">
+            <summary>
+            重复对象
+            </summary>
+        </member>
+        <member name="F:IFramework.Exceptions.ErrorCode.HttpStatusError">
+            <summary>
+            http错误
+            </summary>
+        </member>
+        <member name="F:IFramework.Exceptions.ErrorCode.InvalidParameters">
+            <summary>
+            无效参数
+            </summary>
+        </member>
+        <member name="F:IFramework.Exceptions.ErrorCode.UnknownError">
+            <summary>
+            系统错误
+            </summary>
+        </member>
+        <member name="T:IFramework.Infrastructure.ApiResult">
+            <summary>
+                API 响应结果
+            </summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.ApiResult.Success">
+            <summary>
+                API 执行是否成功
+            </summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.ApiResult.ErrorCode">
+            <summary>
+                ErrorCode 为 0 表示执行无异常
+            </summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.ApiResult.Message">
+            <summary>
+                当API执行有异常时, 对应的错误信息
+            </summary>
+        </member>
+        <member name="T:IFramework.Infrastructure.ApiResult`1">
+            <inheritdoc />
+            <summary>
+                Api返回结果
+            </summary>
+            <typeparam name="TResult"></typeparam>
+        </member>
+        <member name="P:IFramework.Infrastructure.ApiResult`1.Result">
+            <summary>
+                API 执行返回的结果
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.CacheExtensions.Get``1(IFramework.Infrastructure.Caching.ICacheManager,System.String,System.Func{``0})">
+            <summary>
+                Default cache timeout is 60 minutes.
+            </summary>
+            <summary>
+                Get a cached item. If it's not in the cache yet, then load and cache it
+            </summary>
+            <typeparam name="T">Type</typeparam>
+            <param name="cacheManager">Cache manager</param>
+            <param name="key">Cache key</param>
+            <param name="acquire">Function to load item if it's not in the cache yet</param>
+            <returns>Cached item</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.CacheExtensions.Get``1(IFramework.Infrastructure.Caching.ICacheManager,System.String,System.Int32,System.Func{``0})">
+            <summary>
+                Get a cached item. If it's not in the cache yet, then load and cache it
+            </summary>
+            <typeparam name="T">Type</typeparam>
+            <param name="cacheManager">Cache manager</param>
+            <param name="key">Cache key</param>
+            <param name="cacheTime">Cache time in minutes (0 - do not cache)</param>
+            <param name="acquire">Function to load item if it's not in the cache yet</param>
+            <returns>Cached item</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.CacheExtensions.GetAsync``1(IFramework.Infrastructure.Caching.ICacheManager,System.String,System.Func{System.Threading.Tasks.Task{``0}},System.Boolean)">
+            <summary>
+                Get a cached item. If it's not in the cache yet, then load and cache it
+                Default cache timeout is 60 minutes.
+            </summary>
+            <typeparam name="T">Type</typeparam>
+            <param name="cacheManager">Cache manager</param>
+            <param name="key">Cache key</param>
+            <param name="acquire">async Function to load item if it's not in the cache yet</param>
+            <param name="continueOnCapturedContext"></param>
+            <returns>Cached item</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.CacheExtensions.GetAsync``1(IFramework.Infrastructure.Caching.ICacheManager,System.String,System.Int32,System.Func{System.Threading.Tasks.Task{``0}},System.Boolean)">
+            <summary>
+                Get a cached item. If it's not in the cache yet, then load and cache it
+            </summary>
+            <typeparam name="T">Type</typeparam>
+            <param name="cacheManager">Cache manager</param>
+            <param name="key">Cache key</param>
+            <param name="cacheTime">Cache time in minutes (0 - do not cache)</param>
+            <param name="acquire">Async Function to load item if it's not in the cache yet</param>
+            <param name="continueOnCapturedContext"></param>
+            <returns>Cached item</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.CacheExtensions.GetAsync``1(IFramework.Infrastructure.Caching.ICacheManager,System.String,System.Func{``0},System.Boolean)">
+            <summary>
+                Get a cached item. If it's not in the cache yet, then load and cache it
+                Default cache timeout is 60 minutes.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheManager"></param>
+            <param name="key"></param>
+            <param name="acquire">sync function</param>
+            <param name="continueOnCapturedContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.CacheExtensions.GetAsync``1(IFramework.Infrastructure.Caching.ICacheManager,System.String,System.Int32,System.Func{``0},System.Boolean)">
+            <summary>
+                Get a cached item. If it's not in the cache yet, then load and cache it
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheManager"></param>
+            <param name="key"></param>
+            <param name="cacheTime">cache in minutes</param>
+            <param name="acquire">sync function</param>
+            <param name="continueOnCapturedContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.ICacheManager.Get``1(System.String)">
+            <summary>
+                Gets or sets the value associated with the specified key.
+            </summary>
+            <typeparam name="T">Type</typeparam>
+            <param name="key">The key of the value to get.</param>
+            <returns>The value associated with the specified key.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.ICacheManager.Set``1(System.String,``0,System.Int32)">
+            <summary>
+                Adds the specified key and object to the cache.
+            </summary>
+            <param name="key">key</param>
+            <param name="data">Data</param>
+            <param name="cacheTime">Cache time</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.ICacheManager.IsSet(System.String)">
+            <summary>
+                Gets a value indicating whether the value associated with the specified key is cached
+            </summary>
+            <param name="key">key</param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.ICacheManager.Remove(System.String)">
+            <summary>
+                Removes the value with the specified key from the cache
+            </summary>
+            <param name="key">/key</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.ICacheManager.RemoveByPattern(System.String)">
+            <summary>
+                Removes items by pattern
+            </summary>
+            <param name="pattern">pattern</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.ICacheManager.Clear">
+            <summary>
+                Clear all cache data
+            </summary>
+        </member>
+        <member name="T:IFramework.Infrastructure.Caching.Impl.MemoryCacheManager">
+            <summary>
+                Represents a manager for caching between HTTP requests (long term caching)
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.MemoryCacheManager.Get``1(System.String)">
+            <summary>
+                Gets or sets the value associated with the specified key.
+            </summary>
+            <typeparam name="T">Type</typeparam>
+            <param name="key">The key of the value to get.</param>
+            <returns>The value associated with the specified key.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.MemoryCacheManager.Set``1(System.String,``0,System.Int32)">
+            <summary>
+                Adds the specified key and object to the cache.
+            </summary>
+            <param name="key">key</param>
+            <param name="data">Data</param>
+            <param name="cacheTime">Cache time</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.MemoryCacheManager.IsSet(System.String)">
+            <summary>
+                Gets a value indicating whether the value associated with the specified key is cached
+            </summary>
+            <param name="key">key</param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.MemoryCacheManager.Remove(System.String)">
+            <summary>
+                Removes the value with the specified key from the cache
+            </summary>
+            <param name="key">/key</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.MemoryCacheManager.RemoveByPattern(System.String)">
+            <summary>
+                Removes items by pattern
+            </summary>
+            <param name="pattern">pattern</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.MemoryCacheManager.Clear">
+            <summary>
+                Clear all cache data
+            </summary>
+        </member>
+        <member name="T:IFramework.Infrastructure.Caching.Impl.NullCacheManager">
+            <summary>
+                Represents a NopNullCache
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.NullCacheManager.Get``1(System.String)">
+            <summary>
+                Gets or sets the value associated with the specified key.
+            </summary>
+            <typeparam name="T">Type</typeparam>
+            <param name="key">The key of the value to get.</param>
+            <returns>The value associated with the specified key.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.NullCacheManager.Set``1(System.String,``0,System.Int32)">
+            <summary>
+                Adds the specified key and object to the cache.
+            </summary>
+            <param name="key">key</param>
+            <param name="data">Data</param>
+            <param name="cacheTime">Cache time</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.NullCacheManager.IsSet(System.String)">
+            <summary>
+                Gets a value indicating whether the value associated with the specified key is cached
+            </summary>
+            <param name="key">key</param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.NullCacheManager.Remove(System.String)">
+            <summary>
+                Removes the value with the specified key from the cache
+            </summary>
+            <param name="key">/key</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.NullCacheManager.RemoveByPattern(System.String)">
+            <summary>
+                Removes items by pattern
+            </summary>
+            <param name="pattern">pattern</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.Caching.Impl.NullCacheManager.Clear">
+            <summary>
+                Clear all cache data
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.DictionaryExtensions.TryGetValue``2(System.Collections.Generic.IDictionary{``0,``1},``0)">
+            <summary>
+                Gets an item from the dictionary, if it's found.
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.DictionaryExtensions.TryGetValue``2(System.Collections.Generic.IDictionary{``0,``1},``0,``1)">
+            <summary>
+                Gets an item from the dictionary, if it's found. Otherwise,
+                returns the specified default value.
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.GuidUtil.NewSequentialId">
+            <summary>
+                Creates a sequential GUID according to SQL Server's ordering rules.
+            </summary>
+        </member>
+        <member name="T:IFramework.Infrastructure.ObjectId">
+            <summary>
+                Represents an ObjectId
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.#ctor(System.Byte[])">
+            <summary>
+                Initializes a new instance of the ObjectId class.
+            </summary>
+            <param name="bytes">The bytes.</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.#ctor(System.DateTime,System.Int32,System.Int16,System.Int32)">
+            <summary>
+                Initializes a new instance of the ObjectId class.
+            </summary>
+            <param name="timestamp">The timestamp (expressed as a DateTime).</param>
+            <param name="machine">The machine hash.</param>
+            <param name="pid">The PID.</param>
+            <param name="increment">The increment.</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.#ctor(System.Int32,System.Int32,System.Int16,System.Int32)">
+            <summary>
+                Initializes a new instance of the ObjectId class.
+            </summary>
+            <param name="timestamp">The timestamp.</param>
+            <param name="machine">The machine hash.</param>
+            <param name="pid">The PID.</param>
+            <param name="increment">The increment.</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.#ctor(System.String)">
+            <summary>
+                Initializes a new instance of the ObjectId class.
+            </summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="P:IFramework.Infrastructure.ObjectId.Empty">
+            <summary>
+                Gets an instance of ObjectId where the value is empty.
+            </summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.ObjectId.Timestamp">
+            <summary>
+                Gets the timestamp.
+            </summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.ObjectId.Machine">
+            <summary>
+                Gets the machine.
+            </summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.ObjectId.Pid">
+            <summary>
+                Gets the PID.
+            </summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.ObjectId.Increment">
+            <summary>
+                Gets the increment.
+            </summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.ObjectId.CreationTime">
+            <summary>
+                Gets the creation time (derived from the timestamp).
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.op_LessThan(IFramework.Infrastructure.ObjectId,IFramework.Infrastructure.ObjectId)">
+            <summary>
+                Compares two ObjectIds.
+            </summary>
+            <param name="lhs">The first ObjectId.</param>
+            <param name="rhs">The other ObjectId</param>
+            <returns>True if the first ObjectId is less than the second ObjectId.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.op_LessThanOrEqual(IFramework.Infrastructure.ObjectId,IFramework.Infrastructure.ObjectId)">
+            <summary>
+                Compares two ObjectIds.
+            </summary>
+            <param name="lhs">The first ObjectId.</param>
+            <param name="rhs">The other ObjectId</param>
+            <returns>True if the first ObjectId is less than or equal to the second ObjectId.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.op_Equality(IFramework.Infrastructure.ObjectId,IFramework.Infrastructure.ObjectId)">
+            <summary>
+                Compares two ObjectIds.
+            </summary>
+            <param name="lhs">The first ObjectId.</param>
+            <param name="rhs">The other ObjectId.</param>
+            <returns>True if the two ObjectIds are equal.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.op_Inequality(IFramework.Infrastructure.ObjectId,IFramework.Infrastructure.ObjectId)">
+            <summary>
+                Compares two ObjectIds.
+            </summary>
+            <param name="lhs">The first ObjectId.</param>
+            <param name="rhs">The other ObjectId.</param>
+            <returns>True if the two ObjectIds are not equal.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.op_GreaterThanOrEqual(IFramework.Infrastructure.ObjectId,IFramework.Infrastructure.ObjectId)">
+            <summary>
+                Compares two ObjectIds.
+            </summary>
+            <param name="lhs">The first ObjectId.</param>
+            <param name="rhs">The other ObjectId</param>
+            <returns>True if the first ObjectId is greather than or equal to the second ObjectId.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.op_GreaterThan(IFramework.Infrastructure.ObjectId,IFramework.Infrastructure.ObjectId)">
+            <summary>
+                Compares two ObjectIds.
+            </summary>
+            <param name="lhs">The first ObjectId.</param>
+            <param name="rhs">The other ObjectId</param>
+            <returns>True if the first ObjectId is greather than the second ObjectId.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.GenerateNewId">
+            <summary>
+                Generates a new ObjectId with a unique value.
+            </summary>
+            <returns>An ObjectId.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.GenerateNewId(System.DateTime)">
+            <summary>
+                Generates a new ObjectId with a unique value (with the timestamp component based on a given DateTime).
+            </summary>
+            <param name="timestamp">The timestamp component (expressed as a DateTime).</param>
+            <returns>An ObjectId.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.GenerateNewId(System.Int32)">
+            <summary>
+                Generates a new ObjectId with a unique value (with the given timestamp).
+            </summary>
+            <param name="timestamp">The timestamp component.</param>
+            <returns>An ObjectId.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.Pack(System.Int32,System.Int32,System.Int16,System.Int32)">
+            <summary>
+                Packs the components of an ObjectId into a byte array.
+            </summary>
+            <param name="timestamp">The timestamp.</param>
+            <param name="machine">The machine hash.</param>
+            <param name="pid">The PID.</param>
+            <param name="increment">The increment.</param>
+            <returns>A byte array.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.Parse(System.String)">
+            <summary>
+                Parses a string and creates a new ObjectId.
+            </summary>
+            <param name="s">The string value.</param>
+            <returns>A ObjectId.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.TryParse(System.String,IFramework.Infrastructure.ObjectId@)">
+            <summary>
+                Tries to parse a string and create a new ObjectId.
+            </summary>
+            <param name="s">The string value.</param>
+            <param name="objectId">The new ObjectId.</param>
+            <returns>True if the string was parsed successfully.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.Unpack(System.Byte[],System.Int32@,System.Int32@,System.Int16@,System.Int32@)">
+            <summary>
+                Unpacks a byte array into the components of an ObjectId.
+            </summary>
+            <param name="bytes">A byte array.</param>
+            <param name="timestamp">The timestamp.</param>
+            <param name="machine">The machine hash.</param>
+            <param name="pid">The PID.</param>
+            <param name="increment">The increment.</param>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.GetCurrentProcessId">
+            <summary>
+                Gets the current process id.  This method exists because of how CAS operates on the call stack, checking
+                for permissions before executing the method.  Hence, if we inlined this call, the calling method would not execute
+                before throwing an exception requiring the try/catch at an even higher level that we don't necessarily control.
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.CompareTo(IFramework.Infrastructure.ObjectId)">
+            <summary>
+                Compares this ObjectId to another ObjectId.
+            </summary>
+            <param name="other">The other ObjectId.</param>
+            <returns>
+                A 32-bit signed integer that indicates whether this ObjectId is less than, equal to, or greather than the
+                other.
+            </returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.Equals(IFramework.Infrastructure.ObjectId)">
+            <summary>
+                Compares this ObjectId to another ObjectId.
+            </summary>
+            <param name="rhs">The other ObjectId.</param>
+            <returns>True if the two ObjectIds are equal.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.Equals(System.Object)">
+            <summary>
+                Compares this ObjectId to another object.
+            </summary>
+            <param name="obj">The other object.</param>
+            <returns>True if the other object is an ObjectId and equal to this one.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.GetHashCode">
+            <summary>
+                Gets the hash code.
+            </summary>
+            <returns>The hash code.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.ToByteArray">
+            <summary>
+                Converts the ObjectId to a byte array.
+            </summary>
+            <returns>A byte array.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.ToString">
+            <summary>
+                Returns a string representation of the value.
+            </summary>
+            <returns>A string representation of the value.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.TryParseHexString(System.String,System.Byte[]@)">
+            <summary>
+                Tries to parse a hex string to a byte array.
+            </summary>
+            <param name="s">The hex string.</param>
+            <param name="bytes">A byte array.</param>
+            <returns>True if the hex string was successfully parsed.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.ParseHexString(System.String)">
+            <summary>
+                Parses a hex string into its equivalent byte array.
+            </summary>
+            <param name="s">The hex string to parse.</param>
+            <returns>The byte equivalent of the hex string.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.ToHexString(System.Byte[])">
+            <summary>
+                Converts a byte array to a hex string.
+            </summary>
+            <param name="bytes">The byte array.</param>
+            <returns>A hex string.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.ToMillisecondsSinceEpoch(System.DateTime)">
+            <summary>
+                Converts a DateTime to number of milliseconds since Unix epoch.
+            </summary>
+            <param name="dateTime">A DateTime.</param>
+            <returns>Number of seconds since Unix epoch.</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.ObjectId.ToUniversalTime(System.DateTime)">
+            <summary>
+                Converts a DateTime to UTC (with special handling for MinValue and MaxValue).
+            </summary>
+            <param name="dateTime">A DateTime.</param>
+            <returns>The DateTime in UTC.</returns>
+        </member>
+        <member name="F:IFramework.Infrastructure.EndianFormat.Little">
+            <summary>Least Significant Bit order (lsb)</summary>
+            <remarks>Right-to-Left</remarks>
+            <see cref="F:System.BitConverter.IsLittleEndian" />
+        </member>
+        <member name="F:IFramework.Infrastructure.EndianFormat.Big">
+            <summary>Most Significant Bit order (msb)</summary>
+            <remarks>Left-to-Right</remarks>
+        </member>
+        <member name="T:IFramework.Infrastructure.RadixEncoding">
+            <summary>Encodes/decodes bytes to/from a string</summary>
+            <remarks>
+                Encoded string is always in big-endian ordering
+                <p>
+                    Encode and Decode take a <b>includeProceedingZeros</b> parameter which acts as a work-around
+                    for an edge case with our BigInteger implementation.
+                    MSDN says BigInteger byte arrays are in LSB->MSB ordering. So a byte buffer with zeros at the
+                    end will have those zeros ignored in the resulting encoded radix string.
+                    If such a loss in precision absolutely cannot occur pass true to <b>includeProceedingZeros</b>
+                    and for a tiny bit of extra processing it will handle the padding of zero digits (encoding)
+                    or bytes (decoding).
+                </p>
+                <p>
+                    Note: doing this for decoding <b>may</b> add an extra byte more than what was originally
+                    given to Encode.
+                </p>
+            </remarks>
+        </member>
+        <member name="M:IFramework.Infrastructure.RadixEncoding.#ctor(System.String,IFramework.Infrastructure.EndianFormat,System.Boolean)">
+            <summary>Create a radix encoder using the given characters as the digits in the radix</summary>
+            <param name="digits">Digits to use for the radix-encoded string</param>
+            <param name="bytesEndian">Endian ordering of bytes input to Encode and output by Decode</param>
+            <param name="includeProceedingZeros">True if we want ending zero bytes to be encoded</param>
+        </member>
+        <member name="P:IFramework.Infrastructure.RadixEncoding.Radix">
+            <summary>Numerial base of this encoding</summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.RadixEncoding.Endian">
+            <summary>Endian ordering of bytes input to Encode and output by Decode</summary>
+        </member>
+        <member name="P:IFramework.Infrastructure.RadixEncoding.IncludeProceedingZeros">
+            <summary>True if we want ending zero bytes to be encoded</summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.RadixEncoding.Encode(System.Byte[])">
+            <summary>Encode a byte array into a radix-encoded string</summary>
+            <param name="bytes">byte array to encode</param>
+            <returns>The bytes in encoded into a radix-encoded string</returns>
+            <remarks>If <paramref name="bytes" /> is zero length, returns an empty string</remarks>
+        </member>
+        <member name="M:IFramework.Infrastructure.RadixEncoding.Decode(System.String)">
+            <summary>Decode a radix-encoded string into a byte array</summary>
+            <param name="radixChars">radix string</param>
+            <returns>The decoded bytes, or null if an invalid character is encountered</returns>
+            <remarks>
+                If <paramref name="radixChars" /> is an empty string, returns a zero length array
+                Using <paramref>
+                    <name>IncludeProceedingZeros</name>
+                </paramref>
+                has the potential to return a buffer with an
+                additional zero byte that wasn't in the input. So a 4 byte buffer was encoded, this could end up
+                returning a 5 byte buffer, with the extra byte being null.
+            </remarks>
+        </member>
+        <member name="T:IFramework.Infrastructure.SBase64Utility">
+            <summary>
+                有关base64编码算法的相关操作
+                By 自由奔腾（wgscd）
+                改 Sithere
+            </summary>
+        </member>
+        <member name="M:IFramework.Infrastructure.SBase64Utility.EncodingForString(System.String,System.Text.Encoding)">
+            <summary>
+                将字符串使用base64算法加密
+            </summary>
+            <param name="sourceString">待加密的字符串</param>
+            <param name="ens">System.Text.Encoding 对象，如创建中文编码集对象：System.Text.Encoding.GetEncoding(54936)</param>
+            <returns>加码后的文本字符串</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.SBase64Utility.DecodingForString(System.String,System.Text.Encoding)">
+            <summary>
+                从base64编码的字符串中还原字符串，支持中文
+            </summary>
+            <param name="base64String">base64加密后的字符串</param>
+            <param name="ens">System.Text.Encoding 对象，如创建中文编码集对象：System.Text.Encoding.GetEncoding(54936)</param>
+            <returns>还原后的文本字符串</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.SBase64Utility.EncodingForFile(System.String)">
+            <summary>
+                对任意类型的文件进行base64加码
+            </summary>
+            <param name="fileName">文件的路径和文件名</param>
+            <returns>对文件进行base64编码后的字符串</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.SBase64Utility.SaveDecodingToFile(System.String,System.String)">
+            <summary>
+                把经过base64编码的字符串保存为文件
+            </summary>
+            <param name="base64String">经base64加码后的字符串</param>
+            <param name="fileName">保存文件的路径和文件名</param>
+            <returns>保存文件是否成功</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.SBase64Utility.EncodingFileFromUrl(System.String,System.Net.WebClient)">
+            <summary>
+                从网络地址一取得文件并转化为base64编码
+            </summary>
+            <param name="url">文件的url地址,一个绝对的url地址</param>
+            <param name="objWebClient">System.Net.WebClient 对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.SBase64Utility.EncodingFileFromUrl(System.String)">
+            <summary>
+                从网络地址一取得文件并转化为base64编码
+            </summary>
+            <param name="url">文件的url地址,一个绝对的url地址</param>
+            <returns>将文件转化后的base64字符串</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.TimerTaskFactory.StartNew``1(System.Func{``0},System.Func{``0,System.Boolean},System.TimeSpan,System.TimeSpan,System.Boolean)">
+            <summary>
+                Starts a new task that will poll for a result using the specified function, and will be completed when it satisfied
+                the specified condition.
+            </summary>
+            <typeparam name="T">The type of value that will be returned when the task completes.</typeparam>
+            <param name="getResult">Function that will be used for polling.</param>
+            <param name="isResultValid">Predicate that determines if the result is valid, or if it should continue polling</param>
+            <param name="pollInterval">Polling interval.</param>
+            <param name="timeout">The timeout interval.</param>
+            <param name="immediatelyStart"></param>
+            <returns>
+                The result returned by the specified function, or <see langword="null" /> if the result is not valid and the
+                task times out.
+            </returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Utility.ToBytes(System.Object)">
+            <summary>
+                序列化
+            </summary>
+            <param name="data">要序列化的对象</param>
+            <returns>返回存放序列化后的数据缓冲区</returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Utility.ToObject(System.Byte[])">
+            <summary>
+                反序列化
+            </summary>
+            <param name="data">数据缓冲区</param>
+            <returns>对象</returns>
+        </member>
+        <member name="T:IFramework.MessageQueue.AutoOffsetReset">
+             <summary>
+             Action to take when there is no initial offset in offset store or the desired offset is out of range:
+              'smallest','earliest' - automatically reset the offset to the smallest offset, 
+             'largest','latest' - automatically reset the offset to the largest offset, 
+             'error' - trigger an error which is retrieved by consuming messages and checking 'message->err'. 
+            * Type: enum value*
+             </summary>
+        </member>
+        <member name="F:IFramework.MessageQueue.AutoOffsetReset.Latest">
+            <summary>Latest</summary>
+        </member>
+        <member name="F:IFramework.MessageQueue.AutoOffsetReset.Earliest">
+            <summary>Earliest</summary>
+        </member>
+        <member name="F:IFramework.MessageQueue.AutoOffsetReset.Error">
+            <summary>Error</summary>
+        </member>
+        <member name="M:IFramework.MessageQueue.MessageQueueFactory.GetMessagePublisher">
+            <summary>
+                GetMessagePublisher returns a singleton instance of message publisher
+                you can call it everywhere to get a message publisher to publish messages
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Message.IMessageTypeProvider.Register(System.Collections.Generic.IDictionary{System.String,System.Type})">
+            <summary>
+            code mapping dictionary, key is code, value is message's type 
+            </summary>
+            <param name="codeMapping"></param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Message.IMessageTypeProvider.Register(System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            code mapping dictionary, key is code, value is the fullNameWithAssembly of message's type 
+            </summary>
+            <param name="codeMapping"></param>
+            <returns></returns>
+        </member>
+        <member name="T:IFramework.Message.MessageQueueOptions">
+            <summary>
+            消息队列选项
+            </summary>
+        </member>
+        <member name="P:IFramework.Message.MessageQueueOptions.EnsureArrival">
+            <summary>
+            是否保证消息必达性, 在本地表中持久化未发送完毕的消息
+            </summary>
+        </member>
+        <member name="P:IFramework.Message.MessageQueueOptions.EnsureIdempotent">
+            <summary>
+            是否开启消费幂等性, 在本地表中记录消费者Id和消息Id(唯一索引)
+            </summary>
+        </member>
+        <member name="P:IFramework.Message.MessageQueueOptions.PersistEvent">
+            <summary>
+            是否持久化事件
+            </summary>
+        </member>
+        <member name="T:IFramework.Repositories.BaseRepository`1">
+            <summary>
+                Represents the base class for repositories.
+            </summary>
+            <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.DoAdd(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                Adds an entity to the repository.
+            </summary>
+            <param name="entities"></param>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.DoGetByKey(System.Object[])">
+            <summary>
+                Gets the entity instance from repository by a given key.
+            </summary>
+            <param name="keyValues">The key of the entity.</param>
+            <returns>The instance of the entity.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.DoFindAll(IFramework.Repositories.OrderExpression[])">
+            <summary>
+                Finds all the aggregate roots from repository, sorting by using the provided sort predicate
+                and the specified sort order.
+            </summary>
+            <param name="orderExpressions">The sort predicate which is used for sorting.</param>
+            <returns>
+                All the aggregate roots got from the repository, with the aggregate roots being sorted by
+                using the provided sort predicate and the sort order.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.DoFindAll(IFramework.Specifications.ISpecification{`0},IFramework.Repositories.OrderExpression[])">
+            <summary>
+                Finds all the aggregate roots that match the given specification, and sorts the aggregate roots
+                by using the provided sort predicate and the specified sort order.
+            </summary>
+            <param name="specification">The specification with which the aggregate roots should match.</param>
+            <param name="orderExpressions">The sort predicate which is used for sorting.</param>
+            <returns>
+                All the aggregate roots that match the given specification and were sorted by using the given sort predicate
+                and the sort order.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.DoFind(IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Finds a single aggregate root that matches the given specification.
+            </summary>
+            <param name="specification">The specification with which the aggregate root should match.</param>
+            <returns>The instance of the aggregate root.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.DoExists(IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Checkes whether the aggregate root which matches the given specification exists.
+            </summary>
+            <param name="specification">The specification with which the aggregate root should match.</param>
+            <returns>True if the aggregate root exists, otherwise false.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.DoRemove(`0)">
+            <summary>
+                Removes the entity from the repository.
+            </summary>
+            <param name="entity">The entity to be removed.</param>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.DoUpdate(`0)">
+            <summary>
+                Updates the entity in the repository.
+            </summary>
+            <param name="entity">The entity to be updated.</param>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.Add(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                Adds an entity to the repository.
+            </summary>
+            <param name="entities"></param>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.GetByKey(System.Object[])">
+            <summary>
+                Gets the entity instance from repository by a given key.
+            </summary>
+            <param name="keyValues">The key of the entity.</param>
+            <returns>The instance of the entity.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.Remove(`0)">
+            <summary>
+                Removes the entity from the repository.
+            </summary>
+            <param name="entity">The entity to be removed.</param>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.Update(`0)">
+            <summary>
+                Updates the entity in the repository.
+            </summary>
+            <param name="entity">The entity to be updated.</param>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.FindAll(IFramework.Repositories.OrderExpression[])">
+            <summary>
+                Finds all the aggregate roots from repository, sorting by using the provided sort predicate
+                and the specified sort order.
+            </summary>
+            <param name="orderExpressions">The <see cref="T:IFramework.Repositories.SortOrder" /> enum which specifies the sort order.</param>
+            <returns>
+                All the aggregate roots got from the repository, with the aggregate roots being sorted by
+                using the provided sort predicate and the sort order.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.FindAll(IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Finds all the aggregate roots that match the given specification.
+            </summary>
+            <param name="specification">The specification with which the aggregate roots should match.</param>
+            <returns>All the aggregate roots that match the given specification.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.FindAll(IFramework.Specifications.ISpecification{`0},IFramework.Repositories.OrderExpression[])">
+            <summary>
+                Finds all the aggregate roots that match the given specification, and sorts the aggregate roots
+                by using the provided sort predicate and the specified sort order.
+            </summary>
+            <param name="specification">The specification with which the aggregate roots should match.</param>
+            <param name="orderExpressions">The sort predicate which is used for sorting.</param>
+            <returns>
+                All the aggregate roots that match the given specification and were sorted by using the given sort predicate
+                and the sort order.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.Find(IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Finds a single aggregate root that matches the given specification.
+            </summary>
+            <param name="specification">The specification with which the aggregate root should match.</param>
+            <returns>The instance of the aggregate root.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.BaseRepository`1.Exists(IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Checkes whether the aggregate root which matches the given specification exists.
+            </summary>
+            <param name="specification">The specification with which the aggregate root should match.</param>
+            <returns>True if the aggregate root exists, otherwise false.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.DomainRepository.#ctor(IFramework.DependencyInjection.IObjectProvider)">
+            <summary>
+                Initializes a new instance of DomainRepository.
+            </summary>
+            <param name="objectProvider"></param>
+        </member>
+        <member name="T:IFramework.Repositories.IDomainRepository">
+            <summary>
+                Represents the repositories.
+            </summary>
+        </member>
+        <member name="M:IFramework.Repositories.IDomainRepository.Add``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+                Adds an entity to the repository.
+            </summary>
+            <param name="entities"></param>
+        </member>
+        <member name="M:IFramework.Repositories.IDomainRepository.GetByKey``1(System.Object[])">
+            <summary>
+                Gets the entity instance from repository by a given key.
+            </summary>
+            <param name="keyValues"></param>
+            <returns>The instance of the entity.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.IDomainRepository.FindAll``1(IFramework.Repositories.OrderExpression[])">
+            <summary>
+                Finds all the aggregate roots from repository, sorting by using the provided sort predicate
+                and the specified sort order.
+            </summary>
+            <param name="orderExpressions"></param>
+            <returns>
+                All the aggregate roots got from the repository, with the aggregate roots being sorted by
+                using the provided sort predicate and the sort order.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.IDomainRepository.FindAll``1(IFramework.Specifications.ISpecification{``0},IFramework.Repositories.OrderExpression[])">
+            <summary>
+                <summary>
+                    Finds all the aggregate roots that match the given specification, and sorts the aggregate roots
+                    by using the provided sort predicate and the specified sort order.
+                </summary>
+                <param name="specification">The specification with which the aggregate roots should match.</param>
+                <param name="orderExpressions">The sort predicate which is used for sorting.</param>
+                <returns>
+                    All the aggregate roots that match the given specification and were sorted by using the given sort
+                    predicate and the sort order.
+                </returns>
+            </summary>
+        </member>
+        <member name="M:IFramework.Repositories.IDomainRepository.Find``1(IFramework.Specifications.ISpecification{``0})">
+            <summary>
+                Finds a single aggregate root that matches the given specification.
+            </summary>
+            <param name="specification">The specification with which the aggregate root should match.</param>
+            <returns>The instance of the aggregate root.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.IDomainRepository.Exists``1(IFramework.Specifications.ISpecification{``0})">
+            <summary>
+                Checkes whether the aggregate root which matches the given specification exists.
+            </summary>
+            <param name="specification">The specification with which the aggregate root should match.</param>
+            <returns>True if the aggregate root exists, otherwise false.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.IDomainRepository.Remove``1(``0)">
+            <summary>
+                Removes the entity from the repository.
+            </summary>
+            <param name="entity">The entity to be removed.</param>
+        </member>
+        <member name="M:IFramework.Repositories.IDomainRepository.Update``1(``0)">
+            <summary>
+                Updates the entity in the repository.
+            </summary>
+            <param name="entity">The entity to be updated.</param>
+        </member>
+        <member name="T:IFramework.Repositories.IRepository`1">
+            <summary>
+                Represents the repositories.
+            </summary>
+            <typeparam name="TAggregateRoot">The type of the aggregation root with which the repository is working.</typeparam>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.Add(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                Adds an entity to the repository.
+            </summary>
+            <param name="entities">The entity object to be added.</param>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.Add(`0)">
+            <summary>
+                Adds an entity to the repository.
+            </summary>
+            <param name="entity">The entity object to be added.</param>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.AddAsync(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                <para>
+                    Begins tracking the given entity, and any other reachable entities that are
+                    not already being tracked, in the <see cref="F:Microsoft.EntityFrameworkCore.EntityState.Added" /> state such that they will
+                    be inserted into the database when <see cref="M:Microsoft.EntityFrameworkCore.DbContext.SaveChanges" /> is called.
+                </para>
+                <para>
+                    This method is async only to allow special value generators, such as the one used by
+                    'Microsoft.EntityFrameworkCore.Metadata.SqlServerValueGenerationStrategy.SequenceHiLo',
+                    to access the database asynchronously. For all other cases the non async method should be used.
+                </para>
+                <para>
+                    Use <see cref="P:Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry.State" /> to set the state of only a single entity.
+                </para>
+            </summary>
+            <param name="entities"> The entities to add. </param>
+            <returns>
+                A task that represents the asynchronous Add operation. The task result contains the
+                <see cref="T:Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry`1" /> for the entity. The entry provides access to change tracking
+                information and operations for the entity.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.AddAsync(`0)">
+            <summary>
+                <para>
+                    Begins tracking the given entity, and any other reachable entities that are
+                    not already being tracked, in the <see cref="F:Microsoft.EntityFrameworkCore.EntityState.Added" /> state such that they will
+                    be inserted into the database when <see cref="M:Microsoft.EntityFrameworkCore.DbContext.SaveChanges" /> is called.
+                </para>
+                <para>
+                    This method is async only to allow special value generators, such as the one used by
+                    'Microsoft.EntityFrameworkCore.Metadata.SqlServerValueGenerationStrategy.SequenceHiLo',
+                    to access the database asynchronously. For all other cases the non async method should be used.
+                </para>
+                <para>
+                    Use <see cref="P:Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry.State" /> to set the state of only a single entity.
+                </para>
+            </summary>
+            <param name="entity"> The entity to add. </param>
+            <returns>
+                A task that represents the asynchronous Add operation. The task result contains the
+                <see cref="T:Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry`1" /> for the entity. The entry provides access to change tracking
+                information and operations for the entity.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.GetByKey(System.Object[])">
+            <summary>
+                Gets the entity instance from repository by a given key.
+            </summary>
+            <param name="keyValues">The key of the entity.</param>
+            <returns>The instance of the entity.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.FindAll(IFramework.Repositories.OrderExpression[])">
+            <summary>
+                Finds all the aggregate roots from repository, sorting by using the provided sort predicate
+                and the specified sort order.
+            </summary>
+            <returns>
+                All the aggregate roots got from the repository, with the aggregate roots being sorted by
+                using the provided sort predicate and the sort order.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.FindAll(IFramework.Specifications.ISpecification{`0},IFramework.Repositories.OrderExpression[])">
+            <summary>
+                Finds all the aggregate roots that match the given specification, and sorts the aggregate roots
+                by using the provided sort predicate and the specified sort order.
+            </summary>
+            <param name="specification">The specification with which the aggregate roots should match.</param>
+            <param name="orderByExpressions"></param>
+            <returns>
+                All the aggregate roots that match the given specification and were sorted by using the given sort predicate
+                and the sort order.
+            </returns>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.Find(IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Finds a single aggregate root that matches the given specification.
+            </summary>
+            <param name="specification">The specification with which the aggregate root should match.</param>
+            <returns>The instance of the aggregate root.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.Exists(IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Checkes whether the aggregate root which matches the given specification exists.
+            </summary>
+            <param name="specification">The specification with which the aggregate root should match.</param>
+            <returns>True if the aggregate root exists, otherwise false.</returns>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.Remove(`0)">
+            <summary>
+                Removes the entity from the repository.
+            </summary>
+            <param name="entity">The entity to be removed.</param>
+        </member>
+        <member name="M:IFramework.Repositories.IRepository`1.Update(`0)">
+            <summary>
+                Updates the entity in the repository.
+            </summary>
+            <param name="entity">The entity to be updated.</param>
+        </member>
+        <member name="T:IFramework.Repositories.SortOrder">
+            <summary>
+                Represents the sorting style.
+            </summary>
+        </member>
+        <member name="F:IFramework.Repositories.SortOrder.Unspecified">
+            <summary>
+                Indicates that the sorting style is not specified.
+            </summary>
+        </member>
+        <member name="F:IFramework.Repositories.SortOrder.Ascending">
+            <summary>
+                Indicates an ascending sorting.
+            </summary>
+        </member>
+        <member name="F:IFramework.Repositories.SortOrder.Descending">
+            <summary>
+                Indicates a descending sorting.
+            </summary>
+        </member>
+        <member name="T:IFramework.Specifications.AllSpecification`1">
+            <summary>
+                Represents the ALL specification which indicates that it
+                will be satisified by all the objects.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:IFramework.Specifications.AllSpecification`1.GetExpression">
+            <summary>
+                Returns a LINQ expression which represents the semantics
+                of the specification.
+            </summary>
+            <returns>The LINQ expression.</returns>
+        </member>
+        <member name="T:IFramework.Specifications.AndNotSpecification`1">
+            <summary>
+                Represents the specification which performs AND NOT assertion
+                on the two given specifications.
+            </summary>
+            <typeparam name="T">The type of the entity.</typeparam>
+        </member>
+        <member name="M:IFramework.Specifications.AndNotSpecification`1.#ctor(IFramework.Specifications.ISpecification{`0},IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Constructs a new instance of AndNotSpecification.
+            </summary>
+            <param name="left">The left side of the combined specification.</param>
+            <param name="right">The right side of the combined specification.</param>
+        </member>
+        <member name="M:IFramework.Specifications.AndNotSpecification`1.GetExpression">
+            <summary>
+                Returns a LINQ expression which represents the semantics
+                of the specification.
+            </summary>
+            <returns>The LINQ expression.</returns>
+        </member>
+        <member name="T:IFramework.Specifications.AndSpecification`1">
+            <summary>
+                Represents the specification which performs AND assertion
+                on the two given specifications.
+            </summary>
+            <typeparam name="T">The type of the entity.</typeparam>
+        </member>
+        <member name="M:IFramework.Specifications.AndSpecification`1.#ctor(IFramework.Specifications.ISpecification{`0},IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Constructs a new instance of AndSpecification.
+            </summary>
+            <param name="left">The left side of the combined specification.</param>
+            <param name="right">The right side of the combined specification.</param>
+        </member>
+        <member name="M:IFramework.Specifications.AndSpecification`1.GetExpression">
+            <summary>
+                Returns a LINQ expression which represents the semantics
+                of the specification.
+            </summary>
+            <returns>The LINQ expression.</returns>
+        </member>
+        <member name="T:IFramework.Specifications.CompositeSpecification`1">
+            <summary>
+                Represents the base class for all the composite specifications.
+            </summary>
+        </member>
+        <member name="M:IFramework.Specifications.CompositeSpecification`1.#ctor(IFramework.Specifications.ISpecification{`0},IFramework.Specifications.ISpecification{`0})">
+            <summary>
+                Constructs a new instance of the composite specification.
+            </summary>
+            <param name="left">The left side of the specification.</param>
+            <param name="right">The right side of the specification.</param>
+        </member>
+        <member name="P:IFramework.Specifications.CompositeSpecification`1.Left">
+            <summary>
+                Gets the left side of the specification.
+            </summary>
+        </member>
+        <member name="P:IFramework.Specifications.CompositeSpecification`1.Right">
+            <summary>
+                Gets the right side of the specification.
+            </summary>
+        </member>
+        <member name="T:IFramework.Specifications.ICompositeSpecification`1">
+            <summary>
+                Represents that the implemented classes are composite specifications.
+            </summary>
+        </member>
+        <member name="P:IFramework.Specifications.ICompositeSpecification`1.Left">
+            <summary>
+                Gets the left side of the specification.
+            </summary>
+        </member>
+        <member name="P:IFramework.Specifications.ICompositeSpecification`1.Right">
+            <summary>
+                Gets the right side of the specification.
+            </summary>
+        </member>
+        <member name="T:IFramework.Specifications.ISpecification`1">
+            <summary>
+                Represents a generic version that the implemented classes are specifications.
+            </summary>
+            <typeparam name="T">The type of the entity.</typeparam>
+        </member>
+        <member name="M:IFramework.Specifications.ISpecification`1.IsSatisfiedBy(`0)">
+            <summary>
+                Returns a boolean value which indicates that the specification
+                is satisfied by the given entity.
+            </summary>
+            <param name="obj">The entity to check against the specification.</param>
+            <returns>True if the specification is satisfied, otherwise false.</returns>
+        </member>
+        <member name="T:IFramework.Specifications.ISpecificationParser`1">
+            <summary>
+                Represents
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:IFramework.Specifications.Specification`1">
+            <summary>
+                Represents the generic version of the base class for all the specifications.
+            </summary>
+            <typeparam name="T">The type of the aggregation root.</typeparam>
+        </member>
+        <member name="T:IFramework.Semantics">
+            <summary>
+                Represents the type of semantics.
+            </summary>
+        </member>
+        <member name="F:IFramework.Semantics.Any">
+            <summary>
+                ANY semantics.
+            </summary>
+        </member>
+        <member name="F:IFramework.Semantics.None">
+            <summary>
+                NONE semantics.
+            </summary>
+        </member>
+        <member name="F:IFramework.Semantics.And">
+            <summary>
+                AND semantics.
+            </summary>
+        </member>
+        <member name="F:IFramework.Semantics.Or">
+            <summary>
+                OR semantics.
+            </summary>
+        </member>
+        <member name="F:IFramework.Semantics.Not">
+            <summary>
+                NOT semantics.
+            </summary>
+        </member>
+        <member name="F:IFramework.Semantics.AndNot">
+            <summary>
+                AND NOT semantics.
+            </summary>
+        </member>
+        <member name="F:IFramework.Semantics.All">
+            <summary>
+                ALL semantics.
+            </summary>
+        </member>
+        <member name="T:IFramework.SemanticsAttribute">
+            <summary>
+                Represents that the decorated classes would have semantics meanings.
+            </summary>
+        </member>
+        <member name="M:IFramework.SemanticsAttribute.#ctor(IFramework.Semantics)">
+            <summary>
+                Constructs a new instance of the Semantics Attribute with parameters.
+            </summary>
+            <param name="type">The type of the semantics.</param>
+        </member>
+        <member name="P:IFramework.SemanticsAttribute.Type">
+            <summary>
+                Gets or sets the type of the semantics.
+            </summary>
+        </member>
+    </members>
+</doc>

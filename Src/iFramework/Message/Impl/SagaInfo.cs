@@ -2,7 +2,7 @@
 
 namespace IFramework.Message.Impl
 {
-    public class SagaInfo: ValueObject<SagaInfo>
+    public class SagaInfo: ValueObject
     {
         public static SagaInfo Null => new SagaInfo();
 

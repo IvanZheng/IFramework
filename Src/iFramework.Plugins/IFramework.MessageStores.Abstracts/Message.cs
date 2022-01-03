@@ -35,7 +35,8 @@ namespace IFramework.MessageStores.Abstracts
         public string Name { get; set; }
         public string Type { get; set; }
         public string Topic { get; set; }
-        public virtual SagaInfo SagaInfo { get; set; }
+        [Required]
+        public SagaInfo SagaInfo { get; set; }
         public string IP { get; set; }
         public string Producer { get; set; }
     }
