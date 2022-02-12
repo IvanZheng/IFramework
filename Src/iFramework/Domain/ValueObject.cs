@@ -52,7 +52,7 @@ namespace IFramework.Domain
         /// <returns>Collection of atomic values.</returns>
         protected virtual IEnumerable<object> GetAtomicValues()
         {
-            return GetType().GetProperties().Select(p => p.GetValue(this, null));
+            return GetType().GetProperties().Where(p => !p.GetMethod.IsStatic).Select(p => p.GetValue(this, null));
         }
 
         /// <summary>
