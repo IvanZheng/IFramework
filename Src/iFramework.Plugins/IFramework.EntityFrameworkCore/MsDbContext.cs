@@ -254,5 +254,27 @@ namespace IFramework.EntityFrameworkCore
                 }
             },cancellationToken);
         }
+
+        public bool IsEntryModified(EntityEntry entry, bool includeReferences = true, bool includeCollections = true)
+        {
+            var modified = false;
+
+            if (entry != null)
+            {
+                if (entry.State == EntityState.Modified || entry.State == EntityState.Unchanged && (includeReferences && entry.References.Any(r => r.IsModified) ||
+                                                                                                    includeCollections && entry.Collections.Any(c => c.IsModified)))
+                {
+                    modified = true;
+                }
+                else
+                {
+                    modified = includeReferences && entry.References.Any(e => IsEntryModified(e.TargetEntry)) ||
+                               includeCollections && entry.Collections.Any(e => e.IsLoaded && entry.Collections.Any(c => c.CurrentValue != null && c.CurrentValue.OfType<object>().Any(o => IsEntryModified(Entry(o)))));
+                }
+            }
+
+            return modified;
+
+        }
     }
 }

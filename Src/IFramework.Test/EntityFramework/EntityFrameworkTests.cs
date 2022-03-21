@@ -322,16 +322,17 @@ namespace IFramework.Test.EntityFramework
                                           .ConfigureAwait(false);
                 //await user.LoadReferenceAsync(u => u.UserProfile)
                 //          .ConfigureAwait(false);
-                await user.ReloadAsync()
-                          .ConfigureAwait(false);
-
-                user.ModifyProfile(user.UserProfile.Clone(new {
-                    Address = user.UserProfile.Address.Clone(new {City = $"beijing.{DateTime.Now.Ticks}"}),
-                    Hobby = "basketball"
-                }));
+                //await user.ReloadAsync()
+                //          .ConfigureAwait(false);
+                //user.ModifyProfileAddress($"beijing.{DateTime.Now.Ticks}");
+                //var cards = user.Cards.ToList();
+                //user.ModifyProfile(user.UserProfile.Clone(new
+                //{
+                //    Address = user.UserProfile.Address.Clone(new { City = $"beijing.{DateTime.Now.Ticks}" })
+                //}));
                 //user.RemoveCards();
-
-                user.Address = new Address("china", "shanghai", "nanjing road1");
+                user.UpdateCard($"cardName{DateTime.Now.Ticks}");
+                //user.Address = new Address("china", "shanghai", $"nanjing road1{DateTime.Now.Ticks}");
                 await dbContext.SaveChangesAsync()
                                .ConfigureAwait(false);
             }

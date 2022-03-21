@@ -85,9 +85,11 @@ namespace IFramework.Test.EntityFramework
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            ChangeTracker.Entries().ToArray().ForEach(e =>
+            var entries = ChangeTracker.Entries().ToArray();
+
+            entries.Where(e => e.Entity is IAggregateRoot).ForEach(e =>
             {
-                if (e.State == EntityState.Modified)
+                if (IsEntryModified(e))
                 {
                     Console.WriteLine(e.State);
                 }

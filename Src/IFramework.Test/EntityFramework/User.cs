@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Text;
 using IFramework.Domain;
 using IFramework.Infrastructure;
@@ -87,6 +88,16 @@ namespace IFramework.Test.EntityFramework
         public void RemoveCards()
         {
             Cards.Clear();
+        }
+
+        public void UpdateCard(string cardName)
+        {
+            Cards.FirstOrDefault()?.UpdateName(cardName);
+        }
+
+        public void ModifyProfileAddress(string address)
+        {
+            UserProfile.Address.City = address;
         }
     }
 }
