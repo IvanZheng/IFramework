@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace IFramework.Test.EntityFramework;
 
@@ -35,7 +34,7 @@ public static class SqlFunctions
                         var key = e[1];
                         return new LikeExpression(column, key, null, null);
                     })
-                    .HasParameter("collection").Metadata.TypeMapping = new MySqlStringTypeMapping("varchar", new MySqlOptions(), StoreTypePostfix.None);
+                    .HasParameter("collection").Metadata.TypeMapping = new StringTypeMapping("varchar", DbType.String);
 
         modelBuilder.HasDbFunction(typeof(SqlFunctions).GetMethod(nameof(CollectionContains)) ??
                                    throw new InvalidOperationException())
@@ -52,6 +51,6 @@ public static class SqlFunctions
                                                        typeof(bool),
                                                        null);
                     })
-                    .HasParameter("collection").Metadata.TypeMapping = new MySqlStringTypeMapping("varchar", new MySqlOptions(), StoreTypePostfix.None);
+                    .HasParameter("collection").Metadata.TypeMapping = new StringTypeMapping("varchar", DbType.String);
     }
 }

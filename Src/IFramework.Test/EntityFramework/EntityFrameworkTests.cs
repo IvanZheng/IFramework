@@ -318,8 +318,8 @@ namespace IFramework.Test.EntityFramework
                 var user = await dbContext.Users
                                           //.Include(u => u.UserProfile)
                                           //.ThenInclude(p => p.Address)
-                                          //.Where(u => SqlFunctions.CollectionLike(u.Pictures,"%2022%"))
-                                          //.Where(u => SqlFunctions.CollectionContains(u.Pictures, "2022"))
+                                          .Where(u => SqlFunctions.CollectionLike(u.Pictures,"%2022%"))
+                                          .Where(u => SqlFunctions.CollectionContains(u.Pictures, "2022"))
                                           .FirstOrDefaultAsync()
                                           .ConfigureAwait(false);
                 //await user.LoadReferenceAsync(u => u.UserProfile)
