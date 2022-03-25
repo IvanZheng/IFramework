@@ -63,15 +63,15 @@ namespace IFramework.Test.EntityFramework
                     .AddSerilog()
                     .AddDbContextPool<DemoDbContext>(options =>
                     {
-                        var connectionString = Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName);
+                        var connectionString = Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName);
                         options.UseLazyLoadingProxies();
                         options.EnableSensitiveDataLogging();
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
                         //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
-                        //options.UseMySql(connectionString,
-                        //                 ServerVersion.AutoDetect(connectionString));
+                        options.UseMySql(connectionString,
+                                         ServerVersion.AutoDetect(connectionString));
                         //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                        options.UseSqlServer(connectionString, a => a.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+                        //options.UseSqlServer(connectionString, a => a.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
                     });
 
             ObjectProviderFactory.Instance.Build(services);
@@ -318,6 +318,8 @@ namespace IFramework.Test.EntityFramework
                 var user = await dbContext.Users
                                           //.Include(u => u.UserProfile)
                                           //.ThenInclude(p => p.Address)
+                                          //.Where(u => SqlFunctions.CollectionLike(u.Pictures,"%2022%"))
+                                          //.Where(u => SqlFunctions.CollectionContains(u.Pictures, "2022"))
                                           .FirstOrDefaultAsync()
                                           .ConfigureAwait(false);
                 //await user.LoadReferenceAsync(u => u.UserProfile)
@@ -333,6 +335,7 @@ namespace IFramework.Test.EntityFramework
                 //user.RemoveCards();
                 user.UpdateCard($"cardName{DateTime.Now.Ticks}");
                 //user.Address = new Address("china", "shanghai", $"nanjing road1{DateTime.Now.Ticks}");
+                user.Pictures.Add(DateTime.Now.ToString());
                 await dbContext.SaveChangesAsync()
                                .ConfigureAwait(false);
             }

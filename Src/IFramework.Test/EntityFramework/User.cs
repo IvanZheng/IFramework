@@ -48,7 +48,8 @@ namespace IFramework.Test.EntityFramework
         [Required]
         public virtual UserProfile UserProfile { get => _userProfile; protected set => _userProfile = value.Clone(); }
         public virtual ICollection<Card> Cards { get; set; } = new HashSet<Card>();
-
+        [MaxLength(500)] 
+        public List<string> Pictures { get; protected set; } = new List<string>();
         protected User()
         {
            

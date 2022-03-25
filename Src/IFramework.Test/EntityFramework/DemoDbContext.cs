@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,7 +14,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace IFramework.Test.EntityFramework
 {
@@ -78,10 +86,15 @@ namespace IFramework.Test.EntityFramework
             modelBuilder.Entity<User>()
                         .Property(u => u.Address)
                         .HasJsonConversion();
-            //.HasJsonConversion(new ValueComparer<Address>((a1, a2) => a1.Street == a2.Street, 
-            //                                              a => a.Street.GetHashCode(),
-            //                                              a => a));
+
+            modelBuilder.Entity<User>()
+                        .Property(u => u.Pictures)
+                        .HasJsonConversion();
+
+            modelBuilder.AddSqlFunctions();
         }
+
+
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
