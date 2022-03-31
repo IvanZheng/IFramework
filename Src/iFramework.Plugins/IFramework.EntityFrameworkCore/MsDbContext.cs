@@ -255,26 +255,48 @@ namespace IFramework.EntityFrameworkCore
             },cancellationToken);
         }
 
+        /// <summary>
+        /// Warning! this method will be into endless loop if there is a bi-direction between no-!AggregateRoot objects.
+        /// Make sure to avoid bi-direction references.
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="includeReferences"></param>
+        /// <param name="includeCollections"></param>
+        /// <returns></returns>
         public bool IsEntryModified(EntityEntry entry, bool includeReferences = true, bool includeCollections = true)
         {
             var modified = false;
 
             if (entry != null)
             {
-                if (entry.State == EntityState.Modified || entry.State == EntityState.Unchanged && (includeReferences && entry.References.Any(r => r.IsModified) ||
-                                                                                                    includeCollections && entry.Collections.Any(c => c.IsModified)))
+                if (entry.State == EntityState.Modified ||
+                    entry.State == EntityState.Unchanged && (includeReferences && entry.References
+                                                                                       .Where(r => !(r.CurrentValue is IAggregateRoot))
+                                                                                       .Any(r => r.IsModified) ||
+                                                             includeCollections && entry.Collections
+                                                                                        .Any(c => c.IsModified &&
+                                                                                                  c.CurrentValue != null &&
+                                                                                                  c.CurrentValue
+                                                                                                   .OfType<object>()
+                                                                                                   .Any(o => !(o is IAggregateRoot)))))
                 {
                     modified = true;
                 }
                 else
                 {
-                    modified = includeReferences && entry.References.Any(e => IsEntryModified(e.TargetEntry)) ||
-                               includeCollections && entry.Collections.Any(e => e.IsLoaded && entry.Collections.Any(c => c.CurrentValue != null && c.CurrentValue.OfType<object>().Any(o => IsEntryModified(Entry(o)))));
+                    modified = includeReferences && entry.References
+                                                         .Where(r => !(r.CurrentValue is IAggregateRoot))
+                                                         .Any(e => IsEntryModified(e.TargetEntry)) ||
+                               includeCollections && entry.Collections.Any(e => e.IsLoaded &&
+                                                                                entry.Collections.Any(c => c.CurrentValue != null &&
+                                                                                                           c.CurrentValue
+                                                                                                            .OfType<object>()
+                                                                                                            .Where(o => !(o is IAggregateRoot))
+                                                                                                            .Any(o => IsEntryModified(Entry(o)))));
                 }
             }
 
             return modified;
-
         }
     }
 }

@@ -328,14 +328,14 @@ namespace IFramework.Test.EntityFramework
                 //          .ConfigureAwait(false);
                 //user.ModifyProfileAddress($"beijing.{DateTime.Now.Ticks}");
                 //var cards = user.Cards.ToList();
-                //user.ModifyProfile(user.UserProfile.Clone(new
-                //{
-                //    Address = user.UserProfile.Address.Clone(new { City = $"beijing.{DateTime.Now.Ticks}" })
-                //}));
+                user.ModifyProfile(user.UserProfile.Clone(new
+                {
+                    Address = user.UserProfile.Address.Clone(new { City = $"beijing.{DateTime.Now.Ticks}" })
+                }));
                 //user.RemoveCards();
-                user.UpdateCard($"cardName{DateTime.Now.Ticks}");
+                //user.UpdateCard($"cardName{DateTime.Now.Ticks}");
                 //user.Address = new Address("china", "shanghai", $"nanjing road1{DateTime.Now.Ticks}");
-                user.Pictures.Add(DateTime.Now.ToString());
+                //user.Pictures.Add(DateTime.Now.ToString());
                 await dbContext.SaveChangesAsync()
                                .ConfigureAwait(false);
             }
