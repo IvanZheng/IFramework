@@ -9,24 +9,33 @@ namespace IFramework.Exceptions
 {
     public class ErrorCodeDictionary
     {
-        private static readonly Dictionary<object, string> _errorcodeDic = new Dictionary<object, string>();
+        private static readonly Dictionary<object, string> ErrorCodeDic = new Dictionary<object, string>();
 
-        public static string GetErrorMessage(object errorcode, params object[] args)
+        public static string GetErrorMessage(object errorCode, params object[] args)
         {
-            var errorMessage = _errorcodeDic.TryGetValue(errorcode, string.Empty);
+            var errorMessage = ErrorCodeDic.TryGetValue(errorCode, string.Empty);
             if (string.IsNullOrEmpty(errorMessage))
             {
-                var errorcodeFieldInfo = errorcode.GetType().GetField(errorcode.ToString());
-                if (errorcodeFieldInfo != null)
+                var errorCodeFieldInfo = errorCode.GetType().GetField(errorCode.ToString());
+                if (errorCodeFieldInfo != null)
                 {
-                    errorMessage = errorcodeFieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description;
+                    errorMessage = errorCodeFieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description;
                     if (string.IsNullOrEmpty(errorMessage))
-                        errorMessage = errorcode.ToString();
+                        errorMessage = errorCode.ToString();
                 }
             }
 
-            if (args != null && args.Length > 0)
-                return string.Format(errorMessage, args);
+            if (args?.Length > 0 && !string.IsNullOrWhiteSpace(errorMessage))
+            {
+                try
+                {
+                    return string.Format(errorMessage, args);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
             return errorMessage;
         }
 
@@ -34,9 +43,9 @@ namespace IFramework.Exceptions
         {
             dictionary.ForEach(p =>
             {
-                if (_errorcodeDic.ContainsKey(p.Key))
+                if (ErrorCodeDic.ContainsKey(p.Key))
                     throw new Exception($"ErrorCode dictionary has already had the key {p.Key}");
-                _errorcodeDic.Add(p.Key, p.Value);
+                ErrorCodeDic.Add(p.Key, p.Value);
             });
         }
     }
