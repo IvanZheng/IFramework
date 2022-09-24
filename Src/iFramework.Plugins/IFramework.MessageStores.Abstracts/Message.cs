@@ -31,11 +31,12 @@ namespace IFramework.MessageStores.Abstracts
         public string Id { get; set; }
         public string CorrelationId { get; set; }
         public string MessageBody { get; set; }
-        public DateTime CreateTime { get; set; }
+        public DateTimeOffset CreateTime { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public string Topic { get; set; }
-        public virtual SagaInfo SagaInfo { get; set; }
+        [Required]
+        public SagaInfo SagaInfo { get; set; }
         public string IP { get; set; }
         public string Producer { get; set; }
     }

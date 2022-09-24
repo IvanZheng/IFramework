@@ -18,11 +18,11 @@ using IFramework.MessageQueue.ConfluentKafka;
 using IFramework.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Sample.Applications;
 using Sample.Command.Community;
 using Sample.CommandServiceCore.Models;
 using Sample.Domain;
 using Sample.Domain.Model;
+using Sample.Applications;
 using Sample.Domain.Model.Bank.Accounts;
 using Sample.Persistence;
 
@@ -47,8 +47,8 @@ namespace Sample.CommandServiceCore.Controllers
                               ICommunityRepository domainRepository,
                               SampleModelContext dbContext,
                               ICommunityService communityService,
-                              IMailboxProcessor mailboxProcessor,
-                              KafkaManager kafkaManager
+                              IMailboxProcessor mailboxProcessor
+                              //KafkaManager kafkaManager
                               //IEventSourcingRepository<BankAccount> bankAccountRepository
             )
         {
@@ -60,7 +60,7 @@ namespace Sample.CommandServiceCore.Controllers
             _dbContext = dbContext;
             _communityService = communityService;
             _mailboxProcessor = mailboxProcessor;
-            _kafkaManager = kafkaManager;
+            //_kafkaManager = kafkaManager;
             _logger = logger;
         }
 
@@ -101,11 +101,11 @@ namespace Sample.CommandServiceCore.Controllers
         [HttpGet]
         public object ConsumerOffsets(string topic, string group)
         {
-            var offsets = _kafkaManager.GetTopicInfo(topic, group);
+            var offsets = _kafkaManager?.GetTopicInfo(topic, group);
             return new
             {
-                TotalLag = offsets.Sum(o => o.Lag),
-                Offset = offsets.Sum(o => o.Offset < 0 ? 0 : o.Offset),
+                TotalLag = offsets?.Sum(o => o.Lag),
+                Offset = offsets?.Sum(o => o.Offset < 0 ? 0 : o.Offset),
                 offsets
             };
         }

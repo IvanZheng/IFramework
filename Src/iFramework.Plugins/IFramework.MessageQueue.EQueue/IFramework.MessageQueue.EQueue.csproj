@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Ivan</Authors>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
@@ -13,25 +13,21 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard2.0\IFramework.MessageQueue.EQueue.xml</DocumentationFile>
+    <DocumentationFile>IFramework.MessageQueue.EQueue.xml</DocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
-    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>7.2</LangVersion>
-  </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="EqueueClient.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ecommon.autofac" Version="2.5.2" />
-    <PackageReference Include="ecommon.jsonnet" Version="2.5.1" />
-    <PackageReference Include="ecommon.log4net" Version="2.5.3" />
-    <PackageReference Include="EQueue" Version="2.6.2" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+    <PackageReference Include="ecommon.autofac" Version="2.5.4" />
+    <PackageReference Include="ecommon.jsonnet" Version="2.5.2" />
+    <PackageReference Include="ecommon.log4net" Version="2.5.4" />
+    <PackageReference Include="EQueue" Version="2.6.3" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

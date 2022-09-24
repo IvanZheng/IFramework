@@ -11,6 +11,7 @@ using IFramework.Domain;
 using IFramework.Infrastructure;
 using IFramework.JsonNet;
 using IFramework.Logging.Log4Net;
+using IFramework.Logging.Serilog;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +34,7 @@ namespace IFramework.Test.EntityFramework
                                                     .AddJsonFile("appsettings.json");
             var configuration = builder.Build();
             var optionsBuilder = new DbContextOptionsBuilder<DemoDbContext>();
-            var connectionString = configuration.GetConnectionString(MySqlConnectionStringName);
+            var connectionString = configuration.GetConnectionString(ConnectionStringName);
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
             //optionsBuilder.UseSqlServer(configuratoin.GetConnectionString(ConnectionStringName));
             //optionsBuilder.UseMongoDb(configuratoin.GetConnectionString(MongoDbConnectionStringName));
@@ -59,7 +60,7 @@ namespace IFramework.Test.EntityFramework
                     //.UseConfiguration(configuration)
                     //.UseCommonComponents()
                     .AddJsonNet()
-                    .AddLog4Net()
+                    .AddSerilog()
                     .AddDbContextPool<DemoDbContext>(options =>
                     {
                         var connectionString = Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName);
@@ -70,7 +71,7 @@ namespace IFramework.Test.EntityFramework
                         options.UseMySql(connectionString,
                                          ServerVersion.AutoDetect(connectionString));
                         //options.UseInMemoryDatabase(nameof(DemoDbContext));
-                        //options.UseSqlServer(Configuration.Instance.GetConnectionString(DemoDbContextFactory.ConnectionStringName));
+                        //options.UseSqlServer(connectionString, a => a.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
                     });
 
             ObjectProviderFactory.Instance.Build(services);
@@ -94,6 +95,20 @@ namespace IFramework.Test.EntityFramework
             {
                 Console.Write("dispose");
             }
+        }
+
+        [Fact]
+        public async Task QuerySplitTest()
+        {
+            using var dbCtx = ObjectProviderFactory.CreateScope()
+                                                   .GetService<DemoDbContext>();
+            var query = from u in dbCtx.Users
+                join c in dbCtx.Cards on u.Id equals c.UserId into cards
+                from card in cards.DefaultIfEmpty()
+                select new {u, card};
+
+            var result = await query.ToArrayAsync();
+            await Task.Delay(1000);
         }
 
         [Fact]
@@ -303,18 +318,24 @@ namespace IFramework.Test.EntityFramework
                 var user = await dbContext.Users
                                           //.Include(u => u.UserProfile)
                                           //.ThenInclude(p => p.Address)
+                                          .Where(u => SqlFunctions.CollectionLike(u.Pictures,"%2022%"))
+                                          .Where(u => SqlFunctions.CollectionContains(u.Pictures, "2022"))
                                           .FirstOrDefaultAsync()
                                           .ConfigureAwait(false);
                 //await user.LoadReferenceAsync(u => u.UserProfile)
                 //          .ConfigureAwait(false);
-                await user.ReloadAsync()
-                          .ConfigureAwait(false);
-
-                user.ModifyProfile(user.UserProfile.Clone(new {
-                    Address = user.UserProfile.Address.Clone(new {City = $"beijing.{DateTime.Now.Ticks}"}),
-                    Hobby = "basketball"
+                //await user.ReloadAsync()
+                //          .ConfigureAwait(false);
+                //user.ModifyProfileAddress($"beijing.{DateTime.Now.Ticks}");
+                //var cards = user.Cards.ToList();
+                user.ModifyProfile(user.UserProfile.Clone(new
+                {
+                    Address = user.UserProfile.Address.Clone(new { City = $"beijing.{DateTime.Now.Ticks}" })
                 }));
                 //user.RemoveCards();
+                //user.UpdateCard($"cardName{DateTime.Now.Ticks}");
+                //user.Address = new Address("china", "shanghai", $"nanjing road1{DateTime.Now.Ticks}");
+                //user.Pictures.Add(DateTime.Now.ToString());
                 await dbContext.SaveChangesAsync()
                                .ConfigureAwait(false);
             }

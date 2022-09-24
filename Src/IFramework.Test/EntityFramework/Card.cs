@@ -22,5 +22,10 @@ namespace IFramework.Test.EntityFramework
             UserId = userId;
             Name = name;
         }
+
+        public void UpdateName(string cardName)
+        {
+            Name = cardName;
+        }
     }
 }

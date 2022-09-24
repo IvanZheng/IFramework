@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>IFramework.EntityFrameworkCore</name>
+    </assembly>
+    <members>
+        <member name="M:IFramework.EntityFrameworkCore.ConfigurationExtension.AddEntityFrameworkComponents(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+                TDbContext is the default type for Repository<TEntity />'s dbContext injected paramter
+            </summary>
+            <param name="services"></param>
+            <param name="defaultRepositoryType"></param>
+            <param name="lifetime"></param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.EntityFrameworkCore.MsDbContext.IsEntryModified(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry,System.Boolean,System.Boolean)">
+            <summary>
+            Warning! this method will be into endless loop if there is a bi-direction between no-!AggregateRoot objects.
+            Make sure to avoid bi-direction references.
+            </summary>
+            <param name="entry"></param>
+            <param name="includeReferences"></param>
+            <param name="includeCollections"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

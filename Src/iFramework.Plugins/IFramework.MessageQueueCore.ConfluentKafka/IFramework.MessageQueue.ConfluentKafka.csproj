@@ -10,18 +10,13 @@
 	  <IncludeSymbols>true</IncludeSymbols>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	  <Version>3.2.8.4</Version>
 	  <Description>update confluent kafka</Description>      	
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>7.1</LangVersion>
-  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;1591</NoWarn>
-    <DocumentationFile>bin\Release\netstandard2.0\IFramework.MessageQueue.ConfluentKafka.xml</DocumentationFile>
-    <LangVersion>7.2</LangVersion>
+    <DocumentationFile>IFramework.MessageQueue.ConfluentKafka.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="1.8.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+    <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
