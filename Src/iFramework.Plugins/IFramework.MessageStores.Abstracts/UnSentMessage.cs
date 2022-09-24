@@ -21,7 +21,7 @@ namespace IFramework.MessageStores.Abstracts
             if (messageContext.Message != null)
             {
                 Name = messageContext.Message.GetType().Name;
-                Type = messageContext.Message.GetType().GetFullNameWithAssembly();
+                Type = messageContext.Headers["MessageType"]?.ToString();
             }
             Topic = messageContext.Topic;
         }

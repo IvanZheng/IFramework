@@ -14,6 +14,11 @@ namespace IFramework.Message.Impl
             return MessageTypeProvider.Value.GetMessageCode(type) ?? type.GetFullNameWithAssembly();
         }
 
+        public static Type GetMessageType(this IMessageContext messageContext)
+        {
+            return MessageTypeProvider.Value.GetMessageType(messageContext.Headers["MessageType"]?.ToString());
+        }
+
         public static object GetMessage(this IMessageContext messageContext, object messageBody)
         {
             object message = null;

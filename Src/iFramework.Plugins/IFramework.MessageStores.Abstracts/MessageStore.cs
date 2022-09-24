@@ -20,11 +20,14 @@ namespace IFramework.MessageStores.Abstracts
     {
         protected readonly ILogger Logger;
         protected readonly MessageQueueOptions Options;
+        protected readonly IMessageTypeProvider MessageTypeProvider;
+
         protected MessageStore(DbContextOptions options)
             : base(options)
         {
             Options = ObjectProviderFactory.GetService<MessageQueueOptions>();
             Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(GetType());
+            MessageTypeProvider = ObjectProviderFactory.GetService<IMessageTypeProvider>();
 #pragma warning disable EF1001 // Internal EF Core API usage.
             InMemoryStore = options.FindExtension<InMemoryOptionsExtension>() != null;
 #pragma warning restore EF1001 // Internal EF Core API usage.
@@ -241,7 +244,7 @@ namespace IFramework.MessageStores.Abstracts
                 {
                     try
                     {
-                        if (message.MessageBody.ToJsonObject(Type.GetType(message.Type), true) is IMessage rawMessage)
+                        if (message.MessageBody.ToJsonObject(MessageTypeProvider.GetMessageType(message.Type), true) is IMessage rawMessage)
                         {
                             messageContexts.Add(wrapMessage(message.Id, rawMessage, message.Topic, message.CorrelationId,
                                                             message.ReplyToEndPoint, message.SagaInfo, message.Producer));

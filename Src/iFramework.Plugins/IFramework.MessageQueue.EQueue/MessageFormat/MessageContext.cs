@@ -100,7 +100,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
 
         public object Message
         {
-            get => _message ?? (_message = this.GetMessage(EqueueMessage.Payload));
+            get => _message ??= this.GetMessage(EqueueMessage.Payload);
             protected set
             {
                 _message = value;

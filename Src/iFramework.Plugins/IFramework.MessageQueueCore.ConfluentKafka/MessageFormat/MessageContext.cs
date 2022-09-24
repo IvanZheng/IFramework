@@ -20,7 +20,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             KafkaMessage = kafkaMessage;
             MessageOffset = new MessageOffset(null, topic, partition, offset);
         }
-
+        
         public MessageContext(object message, string id = null)
         {
             KafkaMessage = new KafkaMessage();
@@ -30,19 +30,17 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             {
                 MessageId = id;
             }
-            else if (message is IMessage)
+            else if (message is IMessage iMessage)
             {
-                MessageId = ((IMessage) message).Id;
+                MessageId = iMessage.Id;
+                Topic = iMessage.GetTopic();
+                Tags = iMessage.Tags;
             }
             else
             {
                 MessageId = ObjectId.GenerateNewId().ToString();
             }
-            if (message is IMessage iMessage)
-            {
-                Topic = iMessage.GetTopic();
-                Tags = iMessage.Tags;
-            }
+         
             MessageOffset = new MessageOffset();
         }
 
