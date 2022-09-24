@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 using ObjectProvider = IFramework.DependencyInjection.Unity.ObjectProvider;
 
 namespace IFramework.Test.EntityFramework
@@ -45,8 +46,11 @@ namespace IFramework.Test.EntityFramework
 
     public class EntityFrameworkTests
     {
-        public EntityFrameworkTests()
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public EntityFrameworkTests(ITestOutputHelper testOutputHelper)
         {
+            _testOutputHelper = testOutputHelper;
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
             var configuration = builder.Build();
@@ -111,26 +115,45 @@ namespace IFramework.Test.EntityFramework
             await Task.Delay(1000);
         }
 
+        private void ResetConnectionString(DbContext dbContext, int i)
+        {
+            var connectionString = Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName);
+            var shardingKey = i % 2 == 0 ? string.Empty : "1";
+            connectionString = string.Format(connectionString,
+                                             shardingKey);
+            dbContext.Database.SetConnectionString(connectionString);
+        }
+
         [Fact]
         public async Task AddPresonTest()
         {
             try
             {
-                var id = DateTime.Now.Ticks;
-                using (var serviceScope = ObjectProviderFactory.CreateScope())
+                for (var i = 0; i < 10; i++)
                 {
-                    var dbContext = serviceScope.GetService<DemoDbContext>();
-                    var person = new Person(id, $"ivan_{DateTime.Now.Ticks}");
-                    dbContext.Persons.Add(person);
-                    await dbContext.SaveChangesAsync();
-                }
+                    var id = DateTime.Now.Ticks;
+                    using (var serviceScope = ObjectProviderFactory.CreateScope())
+                    {
+                        var dbContext = serviceScope.GetService<DemoDbContext>();
+                        ResetConnectionString(dbContext,
+                                              i);
+                        var person = new Person(id, $"ivan_{i}");
+                        dbContext.Persons.Add(person);
+                        await dbContext.SaveChangesAsync();
+                    }
 
-                using (var serviceScope = ObjectProviderFactory.CreateScope())
-                {
-                    var dbContext = serviceScope.GetService<DemoDbContext>();
-                    var person = await dbContext.Persons.FindAsync(id).ConfigureAwait(false);
-                    Assert.NotNull(person);
+            
+                    using (var serviceScope = ObjectProviderFactory.CreateScope())
+                    {
+                        var dbContext = serviceScope.GetService<DemoDbContext>();
+                        ResetConnectionString(dbContext,
+                                              i);
+                        var person = await dbContext.Persons.FindAsync(id).ConfigureAwait(false);
+                        _testOutputHelper.WriteLine(person?.Name ?? "no record");
+                        //Assert.NotNull(person);
+                    }
                 }
+               
             }
             catch (Exception e)
             {
