@@ -195,6 +195,11 @@ namespace Sample.CommandServiceCore
             logger.SetMinLevel(LogLevel.Information); 
             logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
             
+            //using var scopeProvider = app.ApplicationServices.CreateScope();
+            //var dbContext = ServiceProviderServiceExtensions.GetService<SampleModelContext>(scopeProvider.ServiceProvider);
+            //dbContext.Database.EnsureCreated();
+
+
             applicationLifetime.ApplicationStopping.Register(() =>
             {
                 _commandConsumer1?.Stop();
@@ -216,6 +221,7 @@ namespace Sample.CommandServiceCore
                                .Register(nameof(AccountCreated), typeof(AccountCreated));
            
             StartMessageQueueComponents();
+
 
             if (env.IsDevelopment())
             {
