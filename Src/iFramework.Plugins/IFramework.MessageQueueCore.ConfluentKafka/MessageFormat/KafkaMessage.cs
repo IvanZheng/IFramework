@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using IFramework.Infrastructure;
+using System.Collections.Generic;
 
 namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
     public class KafkaMessage
     {
         protected KafkaMessage(){}
-        public KafkaMessage(object payload = null)
+        public KafkaMessage(string payloadJson = null)
         {
             Headers = new Dictionary<string, object>(System.StringComparer.OrdinalIgnoreCase);
-            Payload = payload;
+            Payload = payloadJson.ToJsonObject();
         }
 
         public IDictionary<string, object> Headers { get; set; }

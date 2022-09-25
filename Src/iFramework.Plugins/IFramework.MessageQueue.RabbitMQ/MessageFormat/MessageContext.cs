@@ -17,10 +17,24 @@ namespace IFramework.MessageQueue.RabbitMQ.MessageFormat
         public MessageContext(RabbitMQMessage rabbitMQMessage, MessageOffset deliveryTag)
         {
             RabbitMQMessage = rabbitMQMessage;
-            ToBeSentMessageContexts = new List<IMessageContext>();
             MessageOffset = deliveryTag;
         }
 
+        public MessageContext(string messageBody,
+                              string type,
+                              string id)
+        {
+            RabbitMQMessage = new RabbitMQMessage(messageBody);
+            MessageType = type;
+            SentTime = DateTime.Now;
+           
+            if (!string.IsNullOrEmpty(id))
+            {
+                MessageId = id;
+            }
+           
+            MessageOffset = new MessageOffset();
+        }
         public MessageContext(object message, string id = null)
         {
             RabbitMQMessage = new RabbitMQMessage();
@@ -38,7 +52,6 @@ namespace IFramework.MessageQueue.RabbitMQ.MessageFormat
             {
                 MessageId = ObjectId.GenerateNewId().ToString();
             }
-            ToBeSentMessageContexts = new List<IMessageContext>();
             if (message is IMessage iMessage)
             {
                 Topic = iMessage.GetTopic();
@@ -61,9 +74,6 @@ namespace IFramework.MessageQueue.RabbitMQ.MessageFormat
         }
 
         public RabbitMQMessage RabbitMQMessage { get; protected set; }
-  
-        public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
-      
 
         public IDictionary<string, object> Headers => RabbitMQMessage.Headers;
 
@@ -89,7 +99,11 @@ namespace IFramework.MessageQueue.RabbitMQ.MessageFormat
             get => (string) Headers.TryGetValue("MessageId");
             set => Headers["MessageId"] = value;
         }
-
+        public string MessageType
+        {
+            get => (string) Headers.TryGetValue("MessageType");
+            set => Headers["MessageType"] = value;
+        }
         public string ReplyToEndPoint
         {
             get => (string) Headers.TryGetValue("ReplyToEndPoint");
@@ -107,7 +121,7 @@ namespace IFramework.MessageQueue.RabbitMQ.MessageFormat
                 RabbitMQMessage.Payload = value;
                 if (value != null)
                 {
-                    Headers["MessageType"] = this.GetMessageCode(value.GetType());
+                    Headers["MessageType"] = value.GetType().GetMessageCode();
                 }
             }
         }

@@ -45,12 +45,16 @@ namespace IFramework.Message.Impl
             using (var scope = ObjectProviderFactory.Instance.ObjectProvider.CreateScope())
             using (var messageStore = scope.GetService<IMessageStore>())
             {
-                return messageStore.GetAllUnPublishedEvents((messageId, message, topic, correlationId, replyEndPoint, sagaInfo, producer) =>
-                                                                MessageQueueClient.WrapMessage(message, key: message.Key,
-                                                                                                topic: topic, messageId: messageId,
-                                                                                                correlationId: correlationId,
-                                                                                                replyEndPoint: replyEndPoint,
-                                                                                                sagaInfo: sagaInfo, producer: producer));
+                return messageStore.GetAllUnPublishedEvents(unSentMessage =>
+                                                                MessageQueueClient.WrapMessage(unSentMessage.MessageBody,
+                                                                                               unSentMessage.Type,
+                                                                                               key: unSentMessage.Key,
+                                                                                               topic: unSentMessage.Topic, 
+                                                                                               messageId: unSentMessage.Id,
+                                                                                               correlationId: unSentMessage.CorrelationId,
+                                                                                               replyEndPoint: unSentMessage.ReplyToEndPoint,
+                                                                                               sagaInfo: unSentMessage.SagaInfo,
+                                                                                               producer: unSentMessage.Producer));
             }
         }
 

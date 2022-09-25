@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
+using IFramework.Infrastructure;
 
 namespace IFramework.MessageQueue.EQueue.MessageFormat
 {
     public class EQueueMessage
     {
-        public EQueueMessage(object payload = null)
+        public EQueueMessage(string payload = null)
         {
             Headers = new Dictionary<string, object>(System.StringComparer.OrdinalIgnoreCase);
-            Payload = payload;
+            Payload = payload.ToJsonObject();
         }
 
         public IDictionary<string, object> Headers { get; }

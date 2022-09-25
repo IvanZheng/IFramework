@@ -29,13 +29,13 @@ namespace IFramework.Message.Impl
         }
         
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
-            Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
+            Func<IUnSentMessage, IMessageContext> wrapMessage)
         {
             return null;
         }
 
         public IEnumerable<IMessageContext> GetAllUnPublishedEvents(
-            Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
+            Func<IUnSentMessage, IMessageContext> wrapMessage)
         {
             return null;
         }

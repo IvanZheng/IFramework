@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using IFramework.Infrastructure;
+using System.Collections.Generic;
 
 namespace IFramework.MessageQueue.RabbitMQ.MessageFormat
 {
     public class RabbitMQMessage
     {
         protected RabbitMQMessage(){}
-        public RabbitMQMessage(object payload = null)
+        public RabbitMQMessage(string payload = null)
         {
             Headers = new Dictionary<string, object>(System.StringComparer.OrdinalIgnoreCase);
-            Payload = payload;
+            Payload = payload.ToJsonObject();
         }
 
         public IDictionary<string, object> Headers { get; set; }

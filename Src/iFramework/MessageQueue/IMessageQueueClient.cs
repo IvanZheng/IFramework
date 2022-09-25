@@ -22,6 +22,16 @@ namespace IFramework.MessageQueue
                                     SagaInfo sagaInfo = null,
                                     string producer = null);
 
+        IMessageContext WrapMessage(string messageBody,
+                                    string type,
+                                    string correlationId = null,
+                                    string topic = null,
+                                    string key = null,
+                                    string replyEndPoint = null,
+                                    string messageId = null,
+                                    SagaInfo sagaInfo = null,
+                                    string producer = null);
+
         IMessageConsumer StartSubscriptionClient(string[] topics,
                                                   string subscriptionName,
                                                   string consumerId,

@@ -21,5 +21,6 @@ namespace IFramework.Message
         string Ip { get; set; }
         string Producer { get; set; }
         MessageOffset MessageOffset { get; }
+        string MessageType { get; set; }
     }
 }

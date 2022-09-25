@@ -31,10 +31,10 @@ namespace IFramework.Message
                                params IMessageContext[] eventContexts);
 
         IEnumerable<IMessageContext> GetAllUnSentCommands(
-            Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage);
+            Func<IUnSentMessage, IMessageContext> wrapMessage);
 
         IEnumerable<IMessageContext> GetAllUnPublishedEvents(
-            Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage);
+            Func<IUnSentMessage, IMessageContext> wrapMessage);
 
         void Rollback();
 

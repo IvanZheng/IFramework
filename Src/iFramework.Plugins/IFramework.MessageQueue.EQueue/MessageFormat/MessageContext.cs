@@ -17,10 +17,22 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         public MessageContext(EQueueMessage equeueMessage, MessageOffset messageOffset)
         {
             EqueueMessage = equeueMessage;
-            ToBeSentMessageContexts = new List<IMessageContext>();
             MessageOffset = messageOffset;
         }
 
+        public MessageContext(string messageBody,
+                              string type,
+                              string id)
+        {
+            EqueueMessage = new EQueueMessage(messageBody);
+            MessageType = type;
+            SentTime = DateTime.Now;
+            if (!string.IsNullOrEmpty(id))
+            {
+                MessageId = id;
+            }
+            MessageOffset = new MessageOffset();
+        }
         public MessageContext(object message, string id = null)
         {
             EqueueMessage = new EQueueMessage();
@@ -30,19 +42,15 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             {
                 MessageId = id;
             }
-            else if (message is IMessage)
+            else if (message is IMessage iMessage)
             {
-                MessageId = ((IMessage) message).Id;
+                MessageId = iMessage.Id;
+                Topic = iMessage.GetTopic();
+                Tags = iMessage.Tags;
             }
             else
             {
                 MessageId = ObjectId.GenerateNewId().ToString();
-            }
-            ToBeSentMessageContexts = new List<IMessageContext>();
-            if (message is IMessage iMessage)
-            {
-                Topic = iMessage.GetTopic();
-                Tags = iMessage.Tags;
             }
             MessageOffset = new MessageOffset();
         }
@@ -61,9 +69,6 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
         }
 
         public EQueueMessage EqueueMessage { get; protected set; }
-  
-        public List<IMessageContext> ToBeSentMessageContexts { get; protected set; }
-      
 
         public IDictionary<string, object> Headers => EqueueMessage.Headers;
 
@@ -107,7 +112,7 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
                 EqueueMessage.Payload = value;
                 if (value != null)
                 {
-                    Headers["MessageType"] = this.GetMessageCode(value.GetType());
+                    Headers["MessageType"] = value.GetType().GetMessageCode();
                 }
             }
         }
@@ -123,7 +128,11 @@ namespace IFramework.MessageQueue.EQueue.MessageFormat
             get => (string) Headers.TryGetValue("Topic");
             set => Headers["Topic"] = value;
         }
-
+        public string MessageType
+        {
+            get => (string) Headers.TryGetValue("MessageType");
+            set => Headers["MessageType"] = value;
+        }
         public SagaInfo SagaInfo
         {
             get

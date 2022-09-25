@@ -20,7 +20,22 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             KafkaMessage = kafkaMessage;
             MessageOffset = new MessageOffset(null, topic, partition, offset);
         }
-        
+
+        public MessageContext(string messageBody,
+                              string type,
+                              string id)
+        {
+            KafkaMessage = new KafkaMessage(messageBody);
+            MessageType = type;
+            SentTime = DateTime.Now;
+            if (!string.IsNullOrEmpty(id))
+            {
+                MessageId = id;
+            }
+            MessageOffset = new MessageOffset();
+        }
+
+
         public MessageContext(object message, string id = null)
         {
             KafkaMessage = new KafkaMessage();
@@ -126,7 +141,7 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
                 KafkaMessage.Payload = value;
                 if (value != null)
                 {
-                    Headers["MessageType"] = this.GetMessageCode(value.GetType());;
+                    Headers["MessageType"] = value.GetType().GetMessageCode();
                 }
             }
         }
@@ -156,6 +171,12 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
         {
             get => Headers.TryGetValue("Topic")?.ToString();
             set => Headers["Topic"] = value;
+        }
+
+        public string MessageType
+        {
+            get => Headers.TryGetValue("MessageType")?.ToString();
+            set => Headers["MessageType"] = value;
         }
 
         public string Ip

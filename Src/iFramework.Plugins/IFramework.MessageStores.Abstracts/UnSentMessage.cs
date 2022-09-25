@@ -6,7 +6,7 @@ using IFramework.Message.Impl;
 
 namespace IFramework.MessageStores.Abstracts
 {
-    public abstract class UnSentMessage
+    public abstract class UnSentMessage:IUnSentMessage
     {
         protected UnSentMessage() { }
 
@@ -24,6 +24,7 @@ namespace IFramework.MessageStores.Abstracts
                 Type = messageContext.Headers["MessageType"]?.ToString();
             }
             Topic = messageContext.Topic;
+            Key = messageContext.Key;
         }
 
         //[MaxLength(50)]
@@ -39,5 +40,7 @@ namespace IFramework.MessageStores.Abstracts
         public string Topic { get; set; }
         public string Ip { get; set; }
         public string Producer { get; set; }
+        [MaxLength(100)]
+        public string Key { get; set; }
     }
 }

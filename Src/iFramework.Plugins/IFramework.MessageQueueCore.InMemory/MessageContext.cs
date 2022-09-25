@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using IFramework.Infrastructure;
@@ -12,6 +13,15 @@ namespace IFramework.MessageQueue.InMemory
 {
     public class MessageContext : IMessageContext
     {
+        public MessageContext(string messageBody,
+                              string type,
+                              string id):this(MessageContextExtension.GetMessage(messageBody, type), id)
+        {
+
+        }
+
+        
+
         public MessageContext(object message, string id = null)
         {
             SentTime = DateTime.Now;
@@ -50,5 +60,6 @@ namespace IFramework.MessageQueue.InMemory
         public string Ip { get; set; }
         public string Producer { get; set; }
         public MessageOffset MessageOffset { get; }
+        public string MessageType { get; set; }
     }
 }

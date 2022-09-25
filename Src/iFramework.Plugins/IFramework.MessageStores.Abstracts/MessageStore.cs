@@ -145,21 +145,21 @@ namespace IFramework.MessageStores.Abstracts
 
 
         public IEnumerable<IMessageContext> GetAllUnSentCommands(
-            Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
+            Func<IUnSentMessage, IMessageContext> wrapMessage)
         {
             if (!Options.EnsureArrival)
             {
-                return new IMessageContext[0];
+                return Array.Empty<IMessageContext>();
             }
             return GetAllUnSentMessages<UnSentCommand>(wrapMessage);
         }
 
         public IEnumerable<IMessageContext> GetAllUnPublishedEvents(
-            Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
+            Func<IUnSentMessage, IMessageContext> wrapMessage)
         {
             if (!Options.EnsureArrival)
             {
-                return new IMessageContext[0];
+                return Array.Empty<IMessageContext>();
             }
             return GetAllUnSentMessages<UnPublishedEvent>(wrapMessage);
         }
@@ -234,7 +234,7 @@ namespace IFramework.MessageStores.Abstracts
         }
 
         private IEnumerable<IMessageContext> GetAllUnSentMessages<TMessage>(
-            Func<string, IMessage, string, string, string, SagaInfo, string, IMessageContext> wrapMessage)
+            Func<TMessage, IMessageContext> wrapMessage)
             where TMessage : UnSentMessage
         {
             var messageContexts = new List<IMessageContext>();
@@ -244,16 +244,7 @@ namespace IFramework.MessageStores.Abstracts
                 {
                     try
                     {
-                        if (message.MessageBody.ToJsonObject(MessageTypeProvider.GetMessageType(message.Type), true) is IMessage rawMessage)
-                        {
-                            messageContexts.Add(wrapMessage(message.Id, rawMessage, message.Topic, message.CorrelationId,
-                                                            message.ReplyToEndPoint, message.SagaInfo, message.Producer));
-                        }
-                        else
-                        {
-                            Set<TMessage>().Remove(message);
-                            Logger.LogError("get unsent message error: {0}", message.ToJson());
-                        }
+                        messageContexts.Add(wrapMessage(message));
                     }
                     catch (Exception ex)
                     {

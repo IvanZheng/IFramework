@@ -85,6 +85,44 @@ namespace IFramework.MessageQueue.InMemory
             return messageContext;
         }
 
+        public IMessageContext WrapMessage(string messageBody, string type, string correlationId = null, string topic = null, string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null, string producer = null)
+        {
+            var messageContext = new MessageContext(messageBody, type, messageId)
+            {
+                Producer = producer,
+                Ip = Utility.GetLocalIpv4()?.ToString()
+            };
+            if (!string.IsNullOrEmpty(correlationId))
+            {
+                messageContext.CorrelationId = correlationId;
+            }
+
+            if (!string.IsNullOrEmpty(topic))
+            {
+                messageContext.Topic = topic;
+            }
+
+            if (!string.IsNullOrEmpty(key))
+            {
+                messageContext.Key = key;
+            }
+            if (string.IsNullOrWhiteSpace(messageContext.Key))
+            {
+                messageContext.Key = messageContext.MessageId;
+            }
+            if (!string.IsNullOrEmpty(replyEndPoint))
+            {
+                messageContext.ReplyToEndPoint = replyEndPoint;
+            }
+
+            if (!string.IsNullOrWhiteSpace(sagaInfo?.SagaId))
+            {
+                messageContext.SagaInfo = sagaInfo;
+            }
+
+            return messageContext;
+        }
+
         public IMessageConsumer StartSubscriptionClient(string topic,
                                                         string subscriptionName,
                                                         string consumerId,

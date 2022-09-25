@@ -51,5 +51,7 @@ namespace IFramework.Message.Impl
 
         public string Producer { get; set; }
         public MessageOffset MessageOffset { get; }
+
+        public string MessageType { get; set; }
     }
 }

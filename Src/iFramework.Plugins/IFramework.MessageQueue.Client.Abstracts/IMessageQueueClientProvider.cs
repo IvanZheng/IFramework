@@ -6,7 +6,8 @@ namespace IFramework.MessageQueue.Client.Abstracts
 {
     public interface IMessageQueueClientProvider: IDisposable
     {
-        IMessageContext WrapMessage(object message,
+        IMessageContext WrapMessage(string messageBody,
+                                    string type,
                                     string correlationId = null,
                                     string topic = null,
                                     string key = null,

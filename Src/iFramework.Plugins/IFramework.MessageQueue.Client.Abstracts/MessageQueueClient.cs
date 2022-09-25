@@ -98,6 +98,35 @@ namespace IFramework.MessageQueue.Client.Abstracts
             return topicSubscription;
         }
 
+
+        public IMessageContext WrapMessage(string messageBody,
+                                           string type,
+                                           string correlationId = null,
+                                           string topic = null,
+                                           string key = null,
+                                           string replyEndPoint = null,
+                                           string messageId = null,
+                                           SagaInfo sagaInfo = null,
+                                           string producer = null)
+        {
+            var messageContext = _clientProvider.WrapMessage(messageBody,
+                                                             type,
+                                                             correlationId,
+                                                             topic,
+                                                             key,
+                                                             replyEndPoint,
+                                                             messageId,
+                                                             sagaInfo,
+                                                             producer);
+            if (string.IsNullOrWhiteSpace(messageContext.Key))
+            {
+                messageContext.Key = messageContext.MessageId;
+            }
+
+            return messageContext;
+        }
+
+
         public IMessageContext WrapMessage(object message,
                                            string correlationId = null,
                                            string topic = null,
@@ -119,20 +148,22 @@ namespace IFramework.MessageQueue.Client.Abstracts
                     message = new Exception(ex.GetBaseException().Message);
                 }
             }
-            var messageContext = _clientProvider.WrapMessage(message,
-                                               correlationId,
-                                               topic,
-                                               key,
-                                               replyEndPoint,
-                                               messageId,
-                                               sagaInfo,
-                                               producer);
-            if (string.IsNullOrWhiteSpace(messageContext.Key))
+
+            if (string.IsNullOrWhiteSpace(messageId))
             {
-                messageContext.Key = messageContext.MessageId;
+                messageId = (message as IMessage)?.Id ?? ObjectId.GenerateNewId().ToString();
             }
 
-            return messageContext;
+
+            return WrapMessage(message.ToJson(),
+                               message.GetType().GetMessageCode(),
+                               correlationId,
+                               topic,
+                               key,
+                               replyEndPoint,
+                               messageId,
+                               sagaInfo,
+                               producer);
         }
 
         public void Dispose()
