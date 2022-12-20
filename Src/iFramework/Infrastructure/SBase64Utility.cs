@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace IFramework.Infrastructure
 {
@@ -102,21 +104,10 @@ namespace IFramework.Infrastructure
         /// <param name="url">文件的url地址,一个绝对的url地址</param>
         /// <param name="objWebClient">System.Net.WebClient 对象</param>
         /// <returns></returns>
-        public static string EncodingFileFromUrl(string url, WebClient objWebClient)
+        public static async Task<string> EncodingFileFromUrl(string url, HttpClient objWebClient)
         {
-            return Convert.ToBase64String(objWebClient.DownloadData(url));
-        }
-
-
-        /// <summary>
-        ///     从网络地址一取得文件并转化为base64编码
-        /// </summary>
-        /// <param name="url">文件的url地址,一个绝对的url地址</param>
-        /// <returns>将文件转化后的base64字符串</returns>
-        public static string EncodingFileFromUrl(string url)
-        {
-            //System.Net.WebClient myWebClient = new System.Net.WebClient();
-            return EncodingFileFromUrl(url, new WebClient());
+            return Convert.ToBase64String(await objWebClient.GetByteArrayAsync(url)
+                                                            .ConfigureAwait(false));
         }
     }
 }

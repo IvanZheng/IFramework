@@ -514,7 +514,8 @@ namespace IFramework.Infrastructure
 
         public static string Md5Encrypt(string pToEncrypt, CipherMode mode = CipherMode.CBC, string key = "12345678")
         {
-            var des = new DESCryptoServiceProvider { Mode = mode };
+            var des = DES.Create();// DESCryptoServiceProvider { Mode = mode };
+            des.Mode = mode;
             var inputByteArray = Encoding.Default.GetBytes(pToEncrypt);
             des.Key = Encoding.ASCII.GetBytes(key);
             des.IV = Encoding.ASCII.GetBytes(key);
@@ -533,7 +534,8 @@ namespace IFramework.Infrastructure
 
         public static string Md5Decrypt(string pToDecrypt, CipherMode mode = CipherMode.CBC, string key = "12345678")
         {
-            var des = new DESCryptoServiceProvider { Mode = mode };
+            var des = DES.Create();// DESCryptoServiceProvider { Mode = mode };
+            des.Mode = mode;
             var inputByteArray = new byte[pToDecrypt.Length / 2];
             for (var x = 0; x < pToDecrypt.Length / 2; x++)
             {
@@ -605,32 +607,7 @@ namespace IFramework.Infrastructure
             var lambda = Expression.Lambda<Func<TObject, TProperty>>(propOrFieldVisit, paramExpr);
             return lambda.Compile();
         }
-
-        /// <summary>
-        ///     序列化
-        /// </summary>
-        /// <param name="data">要序列化的对象</param>
-        /// <returns>返回存放序列化后的数据缓冲区</returns>
-        public static byte[] ToBytes(this object data)
-        {
-            var formatter = new BinaryFormatter();
-            var rems = new MemoryStream();
-            formatter.Serialize(rems, data);
-            return rems.GetBuffer();
-        }
-
-        /// <summary>
-        ///     反序列化
-        /// </summary>
-        /// <param name="data">数据缓冲区</param>
-        /// <returns>对象</returns>
-        public static object ToObject(this byte[] data)
-        {
-            var formatter = new BinaryFormatter();
-            var rems = new MemoryStream(data);
-            data = null;
-            return formatter.Deserialize(rems);
-        }
+        
 
         public static string GetDescription(this object obj)
         {
@@ -638,7 +615,7 @@ namespace IFramework.Infrastructure
             {
                 return null;
             }
-            var fi = obj.GetType().GetField(obj.ToString());
+            var fi = obj.GetType().GetField(obj.ToString() ?? string.Empty);
             if (fi != null)
             {
                 var arrDesc = fi.GetCustomAttribute<DescriptionAttribute>(false);

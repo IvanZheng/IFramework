@@ -12,9 +12,9 @@ namespace IFramework.Message
         public MessageResponse(IMessageContext messageContext)
             : this(messageContext, null, false) { }
 
-        public MessageResponse(IMessageContext messageConext, Task<object> replayTask, bool needReply)
+        public MessageResponse(IMessageContext messageContext, Task<object> replayTask, bool needReply)
         {
-            MessageContext = messageConext;
+            MessageContext = messageContext;
             _replyTask = replayTask;
             _needReply = needReply;
         }

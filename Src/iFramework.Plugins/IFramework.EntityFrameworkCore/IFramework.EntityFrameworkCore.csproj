@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.1;net6.0;net7.0</TargetFrameworks>
 		<AssemblyName>IFramework.EntityFrameworkCore</AssemblyName>
 		<RootNamespace>IFramework.EntityFrameworkCore</RootNamespace>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -30,7 +30,9 @@
 	<ItemGroup Condition="$(TargetFramework) == 'net6.0'">
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.3" />
 	</ItemGroup>
-
+	<ItemGroup Condition="$(TargetFramework) == 'net7.0'">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.1" />
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
 			<PrivateAssets>all</PrivateAssets>

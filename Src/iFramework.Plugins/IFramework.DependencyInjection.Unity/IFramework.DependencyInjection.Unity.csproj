@@ -11,18 +11,22 @@
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup Condition="$(TargetFramework) == 'net7.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+	</ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework) == 'net6.0' Or $(TargetFramework) == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Unity.Interception" Version="5.11.1" />
     <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="5.11.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
+	  <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
   </ItemGroup>
 
 </Project>

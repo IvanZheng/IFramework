@@ -36,6 +36,7 @@ using Sample.Persistence;
 using Sample.Persistence.Repositories;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using IFramework.Infrastructure;
 using IFramework.Event;
@@ -185,15 +186,20 @@ namespace Sample.CommandServiceCore
                               //ISnapshotStore snapshotStore
                               )
         {
+            using var scopeProvider = app.ApplicationServices.CreateScope();
+            var dbContext = scopeProvider.ServiceProvider.GetRequiredService<SampleModelContext>();
+            dbContext.Database.EnsureCreated();
             //eventStore.Connect()
             //          .GetAwaiter()
             //          .GetResult();
             //snapshotStore.Connect()
             //             .GetAwaiter()
             //             .GetResult();
-            var logger = loggerFactory.CreateLogger<Startup>(); 
-            logger.SetMinLevel(LogLevel.Information); 
-            logger.LogInformation($"Startup configured env: {env.EnvironmentName}");
+            var logger = loggerFactory.CreateLogger<Startup>();
+            logger.SetMinLevel(LogLevel.Information);
+            logger.LogInformation($"Startup configured env: {env.EnvironmentName} " +
+                                  $"version: {FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion} " +
+                                  Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version);
             
             applicationLifetime.ApplicationStopping.Register(() =>
             {
