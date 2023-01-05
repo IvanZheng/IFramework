@@ -1,12 +1,22 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System;
 
 namespace IFramework.Configuration.ProtectedJson
 {
     public static class JsonConfigurationExtensions
     {
-        public static IConfigurationBuilder AddProtectedJsonFile(this IConfigurationBuilder builder, string path, bool optional,
-            bool reloadOnChange)
+        public static IConfigurationBuilder AddProtectedJsonFile(this IConfigurationBuilder builder, HostBuilderContext hostingContext, bool reloadOnChange = true, string secretKeyEnvironmentVariableName = "PROTECTEDJSON_SECRET_KEY", string cipherPrefix = "cipherText:")
+        {
+            IHostEnvironment env = hostingContext.HostingEnvironment;
+            builder
+                .AddProtectedJsonFile("appsettings.json", true, reloadOnChange, secretKeyEnvironmentVariableName, cipherPrefix)
+                .AddProtectedJsonFile($"appsettings.{env.EnvironmentName}.json", true, reloadOnChange, secretKeyEnvironmentVariableName, cipherPrefix);
+            return builder;
+        }
+
+
+        public static IConfigurationBuilder AddProtectedJsonFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange, string secretKeyEnvironmentVariableName = "PROTECTEDJSON_SECRET_KEY", string cipherPrefix = "cipherText:")
         {
             if (builder == null)
             {
@@ -22,7 +32,9 @@ namespace IFramework.Configuration.ProtectedJson
                 FileProvider = null,
                 Path = path,
                 Optional = optional,
-                ReloadOnChange = reloadOnChange
+                ReloadOnChange = reloadOnChange,
+                SecretKeyName = secretKeyEnvironmentVariableName,
+                CipherPrefix = cipherPrefix,
             };
 
             source.ResolveFileProvider();

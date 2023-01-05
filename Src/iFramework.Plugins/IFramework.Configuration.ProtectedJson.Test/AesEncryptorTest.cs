@@ -14,8 +14,12 @@ public class AesEncryptorTest
     [Fact]
     public void EncryptTest()
     {
+        string plainText = "123456";
         var cipherText = AesEncryptor.Encrypt("123456", PROTECTEDJSON_SECRET_KEY);
+        var decryptedText = AesEncryptor.Decrypt(cipherText, PROTECTEDJSON_SECRET_KEY);
 
         _output.WriteLine("cipherText:" + cipherText);
+
+        Assert.Equal(decryptedText, plainText);
     }
 }

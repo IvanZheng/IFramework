@@ -9,13 +9,13 @@ namespace IFramework.Configuration.ProtectedJson
     {
         private readonly string _secretKey;
         private readonly string _cipherPrefix;
-        private readonly int __cipherPrefixSize;
+        private readonly int _cipherPrefixSize;
 
         public ProtectedJsonConfigurationProvider(ProtectedJsonConfigurationSource source) : base(source)
         {
-            _secretKey = Environment.GetEnvironmentVariable("PROTECTEDJSON_SECRET_KEY");
-            _cipherPrefix = Environment.GetEnvironmentVariable("PROTECTEDJSON_CIPHER_PREFIX") ?? "cipherText:";
-            __cipherPrefixSize = _cipherPrefix.Length;
+            _secretKey = GetEnvironmentVariable(source.SecretKeyName);
+            _cipherPrefix = source.CipherPrefix;
+            _cipherPrefixSize = _cipherPrefix.Length;
         }
 
         public override void Load(Stream stream)
@@ -27,18 +27,24 @@ namespace IFramework.Configuration.ProtectedJson
             {
                 foreach (var item in result)
                 {
-                    var value = Data[item.Key];
-                    value = value[__cipherPrefixSize..];
+                    var originalValue = Data[item.Key];
+                    var value = originalValue[_cipherPrefixSize..]?.Trim();
                     try
                     {
                         Data[item.Key] = AesEncryptor.Decrypt(value, _secretKey);
                     }
                     catch (Exception e)
                     {
-                        throw new Exception($"Appsettings decrypt failed. key = {item.Key}.", e);
+                        throw new Exception($"Appsettings decrypt failed. key = {item.Key}, value = {originalValue}.", e);
                     }
                 }
             }
+        }
+
+        private string GetEnvironmentVariable(string variable)
+        {
+            var value = Environment.GetEnvironmentVariable(variable)?.Trim();
+            return value ?? throw new Exception($"Please set environment variable first. variable name is \"{variable}\"");
         }
     }
 }
