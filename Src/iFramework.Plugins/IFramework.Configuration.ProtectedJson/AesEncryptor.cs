@@ -1,63 +1,38 @@
-﻿using System.IO;
+﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-using System;
 
 namespace IFramework.Configuration.ProtectedJson
 {
     public static class AesEncryptor
     {
-        public static string Encrypt(string plainText, string keyString)
+        public static string Encrypt(string plainText, string key)
         {
-            var encryptKey = Encoding.UTF8.GetBytes(keyString);
+            var plainBytes = Encoding.UTF8.GetBytes(plainText);
+            using var aes = Aes.Create();
+            aes.Key = Encoding.UTF8.GetBytes(key);
 
-            using var aesAlg = Aes.Create();
-            using var encryptor = aesAlg.CreateEncryptor(encryptKey, aesAlg.IV);
-            using var msEncrypt = new MemoryStream();
-            using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.PKCS7;
 
-            using (var swEncrypt = new StreamWriter(csEncrypt))
-            {
-                swEncrypt.Write(plainText);
-            }
-
-            var iv = aesAlg.IV;
-
-            var decryptedContent = msEncrypt.ToArray();
-
-            var result = new byte[iv.Length + decryptedContent.Length];
-
-            Buffer.BlockCopy(iv, 0, result, 0, iv.Length);
-            Buffer.BlockCopy(decryptedContent, 0, result,
-                iv.Length, decryptedContent.Length);
-
-            return Convert.ToBase64String(result);
+            using ICryptoTransform cTransform = aes.CreateEncryptor();
+            byte[] resultArray = cTransform.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+            return Convert.ToBase64String(resultArray);
         }
 
-        public static string Decrypt(string cipherText, string keyString)
+        public static string Decrypt(string cipherText, string key)
         {
-            var fullCipher = Convert.FromBase64String(cipherText);
+            var cipherBytes = Convert.FromBase64String(cipherText);
 
-            byte[] iv = new byte[16];
+            SymmetricAlgorithm aes = Aes.Create();
+            aes.Key = Encoding.UTF8.GetBytes(key);
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.PKCS7;
 
-            var cipher = new byte[fullCipher.Length - iv.Length];
+            using ICryptoTransform cTransform = aes.CreateDecryptor();
+            byte[] resultArray = cTransform.TransformFinalBlock(cipherBytes, 0, cipherBytes.Length);
 
-            Buffer.BlockCopy(fullCipher, 0, iv, 0, iv.Length);
-            Buffer.BlockCopy(fullCipher, iv.Length, cipher, 0, fullCipher.Length - iv.Length);
-            var key = Encoding.UTF8.GetBytes(keyString);
-
-            string result;
-
-            using var aesAlg = Aes.Create();
-            using var decryptor = aesAlg.CreateDecryptor(key, iv);
-            using (var msDecrypt = new MemoryStream(cipher))
-            {
-                using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-                using var srDecrypt = new StreamReader(csDecrypt);
-                result = srDecrypt.ReadToEnd();
-            }
-
-            return result;
+            return Encoding.UTF8.GetString(resultArray);
         }
     }
 }

@@ -1,8 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>IFramework.Configuration.ProtectedJson</PackageId>
+    <Version>1.0.0-preview001</Version>
+    <Authors>Ivan</Authors>
+    <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
+    <Description></Description>
   </PropertyGroup>
 
   <ItemGroup>

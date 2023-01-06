@@ -23,12 +23,16 @@ namespace IFramework.Configuration.ProtectedJson
             base.Load(stream);
 
             var result = Data.Where(kv => kv.Value.StartsWith(_cipherPrefix)).ToList();
-            if (result != null && result.Count > 0)
+            if (result.Count > 0)
             {
                 foreach (var item in result)
                 {
                     var originalValue = Data[item.Key];
                     var value = originalValue[_cipherPrefixSize..]?.Trim();
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new Exception($"Appsettings decrypt failed. key = {item.Key}, value = {originalValue}.");
+                    }
                     try
                     {
                         Data[item.Key] = AesEncryptor.Decrypt(value, _secretKey);
