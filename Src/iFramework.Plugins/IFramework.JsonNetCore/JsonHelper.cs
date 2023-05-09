@@ -20,7 +20,8 @@ namespace IFramework.JsonNet
                                                                                        bool useStringEnumConvert,
                                                                                        bool ignoreSerializableAttribute,
                                                                                        bool ignoreNullValue,
-                                                                                       bool lowerCase)
+                                                                                       bool lowerCase,
+                                                                                       bool processDictionaryKeys)
         {
             var customSettings = new JsonSerializerSettings
             {
@@ -49,7 +50,7 @@ namespace IFramework.JsonNet
                 {
                     resolver.NamingStrategy = new CamelCaseNamingStrategy
                     {
-                        ProcessDictionaryKeys = true,
+                        ProcessDictionaryKeys = processDictionaryKeys,
                         OverrideSpecifiedNames = true
                     };
                 }
@@ -68,7 +69,8 @@ namespace IFramework.JsonNet
                                                                              bool ignoreSerializableAttribute = true,
                                                                              bool ignoreNullValue = true,
                                                                              bool lowerCase = false,
-                                                                             bool useCached = true)
+                                                                             bool useCached = true,
+                                                                             bool processDictionaryKeys = true)
         {
 
             JsonSerializerSettings settings = null;
@@ -83,7 +85,8 @@ namespace IFramework.JsonNet
                                                                                                    useStringEnumConvert,
                                                                                                    ignoreSerializableAttribute,
                                                                                                    ignoreNullValue,
-                                                                                                   lowerCase));
+                                                                                                   lowerCase,
+                                                                                                   processDictionaryKeys));
             }
             else
             {
@@ -93,7 +96,8 @@ namespace IFramework.JsonNet
                                                                    useStringEnumConvert,
                                                                    ignoreSerializableAttribute,
                                                                    ignoreNullValue,
-                                                                   lowerCase);
+                                                                   lowerCase,
+                                                                   processDictionaryKeys);
             }
             return settings;
         }
@@ -109,16 +113,18 @@ namespace IFramework.JsonNet
                                     bool loopSerialize = false,
                                     bool useCamelCase = false,
                                     bool ignoreNullValue = true,
-                                    bool useStringEnumConvert = true)
+                                    bool useStringEnumConvert = true,
+                                    bool processDictionaryKeys = true)
         {
             return JsonConvert.SerializeObject(obj,
-                                               GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, useStringEnumConvert, ignoreNullValue: ignoreNullValue));
+                                               GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, useStringEnumConvert, ignoreNullValue: ignoreNullValue, processDictionaryKeys:processDictionaryKeys));
         }
 
         internal static object ToObject(this string json,
                                           bool serializeNonPublic = false,
                                           bool loopSerialize = false,
-                                          bool useCamelCase = false)
+                                          bool useCamelCase = false,
+                                          bool processDictionaryKeys = true)
         {
 
             if (string.IsNullOrWhiteSpace(json))
@@ -126,7 +132,7 @@ namespace IFramework.JsonNet
                 return null;
             }
             return JsonConvert.DeserializeObject(json,
-                                                 GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
+                                                 GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys:processDictionaryKeys));
 
         }
 
@@ -134,7 +140,8 @@ namespace IFramework.JsonNet
                                           Type jsonType,
                                           bool serializeNonPublic = false,
                                           bool loopSerialize = false,
-                                          bool useCamelCase = false)
+                                          bool useCamelCase = false,
+                                          bool processDictionaryKeys = true)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -142,24 +149,26 @@ namespace IFramework.JsonNet
             }
             if (jsonType == typeof(List<dynamic>))
             {
-                return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
+                return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
             }
             if (jsonType == typeof(object))
             {
-                return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
+                return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
             }
             return JsonConvert.DeserializeObject(json,
                                                  jsonType,
                                                  GetCustomJsonSerializerSettings(serializeNonPublic,
                                                                                  loopSerialize,
-                                                                                 useCamelCase));
+                                                                                 useCamelCase, 
+                                                                                 processDictionaryKeys: processDictionaryKeys));
 
         }
 
         internal static T ToObject<T>(this string json,
                                         bool serializeNonPublic = false,
                                         bool loopSerialize = false,
-                                        bool useCamelCase = false)
+                                        bool useCamelCase = false, 
+                                        bool processDictionaryKeys = true)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -169,35 +178,40 @@ namespace IFramework.JsonNet
             {
                 return (T)json.ToDynamicObjects(serializeNonPublic,
                                                  loopSerialize,
-                                                 useCamelCase);
+                                                 useCamelCase,
+                                                 processDictionaryKeys);
             }
             if (typeof(T) == typeof(object))
             {
                 return json.ToDynamicObject(serializeNonPublic,
                                             loopSerialize,
-                                            useCamelCase);
+                                            useCamelCase,
+                                            processDictionaryKeys);
             }
             return JsonConvert.DeserializeObject<T>(json,
                                                     GetCustomJsonSerializerSettings(serializeNonPublic,
                                                                                     loopSerialize,
-                                                                                    useCamelCase));
+                                                                                    useCamelCase,
+                                                                                    processDictionaryKeys: processDictionaryKeys));
 
         }
 
         internal static dynamic ToDynamicObject(this string json,
                                               bool serializeNonPublic = false,
                                               bool loopSerialize = false,
-                                              bool useCamelCase = false)
+                                              bool useCamelCase = false, 
+                                              bool processDictionaryKeys = true)
         {
-            return json.ToObject<JObject>(serializeNonPublic, loopSerialize, useCamelCase);
+            return json.ToObject<JObject>(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
 
         internal static IEnumerable<dynamic> ToDynamicObjects(this string json,
                                                             bool serializeNonPublic = false,
                                                             bool loopSerialize = false,
-                                                            bool useCamelCase = false)
+                                                            bool useCamelCase = false, 
+                                                            bool processDictionaryKeys = true)
         {
-            return json.ToObject<JArray>(serializeNonPublic, loopSerialize);
+            return json.ToObject<JArray>(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
     }
 }
