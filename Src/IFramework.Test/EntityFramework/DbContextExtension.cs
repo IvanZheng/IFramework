@@ -18,13 +18,13 @@ namespace IFramework.Test.EntityFramework
             where TProperty : new()
 
         {
-            Expression<Func<TProperty, TProperty, bool>> e = (c1, c2) => c1.ToJson(false, false, true, false) == c2.ToJson(false, false, true, false);
+            Expression<Func<TProperty, TProperty, bool>> e = (c1, c2) => c1.ToJson(false, false, true, false, false) == c2.ToJson(false, false, true, false, false);
 
-            return property.HasConversion(a => a.ToJson(false, false, true, true),
-                                          v => v.ToJsonObject<TProperty>(false, false, true),
+            return property.HasConversion(a => a.ToJson(false, false, true, true, false),
+                                          v => v.ToJsonObject<TProperty>(false, false, true, false),
                                           valueComparer ?? new ValueComparer<TProperty>(e,
                                                                                         c => c.GetHashCode(),
-                                                                                        c => c.ToJson(false, false, true, false).ToJsonObject<TProperty>(false, false, true)));
+                                                                                        c => c.ToJson(false, false, true, false, false).ToJsonObject<TProperty>(false, false, true, false)));
         }
     }
 }

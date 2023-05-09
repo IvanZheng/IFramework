@@ -10,46 +10,47 @@ namespace IFramework.JsonNet
     {
         public string SerializeObject(object value, bool serializeNonPublic = false, 
                                       bool loopSerialize = false, bool useCamelCase = false,
-                                      bool ignoreNullValue = true, bool useStringEnumConvert = true)
+                                      bool ignoreNullValue = true, bool useStringEnumConvert = true,
+                                      bool processDictionaryKeys = true)
         {
-            return value.ToJson(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue, useStringEnumConvert);
+            return value.ToJson(serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue, useStringEnumConvert, processDictionaryKeys);
         }
 
-        public object DeserializeObject(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
+        public object DeserializeObject(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool processDictionaryKeys = true)
         {
-            return value.ToObject(serializeNonPublic, loopSerialize, useCamelCase);
+            return value.ToObject(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
 
-        public dynamic DeserializeDynamicObject(string json, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
+        public dynamic DeserializeDynamicObject(string json, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool processDictionaryKeys = true)
         {
-            return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
+            return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
 
-        public dynamic DeserializeDynamicObjects(string json, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
+        public dynamic DeserializeDynamicObjects(string json, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool processDictionaryKeys = true)
         {
-            return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
+            return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
 
-        public T DeserializeAnonymousType<T>(string value, T anonymousTypeObject, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
+        public T DeserializeAnonymousType<T>(string value, T anonymousTypeObject, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool processDictionaryKeys = true)
         {
             return JsonConvert.DeserializeAnonymousType(value, anonymousTypeObject, 
-                                                        JsonHelper.GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
+                                                        JsonHelper.GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys:processDictionaryKeys));
 
         }
 
-        public T DeserializeObject<T>(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
+        public T DeserializeObject<T>(string value, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool processDictionaryKeys = true)
         {
-            return value.ToObject<T>(serializeNonPublic, loopSerialize, useCamelCase);
+            return value.ToObject<T>(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
 
-        public object DeserializeObject(string value, Type type, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
+        public object DeserializeObject(string value, Type type, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool processDictionaryKeys = true)
         {
-            return value.ToObject(type, serializeNonPublic, loopSerialize, useCamelCase);
+            return value.ToObject(type, serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
 
-        public void PopulateObject(string value, object target, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false)
+        public void PopulateObject(string value, object target, bool serializeNonPublic = false, bool loopSerialize = false, bool useCamelCase = false, bool processDictionaryKeys = true)
         {
-            JsonConvert.PopulateObject(value, target, JsonHelper.GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase));
+            JsonConvert.PopulateObject(value, target, JsonHelper.GetCustomJsonSerializerSettings(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys:processDictionaryKeys));
         }
 
         public string SerializeXmlNode(XmlNode node)

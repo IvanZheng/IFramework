@@ -15,24 +15,27 @@ namespace IFramework.Infrastructure
                                     bool serializeNonPublic = false,
                                     bool loopSerialize = false,
                                     bool useCamelCase = false,
-                                    bool ignoreNullValue = true)
+                                    bool ignoreNullValue = true,
+                                    bool processDictionaryKeys = true)
         {
-            return JsonConvert.SerializeObject(obj, serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue);
+            return JsonConvert.SerializeObject(obj, serializeNonPublic, loopSerialize, useCamelCase, ignoreNullValue, processDictionaryKeys:processDictionaryKeys);
         }
 
         public static object ToJsonObject(this string json,
                                           bool serializeNonPublic = false,
                                           bool loopSerialize = false,
-                                          bool useCamelCase = false)
+                                          bool useCamelCase = false,
+                                          bool processDictionaryKeys = true)
         {
-            return JsonConvert.DeserializeObject(json, serializeNonPublic, loopSerialize, useCamelCase);
+            return JsonConvert.DeserializeObject(json, serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys:processDictionaryKeys);
         }
 
         public static object ToJsonObject(this string json,
                                           Type jsonType,
                                           bool serializeNonPublic = false,
                                           bool loopSerialize = false,
-                                          bool useCamelCase = false)
+                                          bool useCamelCase = false,
+                                          bool processDictionaryKeys = true)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -47,11 +50,11 @@ namespace IFramework.Infrastructure
                 }
                 if (jsonType == typeof(List<dynamic>))
                 {
-                    return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
+                    return json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
                 }
                 if (jsonType == typeof(object))
                 {
-                    return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
+                    return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
                 }
 
                 if (jsonType.IsPrimitive || jsonType == typeof(Guid))
@@ -65,7 +68,7 @@ namespace IFramework.Infrastructure
                         }
                     }
                 }
-                return JsonConvert.DeserializeObject(json, jsonType, serializeNonPublic, loopSerialize, useCamelCase);
+                return JsonConvert.DeserializeObject(json, jsonType, serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys:processDictionaryKeys);
             }
             catch (Exception ex)
             {
@@ -77,7 +80,8 @@ namespace IFramework.Infrastructure
         public static T ToJsonObject<T>(this string json,
                                         bool serializeNonPublic = false,
                                         bool loopSerialize = false,
-                                        bool useCamelCase = false)
+                                        bool useCamelCase = false,
+                                        bool processDictionaryKeys = true)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -93,11 +97,11 @@ namespace IFramework.Infrastructure
                 }
                 if (typeof(T) == typeof(IEnumerable<dynamic>))
                 {
-                    return (T)json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase);
+                    return (T)json.ToDynamicObjects(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
                 }
                 if (typeof(T) == typeof(object))
                 {
-                    return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase);
+                    return json.ToDynamicObject(serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
                 }
                 if (jsonType.IsPrimitive || jsonType == typeof(Guid))
                 {
@@ -110,7 +114,7 @@ namespace IFramework.Infrastructure
                         }
                     }
                 }
-                return JsonConvert.DeserializeObject<T>(json, serializeNonPublic, loopSerialize, useCamelCase);
+                return JsonConvert.DeserializeObject<T>(json, serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
             }
             catch (Exception ex)
             {
@@ -122,17 +126,19 @@ namespace IFramework.Infrastructure
         public static dynamic ToDynamicObject(this string json,
                                               bool serializeNonPublic = false,
                                               bool loopSerialize = false,
-                                              bool useCamelCase = false)
+                                              bool useCamelCase = false,
+                                              bool processDictionaryKeys = true)
         {
-            return JsonConvert.DeserializeDynamicObject(json, serializeNonPublic, loopSerialize, useCamelCase);
+            return JsonConvert.DeserializeDynamicObject(json, serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
 
         public static IEnumerable<dynamic> ToDynamicObjects(this string json,
                                                      bool serializeNonPublic = false,
                                                      bool loopSerialize = false,
-                                                     bool useCamelCase = false)
+                                                     bool useCamelCase = false, 
+                                                     bool processDictionaryKeys = true)
         {
-            return JsonConvert.DeserializeDynamicObjects(json, serializeNonPublic, loopSerialize, useCamelCase);
+            return JsonConvert.DeserializeDynamicObjects(json, serializeNonPublic, loopSerialize, useCamelCase, processDictionaryKeys);
         }
     }
 }
