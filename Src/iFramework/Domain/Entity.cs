@@ -25,12 +25,11 @@ namespace IFramework.Domain
 
     public class Entity : IEntity
     {
-        protected object DomainContext { get; set; }
-        protected IDbContext DbContext => DomainContext as IDbContext;
+        protected IDbContext DbContext { get; set; }
 
         internal void SetDomainContext(IDbContext domainContext)
         {
-            DomainContext = domainContext;
+            DbContext = domainContext;
         }
 
         public void ClearCollection<TEntity>(ICollection<TEntity> collection)
@@ -53,9 +52,9 @@ namespace IFramework.Domain
 
         public void Reload()
         {
-            if (DomainContext == null)
+            if (DbContext == null)
             {
-                throw new NullReferenceException(nameof(DomainContext));
+                throw new NullReferenceException(nameof(DbContext));
             }
 
             DbContext.Reload(this);
@@ -64,9 +63,9 @@ namespace IFramework.Domain
 
         public async Task ReloadAsync()
         {
-            if (DomainContext == null)
+            if (DbContext == null)
             {
-                throw new NullReferenceException(nameof(DomainContext));
+                throw new NullReferenceException(nameof(DbContext));
             }
             await DbContext.ReloadAsync(this)
                            .ConfigureAwait(false);
@@ -75,7 +74,7 @@ namespace IFramework.Domain
 
         public TContext GetDbContext<TContext>() where TContext : class
         {
-            return DomainContext as TContext;
+            return DbContext as TContext;
         }
     }
 }

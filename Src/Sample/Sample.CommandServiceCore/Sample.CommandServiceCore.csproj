@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<ServerGarbageCollection>false</ServerGarbageCollection>
@@ -10,12 +10,12 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<WarningLevel>1</WarningLevel>
-		<LangVersion>7.1</LangVersion>
+		<LangVersion>8.0</LangVersion>
 		<OutputPath></OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<LangVersion>7.1</LangVersion>
+		<LangVersion>8.0</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -59,8 +59,8 @@
 	<ItemGroup>
 		<PackageReference Include="EFCore.Dm" Version="5.0.1" />
 		<PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.3" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.3">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
