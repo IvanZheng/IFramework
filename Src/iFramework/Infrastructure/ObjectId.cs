@@ -37,8 +37,9 @@ namespace IFramework.Infrastructure
             __dateTimeMaxValueMillisecondsSinceEpoch = (DateTime.MaxValue - __unixEpoch).Ticks / 10000;
             __dateTimeMinValueMillisecondsSinceEpoch = (DateTime.MinValue - __unixEpoch).Ticks / 10000;
             __staticMachine = GetMachineHash();
-            __staticIncrement = new Random().Next();
-            __staticPid = (short) GetCurrentProcessId();
+            var random = new Random();
+            __staticIncrement = random.Next();
+            __staticPid = (short) random.Next();
         }
 
         // constructors
