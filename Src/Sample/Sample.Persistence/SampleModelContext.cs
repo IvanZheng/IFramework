@@ -18,7 +18,7 @@ namespace Sample.Persistence
 {
     public class SampleModelContext : MessageStore//IFramework.MessageStores.MongoDb.MessageStore
     {
-        private const string UniqueConstaintErrorMessage = "在'{0}'中不能有重复的'{1}', 重复的值为'{2}'.";
+        private const string UniqueConstraintErrorMessage = "在'{0}'中不能有重复的'{1}', 重复的值为'{2}'.";
         private readonly ILogger _logger = ObjectProviderFactory.GetService<ILogger<SampleModelContext>>();
         /// <summary>
         ///     Cannot insert duplicate key row in object 'dbo.AssetBrokers' with unique index 'IX_AssetBrokers_Code'. The
@@ -123,7 +123,7 @@ namespace Sample.Persistence
                     duplicatedValue = duplicatedValue.Substring(1, duplicatedValue.Length - 2);
                 }
 
-                var returnError = string.Format(UniqueConstaintErrorMessage,
+                var returnError = string.Format(UniqueConstraintErrorMessage,
                                                 entityDisplayName?.Split('.').LastOrDefault(),
                                                 indexName?.Split('_').LastOrDefault(),
                                                 duplicatedValue);

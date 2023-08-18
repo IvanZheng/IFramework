@@ -26,6 +26,7 @@ namespace IFramework.Test.EntityFramework
     public class DemoDbContextFactory : IDesignTimeDbContextFactory<DemoDbContext>
     {
         public static string MySqlConnectionStringName = "DemoDbContext.MySql";
+        public static string MySqlTenantConnectionStringName = "DemoDbContext.MySqlTenant";
         public static string ConnectionStringName = "DemoDbContext";
         public static string MongoDbConnectionStringName = "DemoDbContext.MongoDb";
 

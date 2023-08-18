@@ -830,20 +830,13 @@
             <param name="fileName">保存文件的路径和文件名</param>
             <returns>保存文件是否成功</returns>
         </member>
-        <member name="M:IFramework.Infrastructure.SBase64Utility.EncodingFileFromUrl(System.String,System.Net.WebClient)">
+        <member name="M:IFramework.Infrastructure.SBase64Utility.EncodingFileFromUrl(System.String,System.Net.Http.HttpClient)">
             <summary>
                 从网络地址一取得文件并转化为base64编码
             </summary>
             <param name="url">文件的url地址,一个绝对的url地址</param>
             <param name="objWebClient">System.Net.WebClient 对象</param>
             <returns></returns>
-        </member>
-        <member name="M:IFramework.Infrastructure.SBase64Utility.EncodingFileFromUrl(System.String)">
-            <summary>
-                从网络地址一取得文件并转化为base64编码
-            </summary>
-            <param name="url">文件的url地址,一个绝对的url地址</param>
-            <returns>将文件转化后的base64字符串</returns>
         </member>
         <member name="M:IFramework.Infrastructure.TimerTaskFactory.StartNew``1(System.Func{``0},System.Func{``0,System.Boolean},System.TimeSpan,System.TimeSpan,System.Boolean)">
             <summary>
@@ -860,20 +853,6 @@
                 The result returned by the specified function, or <see langword="null" /> if the result is not valid and the
                 task times out.
             </returns>
-        </member>
-        <member name="M:IFramework.Infrastructure.Utility.ToBytes(System.Object)">
-            <summary>
-                序列化
-            </summary>
-            <param name="data">要序列化的对象</param>
-            <returns>返回存放序列化后的数据缓冲区</returns>
-        </member>
-        <member name="M:IFramework.Infrastructure.Utility.ToObject(System.Byte[])">
-            <summary>
-                反序列化
-            </summary>
-            <param name="data">数据缓冲区</param>
-            <returns>对象</returns>
         </member>
         <member name="T:IFramework.MessageQueue.AutoOffsetReset">
              <summary>
