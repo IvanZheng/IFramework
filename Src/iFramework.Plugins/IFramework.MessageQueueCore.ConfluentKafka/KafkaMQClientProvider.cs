@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
 using Confluent.Kafka;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
-using IFramework.MessageQueue;
 using IFramework.MessageQueue.Client.Abstracts;
 using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Options;
@@ -17,19 +15,11 @@ namespace IFramework.MessageQueue.ConfluentKafka
     {
         private readonly string _brokerList;
         private readonly KafkaClientOptions _options;
+
         public KafkaMQClientProvider(IOptions<KafkaClientOptions> options)
         {
             _brokerList = options.Value.BrokerList;
             _options = options.Value;
-
-        }
-
-        private void FillExtensions(Dictionary<string, object> extensions)
-        {
-            if (_options.Extensions?.Count > 0)
-            {
-                _options.Extensions.ForEach(p => extensions[p.Key] = p.Value);
-            }
         }
 
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
@@ -57,25 +47,29 @@ namespace IFramework.MessageQueue.ConfluentKafka
             {
                 messageContext.CorrelationId = correlationId;
             }
+
             if (!string.IsNullOrEmpty(topic))
             {
                 messageContext.Topic = topic;
             }
+
             if (!string.IsNullOrEmpty(key))
             {
                 messageContext.Key = key;
             }
+
             if (!string.IsNullOrEmpty(replyEndPoint))
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
             }
+
             if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
             {
                 messageContext.SagaInfo = sagaInfo;
             }
+
             return messageContext;
         }
-
 
         public IMessageConsumer CreateQueueConsumer(string queue,
                                                     OnMessagesReceived onMessagesReceived,
@@ -83,16 +77,12 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                     ConsumerConfig config,
                                                     bool start = true)
         {
-            config = config ?? new ConsumerConfig();
-            FillExtensions(config.Extensions);
-            var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, new []{queue}, $"{queue}{FrameworkConfigurationExtension.QueueNameSplit}consumer", consumerId,
-                                                                   BuildOnKafkaMessageReceived(onMessagesReceived),
-                                                                   config);
-            if (start)
-            {
-                consumer.Start();
-            }
-            return consumer;
+            return CreateQueueConsumer(queue,
+                                       onMessagesReceived,
+                                       DefaultBuildMessageContext(),
+                                       consumerId,
+                                       config,
+                                       start);
         }
 
         public IMessageConsumer CreateTopicSubscription(string[] topics,
@@ -102,29 +92,94 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                         ConsumerConfig config,
                                                         bool start = true)
         {
+            return CreateTopicSubscription(topics,
+                                           subscriptionName,
+                                           onMessagesReceived,
+                                           DefaultBuildMessageContext(),
+                                           consumerId,
+                                           config,
+                                           start);
+        }
+
+
+        public void Dispose() { }
+
+        public IMessageConsumer CreateQueueConsumer<TKafkaMessage>(string queue,
+                                                                   OnMessagesReceived onMessagesReceived,
+                                                                   Func<ConsumeResult<string, TKafkaMessage>, IMessageContext> buildMessageContext,
+                                                                   string consumerId,
+                                                                   ConsumerConfig config,
+                                                                   bool start = true)
+        {
             config = config ?? new ConsumerConfig();
             FillExtensions(config.Extensions);
-
-            var consumer = new KafkaConsumer<string, KafkaMessage>(_brokerList, topics, subscriptionName, consumerId,
-                                                                   BuildOnKafkaMessageReceived(onMessagesReceived),
-                                                                   config);
+            var consumer = new KafkaConsumer<string, TKafkaMessage>(_brokerList,
+                                                                    new[] { queue },
+                                                                    $"{queue}{FrameworkConfigurationExtension.QueueNameSplit}consumer", consumerId,
+                                                                    BuildOnKafkaMessageReceived(onMessagesReceived, buildMessageContext),
+                                                                    config);
             if (start)
             {
                 consumer.Start();
             }
+
             return consumer;
         }
 
-        private OnKafkaMessageReceived<string, KafkaMessage> BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived)
+
+        public IMessageConsumer CreateTopicSubscription<TKafkaMessage>(string[] topics,
+                                                                       string subscriptionName,
+                                                                       OnMessagesReceived onMessagesReceived,
+                                                                       Func<ConsumeResult<string, TKafkaMessage>, IMessageContext> buildMessageContext,
+                                                                       string consumerId,
+                                                                       ConsumerConfig config,
+                                                                       bool start = true)
         {
-            return (consumer, message, cancellationToken) =>
+            config = config ?? new ConsumerConfig();
+            FillExtensions(config.Extensions);
+
+            var consumer = new KafkaConsumer<string, TKafkaMessage>(_brokerList,
+                                                                    topics,
+                                                                    subscriptionName,
+                                                                    consumerId,
+                                                                    BuildOnKafkaMessageReceived(onMessagesReceived, buildMessageContext),
+                                                                    config);
+            if (start)
+            {
+                consumer.Start();
+            }
+
+            return consumer;
+        }
+
+        private void FillExtensions(Dictionary<string, object> extensions)
+        {
+            if (_options.Extensions?.Count > 0)
+            {
+                _options.Extensions.ForEach(p => extensions[p.Key] = p.Value);
+            }
+        }
+
+        private static Func<ConsumeResult<string, KafkaMessage>, IMessageContext> DefaultBuildMessageContext()
+        {
+            return message =>
             {
                 var kafkaMessage = message.Message;
-                var messageContext = new MessageContext(kafkaMessage.Value, message.Topic, message.Partition, message.Offset);
-                onMessagesReceived(cancellationToken, messageContext);
+                return new MessageContext(kafkaMessage.Value,
+                                          message.Topic,
+                                          message.Partition,
+                                          message.Offset);
             };
         }
 
-        public void Dispose() { }
+        private static OnKafkaMessageReceived<string, TKafkaMessage> BuildOnKafkaMessageReceived<TKafkaMessage>(OnMessagesReceived onMessagesReceived,
+                                                                                                                Func<ConsumeResult<string, TKafkaMessage>, IMessageContext> buildMessageContext)
+        {
+            return (consumer, message, cancellationToken) =>
+            {
+                var messageContext = buildMessageContext(message);
+                onMessagesReceived(cancellationToken, messageContext);
+            };
+        }
     }
 }
