@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Text;
 using IFramework.Config;
 using IFramework.Infrastructure;
-using IFramework.Message;
-using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.RabbitMQ.MessageFormat;
 using RabbitMQ.Client;
 
 namespace IFramework.MessageQueue.RabbitMQ
@@ -13,6 +9,8 @@ namespace IFramework.MessageQueue.RabbitMQ
     public class RabbitMQClientProvider : IMessageQueueClientProvider
     {
         private readonly IConnection _connection;
+        private readonly IMessageContextBuilder _defaultMessageContextBuilder = new DefaultRabbitMQMessageContextBuilder();
+
 
         public RabbitMQClientProvider(ConnectionFactory connectionFactory)
         {
@@ -29,63 +27,24 @@ namespace IFramework.MessageQueue.RabbitMQ
             _connection.Dispose();
         }
 
-        public IMessageContext WrapMessage(object message,
-                                           string correlationId = null,
-                                           string topic = null,
-                                           string key = null,
-                                           string replyEndPoint = null,
-                                           string messageId = null,
-                                           SagaInfo sagaInfo = null,
-                                           string producer = null)
-        {
-            var messageContext = new MessageContext(message, messageId)
-            {
-                Producer = producer,
-                Ip = Utility.GetLocalIpv4()?.ToString()
-            };
-            if (!string.IsNullOrEmpty(correlationId))
-            {
-                messageContext.CorrelationId = correlationId;
-            }
-
-            if (!string.IsNullOrEmpty(topic))
-            {
-                messageContext.Topic = topic;
-            }
-
-            if (!string.IsNullOrEmpty(key))
-            {
-                messageContext.Key = key;
-            }
-
-            if (!string.IsNullOrEmpty(replyEndPoint))
-            {
-                messageContext.ReplyToEndPoint = replyEndPoint;
-            }
-
-            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
-            {
-                messageContext.SagaInfo = sagaInfo;
-            }
-
-            return messageContext;
-        }
-
         public IMessageConsumer CreateQueueConsumer(string commandQueueName,
                                                     OnMessagesReceived onMessagesReceived,
                                                     string consumerId,
                                                     ConsumerConfig consumerConfig,
-                                                    bool start = true)
+                                                    bool start = true,
+                                                    IMessageContextBuilder messageContextBuilder = null)
         {
+            messageContextBuilder ??= _defaultMessageContextBuilder;
+
             var channel = _connection.CreateModel();
 
             channel.QueueDeclare(commandQueueName, true, false, false, null);
-            channel.BasicQos(0, (ushort) consumerConfig.FullLoadThreshold, false);
+            channel.BasicQos(0, (ushort)consumerConfig.FullLoadThreshold, false);
             var consumer = new RabbitMQConsumer(channel,
-                                                new []{commandQueueName},
+                                                new[] { commandQueueName },
                                                 commandQueueName,
                                                 consumerId,
-                                                BuildOnRabbitMQMessageReceived(onMessagesReceived),
+                                                BuildOnKafkaMessageReceived(onMessagesReceived, messageContextBuilder as IRabbitMQMessageContextBuilder),
                                                 consumerConfig);
             if (start)
             {
@@ -100,8 +59,10 @@ namespace IFramework.MessageQueue.RabbitMQ
                                                         OnMessagesReceived onMessagesReceived,
                                                         string consumerId,
                                                         ConsumerConfig consumerConfig,
-                                                        bool start = true)
+                                                        bool start = true,
+                                                        IMessageContextBuilder messageContextBuilder = null)
         {
+            messageContextBuilder ??= _defaultMessageContextBuilder;
             var channel = _connection.CreateModel();
             var queueName = channel.QueueDeclare(subscriptionName, true, false, false, null).QueueName;
 
@@ -117,7 +78,7 @@ namespace IFramework.MessageQueue.RabbitMQ
                                                   topics,
                                                   queueName,
                                                   consumerId,
-                                                  BuildOnRabbitMQMessageReceived(onMessagesReceived),
+                                                  BuildOnKafkaMessageReceived(onMessagesReceived, messageContextBuilder as IRabbitMQMessageContextBuilder),
                                                   consumerConfig);
             if (start)
             {
@@ -147,12 +108,17 @@ namespace IFramework.MessageQueue.RabbitMQ
             return new RabbitMQProducer(channel, string.Empty, queue, config);
         }
 
-        private OnRabbitMQMessageReceived BuildOnRabbitMQMessageReceived(OnMessagesReceived onMessagesReceived)
+        private static OnRabbitMQMessageReceived BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived,
+                                                                             IRabbitMQMessageContextBuilder messageContextBuilder)
         {
-            return (consumer, args, cancellationToken) =>
+            if (messageContextBuilder == null)
             {
-                var message = Encoding.UTF8.GetString(args.Body.ToArray()).ToJsonObject<RabbitMQMessage>();
-                var messageContext = new MessageContext(message, new MessageOffset(string.Empty, args.Exchange, 0, (long) args.DeliveryTag));
+                throw new ArgumentNullException(nameof(messageContextBuilder), "please use valid IKafkaMessageContextBuilder<TKafkaMessage>");
+            }
+
+            return (consumer, message, cancellationToken) =>
+            {
+                var messageContext = messageContextBuilder.Build(message);
                 onMessagesReceived(cancellationToken, messageContext);
             };
         }

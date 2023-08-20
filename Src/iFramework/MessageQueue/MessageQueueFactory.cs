@@ -11,7 +11,8 @@ namespace IFramework.MessageQueue
 {
     public static class MessageQueueFactory
     {
-        public static ConcurrentBag<IMessageProcessor> MessageProcessors = new ConcurrentBag<IMessageProcessor>(); 
+        public static ConcurrentBag<IMessageProcessor> MessageProcessors = new ConcurrentBag<IMessageProcessor>();
+
         public static ICommandBus GetCommandBus()
         {
             return ObjectProviderFactory.GetService<ICommandBus>();
@@ -30,7 +31,8 @@ namespace IFramework.MessageQueue
         public static IMessageProcessor CreateCommandConsumer(string commandQueue,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
-                                                              ConsumerConfig consumerConfig = null)
+                                                              ConsumerConfig consumerConfig = null,
+                                                              IMessageContextBuilder messageContextBuilder = null)
         {
             var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
@@ -41,23 +43,26 @@ namespace IFramework.MessageQueue
                                                        handlerProvider,
                                                        commandQueue,
                                                        consumerId,
-                                                       consumerConfig);
+                                                       consumerConfig,
+                                                       messageContextBuilder);
             MessageProcessors.Add(commandConsumer);
             return commandConsumer;
         }
-       
+
         public static IMessageProcessor CreateEventSubscriber(string topic,
                                                               string subscription,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
                                                               ConsumerConfig consumerConfig = null,
-                                                              Func<string[], bool> tagFilter = null)
+                                                              Func<string[], bool> tagFilter = null,
+                                                              IMessageContextBuilder messageContextBuilder = null)
         {
-            var eventSubscriber = CreateEventSubscriber(new[] {new TopicSubscription(topic, tagFilter)},
-                                         subscription,
-                                         consumerId,
-                                         handlerProviderNames,
-                                         consumerConfig);
+            var eventSubscriber = CreateEventSubscriber(new[] { new TopicSubscription(topic, tagFilter) },
+                                                        subscription,
+                                                        consumerId,
+                                                        handlerProviderNames,
+                                                        consumerConfig,
+                                                        messageContextBuilder);
             return eventSubscriber;
         }
 
@@ -65,7 +70,8 @@ namespace IFramework.MessageQueue
                                                               string subscription,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
-                                                              ConsumerConfig consumerConfig = null)
+                                                              ConsumerConfig consumerConfig = null,
+                                                              IMessageContextBuilder messageContextBuilder = null)
         {
             subscription = Configuration.Instance.FormatAppName(subscription);
             var handlerProvider = new EventSubscriberProvider(handlerProviderNames);
@@ -80,7 +86,8 @@ namespace IFramework.MessageQueue
                                                       subscription,
                                                       topicSubscriptions,
                                                       consumerId,
-                                                      consumerConfig);
+                                                      consumerConfig,
+                                                      messageContextBuilder);
             MessageProcessors.Add(eventSubscriber);
             return eventSubscriber;
         }
