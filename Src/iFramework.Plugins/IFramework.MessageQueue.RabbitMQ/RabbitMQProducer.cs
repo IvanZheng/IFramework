@@ -7,8 +7,8 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
 using IFramework.Message;
+using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.RabbitMQ.MessageFormat;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
@@ -38,7 +38,7 @@ namespace IFramework.MessageQueue.RabbitMQ
 
         public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
-            var message = ((MessageContext)messageContext).RabbitMQMessage;
+            var message = ((MessageContext)messageContext).PayloadMessage;
             try
             {
                 _channel.BasicPublish(_exchange, _topic, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));

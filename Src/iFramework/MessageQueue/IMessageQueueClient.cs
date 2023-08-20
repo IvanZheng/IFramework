@@ -8,7 +8,7 @@ namespace IFramework.MessageQueue
 {
     public delegate void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] messageContext);
 
-    public interface IMessageQueueClient: IDisposable
+    public interface IMessageQueueClient : IDisposable
     {
         Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken);
         Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken);
@@ -23,20 +23,29 @@ namespace IFramework.MessageQueue
                                     string producer = null);
 
         IMessageConsumer StartSubscriptionClient(string[] topics,
-                                                  string subscriptionName,
-                                                  string consumerId,
-                                                  OnMessagesReceived onMessagesReceived,
-                                                  ConsumerConfig consumerConfig = null);
-
-        IMessageConsumer StartSubscriptionClient(string topic,
                                                  string subscriptionName,
                                                  string consumerId,
                                                  OnMessagesReceived onMessagesReceived,
                                                  ConsumerConfig consumerConfig = null);
 
-        IMessageConsumer StartQueueClient(string commandQueueName,
-                                           string consumerId,
-                                           OnMessagesReceived onMessagesReceived,
-                                           ConsumerConfig consumerConfig = null);
+        IMessageConsumer StartSubscriptionClient<TPayloadMessage>(string[] topics,
+                                                                  string subscriptionName,
+                                                                  string consumerId,
+                                                                  OnMessagesReceived onMessagesReceived,
+                                                                  ConsumerConfig consumerConfig = null,
+                                                                  IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null);
+
+        IMessageConsumer StartSubscriptionClient<TPayloadMessage>(string topic,
+                                                                  string subscriptionName,
+                                                                  string consumerId,
+                                                                  OnMessagesReceived onMessagesReceived,
+                                                                  ConsumerConfig consumerConfig = null,
+                                                                  IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null);
+
+        IMessageConsumer StartQueueClient<TPayloadMessage>(string commandQueueName,
+                                                           string consumerId,
+                                                           OnMessagesReceived onMessagesReceived,
+                                                           ConsumerConfig consumerConfig = null,
+                                                           IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null);
     }
 }

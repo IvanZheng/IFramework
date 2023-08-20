@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Confluent.Kafka;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.Message;
@@ -14,6 +13,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
     public class KafkaMQClientProvider : IMessageQueueClientProvider
     {
         private readonly string _brokerList;
+        private readonly IMessageContextBuilder<PayloadMessage> _defaultMessageContextBuilder = new DefaultKafkaMessageContextBuilder();
         private readonly KafkaClientOptions _options;
 
         public KafkaMQClientProvider(IOptions<KafkaClientOptions> options)
@@ -79,7 +79,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
         {
             return CreateQueueConsumer(queue,
                                        onMessagesReceived,
-                                       DefaultBuildMessageContext(),
+                                       _defaultMessageContextBuilder,
                                        consumerId,
                                        config,
                                        start);
@@ -95,7 +95,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             return CreateTopicSubscription(topics,
                                            subscriptionName,
                                            onMessagesReceived,
-                                           DefaultBuildMessageContext(),
+                                           _defaultMessageContextBuilder,
                                            consumerId,
                                            config,
                                            start);
@@ -104,20 +104,25 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public void Dispose() { }
 
-        public IMessageConsumer CreateQueueConsumer<TKafkaMessage>(string queue,
-                                                                   OnMessagesReceived onMessagesReceived,
-                                                                   Func<ConsumeResult<string, TKafkaMessage>, IMessageContext> buildMessageContext,
-                                                                   string consumerId,
-                                                                   ConsumerConfig config,
-                                                                   bool start = true)
+        public IMessageConsumer CreateQueueConsumer<TPayloadMessage>(string queue,
+                                                                     OnMessagesReceived onMessagesReceived,
+                                                                     IMessageContextBuilder<TPayloadMessage> messageContextBuilder,
+                                                                     string consumerId,
+                                                                     ConsumerConfig config,
+                                                                     bool start = true)
         {
+            if (typeof(TPayloadMessage) == typeof(PayloadMessage) && messageContextBuilder == null)
+            {
+                messageContextBuilder = _defaultMessageContextBuilder as IMessageContextBuilder<TPayloadMessage>;
+            }
             config = config ?? new ConsumerConfig();
             FillExtensions(config.Extensions);
-            var consumer = new KafkaConsumer<string, TKafkaMessage>(_brokerList,
-                                                                    new[] { queue },
-                                                                    $"{queue}{FrameworkConfigurationExtension.QueueNameSplit}consumer", consumerId,
-                                                                    BuildOnKafkaMessageReceived(onMessagesReceived, buildMessageContext),
-                                                                    config);
+            var consumer = new KafkaConsumer<string, TPayloadMessage>(_brokerList,
+                                                                      new[] { queue },
+                                                                      $"{queue}{FrameworkConfigurationExtension.QueueNameSplit}consumer", consumerId,
+                                                                      BuildOnKafkaMessageReceived(onMessagesReceived,
+                                                                                                  messageContextBuilder as IKafkaMessageContextBuilder<TPayloadMessage>),
+                                                                      config);
             if (start)
             {
                 consumer.Start();
@@ -127,23 +132,27 @@ namespace IFramework.MessageQueue.ConfluentKafka
         }
 
 
-        public IMessageConsumer CreateTopicSubscription<TKafkaMessage>(string[] topics,
-                                                                       string subscriptionName,
-                                                                       OnMessagesReceived onMessagesReceived,
-                                                                       Func<ConsumeResult<string, TKafkaMessage>, IMessageContext> buildMessageContext,
-                                                                       string consumerId,
-                                                                       ConsumerConfig config,
-                                                                       bool start = true)
+        public IMessageConsumer CreateTopicSubscription<TPayloadMessage>(string[] topics,
+                                                                         string subscriptionName,
+                                                                         OnMessagesReceived onMessagesReceived,
+                                                                         IMessageContextBuilder<TPayloadMessage> messageContextBuilder,
+                                                                         string consumerId,
+                                                                         ConsumerConfig config,
+                                                                         bool start = true)
         {
+            if (typeof(TPayloadMessage) == typeof(PayloadMessage) && messageContextBuilder == null)
+            {
+                messageContextBuilder = _defaultMessageContextBuilder as IMessageContextBuilder<TPayloadMessage>;
+            }
             config = config ?? new ConsumerConfig();
             FillExtensions(config.Extensions);
 
-            var consumer = new KafkaConsumer<string, TKafkaMessage>(_brokerList,
-                                                                    topics,
-                                                                    subscriptionName,
-                                                                    consumerId,
-                                                                    BuildOnKafkaMessageReceived(onMessagesReceived, buildMessageContext),
-                                                                    config);
+            var consumer = new KafkaConsumer<string, TPayloadMessage>(_brokerList,
+                                                                      topics,
+                                                                      subscriptionName,
+                                                                      consumerId,
+                                                                      BuildOnKafkaMessageReceived(onMessagesReceived, messageContextBuilder as IKafkaMessageContextBuilder<TPayloadMessage>),
+                                                                      config);
             if (start)
             {
                 consumer.Start();
@@ -160,24 +169,18 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        private static Func<ConsumeResult<string, KafkaMessage>, IMessageContext> DefaultBuildMessageContext()
-        {
-            return message =>
-            {
-                var kafkaMessage = message.Message;
-                return new MessageContext(kafkaMessage.Value,
-                                          message.Topic,
-                                          message.Partition,
-                                          message.Offset);
-            };
-        }
 
         private static OnKafkaMessageReceived<string, TKafkaMessage> BuildOnKafkaMessageReceived<TKafkaMessage>(OnMessagesReceived onMessagesReceived,
-                                                                                                                Func<ConsumeResult<string, TKafkaMessage>, IMessageContext> buildMessageContext)
+                                                                                                                IKafkaMessageContextBuilder<TKafkaMessage> messageContextBuilder)
         {
+            if (messageContextBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(messageContextBuilder), "please use valid IKafkaMessageContextBuilder<TKafkaMessage>");
+            }
+
             return (consumer, message, cancellationToken) =>
             {
-                var messageContext = buildMessageContext(message);
+                var messageContext = messageContextBuilder.Build(message);
                 onMessagesReceived(cancellationToken, messageContext);
             };
         }

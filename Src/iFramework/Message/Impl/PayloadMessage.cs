@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
 
-namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
+namespace IFramework.Message.Impl
 {
-    public class KafkaMessage
+    public class PayloadMessage
     {
-        protected KafkaMessage(){}
-        public KafkaMessage(object payload = null)
+        public PayloadMessage(object payload = null)
         {
             Headers = new Dictionary<string, object>(System.StringComparer.OrdinalIgnoreCase);
             Payload = payload;
         }
 
-        public IDictionary<string, object> Headers { get; set; }
+        public IDictionary<string, object> Headers { get; }
         public object Payload { get; set; }
     }
 }

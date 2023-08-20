@@ -18,13 +18,14 @@ using Microsoft.Extensions.Options;
 
 namespace IFramework.Event.Impl
 {
-    public class EventSubscriber : IMessageProcessor
+    public class EventSubscriber<TPayloadMessage> : IMessageProcessor
     {
         private readonly TopicSubscription[] _topicSubscriptions;
         private string _producer;
         protected ICommandBus CommandBus;
         protected ConsumerConfig ConsumerConfig;
         protected string ConsumerId;
+        private readonly IMessageContextBuilder<TPayloadMessage> _messageContextBuilder;
         protected IHandlerProvider HandlerProvider;
         protected IMessageConsumer InternalConsumer;
         protected ILogger Logger;
@@ -41,15 +42,17 @@ namespace IFramework.Event.Impl
                                string subscriptionName,
                                TopicSubscription[] topicSubscriptions,
                                string consumerId,
-                               ConsumerConfig consumerConfig = null)
+                               ConsumerConfig consumerConfig = null,
+                               IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
         {
             ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             MessageQueueClient = messageQueueClient;
             HandlerProvider = handlerProvider;
-            _topicSubscriptions = topicSubscriptions ?? new TopicSubscription[0];
+            _topicSubscriptions = topicSubscriptions ?? Array.Empty<TopicSubscription>();
             _topicSubscriptions.Where(ts => ts.TagFilter != null)
                                .ForEach(ts => { TagFilters.Add(ts.Topic, ts.TagFilter); });
             ConsumerId = consumerId;
+            _messageContextBuilder = messageContextBuilder;
             SubscriptionName = subscriptionName;
             MessagePublisher = messagePublisher;
             CommandBus = commandBus;
@@ -78,7 +81,8 @@ namespace IFramework.Event.Impl
                                                                    SubscriptionName,
                                                                    ConsumerId,
                                                                    OnMessagesReceived,
-                                                                   ConsumerConfig);
+                                                                   ConsumerConfig,
+                                                                   _messageContextBuilder);
                 }
 
                 MessageProcessor.Start();

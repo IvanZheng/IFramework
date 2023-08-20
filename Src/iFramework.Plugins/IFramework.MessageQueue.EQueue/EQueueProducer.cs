@@ -9,8 +9,8 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
 using IFramework.Message;
+using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.EQueue.MessageFormat;
 using Microsoft.Extensions.Logging;
 using EQueueProtocols = EQueue.Protocols;
 
@@ -51,7 +51,7 @@ namespace IFramework.MessageQueue.EQueue
         protected EQueueProtocols.Message GetEQueueMessage(IMessageContext messageContext, string topic)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
-            var jsonValue = ((MessageContext) messageContext).EqueueMessage.ToJson();
+            var jsonValue = ((MessageContext) messageContext).PayloadMessage.ToJson();
             return new EQueueProtocols.Message(topic, 1, Encoding.UTF8.GetBytes(jsonValue));
         }
 

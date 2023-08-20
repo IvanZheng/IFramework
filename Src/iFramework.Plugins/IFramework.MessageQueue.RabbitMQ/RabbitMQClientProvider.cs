@@ -5,7 +5,6 @@ using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.RabbitMQ.MessageFormat;
 using RabbitMQ.Client;
 
 namespace IFramework.MessageQueue.RabbitMQ
@@ -80,9 +79,9 @@ namespace IFramework.MessageQueue.RabbitMQ
             var channel = _connection.CreateModel();
 
             channel.QueueDeclare(commandQueueName, true, false, false, null);
-            channel.BasicQos(0, (ushort) consumerConfig.FullLoadThreshold, false);
+            channel.BasicQos(0, (ushort)consumerConfig.FullLoadThreshold, false);
             var consumer = new RabbitMQConsumer(channel,
-                                                new []{commandQueueName},
+                                                new[] { commandQueueName },
                                                 commandQueueName,
                                                 consumerId,
                                                 BuildOnRabbitMQMessageReceived(onMessagesReceived),
@@ -93,6 +92,16 @@ namespace IFramework.MessageQueue.RabbitMQ
             }
 
             return consumer;
+        }
+
+        public IMessageConsumer CreateQueueConsumer<TPayloadMessage>(string queue,
+                                                                     OnMessagesReceived onMessagesReceived,
+                                                                     IMessageContextBuilder<TPayloadMessage> messageContextBuilder,
+                                                                     string consumerId,
+                                                                     ConsumerConfig config,
+                                                                     bool start = true)
+        {
+            throw new NotImplementedException();
         }
 
         public IMessageConsumer CreateTopicSubscription(string[] topics,
@@ -127,6 +136,17 @@ namespace IFramework.MessageQueue.RabbitMQ
             return subscriber;
         }
 
+        public IMessageConsumer CreateTopicSubscription<TPayloadMessage>(string[] topics,
+                                                                         string subscriptionName,
+                                                                         OnMessagesReceived onMessagesReceived,
+                                                                         IMessageContextBuilder<TPayloadMessage> messageContextBuilder,
+                                                                         string consumerId,
+                                                                         ConsumerConfig consumerConfig,
+                                                                         bool start = true)
+        {
+            throw new NotImplementedException();
+        }
+
         public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
         {
             var channel = _connection.CreateModel();
@@ -151,8 +171,8 @@ namespace IFramework.MessageQueue.RabbitMQ
         {
             return (consumer, args, cancellationToken) =>
             {
-                var message = Encoding.UTF8.GetString(args.Body.ToArray()).ToJsonObject<RabbitMQMessage>();
-                var messageContext = new MessageContext(message, new MessageOffset(string.Empty, args.Exchange, 0, (long) args.DeliveryTag));
+                var message = Encoding.UTF8.GetString(args.Body.ToArray()).ToJsonObject<PayloadMessage>();
+                var messageContext = new MessageContext(message, new MessageOffset(string.Empty, args.Exchange, 0, (long)args.DeliveryTag));
                 onMessagesReceived(cancellationToken, messageContext);
             };
         }

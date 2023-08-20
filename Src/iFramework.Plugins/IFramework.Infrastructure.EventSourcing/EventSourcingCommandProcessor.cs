@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure.EventSourcing
 {
-    public class EventSourcingCommandProcessor : CommandProcessor
+    public class EventSourcingCommandProcessor<TPayloadMessage> : CommandProcessor<TPayloadMessage>
     {
         private readonly IEventStore _eventStore;
 
@@ -26,13 +26,15 @@ namespace IFramework.Infrastructure.EventSourcing
                                              IEventStore eventStore,
                                              string commandQueueName,
                                              string consumerId,
-                                             ConsumerConfig consumerConfig = null)
+                                             ConsumerConfig consumerConfig = null,
+                                             IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
             : base(messageQueueClient,
                    messagePublisher,
                    handlerProvider,
                    commandQueueName,
                    consumerId,
-                   consumerConfig)
+                   consumerConfig,
+                   messageContextBuilder)
         {
             _eventStore = eventStore;
         }

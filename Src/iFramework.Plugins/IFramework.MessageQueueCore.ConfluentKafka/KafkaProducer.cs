@@ -7,13 +7,14 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Infrastructure;
 using IFramework.Message;
+using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
 using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public class KafkaProducer : KafkaProducer<string, KafkaMessage>, IMessageProducer
+    public class KafkaProducer : KafkaProducer<string, PayloadMessage>, IMessageProducer
     {
         public KafkaProducer(string topic,
                              string brokerList,
@@ -22,7 +23,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
-            var message = ((MessageContext) messageContext).KafkaMessage;
+            var message = ((MessageContext) messageContext).PayloadMessage;
             var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
             return SendAsync(topic, messageContext.Key ?? messageContext.MessageId, message, cancellationToken);
         }

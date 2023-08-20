@@ -8,7 +8,6 @@ using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.EQueue.MessageFormat;
 
 namespace IFramework.MessageQueue.EQueue
 {
@@ -44,9 +43,19 @@ namespace IFramework.MessageQueue.EQueue
             return consumer;
         }
 
+        public IMessageConsumer CreateQueueConsumer<TPayloadMessage>(string queue, OnMessagesReceived onMessagesReceived, IMessageContextBuilder<TPayloadMessage> messageContextBuilder, string consumerId, ConsumerConfig config, bool start = true)
+        {
+            throw new NotImplementedException();
+        }
+
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
             return new EQueueProducer(_clusterName, _nameServerList, config).Start();
+        }
+
+        public IMessageConsumer CreateTopicSubscription<TPayloadMessage>(string[] topics, string subscriptionName, OnMessagesReceived onMessagesReceived, IMessageContextBuilder<TPayloadMessage> messageContextBuilder, string consumerId, ConsumerConfig consumerConfig, bool start = true)
+        {
+            throw new NotImplementedException();
         }
 
         public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
@@ -156,7 +165,7 @@ namespace IFramework.MessageQueue.EQueue
             {
                 var equeueMessage = Encoding.UTF8
                                             .GetString(message.Body)
-                                            .ToJsonObject<EQueueMessage>();
+                                            .ToJsonObject<PayloadMessage>();
                 var messageContext = new MessageContext(equeueMessage,
                                                         new MessageOffset(message.BrokerName, message.Topic, message.QueueId, message.QueueOffset));
                 onMessagesReceived(cancellationToken, messageContext);
