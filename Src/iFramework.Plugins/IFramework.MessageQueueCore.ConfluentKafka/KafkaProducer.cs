@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -27,18 +28,28 @@ namespace IFramework.MessageQueue.ConfluentKafka
             var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
             return SendAsync(topic, messageContext.Key ?? messageContext.MessageId, message, cancellationToken);
         }
+
+        protected override Message<string, PayloadMessage> BuildMessage(string topic, string key, PayloadMessage value)
+        {
+            var kafkaMessage = new Message<string, PayloadMessage>
+            {
+                Key = key,
+                Value = value
+            };
+            return kafkaMessage;
+        }
     }
 
-    public class KafkaProducer<TKey, TValue>
+    public abstract class KafkaProducer<TKey, TValue>
     {
         public ProducerConfig Config { get; private set; }
         private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>));
         private readonly IProducer<TKey, TValue> _producer;
         private readonly string _topic;
 
-        public KafkaProducer(string topic,
-                             string brokerList,
-                             ProducerConfig config = null)
+        protected KafkaProducer(string topic,
+                                string brokerList,
+                                ProducerConfig config = null)
         {
             Config = config ??  new ProducerConfig();
             
@@ -61,6 +72,8 @@ namespace IFramework.MessageQueue.ConfluentKafka
                                                                                     .Build();
             //_producer.OnError += _producer_OnError;
         }
+
+        protected abstract Message<TKey, TValue> BuildMessage(string topic, TKey key, TValue value);
 
         private void _producer_OnError(object sender, Error e)
         {
@@ -91,11 +104,10 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 var waitTime = Math.Min(retryTimes * 1000 * 5, 60000 * 5);
                 try
                 {
+                    var kafkaMessage = BuildMessage(topic, key, message);
                     var result = await _producer.ProduceAsync(topic,
-                                                              new Message<TKey, TValue>{
-                                                                  Key = key,
-                                                                  Value = message
-                                                              }, cancellationToken)
+                                                              kafkaMessage, 
+                                                              cancellationToken)
                                                 .ConfigureAwait(false);
                     return result;
                 }
