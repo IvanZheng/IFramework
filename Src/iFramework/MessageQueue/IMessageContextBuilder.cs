@@ -3,7 +3,7 @@
     /// <summary>
     /// MessageContext 构造器
     /// </summary>
-    public interface IMessageContextBuilder<TPayloadMessage>
+    public interface IMessageContextBuilder
     {
     }
 }

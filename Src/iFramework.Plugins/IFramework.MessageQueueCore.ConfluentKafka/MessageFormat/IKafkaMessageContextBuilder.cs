@@ -7,8 +7,8 @@ using IFramework.MessageQueue.Client.Abstracts;
 
 namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 {
-    public interface IKafkaMessageContextBuilder<TKafkaMessage>: IMessageContextBuilder<TKafkaMessage>
+    public interface IKafkaMessageContextBuilder: IMessageContextBuilder
     {
-        IMessageContext Build(ConsumeResult<string, TKafkaMessage> consumeResult);
+        IMessageContext Build(ConsumeResult<string, string> consumeResult);
     }
 }

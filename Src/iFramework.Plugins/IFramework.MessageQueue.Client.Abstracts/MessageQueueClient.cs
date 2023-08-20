@@ -51,19 +51,20 @@ namespace IFramework.MessageQueue.Client.Abstracts
             return queueClient.SendAsync(messageContext, cancellationToken);
         }
 
-        public IMessageConsumer StartQueueClient<TPayloadMessage>(string commandQueueName,
-                                                                  string consumerId,
-                                                                  OnMessagesReceived onMessagesReceived,
-                                                                  ConsumerConfig consumerConfig = null,
-                                                                  IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+        public IMessageConsumer StartQueueClient(string commandQueueName,
+                                                 string consumerId,
+                                                 OnMessagesReceived onMessagesReceived,
+                                                 ConsumerConfig consumerConfig = null,
+                                                 IMessageContextBuilder messageContextBuilder = null)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             consumerId = Configuration.Instance.FormatMessageQueueName(consumerId);
             var queueConsumer = _clientProvider.CreateQueueConsumer(commandQueueName,
                                                                     onMessagesReceived,
-                                                                    messageContextBuilder,
                                                                     consumerId,
-                                                                    consumerConfig);
+                                                                    consumerConfig,
+                                                                    true,
+                                                                    messageContextBuilder);
             QueueConsumers.Add(queueConsumer);
             return queueConsumer;
         }
@@ -90,14 +91,14 @@ namespace IFramework.MessageQueue.Client.Abstracts
                 }
             }
 
-            var messageContext = _clientProvider.WrapMessage(message,
-                                                             correlationId,
-                                                             topic,
-                                                             key,
-                                                             replyEndPoint,
-                                                             messageId,
-                                                             sagaInfo,
-                                                             producer);
+            var messageContext = DoWrapMessage(message,
+                                               correlationId,
+                                               topic,
+                                               key,
+                                               replyEndPoint,
+                                               messageId,
+                                               sagaInfo,
+                                               producer);
             if (string.IsNullOrWhiteSpace(messageContext.Key))
             {
                 messageContext.Key = messageContext.MessageId;
@@ -118,26 +119,12 @@ namespace IFramework.MessageQueue.Client.Abstracts
             }
         }
 
-        public IMessageConsumer StartSubscriptionClient(string[] topics, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
-        {
-            topics = topics.Select(topic => Configuration.Instance.FormatMessageQueueName(topic))
-                           .ToArray();
-            subscriptionName = Configuration.Instance.FormatMessageQueueName(subscriptionName);
-            var topicSubscription = _clientProvider.CreateTopicSubscription(topics,
-                                                                            subscriptionName,
-                                                                            onMessagesReceived,
-                                                                            consumerId,
-                                                                            consumerConfig);
-            Subscribers.Add(topicSubscription);
-            return topicSubscription;
-        }
-
-        public IMessageConsumer StartSubscriptionClient<TPayloadMessage>(string topic,
-                                                                         string subscriptionName,
-                                                                         string consumerId,
-                                                                         OnMessagesReceived onMessagesReceived,
-                                                                         ConsumerConfig consumerConfig = null,
-                                                                         IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+        public IMessageConsumer StartSubscriptionClient(string topic,
+                                                        string subscriptionName,
+                                                        string consumerId,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        ConsumerConfig consumerConfig = null,
+                                                        IMessageContextBuilder messageContextBuilder = null)
         {
             return StartSubscriptionClient(new[] { topic },
                                            subscriptionName,
@@ -147,12 +134,12 @@ namespace IFramework.MessageQueue.Client.Abstracts
                                            messageContextBuilder);
         }
 
-        public IMessageConsumer StartSubscriptionClient<TPayloadMessage>(string[] topics,
-                                                                         string subscriptionName,
-                                                                         string consumerId,
-                                                                         OnMessagesReceived onMessagesReceived,
-                                                                         ConsumerConfig consumerConfig = null,
-                                                                         IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+        public IMessageConsumer StartSubscriptionClient(string[] topics,
+                                                        string subscriptionName,
+                                                        string consumerId,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        ConsumerConfig consumerConfig = null,
+                                                        IMessageContextBuilder messageContextBuilder = null)
         {
             topics = topics.Select(topic => Configuration.Instance.FormatMessageQueueName(topic))
                            .ToArray();
@@ -160,13 +147,55 @@ namespace IFramework.MessageQueue.Client.Abstracts
             var topicSubscription = _clientProvider.CreateTopicSubscription(topics,
                                                                             subscriptionName,
                                                                             onMessagesReceived,
-                                                                            messageContextBuilder,
                                                                             consumerId,
-                                                                            consumerConfig);
+                                                                            consumerConfig,
+                                                                            true,
+                                                                            messageContextBuilder);
             Subscribers.Add(topicSubscription);
             return topicSubscription;
         }
 
+        protected IMessageContext DoWrapMessage(object message,
+                                                string correlationId = null,
+                                                string topic = null,
+                                                string key = null,
+                                                string replyEndPoint = null,
+                                                string messageId = null,
+                                                SagaInfo sagaInfo = null,
+                                                string producer = null)
+        {
+            var messageContext = new MessageContext(message, messageId)
+            {
+                Producer = producer,
+                Ip = Utility.GetLocalIpv4()?.ToString()
+            };
+            if (!string.IsNullOrEmpty(correlationId))
+            {
+                messageContext.CorrelationId = correlationId;
+            }
+
+            if (!string.IsNullOrEmpty(topic))
+            {
+                messageContext.Topic = topic;
+            }
+
+            if (!string.IsNullOrEmpty(key))
+            {
+                messageContext.Key = key;
+            }
+
+            if (!string.IsNullOrEmpty(replyEndPoint))
+            {
+                messageContext.ReplyToEndPoint = replyEndPoint;
+            }
+
+            if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId))
+            {
+                messageContext.SagaInfo = sagaInfo;
+            }
+
+            return messageContext;
+        }
 
         #region private methods
 

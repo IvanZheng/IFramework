@@ -51,7 +51,7 @@ namespace IFramework.MessageQueue.EQueue
         protected EQueueProtocols.Message GetEQueueMessage(IMessageContext messageContext, string topic)
         {
             topic = Configuration.Instance.FormatMessageQueueName(topic);
-            var jsonValue = ((MessageContext) messageContext).PayloadMessage.ToJson();
+            var jsonValue = ((MessageContext) messageContext).PayloadMessage.ToJson(processDictionaryKeys:false);
             return new EQueueProtocols.Message(topic, 1, Encoding.UTF8.GetBytes(jsonValue));
         }
 

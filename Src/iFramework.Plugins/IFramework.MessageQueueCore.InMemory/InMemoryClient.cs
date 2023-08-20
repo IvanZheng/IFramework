@@ -49,6 +49,7 @@ namespace IFramework.MessageQueue.InMemory
                     message = new Exception(ex.GetBaseException().Message);
                 }
             }
+
             var messageContext = new MessageContext(message, messageId)
             {
                 Producer = producer,
@@ -68,10 +69,12 @@ namespace IFramework.MessageQueue.InMemory
             {
                 messageContext.Key = key;
             }
+
             if (string.IsNullOrWhiteSpace(messageContext.Key))
             {
                 messageContext.Key = messageContext.MessageId;
             }
+
             if (!string.IsNullOrEmpty(replyEndPoint))
             {
                 messageContext.ReplyToEndPoint = replyEndPoint;
@@ -85,36 +88,28 @@ namespace IFramework.MessageQueue.InMemory
             return messageContext;
         }
 
-        public IMessageConsumer StartSubscriptionClient(string[] topics, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
+
+        public IMessageConsumer StartSubscriptionClient(string topic,
+                                                        string subscriptionName,
+                                                        string consumerId,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        ConsumerConfig consumerConfig = null,
+                                                        IMessageContextBuilder messageContextBuilder = null)
         {
-            return StartSubscriptionClient<object>(topics,
-                                                   subscriptionName,
-                                                   consumerId,
-                                                   onMessagesReceived,
-                                                   consumerConfig);
+            return StartSubscriptionClient(new[] { topic },
+                                           subscriptionName,
+                                           consumerId,
+                                           onMessagesReceived,
+                                           consumerConfig,
+                                           messageContextBuilder);
         }
 
-        public IMessageConsumer StartSubscriptionClient<TPayloadMessage>(string topic,
-                                                                         string subscriptionName,
-                                                                         string consumerId,
-                                                                         OnMessagesReceived onMessagesReceived,
-                                                                         ConsumerConfig consumerConfig = null,
-                                                                         IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
-        {
-            return StartSubscriptionClient<TPayloadMessage>(new[] {topic},
-                                                            subscriptionName,
-                                                            consumerId,
-                                                            onMessagesReceived,
-                                                            consumerConfig,
-                                                            messageContextBuilder);
-        }
-
-        public IMessageConsumer StartSubscriptionClient<TPayloadMessage>(string[] topics,
-                                                                         string subscriptionName,
-                                                                         string consumerId,
-                                                                         OnMessagesReceived onMessagesReceived,
-                                                                         ConsumerConfig consumerConfig = null,
-                                                                         IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+        public IMessageConsumer StartSubscriptionClient(string[] topics,
+                                                        string subscriptionName,
+                                                        string consumerId,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        ConsumerConfig consumerConfig = null,
+                                                        IMessageContextBuilder messageContextBuilder = null)
         {
             topics = topics.Select(topic => Configuration.Instance.FormatMessageQueueName(topic))
                            .ToArray();
@@ -128,11 +123,11 @@ namespace IFramework.MessageQueue.InMemory
             return client;
         }
 
-        public IMessageConsumer StartQueueClient<TPayloadMessage>(string commandQueueName,
-                                                                  string consumerId,
-                                                                  OnMessagesReceived onMessagesReceived,
-                                                                  ConsumerConfig consumerConfig = null,
-                                                                  IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+        public IMessageConsumer StartQueueClient(string commandQueueName,
+                                                 string consumerId,
+                                                 OnMessagesReceived onMessagesReceived,
+                                                 ConsumerConfig consumerConfig = null,
+                                                 IMessageContextBuilder messageContextBuilder = null)
         {
             commandQueueName = Configuration.Instance.FormatMessageQueueName(commandQueueName);
             var queue = CommandQueues.GetOrAdd(commandQueueName, key => new BlockingCollection<IMessageContext>());

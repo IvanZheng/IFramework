@@ -18,9 +18,9 @@ using Microsoft.Extensions.Options;
 
 namespace IFramework.Command.Impl
 {
-    public class CommandProcessor<TPayloadMessage> : IMessageProcessor
+    public class CommandProcessor : IMessageProcessor
     {
-        private readonly IMessageContextBuilder<TPayloadMessage> _messageContextBuilder;
+        private readonly IMessageContextBuilder _messageContextBuilder;
         private string _producer;
         protected string CommandQueueName;
         protected ConsumerConfig ConsumerConfig;
@@ -38,7 +38,7 @@ namespace IFramework.Command.Impl
                                 string commandQueueName,
                                 string consumerId,
                                 ConsumerConfig consumerConfig = null,
-                                IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+                                IMessageContextBuilder messageContextBuilder = null)
         {
             ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             CommandQueueName = commandQueueName;

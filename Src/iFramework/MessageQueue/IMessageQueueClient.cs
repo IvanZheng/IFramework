@@ -26,26 +26,20 @@ namespace IFramework.MessageQueue
                                                  string subscriptionName,
                                                  string consumerId,
                                                  OnMessagesReceived onMessagesReceived,
-                                                 ConsumerConfig consumerConfig = null);
+                                                 ConsumerConfig consumerConfig = null,
+                                                 IMessageContextBuilder messageContextBuilder = null);
 
-        IMessageConsumer StartSubscriptionClient<TPayloadMessage>(string[] topics,
-                                                                  string subscriptionName,
-                                                                  string consumerId,
-                                                                  OnMessagesReceived onMessagesReceived,
-                                                                  ConsumerConfig consumerConfig = null,
-                                                                  IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null);
+        IMessageConsumer StartSubscriptionClient(string topic,
+                                                 string subscriptionName,
+                                                 string consumerId,
+                                                 OnMessagesReceived onMessagesReceived,
+                                                 ConsumerConfig consumerConfig = null,
+                                                 IMessageContextBuilder messageContextBuilder = null);
 
-        IMessageConsumer StartSubscriptionClient<TPayloadMessage>(string topic,
-                                                                  string subscriptionName,
-                                                                  string consumerId,
-                                                                  OnMessagesReceived onMessagesReceived,
-                                                                  ConsumerConfig consumerConfig = null,
-                                                                  IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null);
-
-        IMessageConsumer StartQueueClient<TPayloadMessage>(string commandQueueName,
-                                                           string consumerId,
-                                                           OnMessagesReceived onMessagesReceived,
-                                                           ConsumerConfig consumerConfig = null,
-                                                           IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null);
+        IMessageConsumer StartQueueClient(string commandQueueName,
+                                          string consumerId,
+                                          OnMessagesReceived onMessagesReceived,
+                                          ConsumerConfig consumerConfig = null,
+                                          IMessageContextBuilder messageContextBuilder = null);
     }
 }

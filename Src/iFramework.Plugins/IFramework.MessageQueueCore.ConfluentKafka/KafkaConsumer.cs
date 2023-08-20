@@ -10,20 +10,20 @@ using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public delegate void OnKafkaMessageReceived<TKey, TValue>(KafkaConsumer<TKey, TValue> consumer, ConsumeResult<TKey, TValue> message, CancellationToken cancellationToken);
+    public delegate void OnKafkaMessageReceived(KafkaConsumer consumer, ConsumeResult<string, string> message, CancellationToken cancellationToken);
 
-    public class KafkaConsumer<TKey, TValue> : MessageConsumer
+    public class KafkaConsumer : MessageConsumer
     {
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         protected readonly string BrokerList;
-        private IConsumer<TKey, TValue> _consumer;
-        protected OnKafkaMessageReceived<TKey, TValue> OnMessageReceived;
+        private IConsumer<string, string> _consumer;
+        protected OnKafkaMessageReceived OnMessageReceived;
 
         public KafkaConsumer(string brokerList,
                              string[] topics,
                              string groupId,
                              string consumerId,
-                             OnKafkaMessageReceived<TKey, TValue> onMessageReceived,
+                             OnKafkaMessageReceived onMessageReceived,
                              ConsumerConfig consumerConfig = null)
             : base(topics, groupId, consumerId, consumerConfig)
         {
@@ -73,15 +73,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public override void Start()
         {
-            _consumer = new ConsumerBuilder<TKey, TValue>(ConsumerConfiguration).SetValueDeserializer(new KafkaMessageDeserializer<TValue>())
-                                                                                .Build();
+            _consumer = new ConsumerBuilder<string, string>(ConsumerConfiguration).Build();
             _consumer.Subscribe(Topics);
             //_consumer.OnError += (sender, error) => Logger.LogError($"consumer({Id}) error: {error.ToJson()}");
             base.Start();
         }
 
 
-        private void _consumer_OnMessage(object sender, ConsumeResult<TKey, TValue> consumeResult, CancellationToken cancellationToken)
+        private void _consumer_OnMessage(object sender, ConsumeResult<string, string> consumeResult, CancellationToken cancellationToken)
         {
             try
             {

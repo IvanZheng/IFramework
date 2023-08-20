@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -10,12 +8,11 @@ using IFramework.Infrastructure;
 using IFramework.Message;
 using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
 {
-    public class KafkaProducer : KafkaProducer<string, PayloadMessage>, IMessageProducer
+    public class KafkaProducer : BaseKafkaProducer, IMessageProducer
     {
         public KafkaProducer(string topic,
                              string brokerList,
@@ -24,14 +21,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
 
         public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
-            var message = ((MessageContext) messageContext).PayloadMessage;
+            var message = ((MessageContext)messageContext).PayloadMessage.ToJson(processDictionaryKeys: false);
             var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
             return SendAsync(topic, messageContext.Key ?? messageContext.MessageId, message, cancellationToken);
         }
 
-        protected override Message<string, PayloadMessage> BuildMessage(string topic, string key, PayloadMessage value)
+        protected override Message<string, string> BuildMessage(string topic, string key, string value)
         {
-            var kafkaMessage = new Message<string, PayloadMessage>
+            var kafkaMessage = new Message<string, string>
             {
                 Key = key,
                 Value = value
@@ -40,19 +37,18 @@ namespace IFramework.MessageQueue.ConfluentKafka
         }
     }
 
-    public abstract class KafkaProducer<TKey, TValue>
+    public abstract class BaseKafkaProducer
     {
-        public ProducerConfig Config { get; private set; }
-        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer<TKey, TValue>));
-        private readonly IProducer<TKey, TValue> _producer;
+        private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(typeof(KafkaProducer));
+        private readonly IProducer<string, string> _producer;
         private readonly string _topic;
 
-        protected KafkaProducer(string topic,
-                                string brokerList,
-                                ProducerConfig config = null)
+        protected BaseKafkaProducer(string topic,
+                                    string brokerList,
+                                    ProducerConfig config = null)
         {
-            Config = config ??  new ProducerConfig();
-            
+            Config = config ?? new ProducerConfig();
+
             _topic = topic;
             var producerConfiguration = new Confluent.Kafka.ProducerConfig(Config.ToStringExtensions())
             {
@@ -67,13 +63,14 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 //{"socket.blocking.max.ms", Config["socket.blocking.max.ms"] ?? 50},
                 //{"queue.buffering.max.ms", Config["queue.buffering.max.ms"] ?? 50}
             };
-            
-            _producer = new ProducerBuilder<TKey, TValue>(producerConfiguration).SetValueSerializer(new KafkaMessageSerializer<TValue>())
-                                                                                    .Build();
+
+            _producer = new ProducerBuilder<string, string>(producerConfiguration).Build();
             //_producer.OnError += _producer_OnError;
         }
 
-        protected abstract Message<TKey, TValue> BuildMessage(string topic, TKey key, TValue value);
+        public ProducerConfig Config { get; }
+
+        protected abstract Message<string, string> BuildMessage(string topic, string key, string value);
 
         private void _producer_OnError(object sender, Error e)
         {
@@ -92,7 +89,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        public async Task<DeliveryResult<TKey, TValue>> SendAsync(string topic, TKey key, TValue message, CancellationToken cancellationToken)
+        public async Task<DeliveryResult<string, string>> SendAsync(string topic, string key, string message, CancellationToken cancellationToken)
         {
             var retryTimes = 0;
             while (true)
@@ -106,7 +103,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
                 {
                     var kafkaMessage = BuildMessage(topic, key, message);
                     var result = await _producer.ProduceAsync(topic,
-                                                              kafkaMessage, 
+                                                              kafkaMessage,
                                                               cancellationToken)
                                                 .ConfigureAwait(false);
                     return result;

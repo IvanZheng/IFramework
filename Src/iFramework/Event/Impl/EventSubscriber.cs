@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.DependencyInjection;
@@ -18,14 +17,14 @@ using Microsoft.Extensions.Options;
 
 namespace IFramework.Event.Impl
 {
-    public class EventSubscriber<TPayloadMessage> : IMessageProcessor
+    public class EventSubscriber : IMessageProcessor
     {
+        private readonly IMessageContextBuilder _messageContextBuilder;
         private readonly TopicSubscription[] _topicSubscriptions;
         private string _producer;
         protected ICommandBus CommandBus;
         protected ConsumerConfig ConsumerConfig;
         protected string ConsumerId;
-        private readonly IMessageContextBuilder<TPayloadMessage> _messageContextBuilder;
         protected IHandlerProvider HandlerProvider;
         protected IMessageConsumer InternalConsumer;
         protected ILogger Logger;
@@ -43,7 +42,7 @@ namespace IFramework.Event.Impl
                                TopicSubscription[] topicSubscriptions,
                                string consumerId,
                                ConsumerConfig consumerConfig = null,
-                               IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+                               IMessageContextBuilder messageContextBuilder = null)
         {
             ConsumerConfig = consumerConfig ?? ConsumerConfig.DefaultConfig;
             MessageQueueClient = messageQueueClient;
@@ -139,12 +138,12 @@ namespace IFramework.Event.Impl
                         var messageStore = scope.GetService<IMessageStore>();
                         var subscriptionName = $"{SubscriptionName}.{messageHandlerType.Type.FullName}";
                         using (Logger.BeginScope(new
-                        {
-                            eventContext.Topic,
-                            eventContext.MessageId,
-                            eventContext.Key,
-                            subscriptionName
-                        }))
+                               {
+                                   eventContext.Topic,
+                                   eventContext.MessageId,
+                                   eventContext.Key,
+                                   subscriptionName
+                               }))
                         {
                             var eventMessageStates = new List<MessageState>();
                             var commandMessageStates = new List<MessageState>();
@@ -168,12 +167,12 @@ namespace IFramework.Event.Impl
                                         {
                                             if (messageHandlerType.IsAsync)
                                             {
-                                                await ((dynamic) messageHandler).Handle((dynamic)message, cancellationToken)
-                                                                                .ConfigureAwait(false);
+                                                await ((dynamic)messageHandler).Handle((dynamic)message, cancellationToken)
+                                                                               .ConfigureAwait(false);
                                             }
                                             else
                                             {
-                                                ((dynamic) messageHandler).Handle((dynamic) message);
+                                                ((dynamic)messageHandler).Handle((dynamic)message);
                                             }
 
                                             //get commands to be sent
@@ -189,7 +188,7 @@ namespace IFramework.Event.Impl
                                                         var topic = msg.GetFormatTopic();
                                                         eventMessageStates.Add(new MessageState(MessageQueueClient.WrapMessage(msg,
                                                                                                                                topic: topic,
-                                                                                                                               key: msg.Key, sagaInfo: sagaInfo, producer:  Producer)));
+                                                                                                                               key: msg.Key, sagaInfo: sagaInfo, producer: Producer)));
                                                     });
 
                                             eventBus.GetToPublishAnywayMessages()
@@ -212,7 +211,7 @@ namespace IFramework.Event.Impl
                                             //transactionScope.Complete();
                                         }
                                     }, cancellationToken);
-                                    
+
 
                                     if (commandMessageStates.Count > 0)
                                     {
@@ -297,16 +296,16 @@ namespace IFramework.Event.Impl
             var sagaResult = eventBus.GetSagaResult();
             if (sagaInfo != null && !string.IsNullOrWhiteSpace(sagaInfo.SagaId) && sagaResult != null)
             {
-                 var topic = sagaInfo.ReplyEndPoint;
-                 if (!string.IsNullOrEmpty(topic))
-                 {
-                     var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
-                                                                    topic: topic,
-                                                                    messageId: ObjectId.GenerateNewId().ToString(),
-                                                                    sagaInfo: sagaInfo,
-                                                                    producer: Producer);
-                     messageStates.Add(new MessageState(sagaReply));
-                 }
+                var topic = sagaInfo.ReplyEndPoint;
+                if (!string.IsNullOrEmpty(topic))
+                {
+                    var sagaReply = MessageQueueClient.WrapMessage(sagaResult,
+                                                                   topic: topic,
+                                                                   messageId: ObjectId.GenerateNewId().ToString(),
+                                                                   sagaInfo: sagaInfo,
+                                                                   producer: Producer);
+                    messageStates.Add(new MessageState(sagaReply));
+                }
             }
         }
 

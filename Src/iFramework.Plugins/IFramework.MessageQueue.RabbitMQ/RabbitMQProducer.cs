@@ -41,7 +41,7 @@ namespace IFramework.MessageQueue.RabbitMQ
             var message = ((MessageContext)messageContext).PayloadMessage;
             try
             {
-                _channel.BasicPublish(_exchange, _topic, true, _properties, Encoding.UTF8.GetBytes(message.ToJson()));
+                _channel.BasicPublish(_exchange, _topic, true, _properties, Encoding.UTF8.GetBytes(message.ToJson(processDictionaryKeys:false)));
             }
             catch (Exception e)
             {

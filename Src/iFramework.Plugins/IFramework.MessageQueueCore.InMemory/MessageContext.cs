@@ -10,7 +10,7 @@ using IFramework.MessageQueue;
 
 namespace IFramework.MessageQueue.InMemory
 {
-    public class MessageContext : IMessageContext
+    internal class MessageContext : IMessageContext
     {
         public MessageContext(object message, string id = null)
         {

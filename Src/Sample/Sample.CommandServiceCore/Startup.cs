@@ -18,6 +18,7 @@ using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.ConfluentKafka;
 using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
+using IFramework.MessageQueue.InMemory;
 using IFramework.MessageStores.Relational;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -86,8 +87,8 @@ namespace Sample.CommandServiceCore
                 .AddJsonNet()
                 .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                 .AddRelationalMessageStore<SampleModelContext>()
-                .AddConfluentKafka()
-                //.AddInMemoryMessageQueue()
+                //.AddConfluentKafka()
+                .AddInMemoryMessageQueue()
                 //.AddRabbitMQ(rabbitConnectionFactory)
                 .AddMessagePublisher("eventTopic")
                 .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())

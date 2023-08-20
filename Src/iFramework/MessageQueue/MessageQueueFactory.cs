@@ -6,7 +6,6 @@ using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Event.Impl;
 using IFramework.Message;
-using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue
 {
@@ -32,39 +31,20 @@ namespace IFramework.MessageQueue
         public static IMessageProcessor CreateCommandConsumer(string commandQueue,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
-                                                              ConsumerConfig consumerConfig = null)
+                                                              ConsumerConfig consumerConfig = null,
+                                                              IMessageContextBuilder messageContextBuilder = null)
         {
             var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
             var handlerProvider = new CommandHandlerProvider(handlerProviderNames);
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
-            var commandConsumer = new CommandProcessor<PayloadMessage>(messageQueueClient,
-                                                                       messagePublisher,
-                                                                       handlerProvider,
-                                                                       commandQueue,
-                                                                       consumerId,
-                                                                       consumerConfig);
-            MessageProcessors.Add(commandConsumer);
-            return commandConsumer;
-        }
-
-        public static IMessageProcessor CreateCommandConsumer<TPayloadMessage>(string commandQueue,
-                                                                               string consumerId,
-                                                                               string[] handlerProviderNames,
-                                                                               ConsumerConfig consumerConfig = null,
-                                                                               IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
-        {
-            var container = ObjectProviderFactory.Instance.ObjectProvider;
-            var messagePublisher = container.GetService<IMessagePublisher>();
-            var handlerProvider = new CommandHandlerProvider(handlerProviderNames);
-            var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
-            var commandConsumer = new CommandProcessor<TPayloadMessage>(messageQueueClient,
-                                                                        messagePublisher,
-                                                                        handlerProvider,
-                                                                        commandQueue,
-                                                                        consumerId,
-                                                                        consumerConfig,
-                                                                        messageContextBuilder);
+            var commandConsumer = new CommandProcessor(messageQueueClient,
+                                                       messagePublisher,
+                                                       handlerProvider,
+                                                       commandQueue,
+                                                       consumerId,
+                                                       consumerConfig,
+                                                       messageContextBuilder);
             MessageProcessors.Add(commandConsumer);
             return commandConsumer;
         }
@@ -74,23 +54,8 @@ namespace IFramework.MessageQueue
                                                               string consumerId,
                                                               string[] handlerProviderNames,
                                                               ConsumerConfig consumerConfig = null,
-                                                              Func<string[], bool> tagFilter = null)
-        {
-            var eventSubscriber = CreateEventSubscriber<PayloadMessage>(new[] { new TopicSubscription(topic, tagFilter) },
-                                                                        subscription,
-                                                                        consumerId,
-                                                                        handlerProviderNames,
-                                                                        consumerConfig);
-            return eventSubscriber;
-        }
-
-        public static IMessageProcessor CreateEventSubscriber<TPayloadMessage>(string topic,
-                                                                               string subscription,
-                                                                               string consumerId,
-                                                                               string[] handlerProviderNames,
-                                                                               ConsumerConfig consumerConfig = null,
-                                                                               Func<string[], bool> tagFilter = null,
-                                                                               IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+                                                              Func<string[], bool> tagFilter = null,
+                                                              IMessageContextBuilder messageContextBuilder = null)
         {
             var eventSubscriber = CreateEventSubscriber(new[] { new TopicSubscription(topic, tagFilter) },
                                                         subscription,
@@ -105,21 +70,8 @@ namespace IFramework.MessageQueue
                                                               string subscription,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
-                                                              ConsumerConfig consumerConfig = null)
-        {
-            return CreateEventSubscriber<PayloadMessage>(topicSubscriptions,
-                                                         subscription,
-                                                         consumerId,
-                                                         handlerProviderNames,
-                                                         consumerConfig);
-        }
-
-        public static IMessageProcessor CreateEventSubscriber<TPayloadMessage>(TopicSubscription[] topicSubscriptions,
-                                                                               string subscription,
-                                                                               string consumerId,
-                                                                               string[] handlerProviderNames,
-                                                                               ConsumerConfig consumerConfig = null,
-                                                                               IMessageContextBuilder<TPayloadMessage> messageContextBuilder = null)
+                                                              ConsumerConfig consumerConfig = null,
+                                                              IMessageContextBuilder messageContextBuilder = null)
         {
             subscription = Configuration.Instance.FormatAppName(subscription);
             var handlerProvider = new EventSubscriberProvider(handlerProviderNames);
@@ -127,15 +79,15 @@ namespace IFramework.MessageQueue
             var messagePublisher = GetMessagePublisher();
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
 
-            var eventSubscriber = new EventSubscriber<TPayloadMessage>(messageQueueClient,
-                                                                       handlerProvider,
-                                                                       commandBus,
-                                                                       messagePublisher,
-                                                                       subscription,
-                                                                       topicSubscriptions,
-                                                                       consumerId,
-                                                                       consumerConfig,
-                                                                       messageContextBuilder);
+            var eventSubscriber = new EventSubscriber(messageQueueClient,
+                                                      handlerProvider,
+                                                      commandBus,
+                                                      messagePublisher,
+                                                      subscription,
+                                                      topicSubscriptions,
+                                                      consumerId,
+                                                      consumerConfig,
+                                                      messageContextBuilder);
             MessageProcessors.Add(eventSubscriber);
             return eventSubscriber;
         }

@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using ECommon.Socketing;
-using IFramework.Infrastructure;
-using IFramework.Message;
-using IFramework.Message.Impl;
 using IFramework.MessageQueue.Client.Abstracts;
 
 namespace IFramework.MessageQueue.EQueue
@@ -14,6 +10,7 @@ namespace IFramework.MessageQueue.EQueue
     public class EQueueClientProvider : IMessageQueueClientProvider
     {
         private readonly string _clusterName;
+        private readonly DefaultEQueueMessageContextBuilder _defaultMessageContextBuilder = new DefaultEQueueMessageContextBuilder();
         private readonly List<IPEndPoint> _nameServerList;
 
         public EQueueClientProvider(string clusterName, string nameServerList, int nameServerPort)
@@ -26,14 +23,16 @@ namespace IFramework.MessageQueue.EQueue
                                                     OnMessagesReceived onMessagesReceived,
                                                     string consumerId,
                                                     ConsumerConfig consumerConfig,
-                                                    bool start = true)
+                                                    bool start = true,
+                                                    IMessageContextBuilder messageContextBuilder = null)
         {
+            messageContextBuilder ??= _defaultMessageContextBuilder;
             var consumer = new EQueueConsumer(_clusterName,
                                               _nameServerList,
-                                              new[] {commandQueueName},
+                                              new[] { commandQueueName },
                                               commandQueueName,
                                               consumerId,
-                                              BuildOnEQueueMessageReceived(onMessagesReceived),
+                                              BuildOnEQueueMessageReceived(onMessagesReceived, messageContextBuilder as IEQueueMessageContextBuilder),
                                               consumerConfig);
             if (start)
             {
@@ -43,19 +42,10 @@ namespace IFramework.MessageQueue.EQueue
             return consumer;
         }
 
-        public IMessageConsumer CreateQueueConsumer<TPayloadMessage>(string queue, OnMessagesReceived onMessagesReceived, IMessageContextBuilder<TPayloadMessage> messageContextBuilder, string consumerId, ConsumerConfig config, bool start = true)
-        {
-            throw new NotImplementedException();
-        }
 
         public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
         {
             return new EQueueProducer(_clusterName, _nameServerList, config).Start();
-        }
-
-        public IMessageConsumer CreateTopicSubscription<TPayloadMessage>(string[] topics, string subscriptionName, OnMessagesReceived onMessagesReceived, IMessageContextBuilder<TPayloadMessage> messageContextBuilder, string consumerId, ConsumerConfig consumerConfig, bool start = true)
-        {
-            throw new NotImplementedException();
         }
 
         public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
@@ -63,20 +53,22 @@ namespace IFramework.MessageQueue.EQueue
             return new EQueueProducer(_clusterName, _nameServerList, config).Start();
         }
 
-      
+
         public IMessageConsumer CreateTopicSubscription(string[] topics,
                                                         string subscriptionName,
                                                         OnMessagesReceived onMessagesReceived,
                                                         string consumerId,
                                                         ConsumerConfig consumerConfig,
-                                                        bool start = true)
+                                                        bool start = true,
+                                                        IMessageContextBuilder messageContextBuilder = null)
         {
+            messageContextBuilder ??= _defaultMessageContextBuilder;
             var consumer = new EQueueConsumer(_clusterName,
                                               _nameServerList,
                                               topics,
                                               subscriptionName,
                                               consumerId,
-                                              BuildOnEQueueMessageReceived(onMessagesReceived),
+                                              BuildOnEQueueMessageReceived(onMessagesReceived, messageContextBuilder as IEQueueMessageContextBuilder),
                                               consumerConfig);
             if (start)
             {
@@ -88,47 +80,6 @@ namespace IFramework.MessageQueue.EQueue
 
         public void Dispose() { }
 
-        public IMessageContext WrapMessage(object message,
-                                           string correlationId = null,
-                                           string topic = null,
-                                           string key = null,
-                                           string replyEndPoint = null,
-                                           string messageId = null,
-                                           SagaInfo sagaInfo = null,
-                                           string producer = null)
-        {
-            var messageContext = new MessageContext(message, messageId)
-            {
-                Producer = producer,
-                Ip = Utility.GetLocalIpv4()?.ToString()
-            };
-            if (!string.IsNullOrEmpty(correlationId))
-            {
-                messageContext.CorrelationId = correlationId;
-            }
-
-            if (!string.IsNullOrEmpty(topic))
-            {
-                messageContext.Topic = topic;
-            }
-
-            if (!string.IsNullOrEmpty(key))
-            {
-                messageContext.Key = key;
-            }
-
-            if (!string.IsNullOrEmpty(replyEndPoint))
-            {
-                messageContext.ReplyToEndPoint = replyEndPoint;
-            }
-
-            if (sagaInfo != null)
-            {
-                messageContext.SagaInfo = sagaInfo;
-            }
-
-            return messageContext;
-        }
 
         public static IEnumerable<IPEndPoint> GetIpEndPoints(string addresses, int defaultPort)
         {
@@ -139,11 +90,11 @@ namespace IFramework.MessageQueue.EQueue
             }
             else
             {
-                foreach (var address in addresses.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var address in addresses.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     try
                     {
-                        var segments = address.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
+                        var segments = address.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
                         if (segments.Length == 2)
                         {
                             nameServerIpEndPoints.Add(new IPEndPoint(IPAddress.Parse(segments[0]),
@@ -159,15 +110,11 @@ namespace IFramework.MessageQueue.EQueue
             return nameServerIpEndPoints;
         }
 
-        private OnEQueueMessageReceived BuildOnEQueueMessageReceived(OnMessagesReceived onMessagesReceived)
+        private OnEQueueMessageReceived BuildOnEQueueMessageReceived(OnMessagesReceived onMessagesReceived, IEQueueMessageContextBuilder messageContextBuilder)
         {
             return (consumer, message, cancellationToken) =>
             {
-                var equeueMessage = Encoding.UTF8
-                                            .GetString(message.Body)
-                                            .ToJsonObject<PayloadMessage>();
-                var messageContext = new MessageContext(equeueMessage,
-                                                        new MessageOffset(message.BrokerName, message.Topic, message.QueueId, message.QueueOffset));
+                var messageContext = messageContextBuilder.Build(message);
                 onMessagesReceived(cancellationToken, messageContext);
             };
         }
