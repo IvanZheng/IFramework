@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Options;
 
 namespace IFramework.MessageQueue.ConfluentKafka

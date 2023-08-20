@@ -112,6 +112,12 @@ namespace IFramework.Message.Impl
             set => Headers["MessageId"] = value;
         }
 
+        public string MessageType
+        {
+            get => Headers.TryGetValue(nameof(MessageType))?.ToString();
+            set => Headers[nameof(MessageType)] = value;
+        }
+
         public string ReplyToEndPoint
         {
             get => Headers.TryGetValue("ReplyToEndPoint")?.ToString();

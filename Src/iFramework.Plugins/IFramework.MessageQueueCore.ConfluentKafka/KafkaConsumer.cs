@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using IFramework.Infrastructure;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka

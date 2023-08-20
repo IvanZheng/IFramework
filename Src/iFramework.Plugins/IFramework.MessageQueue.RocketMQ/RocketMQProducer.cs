@@ -5,24 +5,21 @@ using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Message;
 using IFramework.Message.Impl;
-using IFramework.MessageQueue.RocketMQ.MessageFormat;
 using Microsoft.Extensions.Logging;
-using NewLife.RocketMQ;
-using NewLife.RocketMQ.Protocol;
 
 namespace IFramework.MessageQueue.RocketMQ
 {
     public class RocketMQProducer: IMessageProducer
     {
 
-        private readonly Producer _producer;
+        //rivate readonly Producer _producer;
         private readonly ILogger _logger;
         private readonly string _topic;
 
-        public RocketMQProducer(string topic, Producer producer, ILogger<RocketMQProducer> logger)
+        public RocketMQProducer(string topic, ILogger<RocketMQProducer> logger) // Producer producer)
         {
             _topic = Configuration.Instance.FormatMessageQueueName(topic);
-            _producer = producer;
+            //_producer = producer;
             _logger = logger;
         }
 
@@ -34,13 +31,13 @@ namespace IFramework.MessageQueue.RocketMQ
         public Task SendAsync(IMessageContext messageContext, CancellationToken cancellationToken)
         {
             var rocketMQMessageContext = (MessageContext)messageContext;
-            var message = rocketMQMessageContext.RocketMQMessage;
+            var message = rocketMQMessageContext.PayloadMessage;
             var topic = Configuration.Instance.FormatMessageQueueName(messageContext.Topic);
             return SendAsync(topic, messageContext.Key ?? messageContext.MessageId, rocketMQMessageContext.MessageType, message, cancellationToken);
         }
 
 
-        public async Task SendAsync(string topic, string key, string messageType, RocketMQMessage message, CancellationToken cancellationToken)
+        public async Task SendAsync(string topic, string key, string messageType, PayloadMessage message, CancellationToken cancellationToken)
         {
             var retryTimes = 0;
             while (true)
@@ -52,12 +49,12 @@ namespace IFramework.MessageQueue.RocketMQ
                 var waitTime = Math.Min(retryTimes * 1000 * 5, 60000 * 5);
                 try
                 {
-                    var result = await _producer.PublishAsync(message, messageType, key)
-                                                .ConfigureAwait(false);
-                    if (result.Status != SendStatus.SendOK)
-                    {
-                        throw new Exception(result.ToString());
-                    }
+                    //var result = await _producer.PublishAsync(message, messageType, key)
+                    //                            .ConfigureAwait(false);
+                    //if (result.Status != SendStatus.SendOK)
+                    //{
+                    //    throw new Exception(result.ToString());
+                    //}
                 }
                 catch (Exception e)
                 {
