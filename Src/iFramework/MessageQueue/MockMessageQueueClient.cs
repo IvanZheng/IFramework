@@ -23,28 +23,26 @@ namespace IFramework.MessageQueue
             return Task.FromResult<object>(null);
         }
 
-        public IMessageConsumer StartQueueClient(string commandQueueName, string consumerId,
-                                                  OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
-        {
-            return null;
-        }
-
-        public IMessageConsumer StartSubscriptionClient(string[] topics, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
-        {
-            return null;
-        }
-
-        public IMessageConsumer StartSubscriptionClient(string topic, string subscriptionName, string consumerId,
-                                                         OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null)
-        {
-            return null;
-        }
-
         public IMessageContext WrapMessage(object message, string correlationId = null, string topic = null,
                                            string key = null, string replyEndPoint = null, string messageId = null, SagaInfo sagaInfo = null,
                                            string producer = null)
         {
             return new EmptyMessageContext();
+        }
+
+        public IMessageConsumer StartSubscriptionClient(string[] topics, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null, IMessageContextBuilder messageContextBuilder = null)
+        {
+            return null;
+        }
+
+        public IMessageConsumer StartSubscriptionClient(string topic, string subscriptionName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null, IMessageContextBuilder messageContextBuilder = null)
+        {
+            return null;
+        }
+
+        public IMessageConsumer StartQueueClient(string commandQueueName, string consumerId, OnMessagesReceived onMessagesReceived, ConsumerConfig consumerConfig = null, IMessageContextBuilder messageContextBuilder = null)
+        {
+            return null;
         }
     }
 }

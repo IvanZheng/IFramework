@@ -8,7 +8,7 @@ namespace IFramework.MessageQueue
 {
     public delegate void OnMessagesReceived(CancellationToken cancellationToken, params IMessageContext[] messageContext);
 
-    public interface IMessageQueueClient: IDisposable
+    public interface IMessageQueueClient : IDisposable
     {
         Task SendAsync(IMessageContext messageContext, string queue, CancellationToken cancellationToken);
         Task PublishAsync(IMessageContext messageContext, string topic, CancellationToken cancellationToken);
@@ -23,20 +23,23 @@ namespace IFramework.MessageQueue
                                     string producer = null);
 
         IMessageConsumer StartSubscriptionClient(string[] topics,
-                                                  string subscriptionName,
-                                                  string consumerId,
-                                                  OnMessagesReceived onMessagesReceived,
-                                                  ConsumerConfig consumerConfig = null);
+                                                 string subscriptionName,
+                                                 string consumerId,
+                                                 OnMessagesReceived onMessagesReceived,
+                                                 ConsumerConfig consumerConfig = null,
+                                                 IMessageContextBuilder messageContextBuilder = null);
 
         IMessageConsumer StartSubscriptionClient(string topic,
                                                  string subscriptionName,
                                                  string consumerId,
                                                  OnMessagesReceived onMessagesReceived,
-                                                 ConsumerConfig consumerConfig = null);
+                                                 ConsumerConfig consumerConfig = null,
+                                                 IMessageContextBuilder messageContextBuilder = null);
 
         IMessageConsumer StartQueueClient(string commandQueueName,
-                                           string consumerId,
-                                           OnMessagesReceived onMessagesReceived,
-                                           ConsumerConfig consumerConfig = null);
+                                          string consumerId,
+                                          OnMessagesReceived onMessagesReceived,
+                                          ConsumerConfig consumerConfig = null,
+                                          IMessageContextBuilder messageContextBuilder = null);
     }
 }

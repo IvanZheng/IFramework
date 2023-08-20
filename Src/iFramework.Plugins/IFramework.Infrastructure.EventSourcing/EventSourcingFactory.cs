@@ -1,22 +1,21 @@
-﻿using IFramework.Message;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using IFramework.Command.Impl;
+using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.Event;
-using IFramework.MessageQueue;
-using IFramework.Config;
 using IFramework.Event.Impl;
+using IFramework.Message;
+using IFramework.MessageQueue;
 
 namespace IFramework.Infrastructure.EventSourcing
 {
     public class EventSourcingFactory
     {
         public static IMessageProcessor CreateCommandConsumer(string commandQueue,
-                                                                           string consumerId,
-                                                                           string[] handlerProviderNames,
-                                                                           ConsumerConfig consumerConfig = null)
+                                                              string consumerId,
+                                                              string[] handlerProviderNames,
+                                                              ConsumerConfig consumerConfig = null,
+                                                              IMessageContextBuilder messageContextBuilder = null)
         {
             var container = ObjectProviderFactory.Instance.ObjectProvider;
             var messagePublisher = container.GetService<IMessagePublisher>();
@@ -29,23 +28,24 @@ namespace IFramework.Infrastructure.EventSourcing
                                                                     eventStore,
                                                                     commandQueue,
                                                                     consumerId,
-                                                                    consumerConfig);
+                                                                    consumerConfig,
+                                                                    messageContextBuilder);
             MessageQueueFactory.MessageProcessors.Add(commandConsumer);
             return commandConsumer;
         }
 
-         public static IMessageProcessor CreateEventSubscriber(string topic,
+        public static IMessageProcessor CreateEventSubscriber(string topic,
                                                               string subscription,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
                                                               ConsumerConfig consumerConfig = null,
                                                               Func<string[], bool> tagFilter = null)
         {
-            var eventSubscriber = CreateEventSubscriber(new[] {new TopicSubscription(topic, tagFilter)},
-                                         subscription,
-                                         consumerId,
-                                         handlerProviderNames,
-                                         consumerConfig);
+            var eventSubscriber = CreateEventSubscriber(new[] { new TopicSubscription(topic, tagFilter) },
+                                                        subscription,
+                                                        consumerId,
+                                                        handlerProviderNames,
+                                                        consumerConfig);
             return eventSubscriber;
         }
 
@@ -53,7 +53,8 @@ namespace IFramework.Infrastructure.EventSourcing
                                                               string subscription,
                                                               string consumerId,
                                                               string[] handlerProviderNames,
-                                                              ConsumerConfig consumerConfig = null)
+                                                              ConsumerConfig consumerConfig = null,
+                                                              IMessageContextBuilder messageContextBuilder = null)
         {
             var eventStore = ObjectProviderFactory.GetService<IEventStore>();
             subscription = Configuration.Instance.FormatAppName(subscription);
@@ -63,14 +64,15 @@ namespace IFramework.Infrastructure.EventSourcing
             var messageQueueClient = ObjectProviderFactory.GetService<IMessageQueueClient>();
 
             var eventSubscriber = new EventSourcingEventSubscriber(messageQueueClient,
-                                                      handlerProvider,
-                                                      commandBus,
-                                                      messagePublisher,
-                                                      subscription,
-                                                      topicSubscriptions,
-                                                      consumerId,
-                                                      eventStore,
-                                                      consumerConfig);
+                                                                   handlerProvider,
+                                                                   commandBus,
+                                                                   messagePublisher,
+                                                                   subscription,
+                                                                   topicSubscriptions,
+                                                                   consumerId,
+                                                                   eventStore,
+                                                                   consumerConfig,
+                                                                   messageContextBuilder);
             MessageQueueFactory.MessageProcessors.Add(eventSubscriber);
             return eventSubscriber;
         }

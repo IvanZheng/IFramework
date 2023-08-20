@@ -73,7 +73,7 @@ namespace IFramework.Command.Impl
             {
                 if (!string.IsNullOrWhiteSpace(_replyTopicName))
                 {
-                    _internalConsumer = MessageQueueClient.StartSubscriptionClient(_replyTopicName,
+                    _internalConsumer = MessageQueueClient.StartSubscriptionClient(new []{_replyTopicName},
                                                                                    _replySubscriptionName,
                                                                                    _consumerId,
                                                                                    OnMessagesReceived,

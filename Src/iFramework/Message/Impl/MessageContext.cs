@@ -1,29 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Confluent.Kafka;
 using IFramework.Infrastructure;
-using IFramework.Message;
-using IFramework.Message.Impl;
 using IFramework.MessageQueue;
 
-namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
+namespace IFramework.Message.Impl
 {
     public class MessageContext : IMessageContext
     {
         private object _message;
 
         private SagaInfo _sagaInfo;
-
-        public MessageContext(KafkaMessage kafkaMessage, string topic, int partition, long offset)
+        public MessageContext(PayloadMessage payloadMessage, MessageOffset messageOffset)
         {
-            KafkaMessage = kafkaMessage;
+            PayloadMessage = payloadMessage;
+            MessageOffset = messageOffset;
+        }
+
+        public MessageContext(PayloadMessage payloadMessage, string topic, int partition, long offset)
+        {
+            PayloadMessage = payloadMessage;
             MessageOffset = new MessageOffset(null, topic, partition, offset);
         }
 
         public MessageContext(object message, string id = null)
         {
-            KafkaMessage = new KafkaMessage();
+            PayloadMessage = new PayloadMessage();
             SentTime = DateTime.Now;
             Message = message;
             if (!string.IsNullOrEmpty(id))
@@ -59,9 +60,9 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
             ReplyToEndPoint = replyToEndPoint;
         }
 
-        public KafkaMessage KafkaMessage { get; protected set; }
+        public PayloadMessage PayloadMessage { get; protected set; }
 
-        public IDictionary<string, object> Headers => KafkaMessage.Headers;
+        public IDictionary<string, object> Headers => PayloadMessage.Headers;
 
         public SagaInfo SagaInfo
         {
@@ -121,11 +122,11 @@ namespace IFramework.MessageQueue.ConfluentKafka.MessageFormat
 
         public object Message
         {
-            get => _message ?? (_message = this.GetMessage(KafkaMessage.Payload));
+            get => _message ?? (_message = this.GetMessage(PayloadMessage.Payload));
             protected set
             {
                 _message = value;
-                KafkaMessage.Payload = value;
+                PayloadMessage.Payload = value;
                 if (value != null)
                 {
                     Headers["MessageType"] = this.GetMessageCode(value.GetType());;
