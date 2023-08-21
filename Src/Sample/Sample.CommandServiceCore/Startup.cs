@@ -18,6 +18,7 @@ using IFramework.Message;
 using IFramework.MessageQueue;
 using IFramework.MessageQueue.ConfluentKafka;
 using IFramework.MessageQueue.InMemory;
+using IFramework.MessageQueue.RocketMQ;
 using IFramework.MessageStores.Relational;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -63,7 +64,7 @@ namespace Sample.CommandServiceCore
         private static IMessageProcessor _eventSourcingEventProcessor;
         public static string PathBase;
         private static readonly string _app = "uat";
-        private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}.";
+        private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}_";
         private readonly IConfiguration _configuration;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
@@ -82,12 +83,13 @@ namespace Sample.CommandServiceCore
                 .AddConfiguration(_configuration)
                 //.AddLog4Net()
                 .AddSerilog()
-                .AddCommonComponents(_app)
+                .AddCommonComponents(_app, "_")
                 .AddJsonNet()
                 .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                 .AddRelationalMessageStore<SampleModelContext>()
                 //.AddConfluentKafka()
-                .AddInMemoryMessageQueue()
+                .AddRocketMQ()
+                //.AddInMemoryMessageQueue()
                 //.AddRabbitMQ(rabbitConnectionFactory)
                 .AddMessagePublisher("eventTopic")
                 .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())

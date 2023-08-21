@@ -151,7 +151,8 @@ namespace IFramework.MessageQueue.Client.Abstracts
                 CommitOffsetAsync(messageOffset.Broker,
                                   messageOffset.Topic,
                                   messageOffset.Partition,
-                                  messageOffset.Offset)
+                                  messageOffset.Offset,
+                                  messageOffset.GetMessage())
                     .ContinueWith(t =>
                     {
                         if (t.IsFaulted)
@@ -166,6 +167,6 @@ namespace IFramework.MessageQueue.Client.Abstracts
             }
         }
 
-        public abstract Task CommitOffsetAsync(string broker, string topic, int partition, long offset);
+        public abstract Task CommitOffsetAsync(string broker, string topic, int partition, long offset, object queueMessage);
     }
 }

@@ -872,6 +872,11 @@
         <member name="F:IFramework.MessageQueue.AutoOffsetReset.Error">
             <summary>Error</summary>
         </member>
+        <member name="T:IFramework.MessageQueue.IMessageContextBuilder">
+            <summary>
+            MessageContext 构造器
+            </summary>
+        </member>
         <member name="M:IFramework.MessageQueue.MessageQueueFactory.GetMessagePublisher">
             <summary>
                 GetMessagePublisher returns a singleton instance of message publisher

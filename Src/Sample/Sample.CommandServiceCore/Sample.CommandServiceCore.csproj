@@ -88,6 +88,7 @@
 		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.Logging.Serilog\IFramework.Logging.Serilog.csproj" />
 		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.EQueue\IFramework.MessageQueue.EQueue.csproj" />
 		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.RabbitMQ\IFramework.MessageQueue.RabbitMQ.csproj" />
+		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueue.RocketMQ\IFramework.MessageQueue.RocketMQ.csproj" />
 		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.ConfluentKafka\IFramework.MessageQueue.ConfluentKafka.csproj" />
 		<ProjectReference Include="..\..\iFramework.Plugins\IFramework.MessageQueueCore.InMemory\IFramework.MessageQueue.InMemory.csproj" />
 		<ProjectReference Include="..\..\iFramework\IFramework.csproj" />

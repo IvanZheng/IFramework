@@ -100,7 +100,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        public override Task CommitOffsetAsync(string broker, string topic, int partition, long offset)
+        public override Task CommitOffsetAsync(string broker, string topic, int partition, long offset, object queueMessage)
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);

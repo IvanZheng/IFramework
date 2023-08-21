@@ -24,5 +24,21 @@ namespace IFramework.MessageQueue
 
             return extensions;
         }
+
+        public string Get(string key)
+        {
+            return this[key]?.ToString();
+        }
+
+        public T Get<T>(string key)
+        {
+            var value = this[key];
+            if (value != null)
+            {
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+
+            return default;
+        }
     }
 }

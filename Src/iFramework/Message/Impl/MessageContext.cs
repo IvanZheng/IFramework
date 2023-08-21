@@ -22,6 +22,18 @@ namespace IFramework.Message.Impl
             MessageOffset = new MessageOffset(null, topic, partition, offset);
         }
 
+        public MessageContext(object message, MessageOffset messageOffset)
+        {
+            Message = message;
+            MessageOffset = messageOffset;
+        }
+
+        public MessageContext(object message, string topic, int partition, long offset, object queueMessage = null)
+        {
+            Message = message;
+            MessageOffset = new MessageOffset(null, topic, partition, offset, queueMessage);
+        }
+
         public MessageContext(object message, string id = null)
         {
             PayloadMessage = new PayloadMessage();
