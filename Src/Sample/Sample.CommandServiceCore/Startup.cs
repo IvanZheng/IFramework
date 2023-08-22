@@ -63,8 +63,9 @@ namespace Sample.CommandServiceCore
         private static IMessageProcessor _eventSourcingCommandConsumer;
         private static IMessageProcessor _eventSourcingEventProcessor;
         public static string PathBase;
-        private static readonly string _app = "uat";
-        private static readonly string TopicPrefix = _app.Length == 0 ? string.Empty : $"{_app}_";
+        private const string QueueNameSplit = "-";
+        private const string App = "uat";
+        private static readonly string TopicPrefix = App.Length == 0 ? string.Empty : $"{App}{QueueNameSplit}";
         private readonly IConfiguration _configuration;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
@@ -83,7 +84,7 @@ namespace Sample.CommandServiceCore
                 .AddConfiguration(_configuration)
                 //.AddLog4Net()
                 .AddSerilog()
-                .AddCommonComponents(_app, "_")
+                .AddCommonComponents(App, QueueNameSplit)
                 .AddJsonNet()
                 .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                 .AddRelationalMessageStore<SampleModelContext>()

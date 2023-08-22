@@ -24,7 +24,7 @@ namespace IFramework.Message.Impl
 
         public List<IMessageContext> ToBeSentMessageContexts => null;
 
-        public IDictionary<string, object> Headers => null;
+        public IDictionary<string, string> Headers => null;
 
         public string Key { get; set; }
         public string[] Tags => null;

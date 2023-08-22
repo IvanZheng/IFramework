@@ -100,6 +100,7 @@ namespace IFramework.MessageQueue.RocketMQ
                     var result = await _producer.Send(message)
                                                 .ConfigureAwait(false);
                     _logger.LogInformation($"Send message successfully, messageId={result.MessageId}");
+                    return;
                 }
                 catch (Exception e)
                 {

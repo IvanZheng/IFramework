@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using IFramework.Config;
 using IFramework.MessageQueue.Client.Abstracts;
 using Microsoft.Extensions.Logging;
 using Org.Apache.Rocketmq;
@@ -14,9 +12,10 @@ namespace IFramework.MessageQueue.RocketMQ
 
     public class RocketMQConsumer : MessageConsumer
     {
-        private readonly OnRocketMQMessageReceived _onMessageReceived;
         private readonly ClientConfig _consumerConfiguration;
+        private readonly OnRocketMQMessageReceived _onMessageReceived;
         private SimpleConsumer _consumer;
+
         public RocketMQConsumer(string endpoints,
                                 string[] topics,
                                 string groupId,
@@ -28,11 +27,10 @@ namespace IFramework.MessageQueue.RocketMQ
             _onMessageReceived = onMessageReceived;
 
 
-
             // Credential provider is optional for client configuration.
             var configBuilder = new ClientConfig.Builder()
-                .SetEndpoints(endpoints)
-                .EnableSsl(ConsumerConfig.Get<bool>("EnableSsl"));
+                                .SetEndpoints(endpoints)
+                                .EnableSsl(ConsumerConfig.Get<bool>("EnableSsl"));
 
             var accessKey = ConsumerConfig.Get("AccessKey");
             var secretKey = ConsumerConfig.Get("SecretKey");
@@ -61,7 +59,8 @@ namespace IFramework.MessageQueue.RocketMQ
                         .SetConsumerGroup(GroupId)
                         .SetAwaitDuration(TimeSpan.FromSeconds(15))
                         .SetSubscriptionExpression(subscription)
-                        .Build().Result;
+                        .Build()
+                        .Result;
             base.Start();
         }
 
@@ -96,12 +95,25 @@ namespace IFramework.MessageQueue.RocketMQ
                     }
                 }
             }
-            
         }
+
+        protected override void FinishConsumingMessage(MessageOffset messageOffset)
+        {
+            base.FinishConsumingMessage(messageOffset);
+            _consumer.Ack(messageOffset.GetMessage() as MessageView)
+                     .ContinueWith(t =>
+                     {
+                         if (t.IsFaulted)
+                         {
+                             Logger.LogError($"ack failed! topic: {messageOffset.Topic} partition: {messageOffset.Partition} offset: {messageOffset.Offset}");
+                         }
+                     });
+        }
+
 
         public override Task CommitOffsetAsync(string broker, string topic, int partition, long offset, object queueMessage)
         {
-            return _consumer.Ack(queueMessage as MessageView);
+            return Task.CompletedTask;
         }
     }
 }
