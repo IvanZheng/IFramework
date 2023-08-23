@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using IFramework.Infrastructure;
 using IFramework.MessageQueue.Client.Abstracts;
 using Microsoft.Extensions.Logging;
 using Org.Apache.Rocketmq;
@@ -57,7 +58,7 @@ namespace IFramework.MessageQueue.RocketMQ
             _consumer = new SimpleConsumer.Builder()
                         .SetClientConfig(_consumerConfiguration)
                         .SetConsumerGroup(GroupId)
-                        .SetAwaitDuration(TimeSpan.FromSeconds(15))
+                        .SetAwaitDuration(TimeSpan.FromSeconds(5))
                         .SetSubscriptionExpression(subscription)
                         .Build()
                         .Result;
@@ -66,7 +67,9 @@ namespace IFramework.MessageQueue.RocketMQ
 
         protected override void PollMessages(CancellationToken cancellationToken)
         {
+            Logger.LogDebug($"{Id} start receive {string.Join(",", Topics)}");
             var consumeResult = _consumer.Receive(50, TimeSpan.FromSeconds(15)).Result;
+            Logger.LogDebug($"{Id} end receive {string.Join(",", Topics)}");
             if (consumeResult?.Count > 0)
             {
                 _consumer_OnMessage(_consumer, consumeResult, cancellationToken);
@@ -79,7 +82,7 @@ namespace IFramework.MessageQueue.RocketMQ
             {
                 try
                 {
-                    Logger.LogDebug($"consume message: {message.Topic}.{message.MessageQueue.QueueId}.{message.Offset}");
+                    Logger.LogDebug($"{Id} consume message: {message.Topic}.{message.MessageQueue.QueueId}.{message.Offset} {message.Tag} {message.MessageId}");
                     AddMessageOffset(message.Topic, message.MessageQueue.QueueId, message.Offset);
                     _onMessageReceived(this, message, cancellationToken);
                 }
@@ -105,7 +108,12 @@ namespace IFramework.MessageQueue.RocketMQ
                      {
                          if (t.IsFaulted)
                          {
-                             Logger.LogError($"ack failed! topic: {messageOffset.Topic} partition: {messageOffset.Partition} offset: {messageOffset.Offset}");
+                             Logger.LogError($"{Id} ack failed! topic: {messageOffset.Topic} partition: {messageOffset.Partition} offset: {messageOffset.Offset}");
+                         }
+                         else
+                         {
+                             var messageView = messageOffset.GetMessage() as MessageView;
+                             Logger.LogDebug($"{Id} Finish consuming topic: {messageView?.Topic} messageType: {messageView?.Tag} saga: {messageView?.Properties.TryGetValue("SagaInfo")} partition: {messageView?.MessageQueue.QueueId} offset: {messageView?.Offset}");
                          }
                      });
         }

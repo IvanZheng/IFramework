@@ -97,9 +97,10 @@ namespace IFramework.MessageQueue.RocketMQ
                 var waitTime = Math.Min(retryTimes * 1000 * 5, 60000 * 5);
                 try
                 {
+                    _logger.LogInformation($"Send message start, {message.Tag}");
                     var result = await _producer.Send(message)
                                                 .ConfigureAwait(false);
-                    _logger.LogInformation($"Send message successfully, messageId={result.MessageId}");
+                    _logger.LogInformation($"Send message end, {message.Tag} messageId={result.MessageId} ");
                     return;
                 }
                 catch (Exception e)

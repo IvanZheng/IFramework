@@ -82,7 +82,7 @@ namespace IFramework.Command.Impl
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"command bus started faield");
+                Logger.LogError(e, "command bus started failed");
             }
 
             #endregion
