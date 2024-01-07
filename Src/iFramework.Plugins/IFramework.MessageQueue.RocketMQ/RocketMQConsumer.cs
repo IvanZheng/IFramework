@@ -49,9 +49,10 @@ namespace IFramework.MessageQueue.RocketMQ
         {
             // Add your subscriptions.
             var subscription = new Dictionary<string, FilterExpression>();
+            var filterExpression = new FilterExpression("*");
             foreach (var topic in Topics)
             {
-                subscription.Add(topic, new FilterExpression("*"));
+                subscription.Add(topic, filterExpression);
             }
 
             // In most case, you don't need to create too many consumers, single pattern is recommended.
