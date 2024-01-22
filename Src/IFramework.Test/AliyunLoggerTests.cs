@@ -27,17 +27,23 @@ namespace IFramework.Test
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                                     .AddJsonFile("appsettings.json");
+            var configuration = builder.Build();
             var services = new ServiceCollection();
             services.AddAutofacContainer(new ContainerBuilder())
-                         .AddConfiguration(builder.Build())
+                         .AddConfiguration(configuration)
                          .AddJsonNet()
-                         .AddAliyunLog();
+                         .AddLogging(b =>
+                         {
+                             b.AddConfiguration(configuration);
+                             b.SetMinimumLevel(LogLevel.Warning);
+                         })
+                         .AddAliyunLog(minLevel: LogLevel.Debug);
 
             ObjectProviderFactory.Instance.Build(services);
 
             var loggerFactory = ObjectProviderFactory.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(GetType());
-
+            //logger.SetMinLevel(LogLevel.Debug);
 
             try
             {
@@ -53,11 +59,11 @@ namespace IFramework.Test
 
         void LogTest(ILogger logger, Exception message)
         {
-            logger.LogDebug(message);
+            //logger.LogDebug(message);
             logger.LogInformation(message);
-            logger.LogWarning(message, "it's a test!");
-            logger.LogError(message);
-            logger.LogCritical(message);
+            //logger.LogWarning(message, "it's a test!");
+            //logger.LogError(message);
+            //logger.LogCritical(message);
         }
     }
 }

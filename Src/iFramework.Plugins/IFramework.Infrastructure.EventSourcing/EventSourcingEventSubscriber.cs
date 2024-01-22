@@ -27,7 +27,8 @@ namespace IFramework.Infrastructure.EventSourcing
                                             TopicSubscription[] topicSubscriptions,
                                             string consumerId,
                                             IEventStore eventStore,
-                                            ConsumerConfig consumerConfig = null)
+                                            ConsumerConfig consumerConfig = null,
+                                            IMessageContextBuilder messageContextBuilder = null)
             : base(messageQueueClient,
                    handlerProvider,
                    commandBus,
@@ -35,7 +36,8 @@ namespace IFramework.Infrastructure.EventSourcing
                    subscriptionName,
                    topicSubscriptions,
                    consumerId,
-                   consumerConfig)
+                   consumerConfig,
+                   messageContextBuilder)
         {
             _eventStore = eventStore;
         }

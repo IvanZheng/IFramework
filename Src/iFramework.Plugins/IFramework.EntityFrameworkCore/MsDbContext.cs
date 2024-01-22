@@ -18,8 +18,7 @@ namespace IFramework.EntityFrameworkCore
     public class MsDbContext : DbContext, IDbContext
     {
         public MsDbContext(DbContextOptions options)
-            : base(new DbContextOptionsBuilder(options).ReplaceService<IEntityMaterializerSource, ExtensionEntityMaterializerSource>()
-                                                       .Options)
+            : base(options)
         {
         }
 

@@ -26,13 +26,15 @@ namespace IFramework.Infrastructure.EventSourcing
                                              IEventStore eventStore,
                                              string commandQueueName,
                                              string consumerId,
-                                             ConsumerConfig consumerConfig = null)
+                                             ConsumerConfig consumerConfig = null,
+                                             IMessageContextBuilder messageContextBuilder = null)
             : base(messageQueueClient,
                    messagePublisher,
                    handlerProvider,
                    commandQueueName,
                    consumerId,
-                   consumerConfig)
+                   consumerConfig,
+                   messageContextBuilder)
         {
             _eventStore = eventStore;
         }

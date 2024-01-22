@@ -14,7 +14,6 @@ namespace IFramework.Repositories
     /// </summary>
     /// <typeparam name="TAggregateRoot">The type of the aggregation root with which the repository is working.</typeparam>
     public interface IRepository<TAggregateRoot> : IRepository
-        where TAggregateRoot : class
     {
         /// <summary>
         ///     Adds an entity to the repository.
