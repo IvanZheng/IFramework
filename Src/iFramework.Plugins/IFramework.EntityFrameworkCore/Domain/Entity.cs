@@ -5,6 +5,14 @@ using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using IFramework.Repositories;
 
+
+#if NET6_0_OR_GREATER
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+#else
+using Microsoft.EntityFrameworkCore.Internal;
+#endif
+
+
 namespace IFramework.Domain
 {
     public static class PocoContextInitializer
@@ -25,7 +33,15 @@ namespace IFramework.Domain
 
     public class Entity : IEntity
     {
-        protected IDbContext DbContext { get; set; }
+        private IDbContext _dbContext;
+        protected IDbContext DbContext
+        {
+            get
+            {
+                return _dbContext ??= this.GetPropertyValue<LazyLoader>(nameof(LazyLoader))?.GetPropertyValue<IDbContext>("Context");
+            }
+            set => _dbContext = value;
+        }
 
         internal void SetDomainContext(IDbContext domainContext)
         {
