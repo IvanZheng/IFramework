@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <PackageId>IFramework.RocketMQ.Client</PackageId>
-        <PackageVersion>5.1.0</PackageVersion>
-        <Version>$(PackageVersion)</Version>
-
         <Authors>RocketMQ Authors</Authors>
         <Company>Apache Software Foundation</Company>
         <TargetFrameworks>netstandard2.1</TargetFrameworks>
