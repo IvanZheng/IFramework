@@ -102,6 +102,18 @@ namespace IFramework.Test.EntityFramework
             }
         }
 
+
+        [Fact]
+        public async Task InjectDbContextTest()
+        {
+            await using var dbCtx = ObjectProviderFactory.CreateScope()
+                                                         .GetService<DemoDbContext>();
+            var user = await dbCtx.Users.FirstOrDefaultAsync();
+           // var user2 = await dbCtx.Users.FindAsync("638192221318396775");
+
+            Assert.NotNull(user?.GetDbContext<DemoDbContext>());
+        }
+
         [Fact]
         public async Task QuerySplitTest()
         {
@@ -237,7 +249,7 @@ namespace IFramework.Test.EntityFramework
 
 
         [Fact]
-        public async Task ConcurrentUdpateTest()
+        public async Task ConcurrentUpdateTest()
         {
             using (var serviceScope = ObjectProviderFactory.CreateScope())
             {

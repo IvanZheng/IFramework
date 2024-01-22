@@ -9,6 +9,7 @@ using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.EntityFrameworkCore;
 using IFramework.EntityFrameworkCore.Repositories;
+using IFramework.JsonNet;
 using IFramework.Logging.Log4Net;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
@@ -36,8 +37,22 @@ namespace IFramework.Test.EntityFramework
             var services = new ServiceCollection();
             services.AddAutofacContainer(new ContainerBuilder())
                     .AddConfiguration(builder.Build())
+                    .AddCommonComponents()
                     .AddLog4Net()
-                    .AddEntityFrameworkComponents(typeof(RepositoryBase<>));
+                    .AddJsonNet()
+                    .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
+                    .AddDbContextPool<DemoDbContext>(options =>
+                    {
+                        var connectionString = Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName);
+                        options.UseLazyLoadingProxies();
+                        options.EnableSensitiveDataLogging();
+                        //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
+                        //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
+                        options.UseMySql(connectionString,
+                                         ServerVersion.AutoDetect(connectionString));
+                        //options.UseInMemoryDatabase(nameof(DemoDbContext));
+                        //options.UseSqlServer(connectionString, a => a.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+                    });;
           
             ObjectProviderFactory.Instance
                                  .RegisterComponents(RegisterComponents, ServiceLifetime.Scoped)
