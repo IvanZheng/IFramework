@@ -68,7 +68,7 @@ namespace IFramework.MessageQueue.EQueue
             });
         }
 
-        public override Task CommitOffsetAsync(string broker, string topic, int partition, long offset)
+        public override Task CommitOffsetAsync(string broker, string topic, int partition, long offset, object queueMessage)
         {
             Consumer.CommitConsumeOffset(broker, topic, partition, offset);
             return Task.CompletedTask;

@@ -35,7 +35,7 @@ namespace IFramework.MessageQueue.InMemory
             }
             MessageOffset = new MessageOffset();
         }
-        public IDictionary<string, object> Headers { get; set; }
+        public IDictionary<string, string> Headers { get; set; }
         public string Key { get; set; }
         public string[] Tags { get; set; }
         public string MessageId { get; set; }

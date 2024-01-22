@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <PackageId>IFramework.RocketMQ.Client</PackageId>
+        <Authors>RocketMQ Authors</Authors>
+        <Company>Apache Software Foundation</Company>
+        <TargetFrameworks>netstandard2.1</TargetFrameworks>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <RootNamespace>Org.Apache.Rocketmq</RootNamespace>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Description>.NET Client for Apache RocketMQ</Description>
+        <PackageProjectUrl>https://github.com/apache/rocketmq-clients</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/apache/rocketmq-clients</RepositoryUrl>
+        <PackageIcon>logo.png</PackageIcon>
+
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+
+        <LangVersion>8</LangVersion>
+
+        <PackageReleaseNotes>forked from apache rocketmq-client-csharp 5.1.0, change project target framework to netstandard2.1</PackageReleaseNotes>
+
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Crc32.NET" Version="1.2.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.25.2" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.60.0" />
+        <PackageReference Include="NLog" Version="5.2.8" />
+        <PackageReference Include="Grpc.Tools" Version="2.60.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="OpenTelemetry" Version="1.7.0" />
+        <PackageReference Include="OpenTelemetry.Api" Version="1.7.0" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
+
+        <Protobuf Include="Protos\apache\rocketmq\v2\definition.proto" ProtoRoot="Protos" GrpcServices="Client" />
+        <Protobuf Include="Protos\google\rpc\code.proto" ProtoRoot="Protos" GrpcServices="Client" />
+        <Protobuf Include="Protos\google\rpc\error_details.proto" ProtoRoot="Protos" GrpcServices="Client" />
+        <Protobuf Include="Protos\google\rpc\status.proto" ProtoRoot="Protos" GrpcServices="Client" />
+        <Protobuf Include="Protos\apache\rocketmq\v2\service.proto" ProtoRoot="Protos" GrpcServices="Client">
+            <Link>Protos\apache\rocketmq\v2\definition.proto</Link>
+            <Link>Protos\google\rpc\status.proto</Link>
+            <Link>Protos\google\rpc\error_details.proto</Link>
+        </Protobuf>
+        <None Include="logo.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="README.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+    </ItemGroup>
+</Project>
