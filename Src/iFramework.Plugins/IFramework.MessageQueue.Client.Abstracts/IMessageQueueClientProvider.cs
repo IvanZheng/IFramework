@@ -1,32 +1,24 @@
 ﻿using System;
-using IFramework.Message;
-using IFramework.Message.Impl;
 
 namespace IFramework.MessageQueue.Client.Abstracts
 {
-    public interface IMessageQueueClientProvider: IDisposable
+    public interface IMessageQueueClientProvider : IDisposable
     {
-        IMessageContext WrapMessage(object message,
-                                    string correlationId = null,
-                                    string topic = null,
-                                    string key = null,
-                                    string replyEndPoint = null,
-                                    string messageId = null,
-                                    SagaInfo sagaInfo = null,
-                                    string producer = null);
-
-        IMessageConsumer CreateQueueConsumer(string commandQueueName,
+        IMessageConsumer CreateQueueConsumer(string queue,
                                              OnMessagesReceived onMessagesReceived,
                                              string consumerId,
-                                             ConsumerConfig consumerConfig,
-                                             bool start = true);
+                                             ConsumerConfig config,
+                                             bool start = true,
+                                             IMessageContextBuilder messageContextBuilder = null);
+
 
         IMessageConsumer CreateTopicSubscription(string[] topics,
                                                  string subscriptionName,
                                                  OnMessagesReceived onMessagesReceived,
                                                  string consumerId,
                                                  ConsumerConfig consumerConfig,
-                                                 bool start = true);
+                                                 bool start = true,
+                                                 IMessageContextBuilder messageContextBuilder = null);
 
         IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null);
         IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null);
