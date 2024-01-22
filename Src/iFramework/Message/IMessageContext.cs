@@ -7,7 +7,7 @@ namespace IFramework.Message
 {
     public interface IMessageContext
     {
-        IDictionary<string, object> Headers { get; }
+        IDictionary<string, string> Headers { get; }
         string Key { get; set; }
         string[] Tags { get; }
         string MessageId { get; }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using IFramework.Infrastructure;
 using IFramework.MessageQueue;
 
@@ -10,6 +12,7 @@ namespace IFramework.Message.Impl
         private object _message;
 
         private SagaInfo _sagaInfo;
+        private DateTime _sentTime;
         public MessageContext(PayloadMessage payloadMessage, MessageOffset messageOffset)
         {
             PayloadMessage = payloadMessage;
@@ -20,6 +23,17 @@ namespace IFramework.Message.Impl
         {
             PayloadMessage = payloadMessage;
             MessageOffset = new MessageOffset(null, topic, partition, offset);
+        }
+
+        public MessageContext(object message, string topic, int partition, long offset, object queueMessage = null, IDictionary<string, string> headers = null)
+        {
+            PayloadMessage = new PayloadMessage
+            {
+                Headers = headers
+            };
+
+            Message = message;
+            MessageOffset = new MessageOffset(null, topic, partition, offset, queueMessage);
         }
 
         public MessageContext(object message, string id = null)
@@ -62,7 +76,7 @@ namespace IFramework.Message.Impl
 
         public PayloadMessage PayloadMessage { get; protected set; }
 
-        public IDictionary<string, object> Headers => PayloadMessage.Headers;
+        public IDictionary<string, string> Headers => PayloadMessage.Headers;
 
         public SagaInfo SagaInfo
         {
@@ -75,7 +89,7 @@ namespace IFramework.Message.Impl
                     {
                         try
                         {
-                            _sagaInfo = sagaInfoJson.ToJson().ToJsonObject<SagaInfo>();
+                            _sagaInfo = sagaInfoJson.ToJsonObject<SagaInfo>();
                         }
                         catch (Exception)
                         {
@@ -85,18 +99,18 @@ namespace IFramework.Message.Impl
                 }
                 return _sagaInfo;
             }
-            set => Headers["SagaInfo"] = _sagaInfo = value;
+            set => Headers["SagaInfo"] = (_sagaInfo = value).ToJson();
         }
 
         public string Key
         {
-            get => Headers.TryGetValue("Key")?.ToString();
+            get => Headers.TryGetValue("Key");
             set => Headers["Key"] = value;
         }
 
         public string[] Tags
         {
-            get => Headers.TryGetValue(nameof(Tags))?.ToString().Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+            get => Headers.TryGetValue(nameof(Tags))?.Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
             set => Headers[nameof(Tags)] = value?.Length > 0 ? string.Join(",", value):null;
         }
 
@@ -110,6 +124,12 @@ namespace IFramework.Message.Impl
         {
             get => Headers.TryGetValue("MessageId")?.ToString();
             set => Headers["MessageId"] = value;
+        }
+
+        public string MessageType
+        {
+            get => Headers.TryGetValue(nameof(MessageType))?.ToString();
+            set => Headers[nameof(MessageType)] = value;
         }
 
         public string ReplyToEndPoint
@@ -138,21 +158,15 @@ namespace IFramework.Message.Impl
         {
             get
             {
+                if (_sentTime != DateTime.MinValue)
+                {
+                    return _sentTime;
+                }
                 var timeValue = Headers.TryGetValue("SentTime");
-                if (timeValue is DateTime sentTime)
-                {
-                    return sentTime;
-                }
-                else
-                {
-                    if (DateTime.TryParse(timeValue?.ToString(), out var time))
-                    {
-                        return time;
-                    }
-                    return time;
-                }
+                DateTime.TryParse(timeValue, out _sentTime);
+                return _sentTime;
             }
-            set => Headers["SentTime"] = value;
+            set => Headers["SentTime"] = value.ToString(CultureInfo.InvariantCulture);
         }
 
         public string Topic

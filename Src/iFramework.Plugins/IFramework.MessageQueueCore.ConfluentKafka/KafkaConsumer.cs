@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using IFramework.Infrastructure;
 using IFramework.MessageQueue.Client.Abstracts;
-using IFramework.MessageQueue.ConfluentKafka.MessageFormat;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.MessageQueue.ConfluentKafka
@@ -101,7 +100,7 @@ namespace IFramework.MessageQueue.ConfluentKafka
             }
         }
 
-        public override Task CommitOffsetAsync(string broker, string topic, int partition, long offset)
+        public override Task CommitOffsetAsync(string broker, string topic, int partition, long offset, object queueMessage)
         {
             // kafka not use broker in cluster mode
             var topicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, partition), offset + 1);

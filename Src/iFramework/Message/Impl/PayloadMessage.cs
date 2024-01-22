@@ -6,11 +6,11 @@ namespace IFramework.Message.Impl
     {
         public PayloadMessage(object payload = null)
         {
-            Headers = new Dictionary<string, object>(System.StringComparer.OrdinalIgnoreCase);
+            Headers = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
             Payload = payload;
         }
 
-        public IDictionary<string, object> Headers { get; }
+        public IDictionary<string, string> Headers { get; set; }
         public object Payload { get; set; }
     }
 }
