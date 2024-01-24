@@ -108,6 +108,12 @@
             <param name="containerBuilder">The container builder.</param>
             <returns>An <see cref="T:System.IServiceProvider" />.</returns>
         </member>
+        <member name="M:IFramework.Domain.ValueObject.IsNull">
+            <summary>
+            return if Value Object is null due to EFCore complex type doesn't support optional value.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:IFramework.Domain.ValueObject.EqualOperator(IFramework.Domain.ValueObject,IFramework.Domain.ValueObject)">
             <summary>
                 Helper function for implementing overloaded equality operator.
