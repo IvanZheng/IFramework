@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace IFramework.Test
 {
-    public class AValueObject<T> : ValueObject<T> 
+    public record AValueObject<T> : ValueObject<T> 
         where T : ValueObject
     {
         public AValueObject()
@@ -23,9 +23,13 @@ namespace IFramework.Test
 
         public new static T Empty => Activator.CreateInstance<T>();
         public DateTime CreatedTime { get; set; }
+        public override bool IsNull()
+        {
+            return CreatedTime == DateTime.MinValue;
+        }
     }
 
-    public class AClass : AValueObject<AClass>
+    public record AClass : AValueObject<AClass>
     {
         public AClass(){}
         public AClass(string id, string name)

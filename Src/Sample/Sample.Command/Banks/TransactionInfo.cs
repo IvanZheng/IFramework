@@ -3,7 +3,7 @@ using IFramework.Domain;
 
 namespace Sample.Command
 {
-    public class TransactionInfo : ValueObject<TransactionInfo>
+    public record TransactionInfo : ValueObject<TransactionInfo>
     {
         public TransactionInfo() { }
 
@@ -29,6 +29,11 @@ namespace Sample.Command
             CreditAccountId = creditAccountId;
             Amount = amount;
             Time = time;
+        }
+
+        public override bool IsNull()
+        {
+            return string.IsNullOrWhiteSpace(TransactionId);
         }
 
         public string TransactionId { get; protected set; }

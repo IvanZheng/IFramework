@@ -131,13 +131,6 @@
             </summary>
             <returns>Collection of atomic values.</returns>
         </member>
-        <member name="M:IFramework.Domain.ValueObject.Equals(System.Object)">
-            <summary>
-                Compares two Value Objects according to atomic values returned by <see cref="M:IFramework.Domain.ValueObject.GetAtomicValues" />.
-            </summary>
-            <param name="obj">Object to compare to.</param>
-            <returns>True if objects are considered equal.</returns>
-        </member>
         <member name="M:IFramework.Domain.ValueObject.GetHashCode">
             <summary>
                 Returns hashcode value calculated according to a collection of atomic values

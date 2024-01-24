@@ -356,7 +356,8 @@ namespace IFramework.Test.EntityFramework
                                           //.ThenInclude(p => p.Address)
                                           //.Where(u => SqlFunctions.CollectionLike(u.Pictures,"%2022%"))
                                           //.Where(u => SqlFunctions.CollectionContains(u.Pictures, "2022"))
-                                          .FirstOrDefaultAsync()
+                                          .OrderBy(u => u.Id)
+                                          .LastOrDefaultAsync()
                                           .ConfigureAwait(false);
                 //await user.LoadReferenceAsync(u => u.UserProfile)
                 //          .ConfigureAwait(false);
@@ -364,10 +365,8 @@ namespace IFramework.Test.EntityFramework
                 //          .ConfigureAwait(false);
                 //user.ModifyProfileAddress($"beijing.{DateTime.Now.Ticks}");
                 //var cards = user.Cards.ToList();
-                user.ModifyProfile(user.UserProfile.Clone(new
-                {
-                    Address = user.UserProfile.Address.Clone(new { City = $"beijing.{DateTime.Now.Ticks}" })
-                }));
+                //user.ModifyProfileAddress("test address");
+                user.ModifyProfile(UserProfile.Empty);
                 //user.RemoveCards();
                 //user.UpdateCard($"cardName{DateTime.Now.Ticks}");
                 //user.Address = new Address("china", "shanghai", $"nanjing road1{DateTime.Now.Ticks}");

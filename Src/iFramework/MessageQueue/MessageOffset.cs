@@ -5,8 +5,17 @@ using IFramework.Domain;
 
 namespace IFramework.MessageQueue
 {
+    #if !NET5_0_OR_GREATER
     public class MessageOffset: ValueObject<MessageOffset>
+    #else
+    public record MessageOffset: ValueObject<MessageOffset>
+    #endif
     {
+        public override bool IsNull()
+        {
+            return string.IsNullOrWhiteSpace(Broker);
+        }
+
         public MessageOffset()
         {
             
