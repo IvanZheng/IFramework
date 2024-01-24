@@ -282,7 +282,7 @@ namespace IFramework.Test.EntityFramework
             {
                 var dbContext = scope.GetService<DemoDbContext>();
                 hashCode1 = dbContext.GetHashCode();
-                dbContext.Database.AutoTransactionsEnabled = false;
+                dbContext.Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
                 var dbTest = scope.GetService<DbTest>();
                 Assert.Equal(3, dbTest.Count);
             }
@@ -291,7 +291,7 @@ namespace IFramework.Test.EntityFramework
             {
                 var dbContext = scope.GetService<DemoDbContext>();
                 hashCode2 = dbContext.GetHashCode();
-                Assert.True(dbContext.Database.AutoTransactionsEnabled);
+                Assert.True(dbContext.Database.AutoTransactionBehavior == AutoTransactionBehavior.WhenNeeded);
                 var dbTest = scope.GetService<DbTest>();
                 Assert.Equal(1, dbTest.Count);
             }
