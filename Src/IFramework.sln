@@ -116,6 +116,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RocketMQ", "RocketMQ", "{94
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "rocketmq-client-csharp", "iFramework.Plugins\rocketmq-client-csharp\rocketmq-client-csharp.csproj", "{EDF71515-26D8-4A0B-B444-2069404B5A9F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Logging.Elasticsearch", "iFramework.Plugins\IFramework.Logging.Elasticsearch\IFramework.Logging.Elasticsearch.csproj", "{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -849,6 +851,24 @@ Global
 		{EDF71515-26D8-4A0B-B444-2069404B5A9F}.Release|x64.Build.0 = Release|Any CPU
 		{EDF71515-26D8-4A0B-B444-2069404B5A9F}.Release|x86.ActiveCfg = Release|Any CPU
 		{EDF71515-26D8-4A0B-B444-2069404B5A9F}.Release|x86.Build.0 = Release|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Debug|x64.Build.0 = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Debug|x86.Build.0 = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Integration|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Integration|Any CPU.Build.0 = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Integration|x64.ActiveCfg = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Integration|x64.Build.0 = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Integration|x86.ActiveCfg = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Integration|x86.Build.0 = Debug|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|x64.ActiveCfg = Release|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|x64.Build.0 = Release|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|x86.ActiveCfg = Release|Any CPU
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -897,9 +917,10 @@ Global
 		{9540F8F4-25B9-4C1A-9DCF-0B3A37136DB5} = {9413B2E5-66A1-4770-82A1-994F64D52085}
 		{9413B2E5-66A1-4770-82A1-994F64D52085} = {A0DFB82C-D746-4443-8C1B-7AB2DF36EF85}
 		{EDF71515-26D8-4A0B-B444-2069404B5A9F} = {9413B2E5-66A1-4770-82A1-994F64D52085}
+		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8} = {D85A2D0B-5D20-4C0F-B06F-D688EFAD1624}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal

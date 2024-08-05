@@ -13,6 +13,7 @@ using IFramework.Infrastructure.EventSourcing;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.JsonNet;
+using IFramework.Logging.Elasticsearch;
 using IFramework.Logging.Serilog;
 using IFramework.Message;
 using IFramework.MessageQueue;
@@ -67,10 +68,12 @@ namespace Sample.CommandServiceCore
         private const string App = "uat";
         private static readonly string TopicPrefix = App.Length == 0 ? string.Empty : $"{App}{QueueNameSplit}";
         private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             _configuration = configuration;
+            _env = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -89,8 +92,8 @@ namespace Sample.CommandServiceCore
                 .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                 .AddRelationalMessageStore<SampleModelContext>()
                 //.AddConfluentKafka()
-                .AddRocketMQ()
-                //.AddInMemoryMessageQueue()
+                //.AddRocketMQ()
+                .AddInMemoryMessageQueue()
                 //.AddRabbitMQ(rabbitConnectionFactory)
                 .AddMessagePublisher("eventTopic")
                 .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
@@ -113,6 +116,7 @@ namespace Sample.CommandServiceCore
                 })
                 .AddDatabaseDeveloperPageExceptionFilter()
                 .AddEventSourcing()
+                //.AddElasticsearchLogging(_configuration, _env)
                 ;
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
