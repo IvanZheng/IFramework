@@ -103,28 +103,42 @@ namespace IFramework.DependencyInjection
             return serviceCollection;
         }
 
+        public static TOptions AddCustomOptions<TOptions>(this IServiceCollection services, IConfiguration appConfiguration,
+                                                          Action<TOptions> optionAction = null, string sectionName = null)
+            where TOptions: class, new()
+        {
+            var options = new TOptions();
+            var configuration = appConfiguration.GetSection(sectionName ?? typeof(TOptions).Name);
+            if (configuration.Exists())
+            {
+                configuration.Bind(options);
+            }
+
+            optionAction?.Invoke(options);
+
+            var wrapperOptions = new OptionsWrapper<TOptions>(options);
+            services.AddSingleton<IOptions<TOptions>>(wrapperOptions);
+            
+            return options;
+        }
+
         public static IServiceCollection AddCustomOptions<TOptions>(this IServiceCollection services, Action<TOptions> optionAction = null, string sectionName = null)
             where TOptions: class, new()
         {
-            if (optionAction != null)
+            services.AddSingleton<IOptions<TOptions>>(provider =>
             {
-                services.Configure(optionAction);
-            }
-            else
-            {
-                services.AddSingleton<IOptions<TOptions>>(provider =>
+                var options = new TOptions();
+                var configuration = provider.GetService<IConfiguration>()?.GetSection(sectionName ?? typeof(TOptions).Name);
+                if (configuration.Exists())
                 {
-                    var configuration = provider.GetService<IConfiguration>()?.GetSection(sectionName ?? typeof(TOptions).Name);
-                    if (!configuration.Exists())
-                    {
-                        throw new ArgumentNullException($"{nameof(TOptions)}");
-                    }
-
-                    var options = new TOptions();
                     configuration.Bind(options);
-                    return new OptionsWrapper<TOptions>(options);
-                });
-            }
+                }
+
+                optionAction?.Invoke(options);
+
+                return new OptionsWrapper<TOptions>(options);
+            });
+            
             return services;
         }
         
