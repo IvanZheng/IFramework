@@ -139,6 +139,15 @@ namespace Sample.CommandServiceCore.Controllers
                 var member = Configuration.Instance.Get("Member:A");
                 _logger.LogInformation(new { profile, member });
             }
+
+            try
+            {
+                throw new Exception("test exception");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "test error!");
+            }
             _logger.LogWarning(new {text = "index test end"});
 
             return View();
