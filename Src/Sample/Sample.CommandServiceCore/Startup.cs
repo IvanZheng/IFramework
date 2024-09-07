@@ -91,9 +91,9 @@ namespace Sample.CommandServiceCore
                 .AddJsonNet()
                 .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                 .AddRelationalMessageStore<SampleModelContext>()
-                //.AddConfluentKafka()
+                .AddConfluentKafka()
                 //.AddRocketMQ()
-                .AddInMemoryMessageQueue()
+                //.AddInMemoryMessageQueue()
                 //.AddRabbitMQ(rabbitConnectionFactory)
                 .AddMessagePublisher("eventTopic")
                 .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
@@ -103,13 +103,13 @@ namespace Sample.CommandServiceCore
                     //options.EnableSensitiveDataLogging();
                     //options.UseLazyLoadingProxies();
                     //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                    //options.UseMySql(connectionString,
-                    //                 ServerVersion.AutoDetect(connectionString),
-                    //                 b => b.EnableRetryOnFailure())
-                    //       .AddInterceptors(new ReadCommittedTransactionInterceptor())
-                    //       .UseLazyLoadingProxies();
+                    options.UseMySql(connectionString,
+                                     ServerVersion.AutoDetect(connectionString),
+                                     b => b.EnableRetryOnFailure())
+                           .AddInterceptors(new ReadCommittedTransactionInterceptor())
+                           .UseLazyLoadingProxies();
                     //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                    options.UseInMemoryDatabase(nameof(SampleModelContext));
+                    //options.UseInMemoryDatabase(nameof(SampleModelContext));
                     //options.UseDm(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.Dm"),
                     //              b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name));
                     options.ConfigureWarnings(b => { b.Ignore(InMemoryEventId.TransactionIgnoredWarning); });

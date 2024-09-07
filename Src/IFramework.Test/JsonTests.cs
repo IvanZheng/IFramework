@@ -71,6 +71,7 @@ namespace IFramework.Test
         public void CloneTest()
         {
             var a = new AClass("ddd", "name");
+
             var cloneObject = a.CloneWith();
             Assert.True(a == cloneObject);
             

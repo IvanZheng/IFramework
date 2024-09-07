@@ -117,32 +117,5 @@ namespace IFramework.Domain
     #endif
     {
         public static T Empty => Activator.CreateInstance<T>();
-        public T CloneWith(object values = null)
-        {
-            // 获取类型
-            var type = typeof(T);
-
-            // 获取所有属性
-            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            // 创建新的参数数组
-            var parameters = new object[properties.Length];
-
-            // 填充参数数组
-            for (int i = 0; i < properties.Length; i++)
-            {
-                if (values?.HasProperty(properties[i].Name) ?? false)
-                {
-                    parameters[i] = values.GetPropertyValue(properties[i].Name);
-                }
-                else
-                {
-                    parameters[i] = properties[i].GetValue(this);
-                }
-            }
-
-            // 使用反射创建新的实例
-            return (T)Activator.CreateInstance(type, parameters);
-        }
     }
 }

@@ -29,7 +29,7 @@ namespace IFramework.Test.EntityFramework
     {
         public static int Total;
         private long _tenantId;
-
+        
         public DemoDbContext(DbContextOptions options)
             : base(options)
         {

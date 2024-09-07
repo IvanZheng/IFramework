@@ -3,23 +3,19 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
-using IFramework.Config;
 using IFramework.DependencyInjection;
-using IFramework.MessageQueue;
 using Microsoft.Extensions.Logging;
 
 namespace IFramework.Infrastructure
@@ -31,13 +27,57 @@ namespace IFramework.Infrastructure
         private static readonly uint[] Lookup32 = CreateLookup32();
         private static readonly ILogger Logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger(nameof(Utility));
         
-        public static T Clone<T>(this T obj, object newValues = null, bool deSerializeNonPublic = true) where T: class
+       
+
+        /// <summary>
+        /// 用于record类型的克隆
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static T CloneWith<T>(this T obj, object values = null)
+        {
+            // 获取类型
+            var type = typeof(T);
+
+            // 获取所有属性
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            // 创建新的参数数组
+            var parameters = new object[properties.Length];
+
+            // 填充参数数组
+            for (int i = 0; i < properties.Length; i++)
+            {
+                if (values?.HasProperty(properties[i].Name) ?? false)
+                {
+                    parameters[i] = values.GetPropertyValue(properties[i].Name);
+                }
+                else
+                {
+                    parameters[i] = properties[i].GetValue(obj);
+                }
+            }
+
+            // 使用反射创建新的实例
+            return (T)Activator.CreateInstance(type, parameters);
+        }
+        /// <summary>
+        /// 使用json克隆对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="newValues"></param>
+        /// <param name="deSerializeNonPublic"></param>
+        /// <returns></returns>
+        public static T Clone<T>(this T obj, object newValues = null, bool deSerializeNonPublic = true) where T : class
         {
             var cloned = obj.ToJson().ToJsonObject<T>(deSerializeNonPublic);
             newValues?.GetType().GetProperties().ForEach(p => { cloned.SetValueByKey(p.Name, p.GetValue(newValues)); });
             return cloned;
         }
-        
+
         public static string GetFullNameWithAssembly(this Type type)
         {
             return $"{type.FullName}, {type.Assembly.GetName().Name}";
