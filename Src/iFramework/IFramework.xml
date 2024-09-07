@@ -853,6 +853,25 @@
                 task times out.
             </returns>
         </member>
+        <member name="M:IFramework.Infrastructure.Utility.CloneWith``1(``0,System.Object)">
+            <summary>
+            用于record类型的克隆
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="obj"></param>
+            <param name="values"></param>
+            <returns></returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.Utility.Clone``1(``0,System.Object,System.Boolean)">
+            <summary>
+            使用json克隆对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="obj"></param>
+            <param name="newValues"></param>
+            <param name="deSerializeNonPublic"></param>
+            <returns></returns>
+        </member>
         <member name="T:IFramework.MessageQueue.AutoOffsetReset">
              <summary>
              Action to take when there is no initial offset in offset store or the desired offset is out of range:

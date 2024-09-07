@@ -15,6 +15,10 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\IFramework.Logging.Abastracts\IFramework.Logging.Abstracts.csproj" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <ProjectReference Include="..\IFramework.Logging.Abastracts\IFramework.Logging.Abstracts.csproj" />
 	</ItemGroup>
 </Project>
