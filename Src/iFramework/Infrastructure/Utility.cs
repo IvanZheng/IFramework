@@ -406,7 +406,17 @@ namespace IFramework.Infrastructure
             return query.Skip(pageIndex * pageSize).Take(pageSize);
         }
 
-    
+        public static PropertyInfo GetProperty(this object obj, string propertyName)
+        {
+            return obj.GetType()
+                              .GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        }
+
+        public static bool HasProperty(this object obj, string propertyName)
+        {
+            return obj.GetProperty(propertyName) != null;
+        }
+
         public static T GetPropertyValue<T>(this object obj, string name)
         {
             var retValue = default(T);
@@ -414,8 +424,7 @@ namespace IFramework.Infrastructure
             try
             {
 
-                var property = obj.GetType()
-                                  .GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var property = obj.GetProperty(name);
                 if (property != null)
                 {
                     objValue = FastInvoke.GetMethodInvoker(property.GetGetMethod(true))(obj, null);
@@ -437,9 +446,7 @@ namespace IFramework.Infrastructure
         public static object GetPropertyValue(this object obj, string name)
         {
             object objValue = null;
-            var property = obj.GetType()
-                              .GetProperty(name,
-                                           BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var property = obj.GetProperty(name);
             if (property != null)
             {
                 objValue = FastInvoke.GetMethodInvoker(property.GetGetMethod(true))(obj, null);
@@ -450,9 +457,7 @@ namespace IFramework.Infrastructure
 
         public static void SetValueByKey(this object obj, string name, object value)
         {
-            var property = obj.GetType()
-                              .GetProperty(name,
-                                           BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var property = obj.GetProperty(name);
             if (property != null)
             {
                 FastInvoke.GetMethodInvoker(property.GetSetMethod(true))(obj, new[] { value });
