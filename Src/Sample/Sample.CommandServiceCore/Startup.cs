@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using IFramework.AspNet;
+using IFramework.AspNet.Swagger;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.EntityFrameworkCore;
 using IFramework.EventStore.Redis;
+using IFramework.Exceptions;
 using IFramework.Infrastructure.EventSourcing;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
@@ -35,6 +38,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
 using Sample.Applications;
@@ -91,9 +96,9 @@ namespace Sample.CommandServiceCore
                 .AddJsonNet()
                 .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                 .AddRelationalMessageStore<SampleModelContext>()
-                .AddConfluentKafka()
+                //.AddConfluentKafka()
                 //.AddRocketMQ()
-                //.AddInMemoryMessageQueue()
+                .AddInMemoryMessageQueue()
                 //.AddRabbitMQ(rabbitConnectionFactory)
                 .AddMessagePublisher("eventTopic")
                 .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
@@ -103,13 +108,13 @@ namespace Sample.CommandServiceCore
                     //options.EnableSensitiveDataLogging();
                     //options.UseLazyLoadingProxies();
                     //options.UseSqlServer(Configuration.Instance.GetConnectionString(nameof(SampleModelContext)));
-                    options.UseMySql(connectionString,
-                                     ServerVersion.AutoDetect(connectionString),
-                                     b => b.EnableRetryOnFailure())
-                           .AddInterceptors(new ReadCommittedTransactionInterceptor())
-                           .UseLazyLoadingProxies();
+                    //options.UseMySql(connectionString,
+                    //                 ServerVersion.AutoDetect(connectionString),
+                    //                 b => b.EnableRetryOnFailure())
+                    //       .AddInterceptors(new ReadCommittedTransactionInterceptor())
+                    //       .UseLazyLoadingProxies();
                     //options.UseMongoDb(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.MongoDb"));
-                    //options.UseInMemoryDatabase(nameof(SampleModelContext));
+                    options.UseInMemoryDatabase(nameof(SampleModelContext));
                     //options.UseDm(Configuration.Instance.GetConnectionString($"{nameof(SampleModelContext)}.Dm"),
                     //              b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name));
                     options.ConfigureWarnings(b => { b.Ignore(InMemoryEventId.TransactionIgnoredWarning); });
@@ -132,7 +137,20 @@ namespace Sample.CommandServiceCore
             });
             services.AddRazorPages()
                     .AddControllersAsServices()
-                    .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+                    .AddNewtonsoftJson(options =>
+                    {
+                        options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+
+                        var namesContractResolver = new CamelCasePropertyNamesContractResolver();
+                        if (namesContractResolver.NamingStrategy != null)
+                        {
+                            namesContractResolver.NamingStrategy.ProcessDictionaryKeys = false;
+                        }
+                        options.SerializerSettings.ContractResolver = namesContractResolver;
+                        
+                        options.SerializerSettings.Converters.Add(new EnumConverter(typeof(ErrorCode)));
+                        options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm";
+                    });
             services.AddHttpContextAccessor();
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -150,6 +168,15 @@ namespace Sample.CommandServiceCore
             services.AddScoped<ICommunityService, CommunityService>(new InterfaceInterceptorInjection(),
                                                                     new InterceptionBehaviorInjection());
             services.RegisterMessageHandlers(new[] { "CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber" });
+
+            services.AddSwaggerGen(c =>
+            {
+                c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Sample.CommandServiceCore.xml"));
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sample.CommandServiceCore.API", Version = "v1" });
+                c.OperationFilter<SwaggerDefaultValues>();
+                c.DocumentFilter<SwaggerAddEnumDescriptions>(nameof(Sample));
+                c.SchemaFilter<EnumSchemaFilter>();
+            });
 
             //services.AddMiniProfiler()
             //        .AddEntityFramework();
@@ -211,6 +238,16 @@ namespace Sample.CommandServiceCore
                                .Register(nameof(AccountCreated), typeof(AccountCreated));
 
             StartMessageQueueComponents();
+
+            var basePath = _configuration["BasePath"];
+            if (!string.IsNullOrWhiteSpace(basePath))
+            {
+                app.UsePathBase(basePath);
+            }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint($"{basePath}/swagger/v1/swagger.json", "IFramework.Sample.API V1"); });
+
 
             if (env.IsDevelopment())
             {

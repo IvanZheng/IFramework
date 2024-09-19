@@ -12,6 +12,10 @@ namespace IFramework.JsonNet
 {
     public static class JsonHelper
     {
+        public static bool IsNullableType(this Type type) => type.IsGenericType(typeof(Nullable<>));
+
+        public static bool IsGenericType(this Type type, Type genericType) => type.IsGenericType && type.GetGenericTypeDefinition() == genericType;
+
         private static readonly ConcurrentDictionary<string, JsonSerializerSettings> SettingDictionary = new ConcurrentDictionary<string, JsonSerializerSettings>();
 
         internal static JsonSerializerSettings InternalGetCustomJsonSerializerSettings(bool serializeNonPublic,

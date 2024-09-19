@@ -10,6 +10,7 @@ namespace IFramework.AspNet.Swagger
     public class SwaggerAddEnumDescriptions : IDocumentFilter
     {
         private readonly string _namespace;
+
         public SwaggerAddEnumDescriptions(string @namespace)
         {
             _namespace = @namespace;
@@ -21,7 +22,7 @@ namespace IFramework.AspNet.Swagger
             foreach (var property in swaggerDoc.Components.Schemas.Where(x => x.Value?.Enum?.Count > 0))
             {
                 IList<IOpenApiAny> propertyEnums = property.Value.Enum;
-                if (propertyEnums != null && propertyEnums.Count > 0)
+                if (propertyEnums is { Count: > 0 })
                 {
                     property.Value.Description += Environment.NewLine + DescribeEnum(propertyEnums, property.Key);
                 }
@@ -38,11 +39,11 @@ namespace IFramework.AspNet.Swagger
         {
             if (operations != null)
             {
-                foreach (var oper in operations)
+                foreach (var operation in operations)
                 {
-                    foreach (var param in oper.Value.Parameters)
+                    foreach (var param in operation.Value.Parameters)
                     {
-                        var paramEnum = swaggerDoc.Components.Schemas.FirstOrDefault(x => x.Key == param.Name);
+                        var paramEnum = swaggerDoc.Components.Schemas.FirstOrDefault(x => x.Key == param.Schema.Reference?.Id);
                         if (paramEnum.Value != null)
                         {
                             param.Description += Environment.NewLine + DescribeEnum(paramEnum.Value.Enum, paramEnum.Key);
@@ -74,17 +75,16 @@ namespace IFramework.AspNet.Swagger
                 {
                     var enumValue = Enum.Parse(enumType, Enum.GetName(enumType, enumOptionInteger.Value) ?? string.Empty);
 
-                    enumDescriptions.Add($"{enumValue} = {(int)enumValue} {((Enum)enumValue).GetDescriptionAttribute()?.Description}{Environment.NewLine}");
+                    enumDescriptions.Add($"{enumValue} = {(int)enumValue} {((Enum)enumValue).GetDescriptionAttribute()?.Description}");
                 }
                 else if (openApiAny is OpenApiString enumOptionString)
                 {
                     var enumValue = Enum.Parse(enumType, enumOptionString.Value);
-                    enumDescriptions.Add($"{enumValue} = {(int)enumValue} {((Enum)enumValue).GetDescriptionAttribute()?.Description}{Environment.NewLine}");
+                    enumDescriptions.Add($"{enumValue} = {(int)enumValue} {((Enum)enumValue).GetDescriptionAttribute()?.Description}");
                 }
-
             }
 
-            return string.Join(Environment.NewLine, enumDescriptions.ToArray());
+            return string.Join($",{Environment.NewLine}", enumDescriptions.ToArray());
         }
     }
 }

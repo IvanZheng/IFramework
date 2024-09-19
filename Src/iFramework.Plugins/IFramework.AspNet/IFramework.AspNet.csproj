@@ -6,6 +6,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/IvanZheng/IFramework</PackageProjectUrl>
     <PackageReleaseNotes>Enable SourceLink.</PackageReleaseNotes>
+    <LangVersion>latest</LangVersion>      	
 	<PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 	<IncludeSymbols>true</IncludeSymbols>
@@ -39,10 +40,6 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
 	  <ProjectReference Include="..\..\iFramework\IFramework.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Swagger\" />
   </ItemGroup>
   
 </Project>

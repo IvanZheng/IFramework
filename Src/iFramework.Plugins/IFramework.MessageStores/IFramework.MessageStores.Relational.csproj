@@ -11,7 +11,8 @@
 	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
 	  <IncludeSymbols>true</IncludeSymbols>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>      	
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <LangVersion>9.0</LangVersion>      	
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
