@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Autofac;
 using IFramework.AspNet;
 using IFramework.AspNet.Swagger;
 using IFramework.Command;
@@ -33,6 +34,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -53,6 +56,7 @@ using Sample.Domain;
 using Sample.DomainEvents.Banks;
 using Sample.Persistence;
 using Sample.Persistence.Repositories;
+using static IdentityModel.ClaimComparer;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 
 namespace Sample.CommandServiceCore
@@ -182,13 +186,22 @@ namespace Sample.CommandServiceCore
             //        .AddEntityFramework();
         }
 
-        //public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
-        //{
-        //    var lifetime = ServiceLifetime.Scoped;
-        //    providerBuilder.Register<HomeController, HomeController>(lifetime,
-        //                                                             new VirtualMethodInterceptorInjection(),
-        //                                                             new InterceptionBehaviorInjection());
-        //  }
+        public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
+        {
+            providerBuilder.Register(c =>
+                                     {
+#pragma warning disable EF1001
+                                         var contextPool = c.GetService<IDbContextPool<SampleModelContext>>();
+                                         return  new ScopedDbContextLease<SampleModelContext>(contextPool).Context;
+                                     },
+                                     ServiceLifetime.Scoped,
+                                     ctx =>
+                                     {
+                                         var contextPool = ctx.GetService<IDbContextPool<SampleModelContext>>();
+                                         contextPool.Return(ctx);
+#pragma warning restore EF1001
+                                     });
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,

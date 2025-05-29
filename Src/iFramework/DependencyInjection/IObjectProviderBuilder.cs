@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.DependencyInjection
@@ -10,7 +11,8 @@ namespace IFramework.DependencyInjection
         IObjectProviderBuilder Populate(IServiceCollection serviceCollection);
 
         IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime);
-
+        IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime, Action<TFrom> releaseAction);
+        IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime, Func<TFrom, ValueTask> releaseFunc);
         IObjectProviderBuilder Register(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections);
 
         IObjectProviderBuilder Register(Type from, Type to, ServiceLifetime lifetime, params Injection[] injections);

@@ -457,6 +457,22 @@ namespace IFramework.Infrastructure
             return obj.GetProperty(propertyName) != null;
         }
 
+
+        public static T GetFieldValue<T>(this object obj, string name)
+        {
+            T retValue;
+            try
+            {
+                var fieldInfo = obj.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
+                retValue = (T)fieldInfo?.GetValue(obj);
+            }
+            catch (Exception)
+            {
+                retValue = default;
+            }
+            return retValue;
+        }
+
         public static T GetPropertyValue<T>(this object obj, string name)
         {
             var retValue = default(T);
