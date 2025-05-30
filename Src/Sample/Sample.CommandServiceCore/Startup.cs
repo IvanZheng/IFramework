@@ -188,19 +188,7 @@ namespace Sample.CommandServiceCore
 
         public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
         {
-            providerBuilder.Register(c =>
-                                     {
-#pragma warning disable EF1001
-                                         var contextPool = c.GetService<IDbContextPool<SampleModelContext>>();
-                                         return  new ScopedDbContextLease<SampleModelContext>(contextPool).Context;
-                                     },
-                                     ServiceLifetime.Scoped,
-                                     ctx =>
-                                     {
-                                         var contextPool = ctx.GetService<IDbContextPool<SampleModelContext>>();
-                                         contextPool.Return(ctx);
-#pragma warning restore EF1001
-                                     });
+            providerBuilder.RegisterDbContextPool<SampleModelContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

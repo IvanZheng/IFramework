@@ -6,6 +6,8 @@ using IFramework.Infrastructure;
 using IFramework.Repositories;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.EntityFrameworkCore
@@ -41,6 +43,15 @@ namespace IFramework.EntityFrameworkCore
             services.AddService(typeof(IRepository<>), repositoryType, lifetime);
             services.AddService<IDomainRepository, DomainRepository>(lifetime);
             return services;
+        }
+
+        public static IObjectProviderBuilder RegisterDbContextPool<TContext>(this IObjectProviderBuilder providerBuilder) where TContext : DbContext
+        {
+#pragma warning disable EF1001
+            return providerBuilder.Register(c => new ScopedDbContextLease<TContext>(c.GetService<IDbContextPool<TContext>>()).Context,
+                                            ServiceLifetime.Scoped,
+                                            ctx => ctx.GetService<IDbContextPool<TContext>>().Return(ctx));
+#pragma warning restore EF1001
         }
     }
 }
