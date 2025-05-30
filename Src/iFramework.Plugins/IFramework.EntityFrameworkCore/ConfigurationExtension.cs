@@ -44,7 +44,12 @@ namespace IFramework.EntityFrameworkCore
             services.AddService<IDomainRepository, DomainRepository>(lifetime);
             return services;
         }
-
+        /// <summary>
+        /// // 使用autofac时会使dbContextPool机制失效， 必须使用ScopedDbContextLease来获取DbContext实例, 让DbContextPool重新起作用
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="providerBuilder"></param>
+        /// <returns></returns>
         public static IObjectProviderBuilder RegisterDbContextPool<TContext>(this IObjectProviderBuilder providerBuilder) where TContext : DbContext
         {
 #pragma warning disable EF1001
