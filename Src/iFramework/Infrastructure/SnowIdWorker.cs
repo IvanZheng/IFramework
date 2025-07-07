@@ -11,7 +11,7 @@ namespace IFramework.Infrastructure
 {
     public class SnowIdWorker
     {
-        private static Lazy<IdWorker> Instance = new Lazy<IdWorker>(() =>
+        public static Lazy<IdWorker> Instance = new Lazy<IdWorker>(() =>
         {
             var workerId = Configuration.Instance.GetValue<long?>($"{nameof(SnowIdWorker)}:Id") ?? 0;
             var dataCenterId = Configuration.Instance.GetValue<long?>($"{nameof(SnowIdWorker)}:DataCenterId") ?? 0;
@@ -32,6 +32,11 @@ namespace IFramework.Infrastructure
         public static string GenerateId()
         {
             return Instance.Value.NextId().ToString();
+        }
+
+        public static long GenerateLongId()
+        {
+            return Instance.Value.NextId();
         }
 
         private static string GetLocalIpAddress()

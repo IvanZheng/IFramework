@@ -13,6 +13,14 @@
             <param name="lifetime"></param>
             <returns></returns>
         </member>
+        <member name="M:IFramework.EntityFrameworkCore.ConfigurationExtension.RegisterDbContextPool``1(IFramework.DependencyInjection.IObjectProviderBuilder)">
+            <summary>
+            // 使用autofac时会使dbContextPool机制失效， 必须使用ScopedDbContextLease来获取DbContext实例, 让DbContextPool重新起作用
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <param name="providerBuilder"></param>
+            <returns></returns>
+        </member>
         <member name="M:IFramework.EntityFrameworkCore.MsDbContext.IsEntryModified(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry,System.Boolean,System.Boolean)">
             <summary>
             Warning! this method will be into endless loop if there is a bi-direction between no-!AggregateRoot objects.
