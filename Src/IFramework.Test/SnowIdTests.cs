@@ -1,4 +1,5 @@
 ﻿using IFramework.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,6 @@ namespace IFramework.Test
             var id = SnowIdWorker.GenerateLongId();
 
             var dateTime = SnowIdWorker.ExtractTimestamp(id);
-
             Assert.Equal(dateTime.Date, DateTime.Now.Date);
         }
     }
