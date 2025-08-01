@@ -50,13 +50,36 @@ namespace IFramework.EntityFrameworkCore
         /// <typeparam name="TContext"></typeparam>
         /// <param name="providerBuilder"></param>
         /// <returns></returns>
-        public static IObjectProviderBuilder RegisterDbContextPool<TContext>(this IObjectProviderBuilder providerBuilder) where TContext : DbContext
+        public static IObjectProviderBuilder RegisterDbContextPool<TContext>(this IObjectProviderBuilder providerBuilder, Action<TContext> releaseAction = null) where TContext : DbContext
         {
 #pragma warning disable EF1001
             return providerBuilder.Register(c => new ScopedDbContextLease<TContext>(c.GetService<IDbContextPool<TContext>>()).Context,
                                             ServiceLifetime.Scoped,
-                                            ctx => ctx.GetService<IDbContextPool<TContext>>().Return(ctx));
+                                            ctx =>
+                                            {
+                                                releaseAction?.Invoke(ctx);
+                                                ctx.GetService<IDbContextPool<TContext>>().Return(ctx);
+                                            });
 #pragma warning restore EF1001
         }
+#if NET8_0_OR_GREATER
+        public static IServiceCollection AddReleaseActionDbContextPool<TContext>(this IServiceCollection services, Action<TContext> releaseAction, IServiceProvider serviceProvider) where TContext:DbContext
+        {
+            return services.AddSingleton<IDbContextPool<TContext>>(provider =>
+            {
+                var options = provider.GetRequiredService<DbContextOptions<TContext>>();
+                return new ReleaseActionDbContextPool<TContext>(options, releaseAction, serviceProvider);
+            });
+        }
+#else
+        public static IServiceCollection AddReleaseActionDbContextPool<TContext>(this IServiceCollection services, Action<TContext> releaseAction) where TContext : DbContext
+        {
+            return services.AddSingleton<IDbContextPool<TContext>>(provider =>
+            {
+                var options = provider.GetRequiredService<DbContextOptions<TContext>>();
+                return new ReleaseActionDbContextPool<TContext>(options, releaseAction);
+            });
+        }
+#endif
     }
 }

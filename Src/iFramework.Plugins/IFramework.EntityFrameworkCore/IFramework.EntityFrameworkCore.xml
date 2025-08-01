@@ -13,7 +13,7 @@
             <param name="lifetime"></param>
             <returns></returns>
         </member>
-        <member name="M:IFramework.EntityFrameworkCore.ConfigurationExtension.RegisterDbContextPool``1(IFramework.DependencyInjection.IObjectProviderBuilder)">
+        <member name="M:IFramework.EntityFrameworkCore.ConfigurationExtension.RegisterDbContextPool``1(IFramework.DependencyInjection.IObjectProviderBuilder,System.Action{``0})">
             <summary>
             // 使用autofac时会使dbContextPool机制失效， 必须使用ScopedDbContextLease来获取DbContext实例, 让DbContextPool重新起作用
             </summary>
