@@ -44,6 +44,7 @@ namespace IFramework.EntityFrameworkCore
             services.AddService<IDomainRepository, DomainRepository>(lifetime);
             return services;
         }
+#pragma warning disable EF1001
         /// <summary>
         /// // 使用autofac时会使dbContextPool机制失效， 必须使用ScopedDbContextLease来获取DbContext实例, 让DbContextPool重新起作用
         /// </summary>
@@ -52,7 +53,7 @@ namespace IFramework.EntityFrameworkCore
         /// <returns></returns>
         public static IObjectProviderBuilder RegisterDbContextPool<TContext>(this IObjectProviderBuilder providerBuilder, Action<TContext> releaseAction = null) where TContext : DbContext
         {
-#pragma warning disable EF1001
+
             return providerBuilder.Register(c => new ScopedDbContextLease<TContext>(c.GetService<IDbContextPool<TContext>>()).Context,
                                             ServiceLifetime.Scoped,
                                             ctx =>
@@ -60,15 +61,14 @@ namespace IFramework.EntityFrameworkCore
                                                 releaseAction?.Invoke(ctx);
                                                 ctx.GetService<IDbContextPool<TContext>>().Return(ctx);
                                             });
-#pragma warning restore EF1001
         }
 #if NET8_0_OR_GREATER
-        public static IServiceCollection AddReleaseActionDbContextPool<TContext>(this IServiceCollection services, Action<TContext> releaseAction, IServiceProvider serviceProvider) where TContext:DbContext
+        public static IServiceCollection AddReleaseActionDbContextPool<TContext>(this IServiceCollection services, Action<TContext> releaseAction, IServiceProvider serviceProvider = null) where TContext:DbContext
         {
             return services.AddSingleton<IDbContextPool<TContext>>(provider =>
             {
                 var options = provider.GetRequiredService<DbContextOptions<TContext>>();
-                return new ReleaseActionDbContextPool<TContext>(options, releaseAction, serviceProvider);
+                return new ReleaseActionDbContextPool<TContext>(options, releaseAction, serviceProvider ?? provider);
             });
         }
 #else
@@ -82,4 +82,5 @@ namespace IFramework.EntityFrameworkCore
         }
 #endif
     }
+#pragma warning restore EF1001
 }
