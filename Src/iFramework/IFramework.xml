@@ -137,6 +137,13 @@
             </summary>
             <returns>Collection of atomic values.</returns>
         </member>
+        <member name="M:IFramework.Domain.ValueObject.Equals(System.Object)">
+            <summary>
+                Compares two Value Objects according to atomic values returned by <see cref="M:IFramework.Domain.ValueObject.GetAtomicValues" />.
+            </summary>
+            <param name="obj">Object to compare to.</param>
+            <returns>True if objects are considered equal.</returns>
+        </member>
         <member name="M:IFramework.Domain.ValueObject.GetHashCode">
             <summary>
                 Returns hashcode value calculated according to a collection of atomic values
@@ -836,6 +843,12 @@
             <param name="url">文件的url地址,一个绝对的url地址</param>
             <param name="objWebClient">System.Net.WebClient 对象</param>
             <returns></returns>
+        </member>
+        <member name="M:IFramework.Infrastructure.SnowIdWorker.GetGeneratorId">
+            <summary>
+            获取生成器ID，支持多种方式
+            优先级: 环境变量 > 配置文件 > 主机名哈希 > 默认值
+            </summary>
         </member>
         <member name="M:IFramework.Infrastructure.TimerTaskFactory.StartNew``1(System.Func{``0},System.Func{``0,System.Boolean},System.TimeSpan,System.TimeSpan,System.Boolean)">
             <summary>
