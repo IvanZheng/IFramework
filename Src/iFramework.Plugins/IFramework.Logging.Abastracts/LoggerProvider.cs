@@ -49,7 +49,7 @@ namespace IFramework.Logging.Abstracts
                    
                     if (logEvents.Count == 0)
                     {
-                        Task.Delay(100, CancellationToken.None).Wait();
+                        Task.Delay(100, cs.Token).Wait();
                     }
                     else
                     {
@@ -69,7 +69,7 @@ namespace IFramework.Logging.Abstracts
                     Trace.WriteLine(ex);
                     if (!cs.IsCancellationRequested)
                     {
-                         Task.Delay(1000, CancellationToken.None).Wait();
+                         Task.Delay(1000, cs.Token).Wait();
                     }
                 }
             }

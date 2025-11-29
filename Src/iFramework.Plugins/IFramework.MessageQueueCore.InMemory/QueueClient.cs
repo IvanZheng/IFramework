@@ -82,7 +82,7 @@ namespace IFramework.MessageQueue.InMemory
                 {
                     if (!cancellationTokenSource.IsCancellationRequested)
                     {
-                        Task.Delay(1000, CancellationToken.None).Wait();
+                        Task.Delay(1000, cancellationTokenSource.Token).Wait();
                         Logger.LogError(ex, $"QueueClient {Id} ReceiveMessages failed!");
                     }
                 }
