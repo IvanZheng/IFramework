@@ -101,7 +101,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
                 {
                     if (!cancellationTokenSource.IsCancellationRequested)
                     {
-                        Task.Delay(1000).Wait();
+                        Task.Delay(1000, CancellationToken.None).Wait();
                         Logger.LogError(ex, $"{Id} topic:{string.Join(",", Topics)} ReceiveMessages failed!");
                     }
                 }
@@ -115,7 +115,7 @@ namespace IFramework.MessageQueue.Client.Abstracts
             var remainMessageCount = 0;
             while ((remainMessageCount = SlidingDoors.Sum(d => d.Value.MessageCount)) > ConsumerConfig.FullLoadThreshold)
             {
-                Task.Delay(ConsumerConfig.WaitInterval).Wait();
+                Task.Delay(ConsumerConfig.WaitInterval, CancellationToken.None).Wait();
                 Logger.LogWarning($"{Id} is full load sleep {ConsumerConfig.WaitInterval} ms, remain message count:{remainMessageCount} threshold:{ConsumerConfig.FullLoadThreshold}");
             }
         }

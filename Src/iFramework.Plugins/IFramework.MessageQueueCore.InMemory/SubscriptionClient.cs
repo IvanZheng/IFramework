@@ -88,7 +88,7 @@ namespace IFramework.MessageQueue.InMemory
                 {
                     if (!cancellationTokenSource.IsCancellationRequested)
                     {
-                        Task.Delay(1000).Wait();
+                        Task.Delay(1000, CancellationToken.None).Wait();
                         Logger.LogError(ex, $"SubscriptionClient {Id} ReceiveMessages failed!");
                     }
                 }

@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Proto = Apache.Rocketmq.V2;
 using NLog;
@@ -270,7 +271,7 @@ namespace Org.Apache.Rocketmq
 
                     var nextAttempt = 1 + attempt;
                     var delay = retryPolicy.GetNextAttemptDelay(nextAttempt);
-                    await Task.Delay(delay);
+                    await Task.Delay(delay, CancellationToken.None);
                     Logger.Warn(e, "Failed to send message due to too many request, would attempt to resend " +
                                    $"after {delay}, topic={message.Topic}, maxAttempts={maxAttempts}, attempt={attempt}, " +
                                    $"endpoints={endpoints}, messageId={message.MessageId}, clientId={ClientId}");

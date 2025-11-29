@@ -40,7 +40,7 @@ namespace ConsoleTest
         {
             ThreadPool.GetAvailableThreads(out var workerThreads, out var completionPortThreads);
             Console.WriteLine($"DoTaskAsync enter: workerThreads: {workerThreads} completionPortThreads: {completionPortThreads}");
-            await Task.Delay(200);
+            await Task.Delay(200, CancellationToken.None);
             ThreadPool.GetAvailableThreads(out workerThreads, out completionPortThreads);
             Console.WriteLine($"DoTaskAsync leave: workerThreads: {workerThreads} completionPortThreads: {completionPortThreads}");
             return "DoTaskAsync done";

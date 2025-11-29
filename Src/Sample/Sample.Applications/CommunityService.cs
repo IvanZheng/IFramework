@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
@@ -32,7 +33,7 @@ namespace Sample.Applications
 
         public async Task<(string, int)> MailboxTestAsync(MailboxRequest request)
         {
-            await Task.Delay(10).ConfigureAwait(false);
+            await Task.Delay(10, CancellationToken.None).ConfigureAwait(false);
 
             if (MailboxValues.TryGetValue(request.Id, out var value))
             {
