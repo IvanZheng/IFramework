@@ -47,6 +47,14 @@ namespace IFramework.AspNet
 
         public override void OnActionExecuted(ActionExecutedContext context)
         {
+            var disableFilter = context.ActionDescriptor.EndpointMetadata
+                                    .OfType<DisableApiResultWrapperAttribute>()
+                                    .Any();
+
+            if (disableFilter)
+            {
+                return;
+            }
             var logger = context.HttpContext
                                     .RequestServices
                                     .GetService<ILoggerFactory>()

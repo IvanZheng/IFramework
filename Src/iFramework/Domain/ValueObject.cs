@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Reflection;
 using IFramework.Infrastructure;
 
 namespace IFramework.Domain
 {
-    #if NET5_0_OR_GREATER
+#if NET5_0_OR_GREATER
     public abstract record ValueObject
     #else
     public abstract class ValueObject
@@ -65,7 +64,7 @@ namespace IFramework.Domain
         {
             return GetType().GetProperties().Where(p => !p.GetMethod.IsStatic).Select(p => p.GetValue(this, null));
         }
-
+        
 
         #if !NET5_0_OR_GREATER 
         /// <summary>
@@ -109,6 +108,7 @@ namespace IFramework.Domain
                 .Select(x => x != null ? x.GetHashCode() : 0)
                 .Aggregate((x, y) => x ^ y);
         }
+        
     }
     #if !NET5_0_OR_GREATER
     public abstract class ValueObject<T> : ValueObject where T: ValueObject

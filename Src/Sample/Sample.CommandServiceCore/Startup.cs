@@ -1,18 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using Autofac;
 using IFramework.AspNet;
+using IFramework.AspNet.Swagger;
 using IFramework.Command;
 using IFramework.Config;
 using IFramework.DependencyInjection;
 using IFramework.DependencyInjection.Autofac;
 using IFramework.EntityFrameworkCore;
 using IFramework.EventStore.Redis;
+using IFramework.Exceptions;
 using IFramework.Infrastructure.EventSourcing;
 using IFramework.Infrastructure.Mailboxes;
 using IFramework.Infrastructure.Mailboxes.Impl;
 using IFramework.JsonNet;
+using IFramework.Logging.Elasticsearch;
 using IFramework.Logging.Serilog;
 using IFramework.Message;
 using IFramework.MessageQueue;
@@ -29,11 +34,15 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RabbitMQ.Client;
 using Sample.Applications;
@@ -47,6 +56,7 @@ using Sample.Domain;
 using Sample.DomainEvents.Banks;
 using Sample.Persistence;
 using Sample.Persistence.Repositories;
+using static IdentityModel.ClaimComparer;
 using ApiResultWrapAttribute = Sample.CommandServiceCore.Filters.ApiResultWrapAttribute;
 
 namespace Sample.CommandServiceCore
@@ -67,10 +77,12 @@ namespace Sample.CommandServiceCore
         private const string App = "uat";
         private static readonly string TopicPrefix = App.Length == 0 ? string.Empty : $"{App}{QueueNameSplit}";
         private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             _configuration = configuration;
+            _env = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -89,8 +101,8 @@ namespace Sample.CommandServiceCore
                 .AddEntityFrameworkComponents(typeof(RepositoryBase<>))
                 .AddRelationalMessageStore<SampleModelContext>()
                 //.AddConfluentKafka()
-                .AddRocketMQ()
-                //.AddInMemoryMessageQueue()
+                //.AddRocketMQ()
+                .AddInMemoryMessageQueue()
                 //.AddRabbitMQ(rabbitConnectionFactory)
                 .AddMessagePublisher("eventTopic")
                 .AddCommandBus(Environment.MachineName, serialCommandManager: new SerialCommandManager())
@@ -113,6 +125,7 @@ namespace Sample.CommandServiceCore
                 })
                 .AddDatabaseDeveloperPageExceptionFilter()
                 .AddEventSourcing()
+                //.AddElasticsearchLogging(_configuration, _env)
                 ;
             //services.AddLog4Net(new Log4NetProviderOptions {EnableScope = false});
             services.AddCustomOptions<MailboxOption>(options => options.BatchCount = 1000);
@@ -128,7 +141,20 @@ namespace Sample.CommandServiceCore
             });
             services.AddRazorPages()
                     .AddControllersAsServices()
-                    .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+                    .AddNewtonsoftJson(options =>
+                    {
+                        options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+
+                        var namesContractResolver = new CamelCasePropertyNamesContractResolver();
+                        if (namesContractResolver.NamingStrategy != null)
+                        {
+                            namesContractResolver.NamingStrategy.ProcessDictionaryKeys = false;
+                        }
+                        options.SerializerSettings.ContractResolver = namesContractResolver;
+                        
+                        options.SerializerSettings.Converters.Add(new EnumConverter(typeof(ErrorCode)));
+                        options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm";
+                    });
             services.AddHttpContextAccessor();
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -147,17 +173,23 @@ namespace Sample.CommandServiceCore
                                                                     new InterceptionBehaviorInjection());
             services.RegisterMessageHandlers(new[] { "CommandHandlers", "DomainEventSubscriber", "ApplicationEventSubscriber" });
 
+            services.AddSwaggerGen(c =>
+            {
+                c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Sample.CommandServiceCore.xml"));
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sample.CommandServiceCore.API", Version = "v1" });
+                c.OperationFilter<SwaggerDefaultValues>();
+                c.DocumentFilter<SwaggerAddEnumDescriptions>(nameof(Sample));
+                c.SchemaFilter<EnumSchemaFilter>();
+            });
+
             //services.AddMiniProfiler()
             //        .AddEntityFramework();
         }
 
-        //public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
-        //{
-        //    var lifetime = ServiceLifetime.Scoped;
-        //    providerBuilder.Register<HomeController, HomeController>(lifetime,
-        //                                                             new VirtualMethodInterceptorInjection(),
-        //                                                             new InterceptionBehaviorInjection());
-        //  }
+        public void ConfigureContainer(IObjectProviderBuilder providerBuilder)
+        {
+            providerBuilder.RegisterDbContextPool<SampleModelContext>();
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
@@ -207,6 +239,16 @@ namespace Sample.CommandServiceCore
                                .Register(nameof(AccountCreated), typeof(AccountCreated));
 
             StartMessageQueueComponents();
+
+            var basePath = _configuration["BasePath"];
+            if (!string.IsNullOrWhiteSpace(basePath))
+            {
+                app.UsePathBase(basePath);
+            }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint($"{basePath}/swagger/v1/swagger.json", "IFramework.Sample.API V1"); });
+
 
             if (env.IsDevelopment())
             {

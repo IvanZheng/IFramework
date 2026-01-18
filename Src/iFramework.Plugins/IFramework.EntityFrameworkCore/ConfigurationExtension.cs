@@ -6,6 +6,8 @@ using IFramework.Infrastructure;
 using IFramework.Repositories;
 using IFramework.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IFramework.EntityFrameworkCore
@@ -42,5 +44,43 @@ namespace IFramework.EntityFrameworkCore
             services.AddService<IDomainRepository, DomainRepository>(lifetime);
             return services;
         }
+#pragma warning disable EF1001
+        /// <summary>
+        /// // 使用autofac时会使dbContextPool机制失效， 必须使用ScopedDbContextLease来获取DbContext实例, 让DbContextPool重新起作用
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="providerBuilder"></param>
+        /// <returns></returns>
+        public static IObjectProviderBuilder RegisterDbContextPool<TContext>(this IObjectProviderBuilder providerBuilder, Action<TContext> releaseAction = null) where TContext : DbContext
+        {
+
+            return providerBuilder.Register(c => new ScopedDbContextLease<TContext>(c.GetService<IDbContextPool<TContext>>()).Context,
+                                            ServiceLifetime.Scoped,
+                                            ctx =>
+                                            {
+                                                releaseAction?.Invoke(ctx);
+                                                ctx.GetService<IDbContextPool<TContext>>().Return(ctx);
+                                            });
+        }
+#if NET8_0_OR_GREATER
+        public static IServiceCollection AddReleaseActionDbContextPool<TContext>(this IServiceCollection services, Action<TContext> releaseAction, IServiceProvider serviceProvider = null) where TContext:DbContext
+        {
+            return services.AddSingleton<IDbContextPool<TContext>>(provider =>
+            {
+                var options = provider.GetRequiredService<DbContextOptions<TContext>>();
+                return new ReleaseActionDbContextPool<TContext>(options, releaseAction, serviceProvider ?? provider);
+            });
+        }
+#else
+        public static IServiceCollection AddReleaseActionDbContextPool<TContext>(this IServiceCollection services, Action<TContext> releaseAction) where TContext : DbContext
+        {
+            return services.AddSingleton<IDbContextPool<TContext>>(provider =>
+            {
+                var options = provider.GetRequiredService<DbContextOptions<TContext>>();
+                return new ReleaseActionDbContextPool<TContext>(options, releaseAction);
+            });
+        }
+#endif
     }
+#pragma warning restore EF1001
 }

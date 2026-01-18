@@ -15,13 +15,8 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace IFramework.EntityFrameworkCore
 {
-    public class MsDbContext : DbContext, IDbContext
+    public class MsDbContext(DbContextOptions options) : DbContext(options), IDbContext
     {
-        public MsDbContext(DbContextOptions options)
-            : base(options)
-        {
-        }
-
         public void Reload<TEntity>(TEntity entity, bool includeSubObjects = true)
             where TEntity : class
         {
@@ -45,7 +40,7 @@ namespace IFramework.EntityFrameworkCore
 
                 foreach (var collectionEntry in entityEntry.Members.OfType<CollectionEntry>())
                 {
-                    if (collectionEntry.IsLoaded)
+                    if (collectionEntry.IsLoaded && collectionEntry.CurrentValue != null)
                     {
                         foreach (var entity in collectionEntry.CurrentValue)
                         {
@@ -83,13 +78,16 @@ namespace IFramework.EntityFrameworkCore
                 {
                     if (collectionEntry.IsLoaded)
                     {
-                        foreach (var entity in collectionEntry.CurrentValue.OfType<object>().ToArray())
+                        if (collectionEntry.CurrentValue != null)
                         {
-                            var subEntityEntry = Entry(entity);
-                            await ReloadAsync(subEntityEntry,
-                                              true,
-                                              cancellationToken).ConfigureAwait(false);
-                            subEntityEntry.State = EntityState.Detached;
+                            foreach (var entity in collectionEntry.CurrentValue.OfType<object>().ToArray())
+                            {
+                                var subEntityEntry = Entry(entity);
+                                await ReloadAsync(subEntityEntry,
+                                                  true,
+                                                  cancellationToken).ConfigureAwait(false);
+                                subEntityEntry.State = EntityState.Detached;
+                            }
                         }
 
                         collectionEntry.CurrentValue = null;
@@ -106,10 +104,7 @@ namespace IFramework.EntityFrameworkCore
             where TEntity : class
         {
             var entry = Entry(entity);
-            if (entry != null)
-            {
-                entry.State = EntityState.Deleted;
-            }
+            entry.State = EntityState.Deleted;
         }
 
         public void LoadReference<TEntity, TEntityProperty>(TEntity entity, Expression<Func<TEntity, TEntityProperty>> expression)
@@ -194,6 +189,8 @@ namespace IFramework.EntityFrameworkCore
                 OnException(ex);
                 if (ex is DbUpdateConcurrencyException)
                 {
+                    // should call state manager reset, otherwise entities will not be reloaded.
+                    Rollback();
                     throw new DBConcurrencyException(ex.Message, ex);
                 }
 

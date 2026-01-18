@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using IFramework.Config;
@@ -12,6 +13,7 @@ using IFramework.Infrastructure;
 using IFramework.JsonNet;
 using IFramework.Logging.Log4Net;
 using IFramework.Logging.Serilog;
+using IFramework.MessageStores.Relational;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -74,7 +76,8 @@ namespace IFramework.Test.EntityFramework
                         //options.UseMongoDb(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MongoDbConnectionStringName));
                         //options.UseMySQL(Configuration.Instance.GetConnectionString(DemoDbContextFactory.MySqlConnectionStringName));
                         options.UseMySql(connectionString,
-                                         ServerVersion.AutoDetect(connectionString));
+                                         ServerVersion.AutoDetect(connectionString))
+                               .AddInterceptors(new ReadCommittedTransactionInterceptor());
                         //options.UseInMemoryDatabase(nameof(DemoDbContext));
                         //options.UseSqlServer(connectionString, a => a.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
                     });
@@ -251,25 +254,31 @@ namespace IFramework.Test.EntityFramework
         [Fact]
         public async Task ConcurrentUpdateTest()
         {
-            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            using var serviceScope = ObjectProviderFactory.CreateScope();
+            var concurrencyProcessor = serviceScope.GetService<IConcurrencyProcessor>();
+   
+            using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+                                                               new TransactionOptions
+                                                               {
+                                                                   IsolationLevel = IsolationLevel.ReadCommitted
+                                                               },
+                                                               TransactionScopeAsyncFlowOption.Enabled))
             {
-                var concurrencyProcessor = serviceScope.GetService<IConcurrencyProcessor>();
-                var dbContext = serviceScope.GetService<DemoDbContext>();
-                using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-                                                                   new TransactionOptions {
-                                                                       IsolationLevel = IsolationLevel.ReadCommitted
-                                                                   },
-                                                                   TransactionScopeAsyncFlowOption.Enabled))
+                var dbContext = serviceScope.GetRequiredService<DemoDbContext>();
+                await concurrencyProcessor.ProcessAsync(async () =>
                 {
-                    await concurrencyProcessor.ProcessAsync(async () =>
+                    var account = await dbContext.Users.FirstOrDefaultAsync();
+                    if (account != null)
                     {
-                        var account = await dbContext.Users.FirstOrDefaultAsync();
-                        account.ModifyName($"ivan{DateTime.Now}");
+                        //account?.ModifyName($"ivan{DateTime.Now}");
+                        account.ModifyProfileAddress($"test{DateTime.Now}");
+                    
                         await dbContext.SaveChangesAsync();
-                    });
-                    transactionScope.Complete();
-                }
-            }
+                    }
+                   
+                });
+                transactionScope.Complete();
+            }  
         }
 
         [Fact]
@@ -357,8 +366,7 @@ namespace IFramework.Test.EntityFramework
                                           //.Where(u => SqlFunctions.CollectionLike(u.Pictures,"%2022%"))
                                           //.Where(u => SqlFunctions.CollectionContains(u.Pictures, "2022"))
                                           .OrderBy(u => u.Id)
-                                          .LastOrDefaultAsync()
-                                          .ConfigureAwait(false);
+                                          .LastOrDefaultAsync();
                 //await user.LoadReferenceAsync(u => u.UserProfile)
                 //          .ConfigureAwait(false);
                 //await user.ReloadAsync()
@@ -371,29 +379,26 @@ namespace IFramework.Test.EntityFramework
                 //user.UpdateCard($"cardName{DateTime.Now.Ticks}");
                 //user.Address = new Address("china", "shanghai", $"nanjing road1{DateTime.Now.Ticks}");
                 //user.Pictures.Add(DateTime.Now.ToString());
-                await dbContext.SaveChangesAsync()
-                               .ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
         }
 
         [Fact]
         public async Task RemoveUserCardTest()
         {
-            using (var serviceScope = ObjectProviderFactory.CreateScope())
+            using var serviceScope = ObjectProviderFactory.CreateScope();
+            var dbContext = serviceScope.GetService<DemoDbContext>();
+            var user = await dbContext.Users.FirstOrDefaultAsync()
+                                      .ConfigureAwait(false);
+            var card = user.Cards.FirstOrDefault();
+            if (card != null)
             {
-                var dbContext = serviceScope.GetService<DemoDbContext>();
-                var user = await dbContext.Users.FirstOrDefaultAsync()
-                                          .ConfigureAwait(false);
-                var card = user.Cards.FirstOrDefault();
-                if (card != null)
-                {
-                    user.RemoveCard(card);
-                }
-
-                //user.RemoveCards();
-                await dbContext.SaveChangesAsync()
-                               .ConfigureAwait(false);
+                user.RemoveCard(card);
             }
+
+            //user.RemoveCards();
+            await dbContext.SaveChangesAsync()
+                           .ConfigureAwait(false);
         }
     }
 }

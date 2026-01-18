@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Autofac;
 using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
@@ -14,7 +15,8 @@ namespace IFramework.DependencyInjection.Autofac
     public class ObjectProviderBuilder : IObjectProviderBuilder
     {
         private readonly ContainerBuilder _containerBuilder;
-      
+        public ContainerBuilder ContainerBuilder => _containerBuilder;
+
         public ObjectProviderBuilder(ContainerBuilder builder = null)
         {
             _containerBuilder = builder ?? new ContainerBuilder();
@@ -33,10 +35,35 @@ namespace IFramework.DependencyInjection.Autofac
             return this;
         }
 
+        public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime, Action<TFrom> releaseAction)
+        {
+            var builder = _containerBuilder.Register(componentContext => implementationFactory(new ObjectProvider(componentContext.Resolve<IComponentContext>())))
+                                           .InstanceLifetime(lifetime);
+            if (releaseAction != null)
+            {
+                builder.OnRelease(releaseAction);
+            }
+
+            return this;
+        }
+
+        public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime, Func<TFrom, ValueTask> releaseAction)
+        {
+            var builder = _containerBuilder.Register(componentContext => implementationFactory(new ObjectProvider(componentContext.Resolve<IComponentContext>())))
+                                           .InstanceLifetime(lifetime);
+            if (releaseAction != null)
+            {
+                builder.OnRelease(releaseAction);
+            }
+
+            return this;
+        }
+
         public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime)
         {
             _containerBuilder.Register(componentContext => implementationFactory(new ObjectProvider(componentContext.Resolve<IComponentContext>())))
                              .InstanceLifetime(lifetime);
+
             return this;
         }
 

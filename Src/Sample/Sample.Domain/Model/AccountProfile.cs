@@ -6,16 +6,16 @@ using IFramework.Infrastructure;
 
 namespace Sample.Domain.Model
 {
-    public class AacountProfile:Entity
+    public class AccountProfile:Entity
     {
         public string Id { get; protected set; }
         public string Name { get; protected set; }
         public string Email{get; protected set; }
 
-        public AacountProfile( )
+        public AccountProfile( )
         {
         }
-        public AacountProfile(string name, string email)
+        public AccountProfile(string name, string email)
         {
             Id = ObjectId.GenerateNewId()
                          .ToString();

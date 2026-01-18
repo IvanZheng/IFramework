@@ -183,9 +183,14 @@ namespace Microsoft.Extensions.Logging
             var loggers = logger.GetType()
                                 .GetProperty("MessageLoggers")
                                 ?.GetValue(logger) as Array;
+           
             if (loggers == null)
             {
-                throw new Exception("Can't get loggerInformation");
+                loggers = Assembly.GetAssembly(logger.GetType())?.GetType("Microsoft.Extensions.Logging.Logger")?.GetProperty("Loggers")?.GetValue(logger) as Array;
+                if (loggers == null)
+                {
+                    throw new Exception("Can't get loggerInformation");
+                }
             }
             for (int i = 0;  i < loggers.Length; i ++)
             {

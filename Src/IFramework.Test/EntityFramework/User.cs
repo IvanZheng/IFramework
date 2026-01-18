@@ -18,7 +18,7 @@ namespace IFramework.Test.EntityFramework
             Street = street;
         }
         [Required]
-        public string Country { get; init; } = String.Empty;
+        public string Country { get; init; }
         public string City { get; init;}
         public string Street { get; init;}
         public override bool IsNull()
@@ -106,10 +106,11 @@ namespace IFramework.Test.EntityFramework
 
         public void ModifyProfileAddress(string address)
         {
-            UserProfile = UserProfile.Clone(UserProfile.Address.Clone(new
+            var newAddress = UserProfile.Address.CloneWith(new
             {
-                Address = address
-            }));
+                Street = address
+            });
+            UserProfile = UserProfile.CloneWith(new {Address = newAddress});
         }
     }
 }
