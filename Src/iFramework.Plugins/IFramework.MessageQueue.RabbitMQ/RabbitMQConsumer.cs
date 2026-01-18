@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using IFramework.DependencyInjection;
 using IFramework.Message;
 using Microsoft.Extensions.Logging;
@@ -14,14 +15,14 @@ namespace IFramework.MessageQueue.RabbitMQ
 
     public class RabbitMQConsumer:IMessageConsumer
     {
-        private readonly IModel _channel;
+        private readonly IChannel _channel;
         private readonly string[] _topics;
         private readonly string _groupId;
         private readonly OnRabbitMQMessageReceived _onMessageReceived;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly ILogger _logger = ObjectProviderFactory.GetService<ILoggerFactory>().CreateLogger<RabbitMQConsumer>();
 
-        public RabbitMQConsumer(IModel channel, 
+        public RabbitMQConsumer(IChannel channel, 
                                 string[] topics,
                                 string groupId,
                                 string consumerId,
@@ -40,23 +41,24 @@ namespace IFramework.MessageQueue.RabbitMQ
 
         public void CommitOffset(IMessageContext messageContext)
         {
-            _channel.BasicAck((ulong)messageContext.MessageOffset.Offset, false);
+            _channel.BasicAckAsync((ulong)messageContext.MessageOffset.Offset, false).GetAwaiter().GetResult();
         }
 
         public string Id { get; }
-        protected EventingBasicConsumer Consumer;
+        protected AsyncEventingBasicConsumer Consumer;
         public void Start()
         {
-            Consumer = new EventingBasicConsumer(_channel);
+            Consumer = new AsyncEventingBasicConsumer(_channel);
             
-            Consumer.Received += (model, ea) =>
+            Consumer.ReceivedAsync += async (model, ea) =>
             {
                 _logger.LogDebug($"consumer({Id}) receive message, routingKey: {ea.RoutingKey} deliveryTag: {ea.DeliveryTag}");
                 _onMessageReceived(this, ea, _cancellationTokenSource.Token);
+                await Task.CompletedTask;
             };
-            _channel.BasicConsume(queue: _groupId,
-                                  autoAck: false,
-                                  consumer: Consumer);
+            _channel.BasicConsumeAsync(queue: _groupId,
+                                       autoAck: false,
+                                       consumer: Consumer);
 
         }
 

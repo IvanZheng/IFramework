@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using IFramework.Config;
 using IFramework.Infrastructure;
 using IFramework.MessageQueue.Client.Abstracts;
@@ -19,7 +20,7 @@ namespace IFramework.MessageQueue.RabbitMQ
                 throw new ArgumentNullException(nameof(connectionFactory));
             }
 
-            _connection = connectionFactory.CreateConnection();
+            _connection = connectionFactory.CreateConnectionAsync().GetAwaiter().GetResult();
         }
 
         public void Dispose()
@@ -27,7 +28,7 @@ namespace IFramework.MessageQueue.RabbitMQ
             _connection.Dispose();
         }
 
-        public IMessageConsumer CreateQueueConsumer(string commandQueueName,
+        public async Task<IMessageConsumer> CreateQueueConsumerAsync(string commandQueueName,
                                                     OnMessagesReceived onMessagesReceived,
                                                     string consumerId,
                                                     ConsumerConfig consumerConfig,
@@ -36,10 +37,10 @@ namespace IFramework.MessageQueue.RabbitMQ
         {
             messageContextBuilder ??= _defaultMessageContextBuilder;
 
-            var channel = _connection.CreateModel();
+            var channel = await _connection.CreateChannelAsync();
 
-            channel.QueueDeclare(commandQueueName, true, false, false, null);
-            channel.BasicQos(0, (ushort)consumerConfig.FullLoadThreshold, false);
+            await channel.QueueDeclareAsync(commandQueueName, true, false, false, null);
+            await channel.BasicQosAsync(0, (ushort)consumerConfig.FullLoadThreshold, false);
             var consumer = new RabbitMQConsumer(channel,
                                                 new[] { commandQueueName },
                                                 commandQueueName,
@@ -54,7 +55,17 @@ namespace IFramework.MessageQueue.RabbitMQ
             return consumer;
         }
 
-        public IMessageConsumer CreateTopicSubscription(string[] topics,
+        public IMessageConsumer CreateQueueConsumer(string commandQueueName,
+                                                    OnMessagesReceived onMessagesReceived,
+                                                    string consumerId,
+                                                    ConsumerConfig consumerConfig,
+                                                    bool start = true,
+                                                    IMessageContextBuilder messageContextBuilder = null)
+        {
+            return CreateQueueConsumerAsync(commandQueueName, onMessagesReceived, consumerId, consumerConfig, start, messageContextBuilder).GetAwaiter().GetResult();
+        }
+
+        public async Task<IMessageConsumer> CreateTopicSubscriptionAsync(string[] topics,
                                                         string subscriptionName,
                                                         OnMessagesReceived onMessagesReceived,
                                                         string consumerId,
@@ -63,16 +74,17 @@ namespace IFramework.MessageQueue.RabbitMQ
                                                         IMessageContextBuilder messageContextBuilder = null)
         {
             messageContextBuilder ??= _defaultMessageContextBuilder;
-            var channel = _connection.CreateModel();
-            var queueName = channel.QueueDeclare(subscriptionName, true, false, false, null).QueueName;
+            var channel = await _connection.CreateChannelAsync();
+            var queueDeclareOk = await channel.QueueDeclareAsync(subscriptionName, true, false, false, null);
+            var queueName = queueDeclareOk.QueueName;
 
-            topics.ForEach(topic =>
+            foreach (var topic in topics)
             {
-                channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
-                channel.QueueBind(queueName,
+                await channel.ExchangeDeclareAsync(topic, ExchangeType.Fanout, true, false, null);
+                await channel.QueueBindAsync(queueName,
                                   topic,
                                   string.Empty);
-            });
+            }
 
             var subscriber = new RabbitMQConsumer(channel,
                                                   topics,
@@ -88,24 +100,45 @@ namespace IFramework.MessageQueue.RabbitMQ
             return subscriber;
         }
 
-        public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
+        public IMessageConsumer CreateTopicSubscription(string[] topics,
+                                                        string subscriptionName,
+                                                        OnMessagesReceived onMessagesReceived,
+                                                        string consumerId,
+                                                        ConsumerConfig consumerConfig,
+                                                        bool start = true,
+                                                        IMessageContextBuilder messageContextBuilder = null)
         {
-            var channel = _connection.CreateModel();
+            return CreateTopicSubscriptionAsync(topics, subscriptionName, onMessagesReceived, consumerId, consumerConfig, start, messageContextBuilder).GetAwaiter().GetResult();
+        }
+
+        public async Task<IMessageProducer> CreateTopicProducerAsync(string topic, ProducerConfig config = null)
+        {
+            var channel = await _connection.CreateChannelAsync();
             topic = Configuration.Instance.FormatMessageQueueName(topic);
 
-            channel.ExchangeDeclare(topic, ExchangeType.Fanout, true, false, null);
+            await channel.ExchangeDeclareAsync(topic, ExchangeType.Fanout, true, false, null);
 
             return new RabbitMQProducer(channel, topic, string.Empty, config);
         }
 
-        public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
+        public IMessageProducer CreateTopicProducer(string topic, ProducerConfig config = null)
         {
-            var channel = _connection.CreateModel();
+            return CreateTopicProducerAsync(topic, config).GetAwaiter().GetResult();
+        }
+
+        public async Task<IMessageProducer> CreateQueueProducerAsync(string queue, ProducerConfig config = null)
+        {
+            var channel = await _connection.CreateChannelAsync();
             queue = Configuration.Instance.FormatMessageQueueName(queue);
 
-            channel.QueueDeclare(queue, true, false, false, null);
+            await channel.QueueDeclareAsync(queue, true, false, false, null);
 
             return new RabbitMQProducer(channel, string.Empty, queue, config);
+        }
+
+        public IMessageProducer CreateQueueProducer(string queue, ProducerConfig config = null)
+        {
+            return CreateQueueProducerAsync(queue, config).GetAwaiter().GetResult();
         }
 
         private static OnRabbitMQMessageReceived BuildOnKafkaMessageReceived(OnMessagesReceived onMessagesReceived,

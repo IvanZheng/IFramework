@@ -10,18 +10,21 @@ namespace IFramework.AspNet.Swagger
 {
     public static class AttributeExtension
     {
-        public static TAttribute GetAttribute<TAttribute>(this Enum enumValue)
-            where TAttribute : Attribute
+        extension(Enum enumValue)
         {
-            return enumValue.GetType()
-                            .GetMember(enumValue.ToString())
-                            .FirstOrDefault()?
-                            .GetCustomAttribute<TAttribute>();
-        }
+            public TAttribute GetAttribute<TAttribute>()
+                where TAttribute : Attribute
+            {
+                return enumValue.GetType()
+                    .GetMember(enumValue.ToString())
+                    .FirstOrDefault()?
+                    .GetCustomAttribute<TAttribute>();
+            }
 
-        public static DescriptionAttribute GetDescriptionAttribute(this Enum enumValue)
-        {
-            return enumValue.GetAttribute<DescriptionAttribute>();
+            public DescriptionAttribute GetDescriptionAttribute()
+            {
+                return enumValue.GetAttribute<DescriptionAttribute>();
+            }
         }
     }
     /// <summary>
@@ -51,19 +54,17 @@ namespace IFramework.AspNet.Swagger
             // REF: https://github.com/domaindrivendev/Swashbuckle.AspNetCore/pull/413
             foreach (var parameter in operation.Parameters)
             {
-                var description = apiDescription.ParameterDescriptions.First(p => p.Name == parameter.Name);
+                var description = apiDescription.ParameterDescriptions.FirstOrDefault(p => p.Name == parameter.Name);
+                
+                if (description == null)
+                {
+                    continue;
+                }
 
                 if (parameter.Description == null)
                 {
                     parameter.Description = description.ModelMetadata?.Description;
                 }
-
-                if (parameter.Schema.Default == null && description.DefaultValue != null)
-                {
-                    parameter.Schema.Default = new OpenApiString(description.DefaultValue.ToString());
-                }
-
-                parameter.Required |= description.IsRequired;
             }
         }
     }

@@ -22,16 +22,16 @@
 
     <ItemGroup>
         <PackageReference Include="Crc32.NET" Version="1.2.0" />
-        <PackageReference Include="Google.Protobuf" Version="3.28.0" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.65.0" />
-        <PackageReference Include="NLog" Version="5.3.3" />
-        <PackageReference Include="Grpc.Tools" Version="2.66.0">
+        <PackageReference Include="Google.Protobuf" Version="3.33.4" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+        <PackageReference Include="NLog" Version="6.0.7" />
+        <PackageReference Include="Grpc.Tools" Version="2.76.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="OpenTelemetry" Version="1.9.0" />
-        <PackageReference Include="OpenTelemetry.Api" Version="1.9.0" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
+        <PackageReference Include="OpenTelemetry" Version="1.14.0" />
+        <PackageReference Include="OpenTelemetry.Api" Version="1.14.0" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
 
         <Protobuf Include="Protos\apache\rocketmq\v2\definition.proto" ProtoRoot="Protos" GrpcServices="Client" />
         <Protobuf Include="Protos\google\rpc\code.proto" ProtoRoot="Protos" GrpcServices="Client" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using IFramework.Exceptions;
 using IFramework.Infrastructure;
@@ -47,9 +48,15 @@ namespace IFramework.AspNet
 
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            var disableFilter = context.ActionDescriptor.EndpointMetadata
-                                    .OfType<DisableApiResultWrapperAttribute>()
-                                    .Any();
+            var disableFilter = false;
+            
+            // 尝试从 FilterDescriptors 中查找 DisableApiResultWrapperAttribute
+            if (context.ActionDescriptor is Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor controllerActionDescriptor)
+            {
+                disableFilter = controllerActionDescriptor.MethodInfo
+                    .GetCustomAttributes(typeof(DisableApiResultWrapperAttribute), false)
+                    .Any();
+            }
 
             if (disableFilter)
             {
@@ -65,7 +72,7 @@ namespace IFramework.AspNet
             {
                 var hostEnvironment = context.HttpContext
                                               .RequestServices
-                                              .GetService<IHostingEnvironment>();
+                                              .GetService<IHostEnvironment>();
                 
                 var ex = OnException(context.Exception);
 

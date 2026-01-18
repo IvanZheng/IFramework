@@ -71,9 +71,9 @@ namespace Org.Apache.Rocketmq
             fileTarget.ArchiveFileName =
                 new SimpleLayout("${specialfolder:folder=UserProfile}/logs/rocketmq/rocketmq-client.{######}.log");
             fileTarget.ArchiveAboveSize = 67108864;
-            fileTarget.ArchiveNumbering = ArchiveNumberingMode.DateAndSequence;
+            fileTarget.ArchiveSuffixFormat = "yyyyMMdd-{####}"; // Use ArchiveSuffixFormat instead of ArchiveNumbering
             fileTarget.MaxArchiveFiles = fileMaxIndex;
-            fileTarget.ConcurrentWrites = true;
+            //fileTarget.ConcurrentWrites = true;
             fileTarget.KeepFileOpen = false;
 
             var asyncTargetWrapper = new AsyncTargetWrapper(fileTarget);
