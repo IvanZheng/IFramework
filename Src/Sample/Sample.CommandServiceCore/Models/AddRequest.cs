@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using Sample.DTO;
 
 namespace Sample.CommandServiceCore.Models
 {
@@ -12,5 +9,6 @@ namespace Sample.CommandServiceCore.Models
         [Required]
         public string Name { get; set; }
         public string File { get; set; }
+        public CommonStatus Status { get; set; }
     }
 }

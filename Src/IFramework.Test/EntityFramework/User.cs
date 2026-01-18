@@ -8,7 +8,7 @@ using IFramework.Infrastructure;
 
 namespace IFramework.Test.EntityFramework
 {
-    public class Address:ValueObject<Address>
+    public record Address : ValueObject<Address>
     {
         public Address(){}
         public Address(string country, string city, string street)
@@ -17,12 +17,16 @@ namespace IFramework.Test.EntityFramework
             City = city;
             Street = street;
         }
-
-        public string Country { get; set; }
-        public string City { get; set; }
-        public string Street { get;  set; }
+        [Required]
+        public string Country { get; init; }
+        public string City { get; init;}
+        public string Street { get; init;}
+        public override bool IsNull()
+        {
+            return string.IsNullOrWhiteSpace(Country);
+        }
     }
-    public class UserProfile:ValueObject<UserProfile>
+    public record UserProfile:ValueObject<UserProfile>
     {
         public UserProfile(Address address, string hobby)
         {
@@ -33,20 +37,23 @@ namespace IFramework.Test.EntityFramework
         public UserProfile()
         {
         }
-
-        private Address _address;
-        public virtual Address Address { get => _address; protected set => _address = value.Clone(); }
-        public string Hobby { get; protected set; }
+        [Required]
+        public Address Address { get; init; } = Address.Empty;
+        public string Hobby { get; }
+        public override bool IsNull()
+        {
+            return Address?.IsNull() ?? true;
+        }
     }
     public class User: TimestampedAggregateRoot
     {
         public string Id { get; protected set; }
         public string Name { get; protected set; }
         public string Gender { get; protected set; }
-        public Address Address { get; set; }  
-        private UserProfile _userProfile;
         [Required]
-        public virtual UserProfile UserProfile { get => _userProfile; protected set => _userProfile = value.Clone(); }
+        public Address Address { get; protected set; }
+        [Required]
+        public UserProfile UserProfile {get; protected set; }
         public virtual ICollection<Card> Cards { get; set; } = new HashSet<Card>();
         [MaxLength(500)] 
         public List<string> Pictures { get; protected set; } = new List<string>();
@@ -61,6 +68,7 @@ namespace IFramework.Test.EntityFramework
             Name = name;
             Gender = gender;
             UserProfile = profile ?? UserProfile.Empty;
+            Address = Address.Empty;
         }
 
         public void ModifyProfile(UserProfile profile)
@@ -98,7 +106,11 @@ namespace IFramework.Test.EntityFramework
 
         public void ModifyProfileAddress(string address)
         {
-            UserProfile.Address.City = address;
+            var newAddress = UserProfile.Address.CloneWith(new
+            {
+                Street = address
+            });
+            UserProfile = UserProfile.CloneWith(new {Address = newAddress});
         }
     }
 }

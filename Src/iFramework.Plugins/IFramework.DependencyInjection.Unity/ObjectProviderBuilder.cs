@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using IFramework.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Unity;
@@ -56,6 +57,16 @@ namespace IFramework.DependencyInjection.Unity
                                        (container, type, name) => implementationFactory(new ObjectProvider(container)),
                                        GetLifeTimeManager(lifetime) as IFactoryLifetimeManager);
             return this;
+        }
+
+        public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime, Action<TFrom> releaseAction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime, Func<TFrom, ValueTask> releaseFunc)
+        {
+            throw new NotImplementedException();
         }
 
         public IObjectProviderBuilder Register(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections)

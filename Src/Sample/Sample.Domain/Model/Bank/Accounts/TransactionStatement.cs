@@ -6,7 +6,7 @@ using Sample.Command;
 
 namespace Sample.Domain.Model.Bank.Accounts
 {
-    public class TransactionStatement: ValueObject<TransactionStatement>
+    public record TransactionStatement: ValueObject<TransactionStatement>
     {
         public TransactionInfo Transaction { get; protected set; }
         public TransactionType Type { get; protected set; }
@@ -15,6 +15,10 @@ namespace Sample.Domain.Model.Bank.Accounts
         {
             Transaction = transaction;
             Type = type;
+        }
+        public override bool IsNull()
+        {
+            return Transaction?.IsNull() ?? true;
         }
     }
 }

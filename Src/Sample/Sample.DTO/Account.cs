@@ -6,5 +6,6 @@ namespace Sample.DTO
     {
         public Guid Id { get; set; }
         public string UserName { get; set; }
+        public CommonStatus Status { get; set; } = CommonStatus.Normal;
     }
 }

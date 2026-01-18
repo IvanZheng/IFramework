@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Sample.CommandServiceCore</name>
+    </assembly>
+    <members>
+        <member name="M:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.Parse(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+                Parses a collection of query string values as a <see cref="T:Newtonsoft.Json.Linq.JObject" />.
+            </summary>
+            <remarks>
+                This is a low-level API intended for use by other APIs. It has been optimized for performance and
+                is not intended to be called directly from user code.
+            </remarks>
+            <param name="nameValuePairs">
+                The collection of query string name-value pairs parsed in lexical order. Both names
+                and values must be un-escaped so that they don't contain any <see cref="T:System.Uri" /> encoding.
+            </param>
+            <returns>The <see cref="T:Newtonsoft.Json.Linq.JObject" /> corresponding to the given query string values.</returns>
+        </member>
+        <member name="M:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.Parse(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}},System.Int32)">
+            <summary>
+                Parses a collection of query string values as a <see cref="T:Newtonsoft.Json.Linq.JObject" />.
+            </summary>
+            <remarks>
+                This is a low-level API intended for use by other APIs. It has been optimized for performance and
+                is not intended to be called directly from user code.
+            </remarks>
+            <param name="nameValuePairs">
+                The collection of query string name-value pairs parsed in lexical order. Both names
+                and values must be un-escaped so that they don't contain any <see cref="T:System.Uri" /> encoding.
+            </param>
+            <param name="maxDepth">The maximum depth of object graph encoded as <c>x-www-form-urlencoded</c>.</param>
+            <returns>The <see cref="T:Newtonsoft.Json.Linq.JObject" /> corresponding to the given query string values.</returns>
+        </member>
+        <member name="M:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.TryParse(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}},Newtonsoft.Json.Linq.JObject@)">
+            <summary>
+                Parses a collection of query string values as a <see cref="T:Newtonsoft.Json.Linq.JObject" />.
+            </summary>
+            <remarks>
+                This is a low-level API intended for use by other APIs. It has been optimized for performance and
+                is not intended to be called directly from user code.
+            </remarks>
+            <param name="nameValuePairs">
+                The collection of query string name-value pairs parsed in lexical order. Both names
+                and values must be un-escaped so that they don't contain any <see cref="T:System.Uri" /> encoding.
+            </param>
+            <param name="value">The parsed result or null if parsing failed.</param>
+            <returns><c>true</c> if <paramref name="nameValuePairs" /> was parsed successfully; otherwise false.</returns>
+        </member>
+        <member name="M:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.TryParse(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}},System.Int32,Newtonsoft.Json.Linq.JObject@)">
+            <summary>
+                Parses a collection of query string values as a <see cref="T:Newtonsoft.Json.Linq.JObject" />.
+            </summary>
+            <remarks>
+                This is a low-level API intended for use by other APIs. It has been optimized for performance and
+                is not intended to be called directly from user code.
+            </remarks>
+            <param name="nameValuePairs">
+                The collection of query string name-value pairs parsed in lexical order. Both names
+                and values must be un-escaped so that they don't contain any <see cref="T:System.Uri" /> encoding.
+            </param>
+            <param name="maxDepth">The maximum depth of object graph encoded as <c>x-www-form-urlencoded</c>.</param>
+            <param name="value">The parsed result or null if parsing failed.</param>
+            <returns><c>true</c> if <paramref name="nameValuePairs" /> was parsed successfully; otherwise false.</returns>
+        </member>
+        <member name="M:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.ParseInternal(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}},System.Int32,System.Boolean)">
+            <summary>
+                Parses a collection of query string values as a <see cref="T:Newtonsoft.Json.Linq.JObject" />.
+            </summary>
+            <remarks>
+                This is a low-level API intended for use by other APIs. It has been optimized for performance and
+                is not intended to be called directly from user code.
+            </remarks>
+            <param name="nameValuePairs">
+                The collection of query string name-value pairs parsed in lexical order. Both names
+                and values must be un-escaped so that they don't contain any <see cref="T:System.Uri" /> encoding.
+            </param>
+            <param name="maxDepth">The maximum depth of object graph encoded as <c>x-www-form-urlencoded</c>.</param>
+            <param name="throwOnError">Indicates whether to throw an exception on error or return false</param>
+            <returns>The <see cref="T:Newtonsoft.Json.Linq.JObject" /> corresponding to the given query string values.</returns>
+        </member>
+        <member name="T:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.ArrayCandidate">
+            <summary>Class that wraps key-value pairs.</summary>
+            <remarks>
+                This use of this class avoids a FxCop warning CA908 which happens if using various generic types.
+            </remarks>
+        </member>
+        <member name="M:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.ArrayCandidate.#ctor(System.Int32,System.String)">
+            <summary>
+                Initializes a new instance of the <see cref="T:System.Net.Http.Formatting.FormUrlEncodedJson.ArrayCandidate" />
+                class.
+            </summary>
+            <param name="key">
+                The key of this <see cref="T:System.Net.Http.Formatting.FormUrlEncodedJson.ArrayCandidate" />
+                instance.
+            </param>
+            <param name="value">
+                The value of this <see cref="T:System.Net.Http.Formatting.FormUrlEncodedJson.ArrayCandidate" />
+                instance.
+            </param>
+        </member>
+        <member name="P:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.ArrayCandidate.Key">
+            <summary>
+                Gets or sets the key of this <see cref="T:System.Net.Http.Formatting.FormUrlEncodedJson.ArrayCandidate" />
+                instance.
+            </summary>
+            <value>
+                The key of this <see cref="T:System.Net.Http.Formatting.FormUrlEncodedJson.ArrayCandidate" /> instance.
+            </value>
+        </member>
+        <member name="P:Sample.CommandServiceCore.CommandInputExtension.FormUrlEncodedJson.ArrayCandidate.Value">
+            <summary>
+                Gets or sets the value of this <see cref="T:System.Net.Http.Formatting.FormUrlEncodedJson.ArrayCandidate" />
+                instance.
+            </summary>
+            <value>
+                The value of this <see cref="T:System.Net.Http.Formatting.FormUrlEncodedJson.ArrayCandidate" /> instance.
+            </value>
+        </member>
+        <member name="M:Sample.CommandServiceCore.Controllers.UserController.Index(System.Nullable{Sample.DTO.CommonStatus})">
+            <summary>
+            查询
+            </summary>
+            <param name="status"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

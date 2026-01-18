@@ -29,7 +29,7 @@ namespace IFramework.Test.EntityFramework
     {
         public static int Total;
         private long _tenantId;
-
+        
         public DemoDbContext(DbContextOptions options)
             : base(options)
         {
@@ -62,13 +62,26 @@ namespace IFramework.Test.EntityFramework
             //            .StartsAt(1000)
             //            .IncrementsBy(1);
 
-            var userEntity = modelBuilder.Entity<User>();
-            userEntity.OwnsOne(u => u.UserProfile, b =>
+#if NET8_0_OR_GREATER
+            modelBuilder.Entity<User>(u =>
+            {
+                u.ComplexProperty(e => e.Address);
+                u.ComplexProperty(e => e.UserProfile,
+                                  ufb =>
+                                  {
+                                      ufb.ComplexProperty(p => p.Address);
+                                      ufb.Property(p => p.Hobby)
+                                         .IsConcurrencyToken();
+                                  });
+            });
+#else
+            modelBuilder.Entity<User>().OwnsOne(u => u.UserProfile, b =>
             {
                 b.OwnsOne(p => p.Address);
                 b.Property(p => p.Hobby)
                  .IsConcurrencyToken();
-            });
+            }).OwnsOne(u => u.Address);
+#endif
             //userEntity.HasMany(u => u.Cards)
             //            .WithOne()
             //            .HasForeignKey(c => c.UserId);
@@ -78,14 +91,11 @@ namespace IFramework.Test.EntityFramework
                         .HasIndex(u => u.Name)
                         .IsUnique();
 
-            modelBuilder.Owned<Address>();
+            //modelBuilder.Owned<Address>();
             //modelBuilder.Owned<UserProfile>();
             modelBuilder.Entity<Person>()
                         .Property(e => e.Id);
 
-            modelBuilder.Entity<User>()
-                        .Property(u => u.Address)
-                        .HasJsonConversion();
 
             modelBuilder.Entity<User>()
                         .Property(u => u.Pictures)

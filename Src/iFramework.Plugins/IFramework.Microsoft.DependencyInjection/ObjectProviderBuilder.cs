@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using IFramework.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -45,6 +46,16 @@ namespace IFramework.DependencyInjection.Microsoft
         {
             _serviceCollection.AddService(typeof(TFrom), provider => implementationFactory(new ObjectProvider(provider)), lifetime);
             return this;
+        }
+
+        public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime, Action<TFrom> releaseAction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IObjectProviderBuilder Register<TFrom>(Func<IObjectProvider, TFrom> implementationFactory, ServiceLifetime lifetime, Func<TFrom, ValueTask> releaseFunc)
+        {
+            throw new NotImplementedException();
         }
 
         public IObjectProviderBuilder Register(Type from, Type to, string name, ServiceLifetime lifetime, params Injection[] injections)

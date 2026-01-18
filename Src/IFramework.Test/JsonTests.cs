@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace IFramework.Test
 {
-    public class AValueObject<T> : ValueObject<T> 
+    public record AValueObject<T> : ValueObject<T> 
         where T : ValueObject
     {
         public AValueObject()
@@ -21,14 +21,22 @@ namespace IFramework.Test
             CreatedTime = DateTime.Now;
         }
 
+        public AValueObject(DateTime? createdTime = null)
+        {
+            CreatedTime = createdTime ?? DateTime.Now;
+        }
         public new static T Empty => Activator.CreateInstance<T>();
         public DateTime CreatedTime { get; set; }
+        public override bool IsNull()
+        {
+            return CreatedTime == DateTime.MinValue;
+        }
     }
 
-    public class AClass : AValueObject<AClass>
+    public record AClass : AValueObject<AClass>
     {
         public AClass(){}
-        public AClass(string id, string name)
+        public AClass(string id, string name, DateTime? createdTime = null) : base(createdTime)
         {
             Id = id;
             Name = name;
@@ -63,10 +71,11 @@ namespace IFramework.Test
         public void CloneTest()
         {
             var a = new AClass("ddd", "name");
-            var cloneObject = a.Clone();
+
+            var cloneObject = a.CloneWith();
             Assert.True(a == cloneObject);
             
-            cloneObject = a.Clone(new {Name = "ivan"});
+            cloneObject = a.CloneWith(new {Name = "ivan"});
             Assert.True("ivan" == cloneObject.Name);
 
             var list = new List<AClass>{a};
