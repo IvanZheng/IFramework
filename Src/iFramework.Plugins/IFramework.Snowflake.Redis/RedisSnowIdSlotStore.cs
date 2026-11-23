@@ -12,7 +12,7 @@ namespace IFramework.Infrastructure
 
     internal sealed class RedisSnowIdSlotStore : ISnowIdSlotStore
     {
-        private static readonly TimeSpan Retention = TimeSpan.FromDays(1);
+        internal static readonly TimeSpan Retention = TimeSpan.FromDays(1);
         private readonly IDatabase database;
         private readonly string prefix;
 

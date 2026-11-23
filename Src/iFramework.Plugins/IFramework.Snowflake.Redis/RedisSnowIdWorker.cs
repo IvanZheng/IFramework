@@ -12,6 +12,7 @@ namespace IFramework.Infrastructure
 {
     internal sealed class RedisSnowIdWorker : IdWorker
     {
+        internal static readonly TimeSpan RefreshInterval = TimeSpan.FromMinutes(10);
         private const int SlotCount = 1024;
         private const string Free = "free:";
         private readonly ISnowIdSlotStore store;
@@ -138,7 +139,7 @@ namespace IFramework.Infrastructure
         {
             while (true)
             {
-                await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
+                await Task.Delay(RefreshInterval).ConfigureAwait(false);
                 lock (gate) { if (stopped) return; }
                 try
                 {

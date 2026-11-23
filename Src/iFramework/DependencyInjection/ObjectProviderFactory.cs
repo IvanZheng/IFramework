@@ -50,6 +50,8 @@ namespace IFramework.DependencyInjection
             }
         }
 
+        public IObjectProvider TryGetObjectProvider() => _objectProvider;
+
         public IObjectProviderBuilder SetProviderBuilder(IObjectProviderBuilder objectProviderBuilder)
         {
             return ObjectProviderBuilder = objectProviderBuilder;
