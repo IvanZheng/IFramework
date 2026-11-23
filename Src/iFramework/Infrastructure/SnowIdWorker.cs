@@ -21,59 +21,51 @@ namespace IFramework.Infrastructure
             return unixEpoch.AddMilliseconds(twepoch);
         }
 
-        /// <summary>
-        /// 获取生成器ID，支持多种方式
-        /// 优先级: 环境变量 > 配置文件 > 主机名哈希 > 默认值
-        /// </summary>
-        private static (long, long) GetGeneratorId()
+        public static Lazy<IdWorker> Instance = new Lazy<IdWorker>(CreateWorker);
+
+        private static readonly object FactoryGate = new object();
+        private static Func<IdWorker> factory;
+        private static bool initialized;
+
+        public static void ConfigureFactory(Func<IdWorker> workerFactory)
         {
-            // 使用Pod名称或主机名生成唯一ID（适用于K8s部署）
-            var podName = Environment.GetEnvironmentVariable("HOSTNAME") ??
-                          Environment.GetEnvironmentVariable("POD_NAME") ??
-                          Environment.MachineName;
-
-            if (!string.IsNullOrEmpty(podName))
+            if (workerFactory == null) throw new ArgumentNullException(nameof(workerFactory));
+            lock (FactoryGate)
             {
-                // 使用主机名/Pod名称的哈希值来生成GeneratorId
-                var hashCode = Math.Abs(podName.GetHashCode());
-                var hostBasedId = hashCode % 1024;
-                //logger.LogInformation("Using GeneratorId based on hostname/pod name '{PodName}': {GeneratorId}", podName, hostBasedId);
-                int high5 = (hostBasedId >> 5) & 0b11111; // 取高5位
-                int low5 = hostBasedId & 0b11111;         // 取低5位
-                return (high5, low5);
+                if (initialized || factory != null)
+                    throw new InvalidOperationException("Configure the Snowflake factory once before first use.");
+                factory = workerFactory;
             }
-
-            // 4. 默认值
-            //logger.LogWarning("Using default GeneratorId: 1. Consider setting SNOWFLAKE_GENERATOR_ID environment variable for production deployment");
-            return (0, 0);
         }
-
-        public static Lazy<IdWorker> Instance = new Lazy<IdWorker>(() =>
+        private static IdWorker CreateWorker()
         {
-            var workerId = Configuration.Instance.GetValue<long?>($"{nameof(SnowIdWorker)}:Id") ?? 0;
-            var dataCenterId = Configuration.Instance.GetValue<long?>($"{nameof(SnowIdWorker)}:DataCenterId") ?? 0;
-
-            var (workerIdFromName, dataCenterIdFromName) = GetGeneratorId();
-
-            if (workerId == 0)
+            Func<IdWorker> selected;
+            lock (FactoryGate)
             {
-                workerId = workerIdFromName;
+                initialized = true;
+                selected = factory;
             }
+            if (selected != null) return selected();
+            var settings = Configuration.Instance.GetSection(nameof(SnowIdWorker));
+            var worker = settings.GetValue<int?>("Id");
+            var datacenter = settings.GetValue<int?>("DataCenterId");
+            if (worker < 0 || worker > 31 || datacenter < 0 || datacenter > 31)
+                throw new ArgumentOutOfRangeException(nameof(SnowIdWorker), "Id and DataCenterId must be between 0 and 31.");
 
-            if (dataCenterId == 0)
-            {
-                dataCenterId = dataCenterIdFromName;
-            }
-        
-            if (workerId == 0 && dataCenterId == 0)
-            {
-                var (workerIdFromIp, dataCenterIdFromIp) = GenerateIdsFromIp(GetLocalIpAddress());
-                workerId = workerIdFromIp;
-                dataCenterId = dataCenterIdFromIp;
-            }
+            if (worker.HasValue && datacenter.HasValue)
+                return new IdWorker(worker.Value, datacenter.Value);
 
-            return new IdWorker(workerId, dataCenterId);
-        });
+            // Preserve the standalone default for existing applications outside Kubernetes.
+            var name = Environment.GetEnvironmentVariable("HOSTNAME") ??
+                       Environment.GetEnvironmentVariable("POD_NAME") ?? Environment.MachineName;
+            var hash = string.IsNullOrEmpty(name) ? 0 : Math.Abs((long)name.GetHashCode()) % 1024;
+            long localWorker = worker ?? (hash >> 5);
+            long localDatacenter = datacenter ?? (hash & 31);
+            if (localWorker == 0 && localDatacenter == 0 && !worker.HasValue && !datacenter.HasValue)
+                (localWorker, localDatacenter) = GenerateIdsFromIp(GetLocalIpAddress());
+
+            return new IdWorker(localWorker, localDatacenter);
+        }
 
         public static string GenerateId()
         {

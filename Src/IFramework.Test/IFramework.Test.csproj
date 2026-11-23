@@ -51,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../iFramework.Plugins/IFramework.Snowflake.Redis/IFramework.Snowflake.Redis.csproj" />
     <ProjectReference Include="..\IFramework.EventStore.Client\IFramework.EventStore.Client.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.DependencyInjection.Autofac\IFramework.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\iFramework.Plugins\IFramework.DependencyInjection.Unity\IFramework.DependencyInjection.Unity.csproj" />

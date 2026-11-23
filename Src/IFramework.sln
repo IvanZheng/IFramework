@@ -118,6 +118,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "rocketmq-client-csharp", "i
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IFramework.Logging.Elasticsearch", "iFramework.Plugins\IFramework.Logging.Elasticsearch\IFramework.Logging.Elasticsearch.csproj", "{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iFramework.Plugins", "iFramework.Plugins", "{6E847AD2-86DA-1160-2692-D78C20CA0E6E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IFramework.Snowflake.Redis", "iFramework.Plugins\IFramework.Snowflake.Redis\IFramework.Snowflake.Redis.csproj", "{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -869,6 +873,24 @@ Global
 		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|x64.Build.0 = Release|Any CPU
 		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|x86.ActiveCfg = Release|Any CPU
 		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8}.Release|x86.Build.0 = Release|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Debug|x64.Build.0 = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Debug|x86.Build.0 = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Integration|Any CPU.ActiveCfg = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Integration|Any CPU.Build.0 = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Integration|x64.ActiveCfg = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Integration|x64.Build.0 = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Integration|x86.ActiveCfg = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Integration|x86.Build.0 = Debug|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Release|x64.ActiveCfg = Release|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Release|x64.Build.0 = Release|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Release|x86.ActiveCfg = Release|Any CPU
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -918,6 +940,7 @@ Global
 		{9413B2E5-66A1-4770-82A1-994F64D52085} = {A0DFB82C-D746-4443-8C1B-7AB2DF36EF85}
 		{EDF71515-26D8-4A0B-B444-2069404B5A9F} = {9413B2E5-66A1-4770-82A1-994F64D52085}
 		{DDD34F15-5FE8-4A1F-B358-6F4ED9D1A8C8} = {D85A2D0B-5D20-4C0F-B06F-D688EFAD1624}
+		{552AC2ED-94DC-4224-8759-2EBB78F4ECB5} = {6E847AD2-86DA-1160-2692-D78C20CA0E6E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98DDB08A-700A-4572-905F-A7DBB5ECED71}
